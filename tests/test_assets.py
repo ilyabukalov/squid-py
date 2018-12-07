@@ -80,13 +80,13 @@ def test_register_data_asset_market(publisher_ocean_instance, consumer_ocean_ins
 
     # Check exists
     chain_asset_exists = pub_ocn.keeper.market.check_asset(asset.asset_id)
-    logging.info("check_asset = {}".format(chain_asset_exists))
+    logging.debug("check_asset = {}".format(chain_asset_exists))
     assert chain_asset_exists
 
     # Check price
     chain_asset_price = pub_ocn.keeper.market.get_asset_price(asset.asset_id)
     assert asset_price == chain_asset_price
-    logging.info("chain_asset_price = {}".format(chain_asset_price))
+    logging.debug("chain_asset_price = {}".format(chain_asset_price))
 
 
 def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_instance):

@@ -6,8 +6,7 @@
 import logging
 
 from web3.contract import ConciseContract
-from squid_py.keeper.utils import get_contract_by_name
-from squid_py.utils.utilities import get_network_name
+from squid_py.keeper.utils import get_contract_by_name, get_network_name
 
 
 class ContractBase(object):

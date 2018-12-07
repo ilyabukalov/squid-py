@@ -94,7 +94,8 @@ def get_registered_ddo(ocean_instance):
     # register an AssetAccess service agreement template
     template_id = register_service_agreement_template(
         ocean_instance.keeper.service_agreement, ocean_instance.keeper.contract_path,
-        ocean_instance.main_account, ServiceAgreementTemplate.from_json_file(get_sla_template_path())
+        ocean_instance.main_account, ServiceAgreementTemplate.from_json_file(get_sla_template_path()),
+        ocean_instance.keeper.network_name
     )
 
     config = ocean_instance.config
