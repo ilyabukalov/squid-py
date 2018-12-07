@@ -105,23 +105,6 @@ def split_signature(web3, signature):
     return Signature(v, r, s)
 
 
-# properties
-
-def get_network_name(web3):
-    """Give the network name."""
-    network_id = int(web3.version.network)
-    switcher = {
-        1: 'Main',
-        2: 'orden',
-        3: 'Ropsten',
-        4: 'Rinkeby',
-        42: 'Kovan',
-        8995: 'ocean_poa_aws',
-        8996: 'ocean_poa_net_local',
-    }
-    return switcher.get(network_id, 'development')
-
-
 def watch_event(contract_name, event_name, callback, interval,
                 start_time, timeout=None, timeout_callback=None,
                 fromBlock=0, toBlock='latest',

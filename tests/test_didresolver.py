@@ -239,11 +239,11 @@ def test_did_resolver_library(publisher_ocean_instance):
         register_account.unlock()
         if i < len(ids) - 1:
             next_did_id = Web3.toHex(hexstr=ids[i + 1])
-            logger.info('add chain {0} -> {1}'.format(Web3.toHex(did_id_bytes), next_did_id))
+            logger.debug('add chain {0} -> {1}'.format(Web3.toHex(did_id_bytes), next_did_id))
             register_did = didregistry.register_attribute(did_id_bytes, VALUE_TYPE_DID, key_test, next_did_id,
                                                           owner_address)
         else:
-            logger.info('end chain {0} -> URL'.format(Web3.toHex(did_id_bytes)))
+            logger.debug('end chain {0} -> URL'.format(Web3.toHex(did_id_bytes)))
             register_did = didregistry.register_attribute(did_id_bytes, VALUE_TYPE_URL, key_test, value_test,
                                                           owner_address)
         receipt = didregistry.get_tx_receipt(register_did)
@@ -266,7 +266,7 @@ def test_did_resolver_library(publisher_ocean_instance):
     # make the next DID at the end of the chain to point to the first DID
     next_did_id = Web3.toHex(hexstr=ids[0])
     register_account.unlock()
-    logger.info('set end chain {0} -> {1}'.format(Web3.toHex(did_id_bytes), next_did_id))
+    logger.debug('set end chain {0} -> {1}'.format(Web3.toHex(did_id_bytes), next_did_id))
     register_did = didregistry.register_attribute(did_id_bytes, VALUE_TYPE_DID, key_test, next_did_id, owner_address)
     receipt = didregistry.get_tx_receipt(register_did)
     # get the first DID in the chain

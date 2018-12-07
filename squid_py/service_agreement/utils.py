@@ -3,11 +3,14 @@ import json
 
 from squid_py.ddo.authentication import Authentication
 from squid_py.ddo.public_key_hex import PublicKeyHex, PUBLIC_KEY_TYPE_HEX, AUTHENTICATION_TYPE_HEX
-from squid_py.keeper.utils import get_fingerprint_by_name, get_contract_abi_and_address, hexstr_to_bytes
+from squid_py.keeper.utils import (
+    get_fingerprint_by_name,
+    get_contract_abi_and_address,
+    hexstr_to_bytes,
+    get_network_name)
 from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
 from squid_py.service_agreement.service_types import ServiceTypes
-from squid_py.utils import get_network_name
 from squid_py.utils.utilities import get_publickey_from_address
 
 

@@ -371,6 +371,8 @@ def test_integration(consumer_ocean_instance):
 
     # Register ddo
     ddo = get_registered_ddo(pub_ocn)
+    # did = 'did:op:0x96a49018357a4a1e9f179a3a746af5a087559b4ca133499198428dc4b0868731'
+    # ddo = consumer_ocean_instance.resolve_did(did)
 
     path = os.path.join(consumer_ocean_instance._downloads_path, 'testfiles')
     consumer_ocean_instance._downloads_path = path

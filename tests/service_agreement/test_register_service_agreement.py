@@ -7,7 +7,11 @@ from datetime import datetime
 from web3 import Web3, HTTPProvider
 
 from squid_py.config import Config
-from squid_py.keeper.utils import get_fingerprint_by_name, hexstr_to_bytes, get_contract_abi_and_address
+from squid_py.keeper.utils import (
+    get_fingerprint_by_name,
+    hexstr_to_bytes,
+    get_contract_abi_and_address,
+    get_network_name)
 from squid_py.ocean.ocean import Ocean
 from squid_py.service_agreement.register_service_agreement import (
     execute_pending_service_agreements,
@@ -16,7 +20,6 @@ from squid_py.service_agreement.register_service_agreement import (
 )
 from squid_py.service_agreement.storage import get_service_agreements
 from squid_py.service_agreement.utils import build_condition_key
-from squid_py.utils import get_network_name
 from squid_py.utils.utilities import generate_new_id
 
 CONFIG_PATH = 'config_local.ini'
@@ -31,6 +34,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         cls.web3 = Web3(HTTPProvider(cls.config.keeper_url))
 
         cls.ocean = Ocean(CONFIG_PATH)
+        cls.keeper = cls.ocean.keeper
         cls.market = cls.ocean.keeper.market
         cls.token = cls.ocean.keeper.token
         cls.payment_conditions = cls.ocean.keeper.payment_conditions
@@ -52,6 +56,27 @@ class TestRegisterServiceAgreement(unittest.TestCase):
     def tearDown(self):
         if os.path.exists(self.storage_path):
             os.remove(self.storage_path)
+
+    def _consume_dummy(self, *args):
+        pass
+
+    def _register_agreement(self, agreement_id, did, service_definition, actor_type='consumer', num_confirmations=3):
+        register_service_agreement(
+            self.web3,
+            self.config.keeper_path,
+            self.storage_path,
+            self.consumer_acc,
+            agreement_id,
+            did,
+            service_definition,
+            actor_type,
+            0,
+            self.price,
+            self.content_url,
+            consume_callback=self._consume_dummy,
+            num_confirmations=num_confirmations,
+            start_time=self.start_time
+        )
 
     def get_simple_service_agreement_definition(self, did, price, include_refund=False, timeout=3):
         grant_access_fingerprint = get_fingerprint_by_name(
@@ -263,11 +288,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         service_agreement_id = '0x%s' % generate_new_id()
         did = '0x%s' % generate_new_id()
 
-        register_service_agreement(
-            self.web3,
-            self.config.keeper_path,
-            self.storage_path,
-            self.consumer_acc,
+        self._register_agreement(
             service_agreement_id,
             did,
             {
@@ -277,13 +298,8 @@ class TestRegisterServiceAgreement(unittest.TestCase):
                 },
                 'conditions': []
             },
-            'consumer',
-            0,
-            10,
-            self.content_url,
-            start_time=self.start_time
         )
-        expected_agreements = (service_agreement_id, did, 0, 10, self.content_url, self.start_time, 'pending')
+        expected_agreements = (service_agreement_id, did, 0, self.price, self.content_url, self.start_time, 'pending')
         stored_agreements = get_service_agreements(self.storage_path)[0]
         assert sorted([str(i) for i in expected_agreements]) == sorted([str(i) for i in stored_agreements])
 
@@ -292,20 +308,11 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         did = '0x%s' % generate_new_id()
         price = self.price
 
-        register_service_agreement(
-            self.web3,
-            self.config.keeper_path,
-            self.storage_path,
-            self.consumer_acc,
+        self._register_agreement(
             service_agreement_id,
             did,
             self.get_simple_service_agreement_definition(did, price),
-            'consumer',
-            0,
-            price,
-            self.content_url,
             num_confirmations=1,
-            start_time=self.start_time
         )
 
         self._execute_service_agreement(service_agreement_id, did, price)
@@ -317,36 +324,19 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         did = '0x%s' % generate_new_id()
         price = self.price
 
-        register_service_agreement(
-            self.web3,
-            self.config.keeper_path,
-            self.storage_path,
-            self.consumer_acc,
+        self._register_agreement(
             service_agreement_id,
             did,
             self.get_simple_service_agreement_definition(did, price),
-            'consumer',
-            0,
-            price,
-            self.content_url,
             num_confirmations=0,
-            start_time=self.start_time
         )
 
-        register_service_agreement(
-            self.web3,
-            self.config.keeper_path,
-            self.storage_path,
-            self.consumer_acc,  # using the same account for the sake of simplicity here
+        self._register_agreement(
             service_agreement_id,
             did,
             self.get_simple_service_agreement_definition(did, price),
             'publisher',
-            0,
-            price,
-            self.content_url,
             num_confirmations=0,
-            start_time=self.start_time
         )
 
         self._execute_service_agreement(service_agreement_id, did, price)
@@ -382,36 +372,19 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         did = '0x%s' % generate_new_id()
         price = self.price
 
-        register_service_agreement(
-            self.web3,
-            self.config.keeper_path,
-            self.storage_path,
-            self.consumer_acc,
+        self._register_agreement(
             service_agreement_id,
             did,
             self.get_simple_service_agreement_definition(did, price, include_refund=True),
-            'consumer',
-            0,
-            price,
-            self.content_url,
             num_confirmations=0,
-            start_time=self.start_time
         )
 
-        register_service_agreement(
-            self.web3,
-            self.config.keeper_path,
-            self.storage_path,
-            self.consumer_acc,  # using the same account for the sake of simplicity here
+        self._register_agreement(
             service_agreement_id,
             did,
             self.get_simple_service_agreement_definition(did, price, include_refund=True),
             'publisher',
-            0,
-            price,
-            self.content_url,
             num_confirmations=0,
-            start_time=self.start_time
         )
 
         self._execute_service_agreement(service_agreement_id, did, price)
@@ -569,7 +542,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         _network_name = get_network_name(self.web3)
         for i, key in enumerate(self.condition_keys):
             fn_name = function_names[i]
-            abi, address = get_contract_abi_and_address(self.web3, self.ocean.keeper.contract_path, self.contract_names[i], _network_name)
+            abi, address = get_contract_abi_and_address(self.web3, self.keeper.contract_path, self.contract_names[i], _network_name)
             assert abi == self.contract_abis[i], 'abi does not match.'
             assert address == self.contracts[i], 'address does not match'
             f = hexstr_to_bytes(self.web3, get_fingerprint_by_name(abi, fn_name))
