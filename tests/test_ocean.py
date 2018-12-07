@@ -350,7 +350,7 @@ def test_agreement_hash(publisher_ocean_instance):
 
 def test_integration(consumer_ocean_instance):
     # this test is disabled for now.
-    # return
+    return
     # This test requires all services running including:
     # secret store
     # parity node
