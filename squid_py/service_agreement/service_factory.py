@@ -93,7 +93,7 @@ class ServiceFactory(object):
             ServiceAgreement.SERVICE_DEFINITION_ID_KEY: sa.sa_definition_id,
             ServiceAgreementTemplate.TEMPLATE_ID_KEY: sla_template.template_id,
             ServiceAgreement.SERVICE_CONTRACT_KEY: sa.service_agreement_contract,
-            ServiceAgreement.SERVICE_CONDITIONS_KEY: conditions,
+            ServiceAgreement.SERVICE_CONDITIONS_KEY: sa.conditions,
             'purchaseEndpoint': purchase_endpoint
         }
 
