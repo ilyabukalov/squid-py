@@ -56,7 +56,7 @@ def consumeAsset(web3, contract_path, account, service_agreement_id, service_def
     if consume_callback:
         consume_callback(
             service_agreement_id, service_definition.get('id'),
-            service_definition[ServiceAgreement.SERVICE_DEFINITION_ID_KEY], account
+            service_definition.get(ServiceAgreement.SERVICE_DEFINITION_ID_KEY), account
         )
         logger.info('Done consuming asset.')
 

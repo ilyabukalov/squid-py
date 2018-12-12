@@ -6,6 +6,7 @@ from squid_py.ddo.metadata import Metadata
 from squid_py.ocean.account import Account
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
 from squid_py.service_agreement.service_factory import ServiceDescriptor
+from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID
 from squid_py.service_agreement.utils import register_service_agreement_template, get_sla_template_path
 from squid_py.utils import utilities
 from squid_py.ocean.ocean import Ocean
@@ -92,11 +93,15 @@ def get_consumer_ocean_instance():
 
 def get_registered_ddo(ocean_instance):
     # register an AssetAccess service agreement template
-    template_id = register_service_agreement_template(
-        ocean_instance.keeper.service_agreement, ocean_instance.keeper.contract_path,
-        ocean_instance.main_account, ServiceAgreementTemplate.from_json_file(get_sla_template_path()),
-        ocean_instance.keeper.network_name
-    )
+    template = ServiceAgreementTemplate.from_json_file(get_sla_template_path())
+    template_id = ACCESS_SERVICE_TEMPLATE_ID
+    template_owner = ocean_instance.keeper.service_agreement.get_template_owner(template_id)
+    if not template_owner:
+        template_id = register_service_agreement_template(
+            ocean_instance.keeper.service_agreement, ocean_instance.keeper.contract_path,
+            ocean_instance.main_account, template,
+            ocean_instance.keeper.network_name
+        )
 
     config = ocean_instance.config
     purchase_endpoint = get_purchase_endpoint(config)
