@@ -9,7 +9,7 @@ class BrizoMock(object):
     def get(self, url, *args, **kwargs):
         response = Mock()
         response.data = b'good luck squiddo.'
-        response.status_code = '200 OK'
+        response.status_code = 201
         return response
 
     def post(self, url, data=None, **kwargs):
@@ -25,10 +25,10 @@ class BrizoMock(object):
             assert valid_signature, 'Service agreement signature seems invalid.'
             if valid_signature:
                 self.ocean_instance.execute_service_agreement(did, sa_def_id, sa_id, signature, consumer, self.ocean_instance.main_account.address)
-                response.status_code = '200 OK'
+                response.status_code = 200
             else:
-                response.status_code = '401 Unauthorized'
+                response.status_code = 401
         else:
-            response.status_code = '404 Not Found'
+            response.status_code = 404
 
         return response

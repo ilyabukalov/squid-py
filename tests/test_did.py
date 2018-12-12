@@ -88,7 +88,8 @@ def test_did():
     assert is_did_valid(valid_did)
     assert not is_did_valid('did:op:{}'.format(all_id))
     assert is_did_valid('did:eth:{}'.format(test_id))
-    assert not is_did_valid('op:{}'.format(test_id))
+    with pytest.raises(ValueError):
+        is_did_valid('op:{}'.format(test_id))
 
     with pytest.raises(TypeError):
         is_did_valid(None)
@@ -143,12 +144,11 @@ def test_did_to_bytes():
     with pytest.raises(ValueError):
         did_to_id_bytes('')
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         did_to_id_bytes(None)
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         did_to_id_bytes({})
 
-
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         did_to_id_bytes(42)

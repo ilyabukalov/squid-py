@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import os.path
 
@@ -27,11 +28,12 @@ from squid_py.did import did_to_id, did_generate
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
 setup_logging()
+logger = logging.getLogger(__name__)
 
 
 class Ocean:
 
-    def __init__(self, config_file, http_client=None, secret_store_client=None):
+    def __init__(self, config_file=None, config_dict=None, http_client=None, secret_store_client=None):
         """
         The Ocean class is the entry point into Ocean Protocol.
         This class is an aggregation of
@@ -42,12 +44,13 @@ class Ocean:
         An instance of Ocean is parameterized by a configuration file.
 
         :param config_file: path to configuration file
+        :param config_dict: dict with keys for section names, values are dicts with options names and values
         :param http_client: http client used for sending http requests such as `requests`
         :param secret_store_client: reference to `secret_store_client.client.Client` class or similar
         """
 
         # Configuration information for the market is stored in the Config class
-        self.config = Config(config_file)
+        self.config = Config(filename=config_file, options_dict=config_dict)
 
         # For development, we use the HTTPProvider Web3 interface
         self._web3 = Web3(HTTPProvider(self.config.keeper_url))
@@ -89,10 +92,21 @@ class Ocean:
             from secret_store_client.client import Client
             self._secret_store_client = Client
 
+        logger.info('Squid Ocean instance initialized: ')
+        logger.info('\tmain account: %s (is password set? %s)',
+                    self.main_account.address, bool(self.main_account.password))
+        logger.info('\tOther accounts: %s', sorted(self.accounts))
+        logger.info('\taquarius: %s', self.metadata_store.url)
+        logger.info('\tDIDRegistry @ %s', self.keeper.didregistry.address)
+
+        if self.config.secret_store_url and self.config.parity_url and self.main_account:
+            logger.info('\tSecretStore: url %s, parity-client %s, account  %s',
+                        self.config.secret_store_url, self.config.parity_url, self.config.parity_address)
+
     def get_accounts(self):
         """
         Returns all available accounts loaded via a wallet, or by Web3.
-        :return:
+        :return: dict of account-address: Account instance
         """
         accounts_dict = dict()
         for account_address in self._web3.eth.accounts:
@@ -143,13 +157,14 @@ class Ocean:
 
     def register_asset(self, metadata, publisher_address, service_descriptors, threshold=None):
         """
-        Register an asset in both the keeper's DIDRegistry (on-chain) and in the Meta Data store (Aquarius)
+        Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (Aquarius)
 
         :param metadata: dict conforming to the Metadata accepted by Ocean Protocol.
         :param publisher_address: Account of the publisher registering this asset
         :param service_descriptors: list of ServiceDescriptor tuples of length 2. The first item must be one of ServiceTypes and the second
-            item is a dict of parameters and values required by the service.
-        :return:
+            item is a dict of parameters and values required by the service
+        :param threshold: a secret store setting, currently not in use
+        :return: DDO instance
         """
         assert publisher_address and self._web3.isChecksumAddress(publisher_address), 'Invalid publisher address "%s"' % publisher_address
         assert publisher_address in self.accounts, 'Unrecognized publisher address %s' % publisher_address
@@ -195,8 +210,20 @@ class Ocean:
         for service in ServiceFactory.build_services(did, _service_descriptors):
             ddo.add_service(service)
 
-        # publish the new ddo in ocean-db/Aquarius
-        self.metadata_store.publish_asset_metadata(ddo)
+        logger.debug('Generated ddo and services, DID is %s, metadata service @%s, `Access` service purchase @%s.',
+                     ddo.did, ddo_service_endpoint, ddo.services[0].get_values()['purchaseEndpoint'])
+        response = None
+        try:
+            # publish the new ddo in ocean-db/Aquarius
+            response = self.metadata_store.publish_asset_metadata(ddo)
+            logger.debug('Asset/ddo published successfully in aquarius.')
+        except ValueError as ve:
+            logger.error('Publish asset in aquarius failed: ', ve)
+        except Exception as e:
+            logger.error('Publish asset in aquarius failed: ', e)
+
+        if not response:
+            return None
 
         # register on-chain
         self.keeper.didregistry.register(
@@ -231,12 +258,23 @@ class Ocean:
         return generate_prefixed_id(), service_agreement, service_def, ddo
 
     def sign_service_agreement(self, did, service_index, consumer_address):
+        """Sign the service agreement defined in the service section identified
+        by `service_index` in the ddo and send the signed agreement to the purchase endpoint
+        associated with this service.
+
+        :param did: str starting with the prefix `did:op:` and followed by the asset id which is a hex str
+        :param service_index: str the service definition id identifying a specific service in the DDO (DID document)
+        :param consumer_address: ethereum address of consumer signing the agreement and initiating a purchase/access transaction
+        :return: hex str the service agreement id (can be used to query the keeper-contracts for the status of the service agreement)
+        """
         assert consumer_address in self.accounts, 'Unrecognized consumer address %s' % consumer_address
         assert consumer_address == self.main_account.address, \
             'consumer address must be already set as the main account in this instance of Ocean.'
 
         agreement_id, service_agreement, service_def, ddo = self._get_service_agreement_to_sign(did, service_index)
-        self.main_account.unlock()
+        if not self.main_account.unlock():
+            logger.warning('Unlock of consumer account failed %s', self.main_account.address)
+
         signature = service_agreement.get_signed_agreement_hash(
             self._web3, self.keeper.contract_path, agreement_id, consumer_address
         )[0]
@@ -250,7 +288,17 @@ class Ocean:
                                    service_agreement.get_price(), get_metadata_url(ddo), self.consume_service, 0)
 
         payload = prepare_purchase_payload(did, agreement_id, service_index, signature, consumer_address)
-        self._http_client.post(service_agreement.purchase_endpoint, data=payload, headers={'content-type': 'application/json'})
+        response = self._http_client.post(
+            service_agreement.purchase_endpoint, data=payload, headers={'content-type': 'application/json'}
+        )
+        if response and hasattr(response, 'status_code'):
+            if response.status_code != 201:
+                logger.error('Initialize service agreement failed at the purchaseEndpoint %s, reason %s, status %s',
+                             service_agreement.purchase_endpoint, response.text, response.status_code)
+                return None
+            else:
+                logger.debug('Service agreement initialized successfully, service agreement id %s, purchaseEndpoint %s',
+                             agreement_id, service_agreement.purchase_endpoint)
 
         return agreement_id
 
@@ -262,8 +310,8 @@ class Ocean:
         templateId, signature, consumer, hashes, timeouts, serviceAgreementId, did
 
         `agreement_message_hash` is necessary to verify the signature.
-        The consumer `signature` includes the conditions timeouts and parameters value which is used on-chain to verify the values actually
-        match the signed hashes.
+        The consumer `signature` includes the conditions timeouts and parameters values which is used
+        on-chain to verify that the values actually match the signed hashes.
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
         :param service_index: int identifies the specific service in the ddo to use in this agreement.
@@ -272,7 +320,7 @@ class Ocean:
             values and other details of the agreement.
         :param consumer_address: ethereum account address of consumer
         :param publisher_address: ethereum account address of publisher
-        :return:
+        :return: dict the `executeAgreement` transaction receipt
         """
         assert consumer_address and self._web3.isChecksumAddress(consumer_address), 'Invalid consumer address "%s"' % consumer_address
         assert publisher_address and self._web3.isChecksumAddress(publisher_address), 'Invalid publisher address "%s"' % publisher_address
@@ -307,7 +355,7 @@ class Ocean:
 
     def check_permissions(self, service_agreement_id, did, consumer_address):
         """
-        Verify on-chain that the `consumer_address` has permission to access the given `asset_did` according to the `service_agreement_id`.
+        Verify on-chain that the `consumer_address` has permission to access the given asset `did` according to the `service_agreement_id`.
 
         :param service_agreement_id:
         :param did:
@@ -316,13 +364,26 @@ class Ocean:
         """
         agreement_consumer = self.keeper.service_agreement.get_service_agreement_consumer(service_agreement_id)
         if agreement_consumer != consumer_address:
-            print('Invalid consumer address and/or service agreement id.')
+            logger.warning('Invalid consumer address %s and/or service agreement id %s (did %s)',
+                           consumer_address, service_agreement_id, did)
             return False
 
         document_id = did_to_id(did)
         return self.keeper.access_conditions.check_permissions(consumer_address, document_id, self.main_account.address)
 
     def verify_service_agreement_signature(self, did, service_agreement_id, service_index, consumer_address, signature, ddo=None):
+        """Verify that the given signature is truly signed by the `consumer_address`
+        and represents this did's service agreement..
+
+        :param did:
+        :param service_agreement_id:
+        :param service_index:
+        :param consumer_address:
+        :param signature:
+        :param ddo:
+        :return: True if signature is legitimate, False otherwise
+        :raises: ValueError if service is not found in the ddo
+        """
         if not ddo:
             ddo = self.resolve_did(did)
 
@@ -361,7 +422,7 @@ class Ocean:
         """
         When you pass a did retrieve the ddo associated.
         :param did:
-        :return:
+        :return: DDO instance
         """
         resolver = self.did_resolver.resolve(did)
         if resolver.is_ddo:
@@ -395,8 +456,10 @@ class Ocean:
     def _decrypt_content_urls(self, did, encrypted_data):
         result = None
         if self.config.secret_store_url and self.config.parity_url and self.main_account:
-            consumer = self._secret_store_client(self.config.secret_store_url, self.config.parity_url,
-                              self.main_account.address, self.main_account.password)
+            consumer = self._secret_store_client(
+                self.config.secret_store_url, self.config.parity_url,
+                self.main_account.address, self.main_account.password
+            )
 
             document_id = did_to_id(did)
             # :FIXME: -- modify the secret store lib to handle this.
@@ -408,6 +471,19 @@ class Ocean:
         return result
 
     def consume_service(self, service_agreement_id, did, service_index, consumer_account):
+        """Consume the asset data by using the service endpoint defined in the ddo's
+        service pointed to by service_index.
+        Consumer's permissions is checked implicitly by the secret-store during decryption
+        of the contentUrls.
+        The service endpoint is expected to also verify the consumer's permissions to consume this asset.
+        This method downloads and saves the asset datafiles to disk.
+
+        :param service_agreement_id:
+        :param did:
+        :param service_index:
+        :param consumer_account:
+        :return: None
+        """
         ddo = self.resolve_did(did)
 
         metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
@@ -416,14 +492,14 @@ class Ocean:
         sa = ServiceAgreement.from_service_dict(service.as_dictionary())
         service_url = sa.service_endpoint
         if not service_url:
-            print('Consume asset failed, service definition is missing the "serviceEndpoint".')
+            logger.error('Consume asset failed, service definition is missing the "serviceEndpoint".')
             raise AssertionError('Consume asset failed, service definition is missing the "serviceEndpoint".')
 
         # decrypt the contentUrls
         decrypted_content_urls = json.loads(self._decrypt_content_urls(did, content_urls))
         if isinstance(decrypted_content_urls, str):
             decrypted_content_urls = [decrypted_content_urls]
-        print('got decrypted contentUrls: ', decrypted_content_urls)
+        logger.debug('got decrypted contentUrls: ', decrypted_content_urls)
 
         asset_folder = 'datafile.%s.%s' % (did_to_id(did), service_index)
         asset_folder = os.path.join(self._downloads_path, asset_folder)
@@ -436,24 +512,29 @@ class Ocean:
             if url.startswith('"') or url.startswith("'"):
                 url = url[1:-1]
 
-            print('invoke consume endpoint for this url: %s' % url)
             consume_url = (
                     '%s?url=%s&serviceAgreementId=%s&consumerAddress=%s'
                     % (service_url, url, service_agreement_id, consumer_account.address)
             )
+            logger.info('invoke consume endpoint with this url: %s', consume_url)
             response = self._http_client.get(consume_url)
             if response.status_code == 200:
                 download_url = response.url.split('?')[0]
                 file_name = os.path.basename(download_url)
                 with open(os.path.join(asset_folder, file_name), 'wb') as f:
                     f.write(response.content)
-                    print('Saved downloaded file in "%s"' % f.name)
+                    logger.info('Saved downloaded file in "%s"', f.name)
             else:
-                print('consume failed: %s' % response.reason)
+                logger.warning('consume failed: %s', response.reason)
 
     def set_main_account(self, address, password):
         self.main_account = Account(self.keeper, self._web3.toChecksumAddress(address), password)
         self.keeper.web3.eth.defaultAccount = self.main_account.address
+        logger.debug('main account set to %s', self.main_account.address)
+        if password:
+            logger.debug('main account password is also set.')
+        else:
+            logger.info('main account password is not set, transactions will likely fail if the account is locked.')
 
     def get_order(self):
         pass

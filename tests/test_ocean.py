@@ -178,6 +178,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
 
     service_agreement_id = consumer_ocean_instance.sign_service_agreement(registered_ddo.did, sa.sa_definition_id, consumer)
+    assert service_agreement_id, 'agreement id is None.'
     print('got new service agreement id:', service_agreement_id)
     filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=service_agreement_id)}
     filter_2 = {'serviceId': Web3.toBytes(hexstr=service_agreement_id)}
@@ -350,7 +351,7 @@ def test_agreement_hash(publisher_ocean_instance):
 
 def test_integration(consumer_ocean_instance):
     # this test is disabled for now.
-    return
+    # return
     # This test requires all services running including:
     # secret store
     # parity node

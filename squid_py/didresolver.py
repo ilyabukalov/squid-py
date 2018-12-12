@@ -30,7 +30,7 @@ VALUE_TYPE_DID_REF = 1
 VALUE_TYPE_URL = 2
 VALUE_TYPE_DDO = 3
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 
 class DIDResolved:
@@ -154,14 +154,14 @@ class DIDResolver:
     Resolve DID to a URL/DDO
     """
 
-    def __init__(self, web3, didregistry):
+    def __init__(self, web3, did_registry):
         self._web3 = web3
-        self._didregistry = didregistry
+        self._did_registry = did_registry
 
-        if not self._didregistry:
-            raise ValueError('No didregistry contract object provided')
+        if not self._did_registry:
+            raise ValueError('No DIDRegistry contract object provided')
 
-        self._event_signature = self._didregistry.get_event_signature(DIDREGISTRY_EVENT_NAME)
+        self._event_signature = self._did_registry.get_event_signature(DIDREGISTRY_EVENT_NAME)
         if not self._event_signature:
             raise ValueError('Cannot find Event {} signature'.format(DIDREGISTRY_EVENT_NAME))
 
@@ -173,6 +173,7 @@ class DIDResolver:
         :param max_hop_count: max number of hops allowed to find the destination URL/DDO
         :return string: URL or DDO of the resolved DID
         :return None: if the DID cannot be resolved
+        :raises TypeError: if did has invalid format
         :raises TypeError: on non 32byte value as the DID
         :raises TypeError: on any of the resolved values are not string/DID bytes.
         :raises OceanDIDCircularReference: on the chain being pointed back to itself.
@@ -180,9 +181,8 @@ class DIDResolver:
         """
 
         did_bytes = did_to_id_bytes(did)
-
         if not isinstance(did_bytes, bytes):
-            raise TypeError('You must provide a 32 Byte value')
+            raise TypeError('Invalid did: a 32 Byte DID value required.')
 
         resolved = DIDResolved()
         result = None
@@ -203,7 +203,7 @@ class DIDResolver:
                 data = None
                 break
             elif data['value_type'] == VALUE_TYPE_DID:
-                logger.debug('found did {0} -> did:op:{1}'.format(Web3.toHex(did_bytes), data['value']))
+                logger.debug('found: did {0} -> did:op:{1}'.format(Web3.toHex(did_bytes), data['value']))
                 try:
                     did_bytes = Web3.toBytes(hexstr=data['value'].decode('utf8'))
                 except:
@@ -238,22 +238,25 @@ class DIDResolver:
     def get_did(self, did_bytes):
         """return a did value and value type from the block chain event record using 'did'"""
         result = None
-
-        block_number = self._didregistry.get_update_at(did_bytes)
-        logger.debug('block_number %d', block_number)
+        did = Web3.toHex(did_bytes)
+        block_number = self._did_registry.get_update_at(did_bytes)
+        logger.debug('got blockNumber %d for did %s', block_number, did)
         if block_number == 0:
-            raise OceanDIDNotFound('cannot find DID {}'.format(Web3.toHex(did_bytes)))
+            raise OceanDIDNotFound('DID "{}" is not found on-chain in the current did registry. '
+                                   'Please ensure assets are registered in the correct keeper '
+                                   'contracts. The keeper-contracts DIDRegistry address is {}'
+                                   .format(did, self._did_registry.address))
 
         block_filter = self._web3.eth.filter({
             'fromBlock': block_number,
             'toBlock': block_number,
-            'topics': [self._event_signature, Web3.toHex(did_bytes)]
+            'topics': [self._event_signature, did]
         })
         log_items = block_filter.get_all_entries()
         if log_items:
             log_item = log_items[-1]
-            value, value_type, block_number = decode_single('(string,uint8,uint256)', \
-                Web3.toBytes(hexstr=log_item['data']))
+            value, value_type, block_number = decode_single(
+                '(string,uint8,uint256)', Web3.toBytes(hexstr=log_item['data']))
             topics = log_item['topics']
             logger.debug('topics {}'.format(topics))
             result = {
@@ -264,4 +267,7 @@ class DIDResolver:
                 'owner': Web3.toChecksumAddress(topics[2][-20:]),
                 'key': Web3.toBytes(topics[3]),
             }
+        else:
+            logger.warning('Could not find %s event logs for did %s at blockNumber %s',
+                           DIDREGISTRY_EVENT_NAME, did, block_number)
         return result
