@@ -207,7 +207,7 @@ class Ocean:
 
         # Add all services to ddo
         _service_descriptors = service_descriptors + [metadata_service_desc]
-        for service in ServiceFactory.build_services(did, _service_descriptors):
+        for service in ServiceFactory.build_services(self._web3, self.keeper.contract_path, did, _service_descriptors):
             ddo.add_service(service)
 
         logger.debug('Generated ddo and services, DID is %s, metadata service @%s, `Access` service purchase @%s.',
@@ -442,8 +442,10 @@ class Ocean:
         """
         result = None
         if self.config.secret_store_url and self.config.parity_url and self.main_account:
-            publisher = self._secret_store_client(self.config.secret_store_url, self.config.parity_url,
-                               self.main_account.address, self.main_account.password)
+            publisher = self._secret_store_client(
+                self.config.secret_store_url, self.config.parity_url,
+                self.main_account.address, self.main_account.password
+            )
 
             document_id = did_to_id(did)
             # :FIXME: -- modify the secret store lib to handle this.

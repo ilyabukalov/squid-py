@@ -27,11 +27,11 @@ class ServiceDescriptor(object):
 
 class ServiceFactory(object):
     @staticmethod
-    def build_services(did, service_descriptors):
+    def build_services(web3, contract_path, did, service_descriptors):
         services = []
         sa_def_key = ServiceAgreement.SERVICE_DEFINITION_ID_KEY
         for i, service_desc in enumerate(service_descriptors):
-            service = ServiceFactory.build_service(service_desc, did)
+            service = ServiceFactory.build_service(web3, contract_path, service_desc, did)
             # set serviceDefinitionId for each service
             service.update_value(sa_def_key, str(i+1))
             services.append(service)
@@ -39,7 +39,7 @@ class ServiceFactory(object):
         return services
 
     @staticmethod
-    def build_service(service_descriptor, did):
+    def build_service(web3, contract_path, service_descriptor, did):
         assert isinstance(service_descriptor, tuple) and len(
             service_descriptor) == 2, 'Unknown service descriptor format.'
         service_type, kwargs = service_descriptor
@@ -48,12 +48,15 @@ class ServiceFactory(object):
 
         elif service_type == ServiceTypes.ASSET_ACCESS:
             return ServiceFactory.build_access_service(
-                did, kwargs['price'], kwargs['purchaseEndpoint'], kwargs['serviceEndpoint'], kwargs['timeout'], kwargs['templateId']
+                web3, contract_path, did, kwargs['price'],
+                kwargs['purchaseEndpoint'], kwargs['serviceEndpoint'],
+                kwargs['timeout'], kwargs['templateId']
             )
 
         elif service_type == ServiceTypes.CLOUD_COMPUTE:
             return ServiceFactory.build_compute_service(
-                did, kwargs['price'], kwargs['purchaseEndpoint'], kwargs['serviceEndpoint'], kwargs['timeout']
+                web3, contract_path, did, kwargs['price'],
+                kwargs['purchaseEndpoint'], kwargs['serviceEndpoint'], kwargs['timeout']
             )
 
         raise ValueError('Unknown service type "%s"' % service_type)
@@ -63,7 +66,7 @@ class ServiceFactory(object):
         return Service(did, service_endpoint, ServiceTypes.METADATA, values={'metadata': metadata})
 
     @staticmethod
-    def build_access_service(did, price, purchase_endpoint, service_endpoint, timeout, template_id):
+    def build_access_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint, timeout, template_id):
         param_map = {
             'assetId': did_to_id(did),
             'price': price,
@@ -85,6 +88,7 @@ class ServiceFactory(object):
 
         sa = ServiceAgreement(1, sla_template.template_id, sla_template.conditions,
                               sla_template.service_agreement_contract)
+        sa.update_conditions_keys(web3, contract_path)
         other_values = {
             ServiceAgreement.SERVICE_DEFINITION_ID_KEY: sa.sa_definition_id,
             ServiceAgreementTemplate.TEMPLATE_ID_KEY: sla_template.template_id,
@@ -96,6 +100,6 @@ class ServiceFactory(object):
         return Service(did, service_endpoint, ServiceTypes.ASSET_ACCESS, values=other_values)
 
     @staticmethod
-    def build_compute_service(did, price, purchase_endpoint, service_endpoint, timeout):
+    def build_compute_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint, timeout):
         # TODO: implement this once the compute flow is ready
         return
