@@ -9,6 +9,9 @@ from web3.contract import ConciseContract
 from squid_py.keeper.utils import get_contract_by_name, get_network_name
 
 
+logger = logging.getLogger('keeper')
+
+
 class ContractBase(object):
     """
     Base class for all contract objects.
@@ -24,7 +27,7 @@ class ContractBase(object):
         self.address = contract[2]
         self.name = contract_name
 
-        logging.debug("Loaded {}".format(self))
+        logger.debug("Loaded {}".format(self))
 
     @property
     def events(self):
@@ -54,7 +57,9 @@ class ContractBase(object):
 
     def unlock_account(self, account):
         if account.password:
-            self.web3.personal.unlockAccount(account.address, account.password)
+            return self.web3.personal.unlockAccount(account.address, account.password)
+
+        return None
 
     def to_checksum_address(self, address):
         """Validate the address provided."""

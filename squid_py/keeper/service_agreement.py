@@ -40,7 +40,7 @@ class ServiceAgreement(ContractBase):
             fulfillment_operator,
             transact={'from': owner_account.address, 'gas': DEFAULT_GAS_LIMIT}
         )
-        return tx_hash
+        return self.get_tx_receipt(tx_hash)
 
     def execute_service_agreement(self, template_id, signature, consumer, hashes, timeouts, service_agreement_id, did_id, publisher_account):
         assert len(hashes) == len(timeouts), ''
@@ -51,11 +51,7 @@ class ServiceAgreement(ContractBase):
             template_id, signature, consumer, hashes, timeouts, service_agreement_id, did_id,
             transact={'from': publisher_account.address, 'gas': DEFAULT_GAS_LIMIT}
         )
-        # self.web3.eth.waitForTransactionReceipt(tx_hash)
-        # receipt = self.web3.eth.getTransactionReceipt(tx_hash)
-        # event = self.contract.events.ExecuteAgreement().processReceipt(receipt)
-
-        return tx_hash
+        return self.get_tx_receipt(tx_hash)
 
     def fulfill_agreement(self, service_agreement_id, from_account):
         self.unlock_account(from_account)

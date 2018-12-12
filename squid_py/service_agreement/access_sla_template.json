@@ -23,7 +23,7 @@
     {
       "name": "lockPayment",
       "timeout": 0,
-      "conditionKey": "0x313d20f9cda19e1f5702af79e5ebfa7cb434918722f9b334000ea71cdaac1614",
+      "conditionKey": "",
       "contractName": "PaymentConditions",
       "functionName": "lockPayment",
       "index": 0,
@@ -54,7 +54,7 @@
     }, {
       "name": "grantAccess",
       "timeout": 0,
-      "conditionKey": "0x38163b4835d3b0c780fcdf6a872e3e86f84393a0bda8e8b642df39a8d05c4c1a",
+      "conditionKey": "",
       "contractName": "AccessConditions",
       "functionName": "grantAccess",
       "index": 1,
@@ -109,7 +109,7 @@
     }, {
       "name": "releasePayment",
       "timeout": 0,
-      "conditionKey": "0x477f516713f4b0de54d0e0f4429f593c63f2dd2ca4789633e02a446c7978f3cb",
+      "conditionKey": "",
       "contractName": "PaymentConditions",
       "functionName": "releasePayment",
       "index": 2,
@@ -145,7 +145,7 @@
     }, {
       "name": "refundPayment",
       "timeout": 1,
-      "conditionKey": "0x385d3af26f7c057688a4988fb784c392a97ce472a4feb4435968fed04809e8dc",
+      "conditionKey": "",
       "contractName": "PaymentConditions",
       "functionName": "refundPayment",
       "index": 3,

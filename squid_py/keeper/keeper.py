@@ -32,24 +32,28 @@ class Keeper(object):
         self.web3 = web3
         self.contract_path = contract_path
 
-        logging.debug("Keeper contract artifacts (JSON) at: {}".format(self.contract_path))
+        logging.info("Keeper contract artifacts (JSON abi files) at: %s", self.contract_path)
 
         if os.environ.get('KEEPER_NETWORK_NAME'):
-            logging.warning('The `KEEPER_NETWORK_NAME` env var is set to {}. This enables the user to '
-                            'override the method of how the network name is inferred from network id.')
+            logging.warning('The `KEEPER_NETWORK_NAME` env var is set to %s. This enables the user to '
+                            'override the method of how the network name is inferred from network id.',
+                            os.environ.get('KEEPER_NETWORK_NAME'))
 
-        network_name = get_network_name(self.web3)
-        logging.debug('Using keeper contracts from network "%s" ' % network_name)
         # try to find contract with this network name
         contract_name = 'ServiceAgreement'
+        network_name = get_network_name(self.web3)
+        logging.info('Using keeper contracts from network `%s`, network id is %s',
+                     network_name, get_network_id(self.web3))
+        logging.info('Looking for keeper contracts ending with ".%s.json", e.g. "%s.%s.json"',
+                     network_name, contract_name, network_name)
         existing_contract_names = os.listdir(contract_path)
         try:
             get_contract_by_name(contract_path, network_name, contract_name)
         except Exception as e:
             logging.error('Cannot find the keeper contracts. \n'
-                          '\tCurrent network id is "{}" and network name is "{}"\n'
-                          '\tExpected to find contracts ending with ".{}.json", e.g. "{}.{}.json"'
-                          .format(get_network_id(self.web3), network_name, network_name, contract_name, network_name))
+                          '\tCurrent network id is "%s" and network name is "%s"\n'
+                          '\tExpected to find contracts ending with ".%s.json", e.g. "%s.%s.json"',
+                          get_network_id(self.web3), network_name, network_name, contract_name, network_name)
             raise OceanKeeperContractsNotFound(
                 'Keeper contracts for keeper network "%s" were not found in "%s". \n'
                 'Found the following contracts: \n\t%s' % (network_name, contract_path, existing_contract_names)
@@ -69,14 +73,14 @@ class Keeper(object):
         contracts = [self.market, self.auth, self.token, self.didregistry,
                      self.service_agreement, self.payment_conditions, self.access_conditions]
         addresses = '\n'.join(['\t{}: {}'.format(c.name, c.address) for c in contracts])
-        logging.debug('Finished loading keeper contracts:\n'
-                      '{}'.format(addresses))
+        logging.info('Finished loading keeper contracts:\n'
+                     '%s', addresses)
 
         # Check for known service agreement templates
         template_owner = self.service_agreement.get_template_owner(ACCESS_SERVICE_TEMPLATE_ID)
         if not template_owner or template_owner == 0:
-            logging.debug('The `Access` Service agreement template "{}" is not deployed to '
-                          'the current keeper network.'.format(ACCESS_SERVICE_TEMPLATE_ID))
+            logging.info('The `Access` Service agreement template "%s" is not deployed to '
+                         'the current keeper network.', ACCESS_SERVICE_TEMPLATE_ID)
         else:
-            logging.debug('Found the `Access` service agreement template "{}" deployed in '
-                          'the current keeper network published by "{}".'.format(ACCESS_SERVICE_TEMPLATE_ID, template_owner))
+            logging.info('Found the `Access` service agreement template "%s" deployed in '
+                         'the current keeper network published by "%s".', ACCESS_SERVICE_TEMPLATE_ID, template_owner)

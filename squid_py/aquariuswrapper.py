@@ -22,6 +22,10 @@ class AquariusWrapper(object):
         logging.debug("Metadata Store API documentation at {}/api/v1/docs".format(aquarius_url))
         logging.debug("Metadata assets at {}".format(self._base_url))
 
+    @property
+    def url(self):
+        return self._base_url + '/ddo/'
+
     def get_service_endpoint(self, did):
         return self._base_url + '/ddo/%s' % did
 
@@ -53,8 +57,6 @@ class AquariusWrapper(object):
         response = requests.post(self._base_url + '/ddo', data=asset_ddo.as_text(), headers=self._headers)
         if response.status_code == 500:
             raise ValueError("This Asset ID already exists! \n\tHTTP Error message: \n\t\t{}".format(response.text))
-        elif response.status_code == 400:
-            raise Exception("400 ERROR Full error: \n{}".format(response.text))
         elif response.status_code != 201:
             raise Exception("{} ERROR Full error: \n{}".format(response.status_code, response.text))
         elif response.status_code == 201:
@@ -62,7 +64,7 @@ class AquariusWrapper(object):
             logging.debug("Published asset DID {}".format(asset_did))
             return response
         else:
-            raise Exception("ERROR")
+            raise Exception("Unhandled ERROR: status-code {}, error message {}".format(response.status_code, response.text))
 
     def update_asset_metadata(self, asset_did, asset_ddo):
         return json.loads(

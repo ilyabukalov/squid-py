@@ -57,31 +57,32 @@ def did_validate(did, did_id, ddo):
 
 def did_parse(did):
     """parse a DID into it's parts"""
-    result = None
     if not isinstance(did, str):
-        raise TypeError('DID must be a string')
+        raise TypeError('Expecting DID of string type, got %s of %s type' % (did, type(did)))
 
     match = re.match('^did:([a-z0-9]+):([a-zA-Z0-9-.]+)(.*)', did)
-    if match:
-        result = {
-            'method': match.group(1),
-            'id': match.group(2),
-            'path': None,
-            'fragment': None,
-            'id_hex': None
-        }
-        uri_text = match.group(3)
-        if uri_text:
-            uri = urlparse(uri_text)
-            result['fragment'] = uri.fragment
-            if uri.path:
-                result['path'] = uri.path[1:]
+    if not match:
+        raise ValueError('DID %s does not seem to be valid.' % did)
 
-        if result['method'] == OCEAN_DID_METHOD and re.match('^[0-9A-Fa-f]{1,64}$', result['id']):
-            result['id_hex'] = Web3.toHex(hexstr=result['id'])
+    result = {
+        'method': match.group(1),
+        'id': match.group(2),
+        'path': None,
+        'fragment': None,
+        'id_hex': None
+    }
+    uri_text = match.group(3)
+    if uri_text:
+        uri = urlparse(uri_text)
+        result['fragment'] = uri.fragment
+        if uri.path:
+            result['path'] = uri.path[1:]
 
-        if not result['id_hex'] and result['id'].startswith('0x'):
-            result['id_hex'] = result['id']
+    if result['method'] == OCEAN_DID_METHOD and re.match('^[0-9A-Fa-f]{1,64}$', result['id']):
+        result['id_hex'] = Web3.toHex(hexstr=result['id'])
+
+    if not result['id_hex'] and result['id'].startswith('0x'):
+        result['id_hex'] = result['id']
 
     return result
 
@@ -127,7 +128,6 @@ def did_to_id_bytes(did):
     return an Ocean DID to it's correspondng hex id in bytes
     So did:op:<hex>, will return <hex> in byte format
     """
-    id_bytes = None
     if isinstance(did, str):
         if re.match('^[0x]?[0-9A-Za-z]+$', did):
             raise ValueError('{} must be a DID not a hex string'.format(did))
@@ -141,5 +141,5 @@ def did_to_id_bytes(did):
     elif isinstance(did, bytes):
         id_bytes = did
     else:
-        raise ValueError('{} must be a valid DID to register'.format(did))
+        raise TypeError('Unknown did format, expected str or bytes, got {} of type {}'.format(did, type(did)))
     return id_bytes

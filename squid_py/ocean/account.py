@@ -16,7 +16,7 @@ class Account:
         self.password = password
 
     def unlock(self):
-        self.keeper.market.unlock_account(self)
+        return self.keeper.market.unlock_account(self)
 
     def request_tokens(self, amount):
         self.unlock()

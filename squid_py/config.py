@@ -58,21 +58,26 @@ config_defaults = {
 
 class Config(configparser.ConfigParser):
 
-    def __init__(self, filename=None, **kwargs):
+    def __init__(self, filename=None, options_dict=None, **kwargs):
         configparser.ConfigParser.__init__(self)
 
         self.read_dict(config_defaults)
         self._section_name = 'keeper-contracts'
         self._logger = kwargs.get('logger', logging.getLogger(__name__))
-        self._logger.debug('Config: loading config file %s', filename)
 
         if filename:
+            self._logger.debug('Config: loading config file %s', filename)
             with open(filename) as fp:
                 text = fp.read()
                 self.read_string(text)
         else:
             if 'text' in kwargs:
                 self.read_string(kwargs['text'])
+
+        if options_dict:
+            self._logger.debug('Config: loading from dict %s', options_dict)
+            self.read_dict(options_dict)
+
         self._load_environ()
 
     def _load_environ(self):

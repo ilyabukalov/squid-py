@@ -1,3 +1,5 @@
+import logging
+
 from web3.contract import ConciseContract
 
 from squid_py.keeper.utils import (
@@ -8,6 +10,31 @@ from squid_py.keeper.utils import (
 from squid_py.modules.v0_1.exceptions import InvalidModule
 from squid_py.service_agreement.utils import build_condition_key
 
+logger = logging.getLogger('keeper-utils')
+
+
+def process_tx_receipt(web3, tx_hash, event, event_name):
+    web3.eth.waitForTransactionReceipt(tx_hash)
+    receipt = web3.eth.getTransactionReceipt(tx_hash)
+    event = event().processReceipt(receipt)
+    if event:
+        logger.info('Success: got %s event after fulfilling condition.', event_name)
+    else:
+        logger.debug('Something is not right, cannot find the %s event after calling the '
+                     'fulfillment condition. This is the transaction receipt %s', event_name, receipt)
+
+
+def handle_action(web3, account, sa_id, contract):
+    logger.info('About to do grantAccess: account %s, saId %s, assetId %s, documentKeyId %s'
+                .format(account.address, service_agreement_id,
+                        asset_id, document_key_id))
+    try:
+        account.unlock()
+        tx_hash = access_conditions.grantAccess(service_agreement_id, asset_id, document_key_id, transact=transact)
+        process_tx_receipt(web3, tx_hash, contract.events.AccessGranted, 'AccessGranted')
+    except Exception as e:
+        logger.error('Error when calling grantAccess condition function: ', e, exc_info=1)
+        raise
 
 def is_condition_fulfilled(web3, contract_path, template_id, service_agreement_id,
                            service_agreement_address, condition_address, condition_abi, fn_name):
