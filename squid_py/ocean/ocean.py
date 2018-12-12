@@ -21,14 +21,15 @@ from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
 from squid_py.service_agreement.service_factory import ServiceFactory, ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
-from squid_py.service_agreement.utils import make_public_key_and_authentication, register_service_agreement_template
+from squid_py.service_agreement.utils import make_public_key_and_authentication, register_service_agreement_template, \
+    get_conditions_data_from_keeper_contracts
 from squid_py.utils.utilities import generate_prefixed_id, prepare_prefixed_hash, prepare_purchase_payload, get_metadata_url
 from squid_py.did import did_to_id, did_generate
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
 setup_logging()
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('ocean')
 
 
 class Ocean:
@@ -218,9 +219,9 @@ class Ocean:
             response = self.metadata_store.publish_asset_metadata(ddo)
             logger.debug('Asset/ddo published successfully in aquarius.')
         except ValueError as ve:
-            logger.error('Publish asset in aquarius failed: ', ve)
+            logger.error('Publish asset in aquarius failed: %s', str(ve))
         except Exception as e:
-            logger.error('Publish asset in aquarius failed: ', e)
+            logger.error('Publish asset in aquarius failed: %s', str(e))
 
         if not response:
             return None
@@ -278,6 +279,8 @@ class Ocean:
         signature = service_agreement.get_signed_agreement_hash(
             self._web3, self.keeper.contract_path, agreement_id, consumer_address
         )[0]
+
+        self._log_conditions_keys(service_agreement)
 
         # Must approve token transfer for this purchase
         self._approve_token_transfer(service_agreement.get_price())
@@ -407,7 +410,13 @@ class Ocean:
         # reassemble the signature from the split `(v,r,s)` tuple. Also must use the prefixed hash
         # message to get an accurate recovery of public-key and address.
         recovered_address = self._web3.eth.account.recoverHash(prefixed_hash, signature=signature)
-        return recovered_address == consumer_address
+        is_valid = (recovered_address == consumer_address)
+        if not is_valid:
+            logger.warning('Agreement signature failed: agreement hash is %s', agreement_hash.hex())
+
+        self._log_conditions_keys(sa)
+
+        return is_valid
 
     def _register_service_agreement_template(self, template_dict, owner_account=None):
         if not owner_account:
@@ -501,7 +510,7 @@ class Ocean:
         decrypted_content_urls = json.loads(self._decrypt_content_urls(did, content_urls))
         if isinstance(decrypted_content_urls, str):
             decrypted_content_urls = [decrypted_content_urls]
-        logger.debug('got decrypted contentUrls: ', decrypted_content_urls)
+        logger.debug('got decrypted contentUrls: %s', decrypted_content_urls)
 
         asset_folder = 'datafile.%s.%s' % (did_to_id(did), service_index)
         asset_folder = os.path.join(self._downloads_path, asset_folder)
@@ -537,6 +546,18 @@ class Ocean:
             logger.debug('main account password is also set.')
         else:
             logger.info('main account password is not set, transactions will likely fail if the account is locked.')
+
+    def _log_conditions_keys(self, sa):
+        # Debug info
+        (contract_addresses, fingerprints,
+         fulfillment_indices, conditions_keys) = get_conditions_data_from_keeper_contracts(
+            self._web3, self.keeper.contract_path, sa.conditions, sa.template_id
+        )
+        assert conditions_keys == sa.conditions_keys
+        logger.debug('conditions keys: %s', sa.conditions_keys)
+        logger.debug('conditions contracts: %s', contract_addresses)
+        logger.debug('conditions fingerprints: %s', [fn.hex() for fn in fingerprints])
+        logger.debug('template id: %s', sa.template_id)
 
     def get_order(self):
         pass
