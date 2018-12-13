@@ -250,7 +250,6 @@ class Ocean:
             raise ValueError('Service with definition id "%s" is not found in this DDO.' % service_index)
         service = service.as_dictionary()
         sa = ServiceAgreement.from_service_dict(service)
-        sa.update_conditions_keys(self._web3, self.keeper.contract_path)
         service[ServiceAgreement.SERVICE_CONDITIONS_KEY] = [cond.as_dictionary() for cond in sa.conditions]
         return ddo, sa, service
 
