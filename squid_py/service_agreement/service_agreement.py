@@ -76,7 +76,6 @@ class ServiceAgreement(object):
         :param service_agreement_id: hex str identifies an executed service agreement on-chain
         :return:
         """
-        self.update_conditions_keys(web3, contract_path)
         agreement_hash = ServiceAgreement.generate_service_agreement_hash(
             web3, self.template_id, self.conditions_keys,
             self.conditions_params_value_hashes, self.conditions_timeouts, service_agreement_id
