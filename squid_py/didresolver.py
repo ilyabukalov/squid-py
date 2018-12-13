@@ -30,7 +30,7 @@ VALUE_TYPE_DID_REF = 1
 VALUE_TYPE_URL = 2
 VALUE_TYPE_DDO = 3
 
-logger = logging.getLogger(__name__)
+logger = logging.getLogger('keeper')
 
 
 class DIDResolved:
