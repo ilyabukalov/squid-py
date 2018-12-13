@@ -198,7 +198,7 @@ class Ocean:
         content_urls_encrypted = self._encrypt_metadata_content_urls(did, json.dumps(metadata_copy['base']['contentUrls']))
         # only assign if the encryption worked
         if content_urls_encrypted:
-            metadata_copy['base']['contentUrls'] = content_urls_encrypted
+            metadata_copy['base']['contentUrls'] = [content_urls_encrypted]
         else:
             raise AssertionError('Encrypting the contentUrls failed. Make sure the secret store is setup properly in your config file.')
 
@@ -498,6 +498,7 @@ class Ocean:
 
         metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
         content_urls = metadata_service.get_values()['metadata']['base']['contentUrls']
+        content_urls = content_urls if isinstance(content_urls, str) else content_urls[0]
         service = ddo.find_service_by_key_value(ServiceAgreement.SERVICE_DEFINITION_ID_KEY, service_index)
         sa = ServiceAgreement.from_service_dict(service.as_dictionary())
         service_url = sa.service_endpoint
