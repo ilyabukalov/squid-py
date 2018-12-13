@@ -549,14 +549,14 @@ class Ocean:
 
     def _log_conditions_keys(self, sa):
         # Debug info
-        (contract_addresses, fingerprints,
-         fulfillment_indices, conditions_keys) = get_conditions_data_from_keeper_contracts(
+        # (contract_addresses, fingerprints, fulfillment_indices, conditions_keys)
+        values = get_conditions_data_from_keeper_contracts(
             self._web3, self.keeper.contract_path, sa.conditions, sa.template_id
         )
-        assert conditions_keys == sa.conditions_keys
+        assert values[3] == sa.conditions_keys
         logger.debug('conditions keys: %s', sa.conditions_keys)
-        logger.debug('conditions contracts: %s', contract_addresses)
-        logger.debug('conditions fingerprints: %s', [fn.hex() for fn in fingerprints])
+        logger.debug('conditions contracts: %s', values[0])
+        logger.debug('conditions fingerprints: %s', [fn.hex() for fn in values[1]])
         logger.debug('template id: %s', sa.template_id)
 
     def get_order(self):
