@@ -15,7 +15,7 @@ from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
 from squid_py.keeper import Keeper
 from squid_py.log import setup_logging
 from squid_py.didresolver import DIDResolver
-from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata
+from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata, OceanInvalidServiceAgreementSignature
 from squid_py.service_agreement.register_service_agreement import register_service_agreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
@@ -279,7 +279,7 @@ class Ocean:
             self._web3, self.keeper.contract_path, agreement_id, consumer_address
         )[0]
 
-        self._log_conditions_keys(service_agreement)
+        self._validate_conditions_keys(service_agreement)
 
         # Must approve token transfer for this purchase
         self._approve_token_transfer(service_agreement.get_price())
@@ -332,10 +332,14 @@ class Ocean:
         ddo, service_agreement, service_def = self._get_ddo_and_service_agreement(did, service_index)
         content_urls = get_metadata_url(ddo)
 
-        self.verify_service_agreement_signature(
+        if not self.verify_service_agreement_signature(
             did, service_agreement_id, service_index,
             consumer_address, service_agreement_signature, ddo=ddo
-        )
+        ):
+            raise OceanInvalidServiceAgreementSignature(
+                "Verifying consumer signature failed: signature {}, consumerAddress {}"
+                .format(service_agreement_signature, consumer_address)
+            )
 
         # subscribe to events related to this service_agreement_id
         register_service_agreement(self._web3, self.keeper.contract_path, self.config.storage_path, self.main_account,
@@ -413,7 +417,7 @@ class Ocean:
         if not is_valid:
             logger.warning('Agreement signature failed: agreement hash is %s', agreement_hash.hex())
 
-        self._log_conditions_keys(sa)
+        self._validate_conditions_keys(sa)
 
         return is_valid
 
@@ -547,7 +551,7 @@ class Ocean:
         else:
             logger.info('main account password is not set, transactions will likely fail if the account is locked.')
 
-    def _log_conditions_keys(self, sa):
+    def _validate_conditions_keys(self, sa):
         # Debug info
         # (contract_addresses, fingerprints, fulfillment_indices, conditions_keys)
         values = get_conditions_data_from_keeper_contracts(
