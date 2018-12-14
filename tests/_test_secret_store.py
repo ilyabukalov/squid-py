@@ -12,7 +12,7 @@ parity_client_publish_url = 'http://localhost:9545'
 publisher_address = "0x594d9f933f4f2df6bb66bb34e7ff9d27acc1c019"
 publisher_password = 'password'
 
-
+# TODO This test is passing running docker-images. We need to add it again when we run IT in the flow.
 def test_secret_store():
 
     config = Config('config_local.ini')
@@ -28,3 +28,4 @@ def test_secret_store():
     print(document_id)
     result = publisher.publish_document(document_id, metadata_json)
     print(result)
+    assert json.loads(publisher.decrypt_document(document_id, result)) == metadata

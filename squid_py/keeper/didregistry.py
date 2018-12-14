@@ -29,7 +29,7 @@ class DIDRegistry(ContractBase):
         :param did_source: DID to register/update, can be a 32 byte or hexstring
         :param url: URL of the resolved DID
         :param ddo: DDO string or DDO object to resolve too
-        :param did: DID to resovlve too, can be a 32 byte value or 64 hex string
+        :param did: DID to resolve too, can be a 32 byte value or 64 hex string
         :param key: Optional 32 byte key ( 64 char hex )
         :param account: instance of Account to use to register/update the DID
         """
