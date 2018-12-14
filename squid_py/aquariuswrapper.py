@@ -64,7 +64,8 @@ class AquariusWrapper(object):
             logging.debug("Published asset DID {}".format(asset_did))
             return response
         else:
-            raise Exception("Unhandled ERROR: status-code {}, error message {}".format(response.status_code, response.text))
+            raise Exception(
+                "Unhandled ERROR: status-code {}, error message {}".format(response.status_code, response.text))
 
     def update_asset_metadata(self, asset_did, asset_ddo):
         return json.loads(

@@ -109,7 +109,6 @@ def watch_event(contract_name, event_name, callback, interval,
                 start_time, timeout=None, timeout_callback=None,
                 fromBlock=0, toBlock='latest',
                 filters=None, num_confirmations=12):
-
     event_filter = install_filter(
         contract_name, event_name, fromBlock, toBlock, filters
     )

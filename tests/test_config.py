@@ -25,16 +25,11 @@ aquarius.url = test_aquarius_url
 
 
 def test_load():
-    config = Config(text=test_config_text)
+    config = Config(filename='./resources/config_test.ini')
     assert config
-    assert config.address_list['market'] == 'test_market_address'
-    assert config.address_list['auth'] == 'test_auth_address'
-    assert config.address_list['token'] == 'test_token_address'
+    assert config.gas_limit == 200
     assert config.keeper_url == 'test_keeper_url'
     if os.getenv('VIRTUAL_ENV'):
-        assert config.keeper_path == os.path.join(os.getenv('VIRTUAL_ENV'), 'contracts')
+        assert config.keeper_path == os.path.join(os.getenv('VIRTUAL_ENV'), 'artifacts')
     else:
         assert config.keeper_path == '/usr/contracts'
-
-    assert config.aquarius_url == 'test_aquarius_url'
-    assert config.gas_limit == 200

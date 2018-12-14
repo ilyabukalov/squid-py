@@ -29,5 +29,6 @@ class OceanDIDUnknownValueType(Exception):
 class OceanDIDAlreadyExist(Exception):
     pass
 
+
 class OceanInvalidMetadata(Exception):
     pass

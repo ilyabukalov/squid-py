@@ -85,9 +85,3 @@ class Market(ContractBase):
 
     def calculate_message_hash(self, message):
         return self.contract_concise.generateId(message)
-
-    def generate_did(self, content):
-        pass
-
-    def resolve_did(self, did):
-        pass

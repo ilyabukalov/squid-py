@@ -28,3 +28,4 @@ def test_secret_store():
     print(document_id)
     result = publisher.publish_document(document_id, metadata_json)
     print(result)
+    assert json.loads(publisher.decrypt_document(document_id, result)) == metadata
