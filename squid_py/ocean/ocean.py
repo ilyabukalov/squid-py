@@ -404,16 +404,13 @@ class Ocean:
             self._web3, self.keeper.contract_path, service_agreement_id
         )
         prefixed_hash = prepare_prefixed_hash(agreement_hash)
-        # :NOTE: An alternative to `web3.eth.account.recoverHash`, we can
-        # use `eth_keys.KeyAPI.PublicKey.recover_from_msg_hash()` just like we do
-        # in `squid_py.utils.utilities.get_public-key_from_address`. When using that, make sure
-        # to manipulate the `v` value because KeyAPI only supports `v` values of 0 or 1
-        # but some eth clients can produce a `v` of 27 or 28. This is why we have to use
-        # the `recover_from_msg_hash` method with the `vrs` argument instead of `signature` unless we
-        # reassemble the signature from the split `(v,r,s)` tuple. Also must use the prefixed hash
-        # message to get an accurate recovery of public-key and address.
         recovered_address = self._web3.eth.account.recoverHash(prefixed_hash, signature=signature)
         is_valid = (recovered_address == consumer_address)
+        if not is_valid:
+            # try without the `Ethereum...` prefix
+            recovered_address = self._web3.eth.account.recoverHash(agreement_hash, signature=signature)
+            is_valid = (recovered_address == consumer_address)
+
         if not is_valid:
             logger.warning('Agreement signature failed: agreement hash is %s', agreement_hash.hex())
 
@@ -516,8 +513,7 @@ class Ocean:
             decrypted_content_urls = [decrypted_content_urls]
         logger.debug('got decrypted contentUrls: %s', decrypted_content_urls)
 
-        asset_folder = 'datafile.%s.%s' % (did_to_id(did), service_index)
-        asset_folder = os.path.join(self._downloads_path, asset_folder)
+        asset_folder = self.get_asset_folder_path(did, service_index)
         if not os.path.exists(self._downloads_path):
             os.mkdir(self._downloads_path)
         if not os.path.exists(asset_folder):
@@ -541,6 +537,9 @@ class Ocean:
                     logger.info('Saved downloaded file in "%s"', f.name)
             else:
                 logger.warning('consume failed: %s', response.reason)
+
+    def get_asset_folder_path(self, did, service_index):
+        return os.path.join(self._downloads_path, 'datafile.%s.%s' % (did_to_id(did), service_index))
 
     def set_main_account(self, address, password):
         self.main_account = Account(self.keeper, self._web3.toChecksumAddress(address), password)

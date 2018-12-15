@@ -33,7 +33,7 @@ class ServiceFactory(object):
         for i, service_desc in enumerate(service_descriptors):
             service = ServiceFactory.build_service(web3, contract_path, service_desc, did)
             # set serviceDefinitionId for each service
-            service.update_value(sa_def_key, str(i+1))
+            service.update_value(sa_def_key, str(i))
             services.append(service)
 
         return services

@@ -17,7 +17,7 @@ from squid_py.ddo.metadata import Metadata
 from squid_py.did import did_generate, did_to_id
 from squid_py.keeper.utils import get_fingerprint_by_name
 from squid_py.service_agreement.utils import build_condition_key
-from squid_py.utils.utilities import generate_new_id, generate_prefixed_id
+from squid_py.utils.utilities import generate_new_id, prepare_prefixed_hash
 from squid_py.modules.v0_1.accessControl import grantAccess
 from squid_py.modules.v0_1.payment import lockPayment, releasePayment
 from squid_py.modules.v0_1.serviceAgreement import fulfillAgreement
@@ -347,6 +347,55 @@ def test_agreement_hash(publisher_ocean_instance):
     assert agreement_hash.hex() == "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb", 'hash does not match.'
     # signed_hash = pub_ocn.keeper.web3.eth.sign(user_address, agreement_hash).hex()
     # print('signed agreement hash:', signed_hash)
+
+
+def test_verify_signature(consumer_ocean_instance):
+    """
+    squid-py currently uses `web3.eth.sign()` to sign the service agreement hash. This signing method
+    uses ethereum `eth_sign` on the ethereum client which automatically prepends the
+    message with text defined in EIP-191 as version 'E': `b'\\x19Ethereum Signed Message:\\n'`
+    concatenated with the number of bytes in the message.
+
+    It is more convenient to sign a message using `web3.eth.sign()` because it only requires the account address
+    whereas `web3.eth.account.signHash()` requires a private_key to sign the message.
+    `web3.eth.account.signHash()` also does not prepend anything to the message before signing.
+    Messages signed via Metamask in pleuston use the latter method and current fail to verify in squid-py/brizo.
+    The signature verification fails because recoverHash is being used on a prepended message but the signature
+    created by `web3.eth.account.signHash()` does not add a prefix before signing.
+
+    """
+    ocn = consumer_ocean_instance
+    w3 = ocn.keeper.web3
+
+    def verify_signature(_address, _agreement_hash, _signature, expected_match):
+        prefixed_hash = prepare_prefixed_hash(_agreement_hash)
+        recovered_address0 = w3.eth.account.recoverHash(prefixed_hash, signature=_signature)
+        recovered_address1 = w3.eth.account.recoverHash(_agreement_hash, signature=_signature)
+        print('original address: ', _address)
+        print('w3.eth.account.recoverHash(prefixed_hash, signature=signature)  => ', recovered_address0)
+        print('w3.eth.account.recoverHash(agreement_hash, signature=signature) => ', recovered_address1)
+        assert _address == (recovered_address0, recovered_address1)[expected_match], \
+            'Could not verify signature using address {}'.format(_address)
+
+    # Signature created from Metamask (same as using `web3.eth.account.signHash()`)
+    address = '0x8248039e67801Ac0B9d0e38201E963194abdb540'
+    hex_agr_hash = '0xc8ea6bf6f4f4e2bf26a645dd4a1be20f5151c74964026c36efc2149bfae5f924'
+    agreement_hash = Web3.toBytes(hexstr=hex_agr_hash)
+    assert hex_agr_hash == '0x'+agreement_hash.hex()
+    signature = (
+        '0x200ce6aa55f0b4080c5f3a5dbe8385d2d196b0380cbdf388f79b6b004223c68a4f7972deb36417df8599155da2f903e43fe7e7eb40214db6bd6e55fd4c4fcf2a1c'
+    )
+    verify_signature(address, agreement_hash, signature, 1)
+
+    # Signature created using `web3.eth.sign()` (squid-py, squid-js with no metamask)
+    address = "0x00Bd138aBD70e2F00903268F3Db08f2D25677C9e"
+    hex_agr_hash = "0xeeaae0098b39fdf8fab6733152dd0ef54729ac486f9846450780c5cc9d44f5e8"
+    agreement_hash = Web3.toBytes(hexstr=hex_agr_hash)
+    signature = (
+        "0x44fa549d33f5993f73e96f91cad01d9b37830da78494e35bda32a280d1b864ac020a761e872633c8149a5b63b65a1143f9f5a3be35822a9e90e0187d4a1f9d101c"
+    )
+    assert hex_agr_hash == '0x'+agreement_hash.hex()
+    verify_signature(address, agreement_hash, signature, 0)
 
 
 def test_integration(consumer_ocean_instance):
