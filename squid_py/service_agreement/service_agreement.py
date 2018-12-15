@@ -94,7 +94,6 @@ class ServiceAgreement(object):
         """
         agreement_hash = self.get_service_agreement_hash(web3, contract_path, service_agreement_id)
         # We cannot use `web3.eth.account.signHash()` here because it requires privateKey which is not available.
-        web3.eth.account.signHash()
         return web3.eth.sign(consumer_address, agreement_hash).hex(), agreement_hash.hex()
 
     def update_conditions_keys(self, web3, contract_path):

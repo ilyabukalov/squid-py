@@ -208,7 +208,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     web3 = keeper.web3
     consumer_acc = consumer_ocn.main_account
     publisher_acc = publisher_ocean_instance.main_account
-    service_index = '1'
+    service_index = '0'
     did = registered_ddo.did
 
     # sign agreement
