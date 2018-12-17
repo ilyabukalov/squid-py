@@ -110,7 +110,11 @@ class AquariusWrapper(object):
 
     def text_search(self, text, sort=None, offset=100, page=0):
         """
-        Search in aquarius using text query.
+        Search in aquarius using text query. Given the string aquarius will do a full-text query using an index
+        to search in all the documents.
+        In this way using mongodb driver https://docs.mongodb.com/manual/reference/operator/query/text/ and in this
+        one using elastic driver https://www.elastic.co/guide/en/elasticsearch/guide/current/full-text-search.html.
+        If you use a different driver you have to take care that this functionality is already implemented.
 
         :param text: String to be search.
         :param sort: 1/-1 to sort ascending or descending.
@@ -142,7 +146,12 @@ class AquariusWrapper(object):
 
     def query_search(self, search_query):
         """
-        Search using a query.
+        Search using a query. We are using the mongodb query model to search for documents
+        https://docs.mongodb.com/manual/tutorial/query-documents/
+        If you use the elastic driver we are doing a parser to convert the query into elastic search format,
+        but this could be in a early stage.
+
+        Example: query_search({"service.metadata.base.name":"London Weather 2011"})
 
         :param search_query: Json query following mongodb syntax.
         :return: List of ddos.
