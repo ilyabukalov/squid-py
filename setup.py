@@ -18,7 +18,7 @@ with open('HISTORY.md') as history_file:
 install_requirements = [
     'coloredlogs',
     'eciespy',
-    'keeper-contracts==0.5.0',
+    'keeper-contracts==0.5.1',
     'pyopenssl',
     'PyJWT',  # not jwt
     'PyYAML',
