@@ -1,3 +1,4 @@
+from eth_utils import remove_0x_prefix, add_0x_prefix
 from web3 import Web3
 
 
@@ -6,12 +7,14 @@ class Parameter:
         self.name = param_json['name']
         self.type = param_json['type']
         self.value = param_json['value']
+        if self.type == 'bytes32':
+            self.value = add_0x_prefix(self.value)
 
     def as_dictionary(self):
         return {
             "name": self.name,
             "type": self.type,
-            "value": self.value
+            "value": remove_0x_prefix(self.value) if self.type == 'bytes32' else self.value
         }
 
 
