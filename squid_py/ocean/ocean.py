@@ -407,11 +407,6 @@ class Ocean:
         recovered_address = self._web3.eth.account.recoverHash(prefixed_hash, signature=signature)
         is_valid = (recovered_address == consumer_address)
         if not is_valid:
-            # try without the `Ethereum...` prefix
-            recovered_address = self._web3.eth.account.recoverHash(agreement_hash, signature=signature)
-            is_valid = (recovered_address == consumer_address)
-
-        if not is_valid:
             logger.warning('Agreement signature failed: agreement hash is %s', agreement_hash.hex())
 
         self._validate_conditions_keys(sa)
