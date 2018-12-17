@@ -33,8 +33,10 @@ class OceanDIDAlreadyExist(Exception):
 class OceanInvalidMetadata(Exception):
     pass
 
+
 class OceanInvalidServiceAgreementSignature(Exception):
     pass
+
 
 class OceanServiceAgreementExists(Exception):
     pass
