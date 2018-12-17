@@ -184,6 +184,7 @@ class Ocean:
         ddo = DDO(did)
 
         # Add public key and authentication
+        publisher.unlock()
         pub_key, auth = make_public_key_and_authentication(did, publisher.address, self._web3)
         ddo.add_public_key(pub_key)
         ddo.add_authentication(auth, PUBLIC_KEY_TYPE_RSA)
