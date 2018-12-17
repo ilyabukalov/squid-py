@@ -18,6 +18,7 @@ class Account:
     def unlock(self):
         if self.password:
             return self.keeper.web3.personal.unlockAccount(self.address, self.password)
+        return False
 
     def request_tokens(self, amount):
         self.unlock()
