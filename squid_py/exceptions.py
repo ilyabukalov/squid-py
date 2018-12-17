@@ -35,3 +35,6 @@ class OceanInvalidMetadata(Exception):
 
 class OceanInvalidServiceAgreementSignature(Exception):
     pass
+
+class OceanServiceAgreementExists(Exception):
+    pass

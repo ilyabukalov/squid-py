@@ -15,7 +15,7 @@ from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
 from squid_py.keeper import Keeper
 from squid_py.log import setup_logging
 from squid_py.didresolver import DIDResolver
-from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata, OceanInvalidServiceAgreementSignature
+from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata, OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists
 from squid_py.service_agreement.register_service_agreement import register_service_agreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
@@ -331,6 +331,9 @@ class Ocean:
         asset_id = did_to_id(did)
         ddo, service_agreement, service_def = self._get_ddo_and_service_agreement(did, service_index)
         content_urls = get_metadata_url(ddo)
+        # Raise error if agreement is already executed
+        if self.keeper.service_agreement.get_service_agreement_consumer(service_agreement_id) is not None:
+            raise OceanServiceAgreementExists('Service agreement {} is already executed.'.format(service_agreement_id))
 
         if not self.verify_service_agreement_signature(
             did, service_agreement_id, service_index,
