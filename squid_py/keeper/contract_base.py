@@ -55,12 +55,6 @@ class ContractBase(object):
 
         return concise_contract, contract, address
 
-    def unlock_account(self, account):
-        if account.password:
-            return self.web3.personal.unlockAccount(account.address, account.password)
-
-        return None
-
     def to_checksum_address(self, address):
         """Validate the address provided."""
         return self.web3.toChecksumAddress(address)
