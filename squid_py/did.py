@@ -11,15 +11,25 @@ from web3 import Web3
 OCEAN_PREFIX = 'did:op:'
 
 
-class DID(object):
+class DID:
 
     @property
     def did(self):
+        """
+        Create a did with the format did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865
+
+        :return: Asset did, str
+        """
         return OCEAN_PREFIX + uuid.uuid4().hex + uuid.uuid4().hex
 
 
 def did_parse(did):
-    """parse a DID into it's parts"""
+    """
+    Parse a DID into it's parts
+
+    :param did: Asset did, str
+    :return: Python dictionay with the method and the id.
+    """
     if not isinstance(did, str):
         raise TypeError('Expecting DID of string type, got %s of %s type' % (did, type(did)))
 
@@ -37,8 +47,11 @@ def did_parse(did):
 
 def is_did_valid(did):
     """
-        Return True if the did is a valid DID with the method name 'op' and the id
-        in the Ocean format
+    Return True if the did is a valid DID with the method name 'op' and the id
+    in the Ocean format
+
+    :param did: Asset did, str
+    :return bool
     """
     result = did_parse(did)
     if result:
