@@ -80,7 +80,7 @@ class DIDRegistry(ContractBase):
         if account is None:
             raise ValueError('You must provide an account to use to register a DID')
 
-        self.unlock_account(account)
+        account.unlock()
         transaction = self.register_attribute(did_source_id, value_type, key, value, account.address)
         receipt = self.get_tx_receipt(transaction)
         return receipt

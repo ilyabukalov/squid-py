@@ -9,9 +9,7 @@ from web3 import Web3
 
 from squid_py.did import (
     did_generate,
-    did_generate_from_ddo,
     did_parse,
-    did_validate,
     is_did_valid,
     id_to_did,
     did_to_id,
@@ -24,7 +22,7 @@ TEST_SERVICE_URL = 'http://localhost:8005'
 
 
 def test_did():
-    test_id = '0x%s' % secrets.token_hex(32)
+    test_id = '%s' % secrets.token_hex(32)
     test_path = 'test_path'
     test_fragment = 'test_fragment'
     test_method = 'abcdefghijklmnopqrstuvwxyz0123456789'
@@ -87,7 +85,7 @@ def test_did():
     # test is_did_valid
     assert is_did_valid(valid_did)
     assert not is_did_valid('did:op:{}'.format(all_id))
-    assert is_did_valid('did:eth:{}'.format(test_id))
+    assert not is_did_valid('did:eth:{}'.format(test_id))
     with pytest.raises(ValueError):
         is_did_valid('op:{}'.format(test_id))
 
@@ -115,10 +113,10 @@ def test_did():
     with pytest.raises(TypeError):
         id_to_did({'bad': 'value'})
 
-    assert id_to_did('') == 'did:op:0x0'
-    assert did_to_id(valid_did_text) == test_id
+    assert id_to_did('') == 'did:op:0'
+    assert did_to_id(valid_did_text) == '0x' + test_id
     assert did_to_id('did:op1:011') == None
-    assert did_to_id('did:op:0x0') == '0x0'
+    assert did_to_id('did:op:0') == '0x0'
 
 
 def test_did_to_bytes():
