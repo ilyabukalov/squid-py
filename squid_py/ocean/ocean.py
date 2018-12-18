@@ -436,7 +436,7 @@ class Ocean:
             return self.did_resolver.resolve(did).ddo
         elif resolver.is_url:
             aquarius = AquariusWrapper(resolver.url)
-            return DDO(json_text=json.dumps(aquarius.get_asset_metadata(did)))
+            return DDO(json_text=json.dumps(aquarius.get_asset_ddo(did)))
         else:
             return None
 
