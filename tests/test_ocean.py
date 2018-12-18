@@ -121,8 +121,8 @@ def test_register_asset(publisher_ocean_instance):
     # For this test, ensure the asset does not exist in Aquarius
     meta_data_assets = publisher_ocean_instance.metadata_store.list_assets()
     if asset.ddo.did in meta_data_assets:
-        publisher_ocean_instance.metadata_store.get_asset_metadata(asset.ddo.did)
-        publisher_ocean_instance.metadata_store.retire_asset_metadata(asset.ddo.did)
+        publisher_ocean_instance.metadata_store.get_asset_ddo(asset.ddo.did)
+        publisher_ocean_instance.metadata_store.retire_asset_ddo(asset.ddo.did)
 
     ##########################################################
     # Register using high-level interface

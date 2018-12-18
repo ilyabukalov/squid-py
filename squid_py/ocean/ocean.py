@@ -216,7 +216,7 @@ class Ocean:
         response = None
         try:
             # publish the new ddo in ocean-db/Aquarius
-            response = self.metadata_store.publish_asset_metadata(ddo)
+            response = self.metadata_store.publish_asset_ddo(ddo)
             logger.debug('Asset/ddo published successfully in aquarius.')
         except ValueError as ve:
             logger.error('Publish asset in aquarius failed: %s', str(ve))

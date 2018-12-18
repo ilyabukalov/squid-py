@@ -144,7 +144,7 @@ class TestServiceAgreement(unittest.TestCase):
         #
         # print('buyer balance = ', token.get_token_balance(consumer_account))
         # print('seller balance = ', token.get_token_balance(publisher_account))
-        # ocean.metadata.retire_asset_metadata(convert_to_string(asset_id))
+        # ocean.metadata.retire_asset_ddo(convert_to_string(asset_id))
 
 
         #####################################
