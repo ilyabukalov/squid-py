@@ -82,5 +82,5 @@ class Keeper(object):
             logging.info('The `Access` Service agreement template "%s" is not deployed to '
                          'the current keeper network.', ACCESS_SERVICE_TEMPLATE_ID)
         else:
-            logging.info('Found the `Access` service agreement template "%s" deployed in '
+            logging.info('Found service agreement template "%s" of type `Access` deployed in '
                          'the current keeper network published by "%s".', ACCESS_SERVICE_TEMPLATE_ID, template_owner)

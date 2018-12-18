@@ -15,7 +15,7 @@ from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
 from squid_py.keeper import Keeper
 from squid_py.log import setup_logging
 from squid_py.didresolver import DIDResolver
-from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata, OceanInvalidServiceAgreementSignature
+from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata, OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists
 from squid_py.service_agreement.register_service_agreement import register_service_agreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
@@ -156,22 +156,20 @@ class Ocean:
         else:
             return [Asset.from_ddo_dict(i) for i in self.metadata_store.query_search(query)]
 
-    def register_asset(self, metadata, publisher_address, service_descriptors, threshold=None):
+    def register_asset(self, metadata, publisher, service_descriptors):
         """
         Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (Aquarius)
 
         :param metadata: dict conforming to the Metadata accepted by Ocean Protocol.
-        :param publisher_address: Account of the publisher registering this asset
+        :param publisher: Account of the publisher registering this asset
         :param service_descriptors: list of ServiceDescriptor tuples of length 2. The first item must be one of ServiceTypes and the second
             item is a dict of parameters and values required by the service
-        :param threshold: a secret store setting, currently not in use
         :return: DDO instance
         """
-        assert publisher_address and self._web3.isChecksumAddress(publisher_address), 'Invalid publisher address "%s"' % publisher_address
-        assert publisher_address in self.accounts, 'Unrecognized publisher address %s' % publisher_address
         assert isinstance(metadata, dict), 'Expected metadata of type dict, got "%s"' % type(metadata)
         if not metadata or not Metadata.validate(metadata):
-            raise OceanInvalidMetadata('Metadata seems invalid. Please make sure the required metadata values are filled in.')
+            raise OceanInvalidMetadata('Metadata seems invalid. '
+                                       'Please make sure the required metadata values are filled in.')
 
         asset_id = generate_prefixed_id()
         # Check if it's already registered first!
@@ -186,7 +184,8 @@ class Ocean:
         ddo = DDO(did)
 
         # Add public key and authentication
-        pub_key, auth = make_public_key_and_authentication(did, publisher_address, self._web3)
+        publisher.unlock()
+        pub_key, auth = make_public_key_and_authentication(did, publisher.address, self._web3)
         ddo.add_public_key(pub_key)
         ddo.add_authentication(auth, PUBLIC_KEY_TYPE_RSA)
 
@@ -200,7 +199,8 @@ class Ocean:
         if content_urls_encrypted:
             metadata_copy['base']['contentUrls'] = [content_urls_encrypted]
         else:
-            raise AssertionError('Encrypting the contentUrls failed. Make sure the secret store is setup properly in your config file.')
+            raise AssertionError('Encrypting the contentUrls failed. '
+                                 'Make sure the secret store is setup properly in your config file.')
 
         # DDO url and `Metadata` service
         ddo_service_endpoint = self.metadata_store.get_service_endpoint(did)
@@ -231,7 +231,7 @@ class Ocean:
             Web3.toBytes(hexstr=asset_id),
             key=Web3.sha3(text='Metadata'),
             url=ddo_service_endpoint,
-            account=self.accounts[publisher_address]
+            account=publisher
         )
 
         return ddo
@@ -331,6 +331,9 @@ class Ocean:
         asset_id = did_to_id(did)
         ddo, service_agreement, service_def = self._get_ddo_and_service_agreement(did, service_index)
         content_urls = get_metadata_url(ddo)
+        # Raise error if agreement is already executed
+        if self.keeper.service_agreement.get_service_agreement_consumer(service_agreement_id) is not None:
+            raise OceanServiceAgreementExists('Service agreement {} is already executed.'.format(service_agreement_id))
 
         if not self.verify_service_agreement_signature(
             did, service_agreement_id, service_index,
