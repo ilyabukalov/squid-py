@@ -82,8 +82,8 @@ def test_token_request(publisher_ocean_instance, consumer_ocean_instance):
     aquarius_current_ocean = pub_ocn.main_account.ocean_balance
 
     # Confirm balance changes
-    assert pub_ocn.main_account.get_balance().eth == aquarius_current_eth
-    assert pub_ocn.main_account.get_balance().ocn == aquarius_current_ocean
+    assert pub_ocn.main_account.balance.eth == aquarius_current_eth
+    assert pub_ocn.main_account.balance.ocn == aquarius_current_ocean
     # assert aquarius_current_eth < aquarius_start_eth
     # assert aquarius_current_ocean == aquarius_start_ocean + amount
 
@@ -101,16 +101,15 @@ def test_register_asset(publisher_ocean_instance):
     ##########################################################
     # Setup account
     ##########################################################
-    publisher_acct = publisher_ocean_instance.main_account
-    publisher_address = publisher_acct.address
+    publisher = publisher_ocean_instance.main_account
 
     # ensure Ocean token balance
-    if publisher_acct.ocean_balance == 0:
-        rcpt = publisher_acct.request_tokens(200)
+    if publisher.ocean_balance == 0:
+        rcpt = publisher.request_tokens(200)
         publisher_ocean_instance._web3.eth.waitForTransactionReceipt(rcpt)
 
     # You will need some token to make this transfer!
-    assert publisher_acct.ocean_balance > 0
+    assert publisher.ocean_balance > 0
 
     ##########################################################
     # Create an Asset with valid metadata
@@ -129,7 +128,7 @@ def test_register_asset(publisher_ocean_instance):
     # Register using high-level interface
     ##########################################################
     service_descriptors = [ServiceDescriptor.access_service_descriptor(asset_price, '/purchaseEndpoint', '/serviceEndpoint', 600, ('0x%s' % generate_new_id()))]
-    publisher_ocean_instance.register_asset(asset.metadata, publisher_address, service_descriptors)
+    publisher_ocean_instance.register_asset(asset.metadata, publisher, service_descriptors)
 
 
 def test_resolve_did(publisher_ocean_instance):
@@ -137,7 +136,7 @@ def test_resolve_did(publisher_ocean_instance):
     metadata = Metadata.get_example()
     publisher = publisher_ocean_instance.main_account
     original_ddo = publisher_ocean_instance.register_asset(
-        metadata, publisher.address,
+        metadata, publisher,
         [ServiceDescriptor.access_service_descriptor(7, '/dummy/url', '/service/endpoint', 3, ('0x%s' % generate_new_id()))]
     )
 

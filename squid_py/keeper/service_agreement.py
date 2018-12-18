@@ -28,7 +28,7 @@ class ServiceAgreement(ContractBase):
             assert i < len(contracts_addresses), ''
         assert isinstance(fulfillment_operator, int) and fulfillment_operator >= 0, ''
 
-        self.unlock_account(owner_account)
+        owner_account.unlock()
         service_bytes = Web3.toHex(Web3.sha3(text=service_description))
         tx_hash = self.contract_concise.setupAgreementTemplate(
             template_id,
@@ -46,7 +46,7 @@ class ServiceAgreement(ContractBase):
         assert len(hashes) == len(timeouts), ''
         assert did_id.startswith('0x'), ''
 
-        self.unlock_account(publisher_account)
+        publisher_account.unlock()
         tx_hash = self.contract_concise.executeAgreement(
             template_id, signature, consumer, hashes, timeouts, service_agreement_id, did_id,
             transact={'from': publisher_account.address, 'gas': DEFAULT_GAS_LIMIT}
@@ -54,11 +54,11 @@ class ServiceAgreement(ContractBase):
         return self.get_tx_receipt(tx_hash)
 
     def fulfill_agreement(self, service_agreement_id, from_account):
-        self.unlock_account(from_account)
+        from_account.unlock()
         return self.contract_concise.fulfillAgreement(service_agreement_id)
 
     def revoke_agreement_template(self, template_id, owner_account):
-        self.unlock_account(owner_account)
+        owner_account.unlock()
         return self.contract_concise.revokeAgreementTemplate(template_id)
 
     def get_template_status(self, sa_template_id):
