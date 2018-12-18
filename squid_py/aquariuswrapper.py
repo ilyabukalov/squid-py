@@ -47,7 +47,7 @@ class AquariusWrapper(object):
             return asset_list['ids']
         return []
 
-    def get_asset_metadata(self, did):
+    def get_asset_ddo(self, did):
         """
         Retrieve asset ddo for a given did.
 
@@ -67,7 +67,27 @@ class AquariusWrapper(object):
             return {}
         return parsed_response
 
-    def list_assets_metadata(self):
+    def get_asset_metadata(self, did):
+        """
+        Retrieve asset metadata for a given did.
+
+        :param did: Asset did
+        :return: Asset ddo.
+        """
+        response = requests.get(self._base_url + '/metadata/%s' % did).content
+        if not response:
+            return {}
+
+        try:
+            parsed_response = json.loads(response)
+        except TypeError:
+            parsed_response = None
+
+        if parsed_response is None:
+            return {}
+        return parsed_response['metadata']
+
+    def list_assets_ddo(self):
         """
         List all the ddos registered in the aquarius instance.
 
@@ -75,7 +95,7 @@ class AquariusWrapper(object):
         """
         return json.loads(requests.get(self._base_url + '/ddo').content)
 
-    def publish_asset_metadata(self, ddo):
+    def publish_asset_ddo(self, ddo):
         """
         Register asset ddo in aquarius.
 
@@ -96,7 +116,7 @@ class AquariusWrapper(object):
             raise Exception(
                 "Unhandled ERROR: status-code {}, error message {}".format(response.status_code, response.text))
 
-    def update_asset_metadata(self, did, ddo):
+    def update_asset_ddo(self, did, ddo):
         """
         Update the ddo of a did already registered.
 
@@ -187,7 +207,7 @@ class AquariusWrapper(object):
         else:
             raise ValueError('Unknown search response, expecting a list got "%s.' % type(parsed_response))
 
-    def retire_asset_metadata(self, did):
+    def retire_asset_ddo(self, did):
         """
         Retire asset ddo of Aquarius
 
