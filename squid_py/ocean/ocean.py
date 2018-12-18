@@ -24,7 +24,7 @@ from squid_py.service_agreement.service_types import ServiceTypes
 from squid_py.service_agreement.utils import make_public_key_and_authentication, register_service_agreement_template, \
     get_conditions_data_from_keeper_contracts
 from squid_py.utils.utilities import generate_prefixed_id, prepare_prefixed_hash, prepare_purchase_payload, get_metadata_url
-from squid_py.did import did_to_id, did_generate
+from squid_py.did import did_to_id, DID
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
@@ -171,16 +171,15 @@ class Ocean:
             raise OceanInvalidMetadata('Metadata seems invalid. '
                                        'Please make sure the required metadata values are filled in.')
 
-        asset_id = generate_prefixed_id()
-        # Check if it's already registered first!
-        if asset_id in self.metadata_store.list_assets():
-            raise OceanDIDAlreadyExist('Asset id "%s" is already registered to another asset.' % asset_id)
-
         # copy metadata so we don't change the original
         metadata_copy = metadata.copy()
 
         # Create a DDO object
-        did = did_generate(asset_id)
+        did = DID().did
+        # Check if it's already registered first!
+        if did in self.metadata_store.list_assets():
+            raise OceanDIDAlreadyExist('Asset id "%s" is already registered to another asset.' % did)
+
         ddo = DDO(did)
 
         # Add public key and authentication
@@ -228,7 +227,7 @@ class Ocean:
 
         # register on-chain
         self.keeper.didregistry.register(
-            Web3.toBytes(hexstr=asset_id),
+            did,
             key=Web3.sha3(text='Metadata'),
             url=ddo_service_endpoint,
             account=publisher

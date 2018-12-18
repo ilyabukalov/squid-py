@@ -4,27 +4,18 @@
 """
 
 import re
-from urllib.parse import urlparse
-
+import uuid
 from eth_utils import remove_0x_prefix
 from web3 import Web3
 
-OCEAN_DID_METHOD = 'op'
+OCEAN_PREFIX = 'did:op:'
 
 
-def did_generate(did_id, path=None, fragment=None, method=OCEAN_DID_METHOD):
-    """generate a DID based in it's id, path, fragment and method"""
+class DID(object):
 
-    method = re.sub('[^a-z0-9]', '', method.lower())
-    did_id = re.sub('[^a-zA-Z0-9-.]', '', did_id)
-    did = ['did:', method, ':', remove_0x_prefix(did_id)]
-    if path:
-        did.append('/')
-        did.append(path)
-    if fragment:
-        did.append('#')
-        did.append(fragment)
-    return "".join(did)
+    @property
+    def did(self):
+        return OCEAN_PREFIX + uuid.uuid4().hex + uuid.uuid4().hex
 
 
 def did_parse(did):
@@ -39,15 +30,7 @@ def did_parse(did):
     result = {
         'method': match.group(1),
         'id': match.group(2),
-        'path': None,
-        'fragment': None,
     }
-    uri_text = match.group(3)
-    if uri_text:
-        uri = urlparse(uri_text)
-        result['fragment'] = uri.fragment
-        if uri.path:
-            result['path'] = uri.path[1:]
 
     return result
 
