@@ -8,8 +8,6 @@ import secrets
 
 from squid_py.did import (
     did_generate,
-    did_generate_from_ddo,
-    did_validate,
 )
 
 from squid_py.ddo import (
@@ -228,19 +226,6 @@ def test_creating_did_using_ddo():
     ddo_text_proof = ddo.as_text()
     assert ddo_text_proof
     assert ddo.validate_proof()
-
-    ddo_text_proof_hash = ddo.calculate_hash()
-    assert ddo_text_proof_hash
-    did, assigned_ddo = did_generate_from_ddo(test_id, ddo)
-
-    assert (ddo.calculate_hash() == assigned_ddo.calculate_hash())
-    assert assigned_ddo.validate_proof()
-
-    # check to see if did is valid against the new ddo
-    assert did_validate(did, test_id, assigned_ddo)
-
-    # check to see if did is valid against the old ddo
-    assert did_validate(did, test_id, ddo)
 
 
 def test_load_ddo_json():
