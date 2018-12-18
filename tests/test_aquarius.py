@@ -28,6 +28,7 @@ def test_aquarius():
 
     sample_ddo_path2 = pathlib.Path.cwd() / 'tests' / 'resources' / 'ddo' / 'ddo_sample2.json'
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
+    assert len(ocean_provider.metadata_store.list_assets()) == 1
     asset2 = Asset.from_ddo_json_file(sample_ddo_path2)
 
     ocean_provider.metadata_store.update_asset_metadata(asset2.did, asset2.ddo)
