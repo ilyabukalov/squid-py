@@ -15,7 +15,7 @@ from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
 from squid_py.keeper import Keeper
 from squid_py.log import setup_logging
 from squid_py.didresolver import DIDResolver
-from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata
+from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata, OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists
 from squid_py.service_agreement.register_service_agreement import register_service_agreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
@@ -24,7 +24,7 @@ from squid_py.service_agreement.service_types import ServiceTypes
 from squid_py.service_agreement.utils import make_public_key_and_authentication, register_service_agreement_template, \
     get_conditions_data_from_keeper_contracts
 from squid_py.utils.utilities import generate_prefixed_id, prepare_prefixed_hash, prepare_purchase_payload, get_metadata_url
-from squid_py.did import did_to_id, did_generate
+from squid_py.did import did_to_id, DID
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
@@ -156,37 +156,35 @@ class Ocean:
         else:
             return [Asset.from_ddo_dict(i) for i in self.metadata_store.query_search(query)]
 
-    def register_asset(self, metadata, publisher_address, service_descriptors, threshold=None):
+    def register_asset(self, metadata, publisher, service_descriptors):
         """
         Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (Aquarius)
 
         :param metadata: dict conforming to the Metadata accepted by Ocean Protocol.
-        :param publisher_address: Account of the publisher registering this asset
+        :param publisher: Account of the publisher registering this asset
         :param service_descriptors: list of ServiceDescriptor tuples of length 2. The first item must be one of ServiceTypes and the second
             item is a dict of parameters and values required by the service
-        :param threshold: a secret store setting, currently not in use
         :return: DDO instance
         """
-        assert publisher_address and self._web3.isChecksumAddress(publisher_address), 'Invalid publisher address "%s"' % publisher_address
-        assert publisher_address in self.accounts, 'Unrecognized publisher address %s' % publisher_address
         assert isinstance(metadata, dict), 'Expected metadata of type dict, got "%s"' % type(metadata)
         if not metadata or not Metadata.validate(metadata):
-            raise OceanInvalidMetadata('Metadata seems invalid. Please make sure the required metadata values are filled in.')
-
-        asset_id = generate_prefixed_id()
-        # Check if it's already registered first!
-        if asset_id in self.metadata_store.list_assets():
-            raise OceanDIDAlreadyExist('Asset id "%s" is already registered to another asset.' % asset_id)
+            raise OceanInvalidMetadata('Metadata seems invalid. '
+                                       'Please make sure the required metadata values are filled in.')
 
         # copy metadata so we don't change the original
         metadata_copy = metadata.copy()
 
         # Create a DDO object
-        did = did_generate(asset_id)
+        did = DID().did
+        # Check if it's already registered first!
+        if did in self.metadata_store.list_assets():
+            raise OceanDIDAlreadyExist('Asset id "%s" is already registered to another asset.' % did)
+
         ddo = DDO(did)
 
         # Add public key and authentication
-        pub_key, auth = make_public_key_and_authentication(did, publisher_address, self._web3)
+        publisher.unlock()
+        pub_key, auth = make_public_key_and_authentication(did, publisher.address, self._web3)
         ddo.add_public_key(pub_key)
         ddo.add_authentication(auth, PUBLIC_KEY_TYPE_RSA)
 
@@ -200,7 +198,8 @@ class Ocean:
         if content_urls_encrypted:
             metadata_copy['base']['contentUrls'] = [content_urls_encrypted]
         else:
-            raise AssertionError('Encrypting the contentUrls failed. Make sure the secret store is setup properly in your config file.')
+            raise AssertionError('Encrypting the contentUrls failed. '
+                                 'Make sure the secret store is setup properly in your config file.')
 
         # DDO url and `Metadata` service
         ddo_service_endpoint = self.metadata_store.get_service_endpoint(did)
@@ -228,10 +227,10 @@ class Ocean:
 
         # register on-chain
         self.keeper.didregistry.register(
-            Web3.toBytes(hexstr=asset_id),
+            did,
             key=Web3.sha3(text='Metadata'),
             url=ddo_service_endpoint,
-            account=self.accounts[publisher_address]
+            account=publisher
         )
 
         return ddo
@@ -279,7 +278,7 @@ class Ocean:
             self._web3, self.keeper.contract_path, agreement_id, consumer_address
         )[0]
 
-        self._log_conditions_keys(service_agreement)
+        self._validate_conditions_keys(service_agreement)
 
         # Must approve token transfer for this purchase
         self._approve_token_transfer(service_agreement.get_price())
@@ -331,11 +330,18 @@ class Ocean:
         asset_id = did_to_id(did)
         ddo, service_agreement, service_def = self._get_ddo_and_service_agreement(did, service_index)
         content_urls = get_metadata_url(ddo)
+        # Raise error if agreement is already executed
+        if self.keeper.service_agreement.get_service_agreement_consumer(service_agreement_id) is not None:
+            raise OceanServiceAgreementExists('Service agreement {} is already executed.'.format(service_agreement_id))
 
-        self.verify_service_agreement_signature(
+        if not self.verify_service_agreement_signature(
             did, service_agreement_id, service_index,
             consumer_address, service_agreement_signature, ddo=ddo
-        )
+        ):
+            raise OceanInvalidServiceAgreementSignature(
+                "Verifying consumer signature failed: signature {}, consumerAddress {}"
+                .format(service_agreement_signature, consumer_address)
+            )
 
         # subscribe to events related to this service_agreement_id
         register_service_agreement(self._web3, self.keeper.contract_path, self.config.storage_path, self.main_account,
@@ -400,20 +406,12 @@ class Ocean:
             self._web3, self.keeper.contract_path, service_agreement_id
         )
         prefixed_hash = prepare_prefixed_hash(agreement_hash)
-        # :NOTE: An alternative to `web3.eth.account.recoverHash`, we can
-        # use `eth_keys.KeyAPI.PublicKey.recover_from_msg_hash()` just like we do
-        # in `squid_py.utils.utilities.get_public-key_from_address`. When using that, make sure
-        # to manipulate the `v` value because KeyAPI only supports `v` values of 0 or 1
-        # but some eth clients can produce a `v` of 27 or 28. This is why we have to use
-        # the `recover_from_msg_hash` method with the `vrs` argument instead of `signature` unless we
-        # reassemble the signature from the split `(v,r,s)` tuple. Also must use the prefixed hash
-        # message to get an accurate recovery of public-key and address.
         recovered_address = self._web3.eth.account.recoverHash(prefixed_hash, signature=signature)
         is_valid = (recovered_address == consumer_address)
         if not is_valid:
             logger.warning('Agreement signature failed: agreement hash is %s', agreement_hash.hex())
 
-        self._log_conditions_keys(sa)
+        self._validate_conditions_keys(sa)
 
         return is_valid
 
@@ -512,8 +510,7 @@ class Ocean:
             decrypted_content_urls = [decrypted_content_urls]
         logger.debug('got decrypted contentUrls: %s', decrypted_content_urls)
 
-        asset_folder = 'datafile.%s.%s' % (did_to_id(did), service_index)
-        asset_folder = os.path.join(self._downloads_path, asset_folder)
+        asset_folder = self.get_asset_folder_path(did, service_index)
         if not os.path.exists(self._downloads_path):
             os.mkdir(self._downloads_path)
         if not os.path.exists(asset_folder):
@@ -538,6 +535,9 @@ class Ocean:
             else:
                 logger.warning('consume failed: %s', response.reason)
 
+    def get_asset_folder_path(self, did, service_index):
+        return os.path.join(self._downloads_path, 'datafile.%s.%s' % (did_to_id(did), service_index))
+
     def set_main_account(self, address, password):
         self.main_account = Account(self.keeper, self._web3.toChecksumAddress(address), password)
         self.keeper.web3.eth.defaultAccount = self.main_account.address
@@ -547,7 +547,7 @@ class Ocean:
         else:
             logger.info('main account password is not set, transactions will likely fail if the account is locked.')
 
-    def _log_conditions_keys(self, sa):
+    def _validate_conditions_keys(self, sa):
         # Debug info
         # (contract_addresses, fingerprints, fulfillment_indices, conditions_keys)
         values = get_conditions_data_from_keeper_contracts(

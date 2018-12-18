@@ -14,10 +14,10 @@ from web3 import Web3
 from squid_py.ddo import DDO
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.ddo.metadata import Metadata
-from squid_py.did import did_generate, did_to_id
+from squid_py.did import DID, did_to_id
 from squid_py.keeper.utils import get_fingerprint_by_name
 from squid_py.service_agreement.utils import build_condition_key
-from squid_py.utils.utilities import generate_new_id, generate_prefixed_id
+from squid_py.utils.utilities import generate_new_id, prepare_prefixed_hash
 from squid_py.modules.v0_1.accessControl import grantAccess
 from squid_py.modules.v0_1.payment import lockPayment, releasePayment
 from squid_py.modules.v0_1.serviceAgreement import fulfillAgreement
@@ -82,8 +82,8 @@ def test_token_request(publisher_ocean_instance, consumer_ocean_instance):
     aquarius_current_ocean = pub_ocn.main_account.ocean_balance
 
     # Confirm balance changes
-    assert pub_ocn.main_account.get_balance().eth == aquarius_current_eth
-    assert pub_ocn.main_account.get_balance().ocn == aquarius_current_ocean
+    assert pub_ocn.main_account.balance.eth == aquarius_current_eth
+    assert pub_ocn.main_account.balance.ocn == aquarius_current_ocean
     # assert aquarius_current_eth < aquarius_start_eth
     # assert aquarius_current_ocean == aquarius_start_ocean + amount
 
@@ -101,16 +101,15 @@ def test_register_asset(publisher_ocean_instance):
     ##########################################################
     # Setup account
     ##########################################################
-    publisher_acct = publisher_ocean_instance.main_account
-    publisher_address = publisher_acct.address
+    publisher = publisher_ocean_instance.main_account
 
     # ensure Ocean token balance
-    if publisher_acct.ocean_balance == 0:
-        rcpt = publisher_acct.request_tokens(200)
+    if publisher.ocean_balance == 0:
+        rcpt = publisher.request_tokens(200)
         publisher_ocean_instance._web3.eth.waitForTransactionReceipt(rcpt)
 
     # You will need some token to make this transfer!
-    assert publisher_acct.ocean_balance > 0
+    assert publisher.ocean_balance > 0
 
     ##########################################################
     # Create an Asset with valid metadata
@@ -129,7 +128,7 @@ def test_register_asset(publisher_ocean_instance):
     # Register using high-level interface
     ##########################################################
     service_descriptors = [ServiceDescriptor.access_service_descriptor(asset_price, '/purchaseEndpoint', '/serviceEndpoint', 600, ('0x%s' % generate_new_id()))]
-    publisher_ocean_instance.register_asset(asset.metadata, publisher_address, service_descriptors)
+    publisher_ocean_instance.register_asset(asset.metadata, publisher, service_descriptors)
 
 
 def test_resolve_did(publisher_ocean_instance):
@@ -137,7 +136,7 @@ def test_resolve_did(publisher_ocean_instance):
     metadata = Metadata.get_example()
     publisher = publisher_ocean_instance.main_account
     original_ddo = publisher_ocean_instance.register_asset(
-        metadata, publisher.address,
+        metadata, publisher,
         [ServiceDescriptor.access_service_descriptor(7, '/dummy/url', '/service/endpoint', 3, ('0x%s' % generate_new_id()))]
     )
 
@@ -151,14 +150,12 @@ def test_resolve_did(publisher_ocean_instance):
     # assert ddo == original_ddo.as_dictionary(), 'Resolved ddo does not match original.'
 
     # Can't resolve unregistered asset
-    asset_id = generate_new_id()
-    unregistered_did = did_generate(asset_id)
+    unregistered_did = DID().did
     with pytest.raises(OceanDIDNotFound, message='Expected OceanDIDNotFound error.'):
         publisher_ocean_instance.resolve_did(unregistered_did)
 
     # Raise error on bad did
-    asset_id = '0x0123456789'
-    invalid_did = did_generate(asset_id)
+    invalid_did = "did:op:0123456789"
     with pytest.raises(OceanDIDNotFound, message='Expected a OceanDIDNotFound error when resolving invalid did.'):
         publisher_ocean_instance.resolve_did(invalid_did)
 
@@ -208,7 +205,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     web3 = keeper.web3
     consumer_acc = consumer_ocn.main_account
     publisher_acc = publisher_ocean_instance.main_account
-    service_index = '1'
+    service_index = '0'
     did = registered_ddo.did
 
     # sign agreement
@@ -347,6 +344,55 @@ def test_agreement_hash(publisher_ocean_instance):
     assert agreement_hash.hex() == "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb", 'hash does not match.'
     # signed_hash = pub_ocn.keeper.web3.eth.sign(user_address, agreement_hash).hex()
     # print('signed agreement hash:', signed_hash)
+
+
+def test_verify_signature(consumer_ocean_instance):
+    """
+    squid-py currently uses `web3.eth.sign()` to sign the service agreement hash. This signing method
+    uses ethereum `eth_sign` on the ethereum client which automatically prepends the
+    message with text defined in EIP-191 as version 'E': `b'\\x19Ethereum Signed Message:\\n'`
+    concatenated with the number of bytes in the message.
+
+    It is more convenient to sign a message using `web3.eth.sign()` because it only requires the account address
+    whereas `web3.eth.account.signHash()` requires a private_key to sign the message.
+    `web3.eth.account.signHash()` also does not prepend anything to the message before signing.
+    Messages signed via Metamask in pleuston use the latter method and current fail to verify in squid-py/brizo.
+    The signature verification fails because recoverHash is being used on a prepended message but the signature
+    created by `web3.eth.account.signHash()` does not add a prefix before signing.
+
+    """
+    ocn = consumer_ocean_instance
+    w3 = ocn.keeper.web3
+
+    def verify_signature(_address, _agreement_hash, _signature, expected_match):
+        prefixed_hash = prepare_prefixed_hash(_agreement_hash)
+        recovered_address0 = w3.eth.account.recoverHash(prefixed_hash, signature=_signature)
+        recovered_address1 = w3.eth.account.recoverHash(_agreement_hash, signature=_signature)
+        print('original address: ', _address)
+        print('w3.eth.account.recoverHash(prefixed_hash, signature=signature)  => ', recovered_address0)
+        print('w3.eth.account.recoverHash(agreement_hash, signature=signature) => ', recovered_address1)
+        assert _address == (recovered_address0, recovered_address1)[expected_match], \
+            'Could not verify signature using address {}'.format(_address)
+
+    # Signature created from Metamask (same as using `web3.eth.account.signHash()`)
+    address = '0x8248039e67801Ac0B9d0e38201E963194abdb540'
+    hex_agr_hash = '0xc8ea6bf6f4f4e2bf26a645dd4a1be20f5151c74964026c36efc2149bfae5f924'
+    agreement_hash = Web3.toBytes(hexstr=hex_agr_hash)
+    assert hex_agr_hash == '0x'+agreement_hash.hex()
+    signature = (
+        '0x200ce6aa55f0b4080c5f3a5dbe8385d2d196b0380cbdf388f79b6b004223c68a4f7972deb36417df8599155da2f903e43fe7e7eb40214db6bd6e55fd4c4fcf2a1c'
+    )
+    verify_signature(address, agreement_hash, signature, 1)
+
+    # Signature created using `web3.eth.sign()` (squid-py, squid-js with no metamask)
+    address = "0x00Bd138aBD70e2F00903268F3Db08f2D25677C9e"
+    hex_agr_hash = "0xeeaae0098b39fdf8fab6733152dd0ef54729ac486f9846450780c5cc9d44f5e8"
+    agreement_hash = Web3.toBytes(hexstr=hex_agr_hash)
+    signature = (
+        "0x44fa549d33f5993f73e96f91cad01d9b37830da78494e35bda32a280d1b864ac020a761e872633c8149a5b63b65a1143f9f5a3be35822a9e90e0187d4a1f9d101c"
+    )
+    assert hex_agr_hash == '0x'+agreement_hash.hex()
+    verify_signature(address, agreement_hash, signature, 0)
 
 
 def test_integration(consumer_ocean_instance):

@@ -27,7 +27,7 @@ copyright = 'squid-py contributors'
 author = 'squid-py contributors'
 
 # The full version, including alpha/beta/rc tags
-release = '0.2.16'
+release = '0.2.17'
 # The short X.Y version
 release_parts = release.split('.')  # a list
 version = release_parts[0] + '.' + release_parts[1]
@@ -97,14 +97,58 @@ highlight_language = 'python3'
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-# html_theme = 'alabaster'
-html_theme = 'sphinx_rtd_theme'
+html_theme = 'alabaster'
+# html_theme = 'sphinx_rtd_theme'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
-#
-# html_theme_options = {}
+# For the Alabaster theme, see:
+# https://alabaster.readthedocs.io/en/latest/customization.html
+
+# Colors
+brand_white = '#fff'
+brand_black = '#141414'
+brand_pink = '#ff4092'
+brand_purple = '#7b1173'
+brand_grey_light = '#8b98a9'
+brand_grey = '#41474e'
+brand_grey_dark = '#303030'
+
+# Fonts
+font_family_base = ("'Sharp Sans Medium', -apple-system, BlinkMacSystemFont, "
+                    "'Segoe UI', Helvetica, Arial, sans-serif")
+font_family_title = ("'Sharp Sans Display', -apple-system, "
+                     "BlinkMacSystemFont, "
+                     "'Segoe UI', Helvetica, Arial, sans-serif")
+font_family_monospace = ("'Fira Code', 'Fira Mono', Menlo, Monaco, Consolas, "
+                         "'Courier New', monospace")
+
+html_theme_options = {
+    # Colors
+    'logo': 'logo.png',
+    'logo_name': True,
+    'logo_text_align': 'center',
+    'show_powered_by': False,
+    'body_text': brand_black,
+    'gray_1': brand_grey_dark,  # dark gray
+    'gray_2': brand_grey_light,  # light gray
+    'gray_3': brand_grey,  # medium gray
+    'link': brand_pink,
+    'link_hover': brand_pink,
+    'pink_1': brand_pink,
+    'pink_2': brand_purple,
+    'sidebar_header': brand_black,
+    'sidebar_link': brand_grey,
+    'sidebar_list': brand_black,
+    'sidebar_link_underscore': brand_white,
+    'sidebar_text': brand_black,
+    # Fonts
+    'caption_font_family': font_family_base,
+    'code_font_family': font_family_monospace,
+    'font_family': font_family_base,
+    'head_font_family': font_family_title,
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

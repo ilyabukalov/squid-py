@@ -39,23 +39,90 @@ Install Squid:
 pip install squid-py
 ```
 
-The entry point into the Squid functionality is the Ocean class:
+### Usage:
 
 ```python
-from squid_py.ocean import Ocean
-ocean = Ocean('config.ini')
+import os
+import time
 
-assert ocean.get_accounts()
+from squid_py import (
+    Ocean, 
+    ServiceDescriptor, 
+    ACCESS_SERVICE_TEMPLATE_ID,
+    get_service_endpoint,
+    get_purchase_endpoint,
+)
+from squid_py.ddo.metadata import Metadata
+
+# Make a new instance of Ocean
+ocean = Ocean('config.ini')  # or Ocean(config_dict)
+# You can set a specific ethereum account to use by using `ocean.set_main_account(address, password)` 
+# Ocean picks up address and password by default from the parity.address and parity.password in the config
+
+# PUBLISHER
+# Let's start by registering an asset in the Ocean network
+metadata = Metadata.get_example()
+
+# purchase and service endpoints require `brizo.url` is set in the config file 
+# or passed to Ocean instance in the config_dict.
+purchase_endpoint = get_purchase_endpoint(ocean.config)
+service_endpoint = get_service_endpoint(ocean.config)
+# define the services to include in the new asset DDO
+service_descriptor = ServiceDescriptor.access_service_descriptor(2, purchase_endpoint, service_endpoint, 900, ACCESS_SERVICE_TEMPLATE_ID)
+
+ddo = ocean.register_asset(metadata, ocean.main_account.address, service_descriptor)
+
+# Now we have an asset registered, we can verify it exists by resolving the did
+_ddo = ocean.resolve_did(ddo.did)
+# ddo and _ddo should be identical
+
+# CONSUMER
+# search for assets
+asset = ocean.search_assets_by_text('Ocean protocol')[0]
+# Need some ocean tokens to be able to purchase assets
+ocean.main_account.unlock()
+ocean.keeper.market.request_tokens(10, ocean.main_account.address)
+# Start the purchase/consume request. This will automatically make a payment from the specified account.
+service_agreement_id = ocean.sign_service_agreement(asset.did, 0, ocean.main_account.address)
+# after a short wait (seconds to minutes) the asset data files should be available in the `downloads.path` defined in config
+# wait a bit to let things happen
+time.sleep(30)
+# Asset files are saved in a folder named after the asset DID
+if os.path.exists(ocean.get_asset_folder_path(asset.did, 0)):
+    print('asset files downloaded: {}'.format(os.listdir(ocean.get_asset_folder_path(asset.did, 0))))
+
 ```
 
 ## Configuration
 
-`keeper.url` points to an Ethereum RPC client. Note that Squid learns the name of the network to work with from this client.
+```python
+config_dict = {
+    'keeper-contracts': {
+        # Point to an Ethereum RPC client. Note that Squid learns the name of the network to work with from this client.
+        'keeper.url': 'http://localhost:8545',
+        # Specify the keeper contracts artifacts folder (has the smart contracts definitions json files). When you 
+        # install the package, the artifacts are automatically picked up from the `keeper-contracts` Python 
+        # dependency unless you are using a local ethereum network.
+        'keeper.path': 'artifacts', 
+        'secret_store.url': 'http://localhost:12001',
+        'parity.url': 'http://localhost:8545',
+        'parity.address': '',
+        'parity.password': '',
+    
+    },
+    'resources': {
+        # aquarius is the metadata store. It stores the assets DDO/DID-document
+        'aquarius.url': 'http://localhost:5000',
+        # Brizo is the publisher's agent. It serves purchase and requests for both data access and compute services 
+        'brizo.url': 'http://localhost:8030',
+        # points to the local database file used for storing temporary information (for instance, pending service agreements).
+        'storage.path': 'squid_py.db',
+        # Where to store downloaded asset files
+        'downloads.path': 'consume-downloads'
+    }
+}
 
-`keeper.path` points to the folder with keeper contracts definitions. When you install the package, the artifacts are
-automatically picked up from the `keeper-contracts` Python dependency.
-
-`storage.path` points to the local database file used for storing temporary information (for instance, pending service agreements).
+```
 
 In addition to the configuration file, you may use the following environment variables (override the corresponding configuration file values):
 
