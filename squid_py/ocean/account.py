@@ -8,7 +8,7 @@ class Account:
         """
         Hold account address, and update balances of Ether and Ocean token
 
-        :param keeper: The instantiated Keeper
+        :param keeper: The keeper instance
         :param address: The address of this account
         """
         self.keeper = keeper
@@ -16,20 +16,13 @@ class Account:
         self.password = password
 
     def unlock(self):
-        return self.keeper.market.unlock_account(self)
+        if self.password:
+            return self.keeper.web3.personal.unlockAccount(self.address, self.password)
+        return False
 
     def request_tokens(self, amount):
         self.unlock()
         return self.keeper.market.request_tokens(amount, self.address)
-
-    def get_balance(self):
-        return Balance(self.ether_balance, self.ocean_balance)
-
-    def get_ether_balance(self):
-        return self.ether_balance
-
-    def get_ocean_balance(self):
-        return self.ocean_balance
 
     @property
     def balance(self):
@@ -41,7 +34,7 @@ class Account:
         Call the Token contract method .web3.eth.getBalance()
         :return: Ether balance, int
         """
-        return self.keeper.token.get_ether_balance(self.address)
+        return self.keeper.web3.eth.getBalance(self.address, block_identifier='latest')
 
     @property
     def ocean_balance(self):
