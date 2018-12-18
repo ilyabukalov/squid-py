@@ -4,11 +4,8 @@
 import json
 import os
 import pathlib
-import secrets
 
-from squid_py.did import (
-    did_generate,
-)
+from squid_py.did import DID
 
 from squid_py.ddo import (
     DDO,
@@ -75,54 +72,54 @@ TEST_METADATA = """
 }
 """
 
-TEST_SERVICES =  [
-    { "type": "OpenIdConnectVersion1.0Service",
-      "serviceEndpoint": "https://openid.example.com/"
+TEST_SERVICES = [
+    {"type": "OpenIdConnectVersion1.0Service",
+     "serviceEndpoint": "https://openid.example.com/"
+     },
+    {
+        "type": "CredentialRepositoryService",
+        "serviceEndpoint": "https://repository.example.com/service/8377464"
     },
     {
-      "type": "CredentialRepositoryService",
-      "serviceEndpoint": "https://repository.example.com/service/8377464"
+        "type": "XdiService",
+        "serviceEndpoint": "https://xdi.example.com/8377464"
     },
     {
-      "type": "XdiService",
-      "serviceEndpoint": "https://xdi.example.com/8377464"
+        "type": "HubService",
+        "serviceEndpoint": "https://hub.example.com/.identity/did:op:0123456789abcdef/"
     },
     {
-      "type": "HubService",
-      "serviceEndpoint": "https://hub.example.com/.identity/did:op:0123456789abcdef/"
+        "type": "MessagingService",
+        "serviceEndpoint": "https://example.com/messages/8377464"
     },
     {
-      "type": "MessagingService",
-      "serviceEndpoint": "https://example.com/messages/8377464"
-    },
-    {
-      "type": "SocialWebInboxService",
-      "serviceEndpoint": "https://social.example.com/83hfh37dj",
-      "values": {
-          "description": "My public social inbox",
-          "spamCost": {
-            "amount": "0.50",
-            "currency": "USD"
+        "type": "SocialWebInboxService",
+        "serviceEndpoint": "https://social.example.com/83hfh37dj",
+        "values": {
+            "description": "My public social inbox",
+            "spamCost": {
+                "amount": "0.50",
+                "currency": "USD"
             }
-       }
+        }
     },
     {
-      "type": "BopsService",
-      "serviceEndpoint": "https://bops.example.com/enterprise/"
+        "type": "BopsService",
+        "serviceEndpoint": "https://bops.example.com/enterprise/"
     },
     {
-      "type": "Consume",
-      "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/consume?pubKey=${pubKey}&serviceId={serviceId}&url={url}"
+        "type": "Consume",
+        "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/consume?pubKey=${pubKey}&serviceId={serviceId}&url={url}"
     },
     {
-      "type": "Compute",
-      "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/compute?pubKey=${pubKey}&serviceId={serviceId}&algo={algo}&container={container}"
+        "type": "Compute",
+        "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/compute?pubKey=${pubKey}&serviceId={serviceId}&algo={algo}&container={container}"
     },
 ]
 
+
 def generate_sample_ddo():
-    did_id = secrets.token_hex(32)
-    did = did_generate(did_id)
+    did = DID().did
     assert did
     ddo = DDO(did)
     assert ddo
@@ -132,19 +129,20 @@ def generate_sample_ddo():
     ddo.add_proof(0, private_key)
 
     metadata = json.loads(TEST_METADATA)
-    ddo.add_service("Metadata", "http://myaquarius.org/api/v1/provider/assets/metadata/{did}", values={ 'metadata': metadata})
+    ddo.add_service("Metadata", "http://myaquarius.org/api/v1/provider/assets/metadata/{did}",
+                    values={'metadata': metadata})
     for test_service in TEST_SERVICES:
         values = None
         if 'values' in test_service:
             values = test_service['values']
 
-        ddo.add_service(test_service['type'], test_service['serviceEndpoint'], values = values)
+        ddo.add_service(test_service['type'], test_service['serviceEndpoint'], values=values)
 
     return ddo, private_key
 
+
 def test_creating_ddo():
-    did_id = secrets.token_hex(32)
-    did = did_generate(did_id)
+    did = DID().did
     assert did
     ddo = DDO(did)
     assert ddo
@@ -191,8 +189,7 @@ def test_creating_ddo():
 
 
 def test_creating_ddo_embedded_public_key():
-    test_id = secrets.token_hex(32)
-    did = did_generate(test_id)
+    did = DID().did
     assert did
     ddo = DDO(did)
     assert ddo
@@ -211,9 +208,9 @@ def test_creating_ddo_embedded_public_key():
         ddo_text_proof_hash = ddo.calculate_hash()
         assert ddo_text_proof_hash
 
+
 def test_creating_did_using_ddo():
     # create an empty ddo
-    test_id = secrets.token_hex(32)
     ddo = DDO()
     assert ddo
     private_keys = []
@@ -237,7 +234,7 @@ def test_load_ddo_json():
 
     SAMPLE_DDO_JSON_STRING = json.dumps(SAMPLE_DDO_JSON_DICT)
 
-    this_ddo = DDO(json_text = SAMPLE_DDO_JSON_STRING)
+    this_ddo = DDO(json_text=SAMPLE_DDO_JSON_STRING)
     service = this_ddo.get_service('Metadata')
     assert service
     assert service.get_type() == 'Metadata'
@@ -259,10 +256,12 @@ def test_generate_test_ddo_files():
     for index in range(1, 3):
         ddo, private_key = generate_sample_ddo()
 
-        json_output_filename = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'ddo', 'ddo_sample_generated_{}.json'.format(index))
+        json_output_filename = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'ddo',
+                                            'ddo_sample_generated_{}.json'.format(index))
         with open(json_output_filename, 'w') as fp:
             fp.write(ddo.as_text(is_pretty=True))
 
-        private_output_filename = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'ddo', 'ddo_sample_generated_{}_private_key.pem'.format(index))
+        private_output_filename = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'ddo',
+                                               'ddo_sample_generated_{}_private_key.pem'.format(index))
         with open(private_output_filename, 'w') as fp:
             fp.write(private_key.decode('utf-8'))

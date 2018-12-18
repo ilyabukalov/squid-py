@@ -44,7 +44,6 @@ class ServiceAgreement(ContractBase):
 
     def execute_service_agreement(self, template_id, signature, consumer, hashes, timeouts, service_agreement_id, did_id, publisher_account):
         assert len(hashes) == len(timeouts), ''
-        assert did_id.startswith('0x'), ''
 
         publisher_account.unlock()
         tx_hash = self.contract_concise.executeAgreement(
