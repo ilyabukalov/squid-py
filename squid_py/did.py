@@ -41,7 +41,6 @@ def did_parse(did):
         'id': match.group(2),
         'path': None,
         'fragment': None,
-        'id_hex': None
     }
     uri_text = match.group(3)
     if uri_text:
@@ -49,9 +48,6 @@ def did_parse(did):
         result['fragment'] = uri.fragment
         if uri.path:
             result['path'] = uri.path[1:]
-
-    if result['method'] == OCEAN_DID_METHOD and re.match('^[0-9A-Fa-f]{1,64}$', result['id']):
-        result['id_hex'] = Web3.toHex(hexstr=result['id'])
 
     return result
 
@@ -63,7 +59,7 @@ def is_did_valid(did):
     """
     result = did_parse(did)
     if result:
-        return result['id_hex'] is not None
+        return result['id'] is not None
     return False
 
 
@@ -87,8 +83,8 @@ def id_to_did(did_id, method='op'):
 def did_to_id(did):
     """return an id extracted from a DID string"""
     result = did_parse(did)
-    if result and result['id_hex'] is not None:
-        return result['id_hex']
+    if result and result['id'] is not None:
+        return result['id']
     return None
 
 
@@ -104,9 +100,9 @@ def did_to_id_bytes(did):
             did_result = did_parse(did)
             if not did_result:
                 raise ValueError('{} is not a valid did'.format(did))
-            if not did_result['id_hex']:
+            if not did_result['id']:
                 raise ValueError('{} is not a valid ocean did'.format(did))
-            id_bytes = Web3.toBytes(hexstr=did_result['id_hex'])
+            id_bytes = Web3.toBytes(hexstr=did_result['id'])
     elif isinstance(did, bytes):
         id_bytes = did
     else:

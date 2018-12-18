@@ -1,8 +1,6 @@
 """
     Test did_lib
 """
-import json
-import pathlib
 import pytest
 import secrets
 from web3 import Web3
@@ -84,8 +82,6 @@ def test_did():
 
     # test is_did_valid
     assert is_did_valid(valid_did)
-    assert not is_did_valid('did:op:{}'.format(all_id))
-    assert not is_did_valid('did:eth:{}'.format(test_id))
     with pytest.raises(ValueError):
         is_did_valid('op:{}'.format(test_id))
 
@@ -114,9 +110,9 @@ def test_did():
         id_to_did({'bad': 'value'})
 
     assert id_to_did('') == 'did:op:0'
-    assert did_to_id(valid_did_text) == '0x' + test_id
-    assert did_to_id('did:op1:011') == None
-    assert did_to_id('did:op:0') == '0x0'
+    assert did_to_id(valid_did_text) == test_id
+    assert did_to_id('did:op1:011') == '011'
+    assert did_to_id('did:op:0') == '0'
 
 
 def test_did_to_bytes():
@@ -132,9 +128,6 @@ def test_did_to_bytes():
 
     with pytest.raises(ValueError):
         assert did_to_id_bytes('0x' + id_test)
-
-    with pytest.raises(ValueError):
-        did_to_id_bytes('did:opx:{}'.format(id_test))
 
     with pytest.raises(ValueError):
         did_to_id_bytes('did:opx:Somebadtexstwithnohexvalue0x123456789abcdecfg')

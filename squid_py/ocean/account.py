@@ -16,22 +16,39 @@ class Account:
         self.password = password
 
     def unlock(self):
+        """
+        Unlock the account address using .web3.personal.unlockAccount(address, password)
+
+        :return: Result of the operation, bool
+        """
         if self.password:
             return self.keeper.web3.personal.unlockAccount(self.address, self.password)
         return False
 
     def request_tokens(self, amount):
+        """
+        Request an amount of tokens for the user account.
+
+        :param amount: Amount of tokens, int
+        :return: Result of the operation, bool
+        """
         self.unlock()
         return self.keeper.market.request_tokens(amount, self.address)
 
     @property
     def balance(self):
+        """
+        Call for the balance of the account.
+
+        :return: Tuple with the ether balance and the ocean tokens balance, (int, int)
+        """
         return Balance(self.ether_balance, self.ocean_balance)
 
     @property
     def ether_balance(self):
         """
         Call the Token contract method .web3.eth.getBalance()
+
         :return: Ether balance, int
         """
         return self.keeper.web3.eth.getBalance(self.address, block_identifier='latest')
@@ -40,6 +57,7 @@ class Account:
     def ocean_balance(self):
         """
         Call the Token contract method .balanceOf(account_address)
+
         :return: Ocean token balance, int
         """
         return self.keeper.token.get_token_balance(self.address)
