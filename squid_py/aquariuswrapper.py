@@ -31,8 +31,8 @@ class AquariusWrapper(object):
         """
         Retrieve the endpoint with the ddo for a given did.
 
-        :param did: Asset did.
-        :return: Return the url where find the ddo.
+        :param did: Asset DID string
+        :return: Return the url of the the ddo location
         """
         return self._base_url + '/ddo/%s' % did
 
@@ -40,19 +40,19 @@ class AquariusWrapper(object):
         """
         List all the assets registered in the aquarius instance.
 
-        :return: List of dids.
+        :return: List of DID string
         """
         asset_list = json.loads(requests.get(self._base_url).content)
         if asset_list and 'ids' in asset_list:
             return asset_list['ids']
         return []
 
-    def get_asset_metadata(self, did):
+    def get_asset_ddo(self, did):
         """
         Retrieve asset ddo for a given did.
 
-        :param did: Asset did
-        :return: Asset ddo.
+        :param did: Asset DID string
+        :return: DDO instance
         """
         response = requests.get(self._base_url + '/ddo/%s' % did).content
         if not response:
@@ -67,20 +67,40 @@ class AquariusWrapper(object):
             return {}
         return parsed_response
 
-    def list_assets_metadata(self):
+    def get_asset_metadata(self, did):
+        """
+        Retrieve asset metadata for a given did.
+
+        :param did: Asset DID string
+        :return: metadata key of the DDO instance
+        """
+        response = requests.get(self._base_url + '/metadata/%s' % did).content
+        if not response:
+            return {}
+
+        try:
+            parsed_response = json.loads(response)
+        except TypeError:
+            parsed_response = None
+
+        if parsed_response is None:
+            return {}
+        return parsed_response['metadata']
+
+    def list_assets_ddo(self):
         """
         List all the ddos registered in the aquarius instance.
 
-        :return: List of ddos.
+        :return: List of DDO instance
         """
         return json.loads(requests.get(self._base_url + '/ddo').content)
 
-    def publish_asset_metadata(self, ddo):
+    def publish_asset_ddo(self, ddo):
         """
         Register asset ddo in aquarius.
 
-        :param ddo: Asset ddo.
-        :return: Json response.
+        :param ddo: DDO instance
+        :return: API response (depends on implementation)
         """
         asset_did = ddo.did
         response = requests.post(self._base_url + '/ddo', data=ddo.as_text(), headers=self._headers)
@@ -96,13 +116,13 @@ class AquariusWrapper(object):
             raise Exception(
                 "Unhandled ERROR: status-code {}, error message {}".format(response.status_code, response.text))
 
-    def update_asset_metadata(self, did, ddo):
+    def update_asset_ddo(self, did, ddo):
         """
         Update the ddo of a did already registered.
 
-        :param did: Asset did.
-        :param ddo: Asset ddo.
-        :return: Json response.
+        :param did: Asset DID string
+        :param ddo: DDO instance
+        :return: API response (depends on implementation)
         """
         return json.loads(
             requests.put(self._base_url + '/ddo/%s' % did, data=ddo.as_text(),
@@ -127,7 +147,7 @@ class AquariusWrapper(object):
         :param sort: 1/-1 to sort ascending or descending.
         :param offset: Integer with the number of elements displayed per page.
         :param page: Integer with the number of page.
-        :return: List of ddos.
+        :return: List of DDO instance
         """
         payload = {"text": text, "sort": sort, "offset": offset, "page": page}
         response = requests.get(
@@ -163,8 +183,8 @@ class AquariusWrapper(object):
 
         Example: query_search({"service.metadata.base.name":"London Weather 2011"})
 
-        :param search_query: Python dictionary, query following mongodb syntax.
-        :return: List of ddos.
+        :param search_query: Python dictionary, query following mongodb syntax
+        :return: List of DDO instance
         """
         response = requests.post(
             self._base_url + '/ddo/query',
@@ -187,12 +207,12 @@ class AquariusWrapper(object):
         else:
             raise ValueError('Unknown search response, expecting a list got "%s.' % type(parsed_response))
 
-    def retire_asset_metadata(self, did):
+    def retire_asset_ddo(self, did):
         """
         Retire asset ddo of Aquarius
 
-        :param did: Asset did
-        :return: Json response.
+        :param did: Asset DID string
+        :return: API response (depends on implementation)
         """
         response = requests.delete(self._base_url + '/ddo/%s' % did, headers=self._headers)
         logging.debug("Removed asset DID: {} from metadata store".format(did))

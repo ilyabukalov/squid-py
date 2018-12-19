@@ -14,15 +14,15 @@ def test_aquarius():
 
     #    print(asset1.ddo.as_text())
     # Ensure the asset it not already in database
-    ocean_provider.metadata_store.retire_asset_metadata(asset1.did)
+    ocean_provider.metadata_store.retire_asset_ddo(asset1.did)
 
     # Ensure there are no matching assets before publishing
     for match in ocean_provider.metadata_store.text_search(text='Office'):
-        ocean_provider.metadata_store.retire_asset_metadata(match['id'])
+        ocean_provider.metadata_store.retire_asset_ddo(match['id'])
 
-    this_metadata = ocean_provider.metadata_store.publish_asset_metadata(asset1.ddo)
+    ddo = ocean_provider.metadata_store.publish_asset_ddo(asset1.ddo)
 
-    this_metadata = ocean_provider.metadata_store.get_asset_metadata(asset1.did)
+    ddo = ocean_provider.metadata_store.get_asset_ddo(asset1.did)
 
     assert len(ocean_provider.metadata_store.text_search(text='Office')) == 1
 
@@ -31,10 +31,13 @@ def test_aquarius():
     assert len(ocean_provider.metadata_store.list_assets()) == 1
     asset2 = Asset.from_ddo_json_file(sample_ddo_path2)
 
-    ocean_provider.metadata_store.update_asset_metadata(asset2.did, asset2.ddo)
-    this_metadata = ocean_provider.metadata_store.get_asset_metadata(asset2.did)
+    ocean_provider.metadata_store.update_asset_ddo(asset2.did, asset2.ddo)
+    ddo = ocean_provider.metadata_store.get_asset_ddo(asset2.did)
+    metadata = ocean_provider.metadata_store.get_asset_metadata(asset2.did)
 
     # basic test to compare authentication records in the DDO
-    ddo = DDO(json_text=json.dumps(this_metadata))
+    ddo = DDO(json_text=json.dumps(ddo))
     assert ddo.authentications[0].as_text() == asset2.ddo.authentications[0].as_text()
-    ocean_provider.metadata_store.retire_asset_metadata(asset2.did)
+    assert 'base' in metadata
+
+    ocean_provider.metadata_store.retire_asset_ddo(asset2.did)
