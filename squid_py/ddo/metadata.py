@@ -103,7 +103,8 @@ class Metadata(object):
     def validate(metadata):
         # validate required sections and their sub items
         for section_key in Metadata.REQUIRED_SECTIONS:
-            if section_key not in metadata or not metadata[section_key] or not isinstance(metadata[section_key], dict):
+            if section_key not in metadata or not metadata[section_key] or not isinstance(
+                    metadata[section_key], dict):
                 return False
 
             section = Metadata.MAIN_SECTIONS[section_key]

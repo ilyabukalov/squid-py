@@ -50,7 +50,8 @@ def get_metadata_url(ddo):
 
 
 def prepare_prefixed_hash(msg_hash):
-    prefixed_hash = Web3.soliditySha3(['string', 'bytes32'], ["\x19Ethereum Signed Message:\n32", msg_hash])
+    prefixed_hash = Web3.soliditySha3(['string', 'bytes32'],
+                                      ["\x19Ethereum Signed Message:\n32", msg_hash])
     return prefixed_hash
 
 
@@ -61,7 +62,8 @@ def get_publickey_from_address(web3, address):
                               big_endian_to_int(signature.r),
                               big_endian_to_int(signature.s))
     prefixed_hash = prepare_prefixed_hash(_hash)
-    pub_key = KeyAPI.PublicKey.recover_from_msg_hash(prefixed_hash, KeyAPI.Signature(vrs=signature_vrs))
+    pub_key = KeyAPI.PublicKey.recover_from_msg_hash(prefixed_hash,
+                                                     KeyAPI.Signature(vrs=signature_vrs))
     assert pub_key.to_checksum_address() == address, 'recovered address does not match signing address.'
     return pub_key
 
@@ -95,7 +97,8 @@ def convert_to_text(web3, data):
 
 
 def split_signature(web3, signature):
-    assert len(signature) == 65, 'invalid signature, expecting bytes of length 65, got %s' % len(signature)
+    assert len(signature) == 65, 'invalid signature, expecting bytes of length 65, got %s' % len(
+        signature)
     v = web3.toInt(signature[-1])
     r = to_32byte_hex(web3, int.from_bytes(signature[:32], 'big'))
     s = to_32byte_hex(web3, int.from_bytes(signature[32:64], 'big'))

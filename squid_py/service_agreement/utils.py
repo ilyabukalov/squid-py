@@ -33,7 +33,8 @@ def get_sla_template_dict(path):
 
 
 def build_condition_key(web3, contract_address, fingerprint, template_id):
-    assert isinstance(fingerprint, bytes), 'Expecting `fingerprint` of type bytes, got %s' % type(fingerprint)
+    assert isinstance(fingerprint, bytes), 'Expecting `fingerprint` of type bytes, got %s' % type(
+        fingerprint)
     return web3.soliditySha3(
         ['bytes32', 'address', 'bytes4'],
         [template_id, contract_address, fingerprint]
@@ -81,7 +82,8 @@ def register_service_agreement_template(service_agreement_contract, contract_pat
                                         sla_template_instance=None, sla_template_path=None):
     if sla_template_instance is None:
         if sla_template_path is None:
-            raise AssertionError('Invalid arguments, a template instance or a template json path is required.')
+            raise AssertionError(
+                'Invalid arguments, a template instance or a template json path is required.')
 
         sla_template_instance = ServiceAgreementTemplate.from_json_file(sla_template_path)
 

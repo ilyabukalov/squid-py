@@ -105,7 +105,9 @@ class AquariusWrapper(object):
         asset_did = ddo.did
         response = requests.post(self._base_url + '/ddo', data=ddo.as_text(), headers=self._headers)
         if response.status_code == 500:
-            raise ValueError("This Asset ID already exists! \n\tHTTP Error message: \n\t\t{}".format(response.text))
+            raise ValueError(
+                "This Asset ID already exists! \n\tHTTP Error message: \n\t\t{}".format(
+                    response.text))
         elif response.status_code != 201:
             raise Exception("{} ERROR Full error: \n{}".format(response.status_code, response.text))
         elif response.status_code == 201:
@@ -114,7 +116,8 @@ class AquariusWrapper(object):
             return response
         else:
             raise Exception(
-                "Unhandled ERROR: status-code {}, error message {}".format(response.status_code, response.text))
+                "Unhandled ERROR: status-code {}, error message {}".format(response.status_code,
+                                                                           response.text))
 
     def update_asset_ddo(self, did, ddo):
         """
@@ -169,7 +172,8 @@ class AquariusWrapper(object):
         elif isinstance(parsed_response, list):
             return parsed_response
         else:
-            raise ValueError('Unknown search response, expecting a list got "%s.' % type(parsed_response))
+            raise ValueError(
+                'Unknown search response, expecting a list got "%s.' % type(parsed_response))
 
     def query_search(self, search_query):
         """
@@ -205,7 +209,8 @@ class AquariusWrapper(object):
         elif isinstance(parsed_response, list):
             return parsed_response
         else:
-            raise ValueError('Unknown search response, expecting a list got "%s.' % type(parsed_response))
+            raise ValueError(
+                'Unknown search response, expecting a list got "%s.' % type(parsed_response))
 
     def retire_asset_ddo(self, did):
         """

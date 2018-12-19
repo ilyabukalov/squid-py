@@ -15,13 +15,15 @@ class ServiceDescriptor(object):
     @staticmethod
     def access_service_descriptor(price, purchase_endpoint, service_endpoint, timeout, template_id):
         return (ServiceTypes.ASSET_ACCESS,
-                {'price': price, 'purchaseEndpoint': purchase_endpoint, 'serviceEndpoint': service_endpoint,
+                {'price': price, 'purchaseEndpoint': purchase_endpoint,
+                 'serviceEndpoint': service_endpoint,
                  'timeout': timeout, 'templateId': template_id})
 
     @staticmethod
     def compute_service_descriptor(price, purchase_endpoint, service_endpoint, timeout):
         return (ServiceTypes.CLOUD_COMPUTE,
-                {'price': price, 'purchaseEndpoint': purchase_endpoint, 'serviceEndpoint': service_endpoint,
+                {'price': price, 'purchaseEndpoint': purchase_endpoint,
+                 'serviceEndpoint': service_endpoint,
                  'timeout': timeout})
 
 
@@ -44,7 +46,8 @@ class ServiceFactory(object):
             service_descriptor) == 2, 'Unknown service descriptor format.'
         service_type, kwargs = service_descriptor
         if service_type == ServiceTypes.METADATA:
-            return ServiceFactory.build_metadata_service(did, kwargs['metadata'], kwargs['serviceEndpoint'])
+            return ServiceFactory.build_metadata_service(did, kwargs['metadata'],
+                                                         kwargs['serviceEndpoint'])
 
         elif service_type == ServiceTypes.ASSET_ACCESS:
             return ServiceFactory.build_access_service(
@@ -66,7 +69,8 @@ class ServiceFactory(object):
         return Service(did, service_endpoint, ServiceTypes.METADATA, values={'metadata': metadata})
 
     @staticmethod
-    def build_access_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint, timeout,
+    def build_access_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint,
+                             timeout,
                              template_id):
         param_map = {
             'assetId': did_to_id(did),
@@ -101,6 +105,7 @@ class ServiceFactory(object):
         return Service(did, service_endpoint, ServiceTypes.ASSET_ACCESS, values=other_values)
 
     @staticmethod
-    def build_compute_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint, timeout):
+    def build_compute_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint,
+                              timeout):
         # TODO: implement this once the compute flow is ready
         return

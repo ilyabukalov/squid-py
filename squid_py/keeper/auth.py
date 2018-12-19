@@ -1,6 +1,8 @@
-from squid_py.keeper.contract_base import (
-    ContractBase,
-)
+"""
+    Keeper module to call keeper-contracts.
+"""
+
+from squid_py.keeper.contract_base import ContractBase
 
 
 class Auth(ContractBase):
@@ -36,7 +38,8 @@ class Auth(ContractBase):
                                                            transact={'from': sender_address})
 
     def commit_access_request(self, order_id, is_available, expiration_date, discovery, permissions,
-                              access_agreement_ref, accesss_agreement_type, sender_address, gas_amount):
+                              access_agreement_ref, accesss_agreement_type, sender_address,
+                              gas_amount):
         """
         Aquarius commits the access request of service.
 
@@ -92,4 +95,5 @@ class Auth(ContractBase):
         :param sender_address:
         :return:
         """
-        return self.contract_concise.getEncryptedAccessToken(order_id, call={'from': sender_address})
+        return self.contract_concise.getEncryptedAccessToken(order_id,
+                                                             call={'from': sender_address})

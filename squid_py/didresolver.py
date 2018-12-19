@@ -198,18 +198,21 @@ class DIDResolver:
                         result = data['value'].decode('utf8')
                     except:
                         raise TypeError(
-                            'Invalid string (URL or DDO) data type for a DID value at {}'.format(Web3.toHex(did_bytes)))
+                            'Invalid string (URL or DDO) data type for a DID value at {}'.format(
+                                Web3.toHex(did_bytes)))
                 resolved.add_data(data, result)
                 data = None
                 break
             elif data['value_type'] == VALUE_TYPE_DID:
-                logger.debug('found: did {0} -> did:op:{1}'.format(Web3.toHex(did_bytes), data['value']))
+                logger.debug(
+                    'found: did {0} -> did:op:{1}'.format(Web3.toHex(did_bytes), data['value']))
                 try:
                     did_bytes = Web3.toBytes(hexstr=data['value'].decode('utf8'))
                 except:
                     raise TypeError('Invalid data type for a DID value at {}. Got "{}" which '
                                     'does not seem like a valid did.'.format(Web3.toHex(did_bytes),
-                                                                             data['value'].decode('utf8')))
+                                                                             data['value'].decode(
+                                                                                 'utf8')))
                 resolved.add_data(data, did_bytes)
                 result = did_bytes
             elif data['value_type'] == VALUE_TYPE_DID_REF:
@@ -218,7 +221,8 @@ class DIDResolver:
                 try:
                     did_bytes = Web3.toBytes(hexstr=data['value'].decode('utf8'))
                 except:
-                    raise TypeError('Invalid data type for a DID value at {}'.format(Web3.toHex(did_bytes)))
+                    raise TypeError(
+                        'Invalid data type for a DID value at {}'.format(Web3.toHex(did_bytes)))
                 resolved.add_data(data, did_bytes)
                 result = did_bytes
             else:
@@ -229,7 +233,8 @@ class DIDResolver:
                 if did_bytes not in did_visited:
                     did_visited[did_bytes] = True
                 else:
-                    raise OceanDIDCircularReference('circular reference found at did {}'.format(Web3.toHex(did_bytes)))
+                    raise OceanDIDCircularReference(
+                        'circular reference found at did {}'.format(Web3.toHex(did_bytes)))
                 data = self.get_did(did_bytes)
 
         if resolved.hop_count > 0:

@@ -81,8 +81,10 @@ class ServiceAgreementTemplate(object):
         self.name = template_json['name']
         self.description = template_json['description']
         self.creator = template_json['creator']
-        self.conditions = [ServiceAgreementCondition(cond_json) for cond_json in template_json['conditions']]
-        self.service_agreement_contract = ServiceAgreementContract(template_json['serviceAgreementContract'])
+        self.conditions = [ServiceAgreementCondition(cond_json) for cond_json in
+                           template_json['conditions']]
+        self.service_agreement_contract = ServiceAgreementContract(
+            template_json['serviceAgreementContract'])
 
     def as_dictionary(self):
         return {

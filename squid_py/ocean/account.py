@@ -1,3 +1,4 @@
+"""Ocean module."""
 from collections import namedtuple
 
 Balance = namedtuple('Balance', ('eth', 'ocn'))

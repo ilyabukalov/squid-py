@@ -1,6 +1,5 @@
 """
-    Collection of Keeper contracts
-
+    Keeper module to call keeper-contracts.
 """
 
 import logging
@@ -35,9 +34,10 @@ class Keeper(object):
         logging.info("Keeper contract artifacts (JSON abi files) at: %s", self.contract_path)
 
         if os.environ.get('KEEPER_NETWORK_NAME'):
-            logging.warning('The `KEEPER_NETWORK_NAME` env var is set to %s. This enables the user to '
-                            'override the method of how the network name is inferred from network id.',
-                            os.environ.get('KEEPER_NETWORK_NAME'))
+            logging.warning(
+                'The `KEEPER_NETWORK_NAME` env var is set to %s. This enables the user to '
+                'override the method of how the network name is inferred from network id.',
+                os.environ.get('KEEPER_NETWORK_NAME'))
 
         # try to find contract with this network name
         contract_name = 'ServiceAgreement'
@@ -53,10 +53,12 @@ class Keeper(object):
             logging.error('Cannot find the keeper contracts. \n'
                           '\tCurrent network id is "%s" and network name is "%s"\n'
                           '\tExpected to find contracts ending with ".%s.json", e.g. "%s.%s.json"',
-                          get_network_id(self.web3), network_name, network_name, contract_name, network_name)
+                          get_network_id(self.web3), network_name, network_name, contract_name,
+                          network_name)
             raise OceanKeeperContractsNotFound(
                 'Keeper contracts for keeper network "%s" were not found in "%s". \n'
-                'Found the following contracts: \n\t%s' % (network_name, contract_path, existing_contract_names)
+                'Found the following contracts: \n\t%s' % (
+                network_name, contract_path, existing_contract_names)
             )
 
         self.network_name = network_name
@@ -83,4 +85,5 @@ class Keeper(object):
                          'the current keeper network.', ACCESS_SERVICE_TEMPLATE_ID)
         else:
             logging.info('Found service agreement template "%s" of type `Access` deployed in '
-                         'the current keeper network published by "%s".', ACCESS_SERVICE_TEMPLATE_ID, template_owner)
+                         'the current keeper network published by "%s".',
+                         ACCESS_SERVICE_TEMPLATE_ID, template_owner)

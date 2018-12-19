@@ -3,6 +3,7 @@
 
     All keeper contract inherit from this base class
 """
+
 import logging
 
 from web3.contract import ConciseContract

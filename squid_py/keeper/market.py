@@ -1,3 +1,6 @@
+"""
+    Keeper module to call keeper-contracts.
+"""
 import logging
 
 from web3 import Web3
@@ -68,7 +71,8 @@ class Market(ContractBase):
         logging.debug("Registered Asset {} into blockchain".format(asset.asset_id))
         return result
 
-    def pay_order(self, order_id, publisher_address, price, timeout, sender_address, gas_amount=None):
+    def pay_order(self, order_id, publisher_address, price, timeout, sender_address,
+                  gas_amount=None):
         """
 
         :param order_id:
@@ -96,10 +100,11 @@ class Market(ContractBase):
         """
         asset_id_bytes = Web3.toBytes(hexstr=asset_id)
         asset_price = self.contract_concise.getAssetPrice(asset_id_bytes)
-        return self.contract_concise.sendPayment(order.id, publisher_address, asset_price, order.timeout, {
-            'from': sender_address,
-            'gas': self._defaultGas
-        })
+        return self.contract_concise.sendPayment(order.id, publisher_address, asset_price,
+                                                 order.timeout, {
+                                                     'from': sender_address,
+                                                     'gas': self._defaultGas
+                                                 })
 
     def calculate_message_hash(self, message):
         """

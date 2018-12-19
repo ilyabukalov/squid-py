@@ -96,7 +96,8 @@ class ServiceAgreementCondition(object):
         self.contract_name = condition_json['contractName']
         self.function_name = condition_json['functionName']
         self.is_terminal = bool(condition_json['isTerminalCondition'])
-        self.dependencies, self.timeout_flags = self._read_dependencies(condition_json['dependencies'])
+        self.dependencies, self.timeout_flags = self._read_dependencies(
+            condition_json['dependencies'])
         assert len(self.dependencies) == len(self.timeout_flags)
         if self.dependencies:
             assert sum(

@@ -1,3 +1,5 @@
+"""Ocean module."""
+
 from .ocean_base import OceanBase
 
 

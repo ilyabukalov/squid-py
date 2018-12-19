@@ -1,7 +1,8 @@
 import sqlite3
 
 
-def record_service_agreement(storage_path, service_agreement_id, did, service_index, price, content_urls, start_time,
+def record_service_agreement(storage_path, service_agreement_id, did, service_index, price,
+                             content_urls, start_time,
                              status='pending'):
     """ Records the given pending service agreement.
     """

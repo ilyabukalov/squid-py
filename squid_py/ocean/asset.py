@@ -1,3 +1,5 @@
+"""Ocean module."""
+
 import hashlib
 import json
 import logging
@@ -128,7 +130,8 @@ class Asset(OceanBase):
         # add a signature
         private_password = new_ddo.add_signature()
         # add the service endpoint with the meta data
-        new_ddo.add_service(ServiceTypes.METADATA, service_endpoint, values={DDO_SERVICE_METADATA_KEY: metadata})
+        new_ddo.add_service(ServiceTypes.METADATA, service_endpoint,
+                            values={DDO_SERVICE_METADATA_KEY: metadata})
         # add the static proof
         new_ddo.add_proof(0, private_password)
         # create the asset object

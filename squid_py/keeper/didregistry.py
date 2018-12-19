@@ -1,3 +1,7 @@
+"""
+    Keeper module to call keeper-contracts.
+"""
+
 import re
 from urllib.parse import urlparse
 from web3 import Web3
@@ -87,7 +91,8 @@ class DIDRegistry(ContractBase):
             raise ValueError('You must provide an account to use to register a DID')
 
         account.unlock()
-        transaction = self.register_attribute(did_source_id, value_type, key, value, account.address)
+        transaction = self.register_attribute(did_source_id, value_type, key, value,
+                                              account.address)
         receipt = self.get_tx_receipt(transaction)
         return receipt
 
