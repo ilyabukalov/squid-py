@@ -7,7 +7,6 @@ import logging
 import os
 import site
 
-
 DEFAULT_KEEPER_HOST = 'localhost'
 DEFAULT_KEEPER_PORT = 8545
 DEFAULT_KEEPER_URL = 'http://localhost:8545'

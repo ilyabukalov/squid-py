@@ -77,7 +77,8 @@ def get_conditions_data_from_keeper_contracts(web3, contract_path, conditions, t
     return contract_addresses, fingerprints, fulfillment_indices, conditions_keys
 
 
-def register_service_agreement_template(service_agreement_contract, contract_path, owner_account, sla_template_instance=None, sla_template_path=None):
+def register_service_agreement_template(service_agreement_contract, contract_path, owner_account,
+                                        sla_template_instance=None, sla_template_path=None):
     if sla_template_instance is None:
         if sla_template_path is None:
             raise AssertionError('Invalid arguments, a template instance or a template json path is required.')
@@ -86,7 +87,8 @@ def register_service_agreement_template(service_agreement_contract, contract_pat
 
     # sla_template_instance.template_id = generate_prefixed_id()
     conditions_data = get_conditions_data_from_keeper_contracts(
-        service_agreement_contract.web3, contract_path, sla_template_instance.conditions, sla_template_instance.template_id
+        service_agreement_contract.web3, contract_path, sla_template_instance.conditions,
+        sla_template_instance.template_id
     )
     contract_addresses, fingerprints, fulfillment_indices, conditions_keys = conditions_data
     # Fill the conditionKey in each condition in the template
@@ -143,7 +145,7 @@ def make_public_key_and_authentication(did, publisher_address, web3):
     # set public key
     public_key_value = get_publickey_from_address(web3, publisher_address).to_hex()
     pub_key = PublicKeyHex('keys-1', **{'value': public_key_value, 'owner': publisher_address,
-                                         'type': PUBLIC_KEY_TYPE_HEX})
+                                        'type': PUBLIC_KEY_TYPE_HEX})
     pub_key.assign_did(did)
     # set authentication
     auth = Authentication(pub_key, AUTHENTICATION_TYPE_HEX)

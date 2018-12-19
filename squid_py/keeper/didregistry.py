@@ -20,6 +20,11 @@ class DIDRegistry(ContractBase):
     """
 
     def __init__(self, web3, contract_path):
+        """
+
+        :param web3:
+        :param contract_path:
+        """
         ContractBase.__init__(self, web3, contract_path, 'DIDRegistry')
 
     def register(self, did_source, url=None, ddo=None, did=None, key=None, account=None):
@@ -32,6 +37,7 @@ class DIDRegistry(ContractBase):
         :param did: DID to resolve too, can be a 32 byte value or 64 hex string
         :param key: Optional 32 byte key ( 64 char hex )
         :param account: instance of Account to use to register/update the DID
+        :return: Receipt
         """
 
         value_type = VALUE_TYPE_DID

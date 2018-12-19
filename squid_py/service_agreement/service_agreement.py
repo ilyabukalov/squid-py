@@ -14,7 +14,8 @@ class ServiceAgreement(object):
     PURCHASE_ENDPOINT_KEY = 'purchaseEndpoint'
     SERVICE_ENDPOINT_KEY = 'serviceEndpoint'
 
-    def __init__(self, sa_definition_id, template_id, conditions, service_agreement_contract, purchase_endpoint=None, service_endpoint=None):
+    def __init__(self, sa_definition_id, template_id, conditions, service_agreement_contract, purchase_endpoint=None,
+                 service_endpoint=None):
         self.sa_definition_id = sa_definition_id
         self.template_id = add_0x_prefix(template_id)
         self.conditions = conditions
@@ -62,7 +63,8 @@ class ServiceAgreement(object):
         )
 
     @staticmethod
-    def generate_service_agreement_hash(web3, sa_template_id, condition_keys, values_hash_list, timeouts, service_agreement_id):
+    def generate_service_agreement_hash(web3, sa_template_id, condition_keys, values_hash_list, timeouts,
+                                        service_agreement_id):
         return web3.soliditySha3(
             ['bytes32', 'bytes32[]', 'bytes32[]', 'uint256[]', 'bytes32'],
             [sa_template_id, condition_keys, values_hash_list, timeouts, service_agreement_id]
@@ -112,4 +114,3 @@ class ServiceAgreement(object):
             ServiceAgreement.SERVICE_CONTRACT_KEY: self.service_agreement_contract.as_dictionary(),
             ServiceAgreement.SERVICE_CONDITIONS_KEY: [cond.as_dictionary() for cond in self.conditions]
         }
-

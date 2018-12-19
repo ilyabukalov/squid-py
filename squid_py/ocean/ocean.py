@@ -15,7 +15,8 @@ from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
 from squid_py.keeper import Keeper
 from squid_py.log import setup_logging
 from squid_py.didresolver import DIDResolver
-from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata, OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists
+from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata, OceanInvalidServiceAgreementSignature, \
+    OceanServiceAgreementExists
 from squid_py.service_agreement.register_service_agreement import register_service_agreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
@@ -23,7 +24,8 @@ from squid_py.service_agreement.service_factory import ServiceFactory, ServiceDe
 from squid_py.service_agreement.service_types import ServiceTypes
 from squid_py.service_agreement.utils import make_public_key_and_authentication, register_service_agreement_template, \
     get_conditions_data_from_keeper_contracts
-from squid_py.utils.utilities import generate_prefixed_id, prepare_prefixed_hash, prepare_purchase_payload, get_metadata_url
+from squid_py.utils.utilities import generate_prefixed_id, prepare_prefixed_hash, prepare_purchase_payload, \
+    get_metadata_url
 from squid_py.did import did_to_id, DID
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
@@ -74,7 +76,8 @@ class Ocean:
         self.accounts = self.get_accounts()
         assert self.accounts
 
-        parity_address = self._web3.toChecksumAddress(self.config.parity_address) if self.config.parity_address else None
+        parity_address = self._web3.toChecksumAddress(
+            self.config.parity_address) if self.config.parity_address else None
         if parity_address and parity_address in self.accounts:
             self.main_account = self.accounts[parity_address]
             self.main_account.password = self.config.parity_password
@@ -193,7 +196,8 @@ class Ocean:
         assert metadata_copy['base']['contentUrls'], 'contentUrls is required in the metadata base attributes.'
         assert Metadata.validate(metadata), 'metadata seems invalid.'
 
-        content_urls_encrypted = self._encrypt_metadata_content_urls(did, json.dumps(metadata_copy['base']['contentUrls']))
+        content_urls_encrypted = self._encrypt_metadata_content_urls(did,
+                                                                     json.dumps(metadata_copy['base']['contentUrls']))
         # only assign if the encryption worked
         if content_urls_encrypted:
             metadata_copy['base']['contentUrls'] = [content_urls_encrypted]
@@ -237,7 +241,8 @@ class Ocean:
 
     def _approve_token_transfer(self, amount):
         if self.keeper.token.get_token_balance(self.main_account.address) < amount:
-            raise ValueError('Account "%s" does not have sufficient tokens to approve for transfer.' % self.main_account.address)
+            raise ValueError(
+                'Account "%s" does not have sufficient tokens to approve for transfer.' % self.main_account.address)
 
         self.keeper.token.token_approve(self.keeper.payment_conditions.address, amount, self.main_account)
 
@@ -323,8 +328,10 @@ class Ocean:
         :param publisher_address: ethereum account address of publisher
         :return: dict the `executeAgreement` transaction receipt
         """
-        assert consumer_address and self._web3.isChecksumAddress(consumer_address), 'Invalid consumer address "%s"' % consumer_address
-        assert publisher_address and self._web3.isChecksumAddress(publisher_address), 'Invalid publisher address "%s"' % publisher_address
+        assert consumer_address and self._web3.isChecksumAddress(
+            consumer_address), 'Invalid consumer address "%s"' % consumer_address
+        assert publisher_address and self._web3.isChecksumAddress(
+            publisher_address), 'Invalid publisher address "%s"' % publisher_address
         assert publisher_address in self.accounts, 'Unrecognized publisher address %s' % publisher_address
 
         asset_id = did_to_id(did)
@@ -335,12 +342,12 @@ class Ocean:
             raise OceanServiceAgreementExists('Service agreement {} is already executed.'.format(service_agreement_id))
 
         if not self.verify_service_agreement_signature(
-            did, service_agreement_id, service_index,
-            consumer_address, service_agreement_signature, ddo=ddo
+                did, service_agreement_id, service_index,
+                consumer_address, service_agreement_signature, ddo=ddo
         ):
             raise OceanInvalidServiceAgreementSignature(
                 "Verifying consumer signature failed: signature {}, consumerAddress {}"
-                .format(service_agreement_signature, consumer_address)
+                    .format(service_agreement_signature, consumer_address)
             )
 
         # subscribe to events related to this service_agreement_id
@@ -379,7 +386,8 @@ class Ocean:
         document_id = did_to_id(did)
         return self.keeper.access_conditions.check_permissions(consumer_address, document_id, self.main_account.address)
 
-    def verify_service_agreement_signature(self, did, service_agreement_id, service_index, consumer_address, signature, ddo=None):
+    def verify_service_agreement_signature(self, did, service_agreement_id, service_index, consumer_address, signature,
+                                           ddo=None):
         """Verify that the given signature is truly signed by the `consumer_address`
         and represents this did's service agreement..
 

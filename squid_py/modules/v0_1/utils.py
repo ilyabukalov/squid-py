@@ -36,6 +36,7 @@ def handle_action(web3, account, sa_id, contract):
         logger.error('Error when calling grantAccess condition function: ', e, exc_info=1)
         raise
 
+
 def is_condition_fulfilled(web3, contract_path, template_id, service_agreement_id,
                            service_agreement_address, condition_address, condition_abi, fn_name):
     service_agreement = _get_concise_contract(web3, contract_path, service_agreement_address)

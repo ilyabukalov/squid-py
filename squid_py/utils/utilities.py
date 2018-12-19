@@ -109,6 +109,21 @@ def watch_event(contract_name, event_name, callback, interval,
                 start_time, timeout=None, timeout_callback=None,
                 fromBlock=0, toBlock='latest',
                 filters=None, num_confirmations=12):
+    """
+
+    :param contract_name:
+    :param event_name:
+    :param callback:
+    :param interval:
+    :param start_time:
+    :param timeout:
+    :param timeout_callback:
+    :param fromBlock:
+    :param toBlock:
+    :param filters:
+    :param num_confirmations:
+    :return:
+    """
     event_filter = install_filter(
         contract_name, event_name, fromBlock, toBlock, filters
     )
@@ -123,6 +138,15 @@ def watch_event(contract_name, event_name, callback, interval,
 
 
 def install_filter(contract, event_name, fromBlock=0, toBlock='latest', filters=None):
+    """
+
+    :param contract:
+    :param event_name:
+    :param fromBlock:
+    :param toBlock:
+    :param filters:
+    :return:
+    """
     # contract_instance = self.contracts[contract_name][1]
     event = getattr(contract.events, event_name)
     event_filter = event().createFilter(
@@ -132,6 +156,16 @@ def install_filter(contract, event_name, fromBlock=0, toBlock='latest', filters=
 
 
 def watcher(event_filter, callback, start_time, timeout, timeout_callback, num_confirmations=12):
+    """
+
+    :param event_filter:
+    :param callback:
+    :param start_time:
+    :param timeout:
+    :param timeout_callback:
+    :param num_confirmations:
+    :return:
+    """
     timed_out = False
     while True:
         try:
@@ -177,6 +211,16 @@ def watcher(event_filter, callback, start_time, timeout, timeout_callback, num_c
 
 
 def await_confirmations(event_filter, block_number, block_hash, num_confirmations, callback, event):
+    """
+
+    :param event_filter:
+    :param block_number:
+    :param block_hash:
+    :param num_confirmations:
+    :param callback:
+    :param event:
+    :return:
+    """
     while True:
         latest_block = event_filter.web3.eth.getBlock('latest')
 

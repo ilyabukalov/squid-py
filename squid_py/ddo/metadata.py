@@ -1,4 +1,3 @@
-
 class AdditionalInfoMeta(object):
     KEY = 'additionalInformation'
     VALUES_KEYS = (
@@ -28,9 +27,9 @@ class CurationMeta(object):
     )
     REQUIRED_VALUES_KEYS = tuple()
     EXAMPLE = {
-        "rating":   0.93,
+        "rating": 0.93,
         "numVotes": 123,
-        "schema":   "Binary Voting",
+        "schema": "Binary Voting",
     }
 
 
@@ -59,21 +58,21 @@ class MetadataBase(object):
     REQUIRED_VALUES_KEYS = {'name', 'type', 'description', 'contentUrls', 'contentType'}
 
     EXAMPLE = {
-        'name':            "Ocean protocol white paper",
-        'type':            "dataset",
-        'description':     "Introduce the main concepts and vision behind ocean protocol",
-        'size':            "1mb",
-        'dateCreated':     "2012-10-10T17:00:000Z",
-        'author':          "Ocean Protocol Foundation Ltd.",
-        'license':         "CC-BY",
+        'name': "Ocean protocol white paper",
+        'type': "dataset",
+        'description': "Introduce the main concepts and vision behind ocean protocol",
+        'size': "1mb",
+        'dateCreated': "2012-10-10T17:00:000Z",
+        'author': "Ocean Protocol Foundation Ltd.",
+        'license': "CC-BY",
         'copyrightHolder': "Ocean Protocol Foundation Ltd.",
-        'encoding':        "UTF-8",
-        'compression':     "",
-        'contentType':     "text/csv",
-        'workExample':     "Text PDF",
-        'inLanguage':      "en",
-        'tags':            "data exchange sharing curation bonding curve",
-        'price':           23,
+        'encoding': "UTF-8",
+        'compression': "",
+        'contentType': "text/csv",
+        'workExample': "Text PDF",
+        'inLanguage': "en",
+        'tags': "data exchange sharing curation bonding curve",
+        'price': 23,
         'contentUrls': [
             "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.pdf"
         ],

@@ -42,7 +42,8 @@ class ServiceAgreement(ContractBase):
         )
         return self.get_tx_receipt(tx_hash)
 
-    def execute_service_agreement(self, template_id, signature, consumer, hashes, timeouts, service_agreement_id, did_id, publisher_account):
+    def execute_service_agreement(self, template_id, signature, consumer, hashes, timeouts, service_agreement_id,
+                                  did_id, publisher_account):
         assert len(hashes) == len(timeouts), ''
 
         publisher_account.unlock()
@@ -79,4 +80,5 @@ class ServiceAgreement(ContractBase):
         return self.contract_concise.getServiceAgreementConsumer(service_agreement_id)
 
     def get_condition_by_fingerprint(self, service_agreement_id, contract_address, function_fingerprint):
-        return self.contract_concise.getConditionByFingerprint(service_agreement_id, contract_address, function_fingerprint)
+        return self.contract_concise.getConditionByFingerprint(service_agreement_id, contract_address,
+                                                               function_fingerprint)

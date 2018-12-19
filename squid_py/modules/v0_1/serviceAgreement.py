@@ -15,7 +15,8 @@ def fulfillAgreement(web3, contract_path, account, service_agreement_id,
     """
     contract_name = service_definition['serviceAgreementContract']['contractName']
     abi, service_agreement_address = get_contract_abi_and_address(web3, contract_path, contract_name)
-    service_agreement = web3.eth.contract(address=service_agreement_address, abi=abi, ContractFactoryClass=ConciseContract)
+    service_agreement = web3.eth.contract(address=service_agreement_address, abi=abi,
+                                          ContractFactoryClass=ConciseContract)
 
     logger.info('About to do fulfillAgreement: account {}, saId {}, ServiceAgreement address {}'
                 .format(account.address, service_agreement_id, service_agreement_address))

@@ -28,7 +28,8 @@ def execute_pending_service_agreements(web3, contract_path, storage_path, accoun
         fetches their service definitions, and subscribes to service agreement events.
     """
     # service_agreement_id, did, service_index, price, content_urls, start_time, status
-    for service_agreement_id, did, service_index, price, content_urls, start_time, _ in get_service_agreements(storage_path):
+    for service_agreement_id, did, service_index, price, content_urls, start_time, _ in get_service_agreements(
+            storage_path):
         ddo = did_resolver_fn(did)
         for service_definition in ddo['service']:
             if service_definition['type'] != 'Access':

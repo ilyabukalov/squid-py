@@ -41,7 +41,7 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
     # events from executing the service agreement.
     for event in service_definition['serviceAgreementContract']['events']:
         if event['actorType'] != actor_type:
-                continue
+            continue
 
         events.append((service_definition['serviceAgreementContract']['contractName'], Event(event), None, None))
 
@@ -67,7 +67,8 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
             timeout_event = timeout_events[0] if timeout_events else None
             if not timeout_event:
                 raise AssertionError('Expected a timeout event in this condition "%s" because another '
-                                     'condition "%s" depends on this condition timing out.' % (cond_instance.name, _dependent_cond_timeout[0], ))
+                                     'condition "%s" depends on this condition timing out.' % (
+                                         cond_instance.name, _dependent_cond_timeout[0],))
 
         for event in cond_instance.events:
             if event.actor_type != actor_type or event.name.endswith('Timeout'):
@@ -84,7 +85,8 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
         fn = get_event_handler_function(event)
         timeout_fn = None
         if timeout_event and timeout:
-            assert MIN_TIMEOUT < timeout < MAX_TIMEOUT, 'TIMEOUT value not within allowed range %s-%s.' % (MIN_TIMEOUT, MAX_TIMEOUT)
+            assert MIN_TIMEOUT < timeout < MAX_TIMEOUT, 'TIMEOUT value not within allowed range %s-%s.' % (
+                MIN_TIMEOUT, MAX_TIMEOUT)
             timeout_fn = get_event_handler_function(timeout_event)
 
         def _get_callback(func_to_call):

@@ -112,5 +112,3 @@ def get_registered_ddo(ocean_instance):
     )
 
     return ddo
-
-

@@ -52,7 +52,6 @@ def grantAccess(web3, contract_path, account, service_agreement_id, service_defi
 
 def consumeAsset(web3, contract_path, account, service_agreement_id, service_definition,
                  consume_callback, *args, **kwargs):
-
     if consume_callback:
         consume_callback(
             service_agreement_id, service_definition.get('id'),

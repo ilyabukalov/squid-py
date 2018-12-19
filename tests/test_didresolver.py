@@ -215,7 +215,7 @@ def test_did_resolver_library(publisher_ocean_instance):
     gas_used_ddo = receipt['gasUsed']
 
     didresolved = didresolver.resolve(did_id_bytes)
-    resolved_ddo = DDO(json_text = didresolved.ddo)
+    resolved_ddo = DDO(json_text=didresolved.ddo)
 
     assert didresolved
     assert didresolved.is_ddo

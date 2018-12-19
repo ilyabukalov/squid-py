@@ -66,7 +66,8 @@ class ServiceFactory(object):
         return Service(did, service_endpoint, ServiceTypes.METADATA, values={'metadata': metadata})
 
     @staticmethod
-    def build_access_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint, timeout, template_id):
+    def build_access_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint, timeout,
+                             template_id):
         param_map = {
             'assetId': did_to_id(did),
             'price': price,

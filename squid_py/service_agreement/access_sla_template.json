@@ -32,7 +32,8 @@
           "name": "assetId",
           "type": "bytes32",
           "value": ""
-        },{
+        },
+        {
           "name": "price",
           "type": "uint256",
           "value": ""
@@ -51,7 +52,8 @@
       ],
       "dependencies": [],
       "isTerminalCondition": 0
-    }, {
+    },
+    {
       "name": "grantAccess",
       "timeout": 0,
       "conditionKey": "",
@@ -106,7 +108,8 @@
         }
       ],
       "isTerminalCondition": 0
-    }, {
+    },
+    {
       "name": "releasePayment",
       "timeout": 0,
       "conditionKey": "",
@@ -118,7 +121,8 @@
           "name": "assetId",
           "type": "bytes32",
           "value": ""
-        },{
+        },
+        {
           "name": "price",
           "type": "uint256",
           "value": ""
@@ -142,7 +146,8 @@
         }
       ],
       "isTerminalCondition": 1
-    }, {
+    },
+    {
       "name": "refundPayment",
       "timeout": 1,
       "conditionKey": "",
@@ -154,7 +159,8 @@
           "name": "assetId",
           "type": "bytes32",
           "value": ""
-        },{
+        },
+        {
           "name": "price",
           "type": "uint256",
           "value": ""

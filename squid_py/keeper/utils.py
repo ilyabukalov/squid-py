@@ -85,7 +85,8 @@ def hexstr_to_bytes(web3, hexstr):
 def get_network_name(web3):
     """Return the keeper network name based on the current ethereum network id."""
     if os.environ.get('KEEPER_NETWORK_NAME'):
-        logging.debug('keeper network name overridden by an environment variable: {}'.format(os.environ.get('KEEPER_NETWORK_NAME')))
+        logging.debug('keeper network name overridden by an environment variable: {}'.format(
+            os.environ.get('KEEPER_NETWORK_NAME')))
         return os.environ.get('KEEPER_NETWORK_NAME')
 
     return NETWORK_NAME_MAP.get(get_network_id(web3), DEFAULT_NETWORK_NAME)
