@@ -72,7 +72,7 @@ class AquariusWrapper(object):
         Retrieve asset metadata for a given did.
 
         :param did: Asset did
-        :return: Asset ddo.
+        :return: Asset metadata.
         """
         response = requests.get(self._base_url + '/metadata/%s' % did).content
         if not response:
