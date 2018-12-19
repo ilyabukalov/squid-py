@@ -8,8 +8,10 @@ import os
 import pathlib
 import time
 
+import requests
 import pytest
 from web3 import Web3
+from secret_store_client.client import Client
 
 from squid_py.ddo import DDO
 from squid_py.exceptions import OceanDIDNotFound
@@ -25,7 +27,7 @@ from squid_py.ocean.asset import Asset
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
-from tests.test_utils import get_publisher_ocean_instance, get_registered_ddo
+from tests.utils import get_registered_ddo, get_publisher_ocean_instance
 
 
 def print_config(ocean_instance):
@@ -397,9 +399,7 @@ def test_verify_signature(consumer_ocean_instance):
     verify_signature(address, agreement_hash, signature, 0)
 
 
-def test_integration(consumer_ocean_instance):
-    # this test is disabled for now.
-    return
+def test_consume_flow(consumer_ocean_instance):
     # This test requires all services running including:
     # secret store
     # parity node
@@ -407,9 +407,7 @@ def test_integration(consumer_ocean_instance):
     # brizo
     # mongodb/bigchaindb
 
-    import requests
-    from secret_store_client.client import Client
-
+    return
     pub_ocn = get_publisher_ocean_instance()
 
     # restore the proper http requests client and secret store client
