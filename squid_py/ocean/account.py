@@ -5,6 +5,9 @@ Balance = namedtuple('Balance', ('eth', 'ocn'))
 
 
 class Account:
+    """
+    Class representing and account.
+    """
     def __init__(self, keeper, address, password=None):
         """
         Hold account address, and update balances of Ether and Ocean token

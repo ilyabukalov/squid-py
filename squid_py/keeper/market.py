@@ -10,6 +10,9 @@ from squid_py.keeper.contract_base import ContractBase
 
 
 class Market(ContractBase):
+    """
+    Class representing the OceanMarket contract.
+    """
 
     def __init__(self, web3, contract_path):
         ContractBase.__init__(self, web3, contract_path, 'OceanMarket')
@@ -19,6 +22,7 @@ class Market(ContractBase):
     def check_asset(self, asset_id):
         """
         Check that this particular asset is already registered on chain."
+
         :param asset_id: ID of the asset to check for existance
         :return: Boolean
         """
@@ -36,9 +40,15 @@ class Market(ContractBase):
         except Exception:
             logging.error("There are no assets registered with id: %s" % asset_id)
 
-    # Transactions with gas cost
     def request_tokens(self, amount, address):
-        """Request an amount of tokens for a particular address."""
+        """
+        Request an amount of tokens for a particular address.
+        This transanction has gas cost
+
+        :param amount: Amount of tokens, int
+        :param address: Account address, str
+        :return: Tx receipt
+        """
         try:
             receipt = self.contract_concise.requestTokens(amount, transact={'from': address})
             logging.debug("{} requests {} tokens, returning receipt".format(address, amount))

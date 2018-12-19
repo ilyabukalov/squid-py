@@ -11,7 +11,7 @@ from squid_py.keeper.utils import (
 from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
 from squid_py.service_agreement.service_types import ServiceTypes
-from squid_py.utils.utilities import get_publickey_from_address
+from squid_py.utils.utilities import get_public_key_from_address
 
 
 def get_sla_template_path(service_type=ServiceTypes.ASSET_ACCESS):
@@ -145,7 +145,7 @@ def make_public_key_and_authentication(did, publisher_address, web3):
     :return:
     """
     # set public key
-    public_key_value = get_publickey_from_address(web3, publisher_address).to_hex()
+    public_key_value = get_public_key_from_address(web3, publisher_address).to_hex()
     pub_key = PublicKeyHex('keys-1', **{'value': public_key_value, 'owner': publisher_address,
                                         'type': PUBLIC_KEY_TYPE_HEX})
     pub_key.assign_did(did)

@@ -12,11 +12,15 @@ OCEAN_PREFIX = 'did:op:'
 
 
 class DID:
+    """
+    Class representing an asset DID.
+    """
 
     @property
     def did(self):
         """
-        Create a did with the format did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865
+        Create a did with the format:
+        did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865
 
         :return: Asset did, str
         """

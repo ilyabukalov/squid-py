@@ -18,6 +18,9 @@ from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID
 
 
 class Keeper(object):
+    """
+    Class that load all the keeper-contracts.
+    """
 
     def __init__(self, web3, contract_path):
         """
@@ -58,7 +61,7 @@ class Keeper(object):
             raise OceanKeeperContractsNotFound(
                 'Keeper contracts for keeper network "%s" were not found in "%s". \n'
                 'Found the following contracts: \n\t%s' % (
-                network_name, contract_path, existing_contract_names)
+                    network_name, contract_path, existing_contract_names)
             )
 
         self.network_name = network_name
@@ -67,12 +70,12 @@ class Keeper(object):
         self.market = Market(web3, contract_path)
         self.auth = Auth(web3, contract_path)
         self.token = Token(web3, contract_path)
-        self.didregistry = DIDRegistry(web3, contract_path)
+        self.did_registry = DIDRegistry(web3, contract_path)
         self.service_agreement = ServiceAgreement(web3, contract_path)
         self.payment_conditions = PaymentConditions(web3, contract_path)
         self.access_conditions = AccessConditions(web3, contract_path)
 
-        contracts = [self.market, self.auth, self.token, self.didregistry,
+        contracts = [self.market, self.auth, self.token, self.did_registry,
                      self.service_agreement, self.payment_conditions, self.access_conditions]
         addresses = '\n'.join(['\t{}: {}'.format(c.name, c.address) for c in contracts])
         logging.info('Finished loading keeper contracts:\n'

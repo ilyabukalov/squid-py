@@ -90,7 +90,7 @@ class Ocean:
         else:
             self.main_account = self.accounts[self._web3.eth.accounts[0]]
 
-        self.did_resolver = DIDResolver(self._web3, self.keeper.didregistry)
+        self.did_resolver = DIDResolver(self._web3, self.keeper.did_registry)
 
         self._http_client = http_client
         if not http_client:
@@ -107,7 +107,7 @@ class Ocean:
                     self.main_account.address, bool(self.main_account.password))
         logger.info('\tOther accounts: %s', sorted(self.accounts))
         logger.info('\taquarius: %s', self.metadata_store.url)
-        logger.info('\tDIDRegistry @ %s', self.keeper.didregistry.address)
+        logger.info('\tDIDRegistry @ %s', self.keeper.did_registry.address)
 
         if self.config.secret_store_url and self.config.parity_url and self.main_account:
             logger.info('\tSecretStore: url %s, parity-client %s, account  %s',
@@ -251,7 +251,7 @@ class Ocean:
             return None
 
         # register on-chain
-        self.keeper.didregistry.register(
+        self.keeper.did_registry.register(
             did,
             key=Web3.sha3(text='Metadata'),
             url=ddo_service_endpoint,

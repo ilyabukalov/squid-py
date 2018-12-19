@@ -26,6 +26,12 @@ def prepare_purchase_payload(did, agreement_id, service_index, signature, consum
 
 
 def get_brizo_url(config):
+    """
+    Return the Brizo component url.
+
+    :param config: Config
+    :return: Url, str
+    """
     brizo_url = 'http://localhost:8030'
     if config.has_option('resources', 'brizo.url'):
         brizo_url = config.get('resources', 'brizo.url') or brizo_url
@@ -35,27 +41,57 @@ def get_brizo_url(config):
 
 
 def get_purchase_endpoint(config):
+    """
+    Return the endpoint to purchase the asset.
+
+    :param config:Config
+    :return: Url, str
+    """
     return '{}/services/access/initialize'.format(get_brizo_url(config))
 
 
 def get_service_endpoint(config):
+    """
+    Return the url to consume the asset.
+
+    :param config: Config
+    :return: Url, str
+    """
     service_endpoint = '{}/services/consume'.format(get_brizo_url(config))
     return service_endpoint
 
 
 def get_metadata_url(ddo):
+    """
+    Return the url save in the metadata in the contentUrls section.
+
+    :param ddo: DDO
+    :return: Url, str
+    """
     metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
     url = metadata_service.get_values()['metadata']['base']['contentUrls']
+    # TODO: Review this implementation, because it looks that it is not retrieving all the urls.
     return url if isinstance(url, str) else url[0]
 
 
 def prepare_prefixed_hash(msg_hash):
+    """
+
+    :param msg_hash:
+    :return:
+    """
     prefixed_hash = Web3.soliditySha3(['string', 'bytes32'],
                                       ["\x19Ethereum Signed Message:\n32", msg_hash])
     return prefixed_hash
 
 
-def get_publickey_from_address(web3, address):
+def get_public_key_from_address(web3, address):
+    """
+
+    :param web3:
+    :param address:
+    :return:
+    """
     _hash = Web3.sha3(text='verify signature.')
     signature = split_signature(web3, web3.eth.sign(address, _hash))
     signature_vrs = Signature(signature.v % 27,
@@ -76,27 +112,53 @@ def generate_prefixed_id():
     return '0x%s' % generate_new_id()
 
 
-def get_id_from_did(did):
-    return convert_to_bytes(Web3, did.split(':')[-1])
-
-
 def to_32byte_hex(web3, val):
+    """
+
+    :param web3:
+    :param val:
+    :return:
+    """
     return web3.toBytes(val).rjust(32, b'\0')
 
 
 def convert_to_bytes(web3, data):
+    """
+
+    :param web3:
+    :param data:
+    :return:
+    """
     return web3.toBytes(text=data)
 
 
 def convert_to_string(web3, data):
+    """
+
+    :param web3:
+    :param data:
+    :return:
+    """
     return web3.toHex(data)
 
 
 def convert_to_text(web3, data):
+    """
+
+    :param web3:
+    :param data:
+    :return:
+    """
     return web3.toText(data)
 
 
 def split_signature(web3, signature):
+    """
+
+    :param web3:
+    :param signature:
+    :return:
+    """
     assert len(signature) == 65, 'invalid signature, expecting bytes of length 65, got %s' % len(
         signature)
     v = web3.toInt(signature[-1])

@@ -6,7 +6,9 @@ from squid_py.keeper.contract_base import ContractBase
 
 
 class Auth(ContractBase):
-
+    """
+    Class representing the OceanAuth contract.
+    """
     def __init__(self, web3, contract_path):
         ContractBase.__init__(self, web3, contract_path, 'OceanAuth')
 

@@ -2,5 +2,6 @@
 
 
 class OceanBase:
-    def __init__(self, id):
-        self.id = id
+    """Ocean abstract class"""
+    def __init__(self, _id):
+        self.id = _id
