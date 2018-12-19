@@ -53,6 +53,7 @@ class Keeper(object):
         try:
             get_contract_by_name(contract_path, network_name, contract_name)
         except Exception as e:
+            logging.error(e)
             logging.error('Cannot find the keeper contracts. \n'
                           '\tCurrent network id is "%s" and network name is "%s"\n'
                           '\tExpected to find contracts ending with ".%s.json", e.g. "%s.%s.json"',

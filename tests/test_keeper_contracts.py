@@ -32,10 +32,10 @@ def test_didresitry_contract():
     ocean = get_ocean_instance()
     assert ocean
 
-    assert ocean.keeper.didregistry
+    assert ocean.keeper.did_registry
     test_id = secrets.token_hex(32)
     # contract call does not work with docker
-    assert ocean.keeper.didregistry.get_update_at(test_id) == 0
+    assert ocean.keeper.did_registry.get_update_at(test_id) == 0
 
 
 def test_market_contract():

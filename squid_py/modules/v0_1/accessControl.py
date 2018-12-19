@@ -49,7 +49,7 @@ def grantAccess(web3, contract_path, account, service_agreement_id, service_defi
                                                 transact=transact)
         process_tx_receipt(web3, tx_hash, contract.events.AccessGranted, 'AccessGranted')
     except Exception as e:
-        logger.error('Error when calling grantAccess condition function: ', e, exc_info=1)
+        logger.error('Error when calling grantAccess condition function: %s' % e, exc_info=1)
         raise
 
 
