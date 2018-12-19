@@ -16,6 +16,7 @@ from squid_py.keeper import Keeper
 from squid_py.log import setup_logging
 from squid_py.didresolver import DIDResolver
 from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata, OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists
+from squid_py.ocean.secret_store import SecretStore
 from squid_py.service_agreement.register_service_agreement import register_service_agreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
@@ -439,44 +440,15 @@ class Ocean:
         else:
             return None
 
-    def _encrypt_metadata_content_urls(self, did, data):
-        """
-        encrypt string data using the DID as an secret store id,
-        if secret store is enabled then return the result from secret store encryption
-
-        return None for no encryption performed
-        """
-        result = None
-        if self.config.secret_store_url and self.config.parity_url and self.main_account:
-            publisher = self._secret_store_client(
-                self.config.secret_store_url, self.config.parity_url,
-                self.main_account.address, self.main_account.password
-            )
-
-            document_id = did_to_id(did)
-            # :FIXME: -- modify the secret store lib to handle this.
-            if document_id.startswith('0x'):
-                document_id = document_id[2:]
-
-            result = publisher.publish_document(document_id, data)
-        return result
+    def _encrypt_metadata_content_urls(self, did, data, threshold=0):
+        return SecretStore(
+            self.config.secret_store_url, self.config.parity_url, self.main_account
+        ).encrypt_document(did_to_id(did), data, threshold)
 
     def _decrypt_content_urls(self, did, encrypted_data):
-        result = None
-        if self.config.secret_store_url and self.config.parity_url and self.main_account:
-            consumer = self._secret_store_client(
-                self.config.secret_store_url, self.config.parity_url,
-                self.main_account.address, self.main_account.password
-            )
-
-            document_id = did_to_id(did)
-            # :FIXME: -- modify the secret store lib to handle this.
-            if document_id.startswith('0x'):
-                document_id = document_id[2:]
-
-            result = consumer.decrypt_document(document_id, encrypted_data)
-
-        return result
+        return SecretStore(
+            self.config.secret_store_url, self.config.parity_url, self.main_account
+        ).decrypt_document(did_to_id(did), encrypted_data)
 
     def consume_service(self, service_agreement_id, did, service_index, consumer_account):
         """Consume the asset data by using the service endpoint defined in the ddo's
