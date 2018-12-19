@@ -5,7 +5,6 @@ import json
 import pathlib
 import uuid
 
-
 from web3 import Web3, HTTPProvider
 
 from squid_py.config import Config
@@ -15,7 +14,6 @@ from squid_py.ocean.ocean import Ocean
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
 
 CONFIG_PATH = 'config_local.ini'
-
 
 SAMPLE_METADATA_PATH = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'metadata', 'sample_metadata1.json')
 assert os.path.exists(SAMPLE_METADATA_PATH), 'sample metadata is not found: "%s"' % SAMPLE_METADATA_PATH
@@ -64,7 +62,8 @@ class TestServiceAgreement(unittest.TestCase):
         print("token published event: %s" % event)
 
     def _setup_service_agreement(self):
-        self.contracts = [self.payment_conditions.address, self.access_conditions.address, self.payment_conditions.address,
+        self.contracts = [self.payment_conditions.address, self.access_conditions.address,
+                          self.payment_conditions.address,
                           self.payment_conditions.address]
         self.fingerprints = [
             get_fingerprint_bytes_by_name(self.web3, self.payment_conditions.contract.abi, 'lockPayment'),
@@ -78,7 +77,8 @@ class TestServiceAgreement(unittest.TestCase):
         template_name = uuid.uuid4().hex
         serviceTemplateId = Web3.sha3(hexstr=template_name)
         encoded_template_name = template_name.encode()
-        setup_args = [serviceTemplateId, self.contracts, self.fingerprints, self.dependencies, encoded_template_name, [0], 0]
+        setup_args = [serviceTemplateId, self.contracts, self.fingerprints, self.dependencies, encoded_template_name,
+                      [0], 0]
         print('***** ', setup_args)
         receipt = self.service_agreement.contract_concise.setupAgreementTemplate(
             *setup_args,
@@ -127,7 +127,8 @@ class TestServiceAgreement(unittest.TestCase):
         assert self.market.request_tokens(2000, consumer_account)
 
         # 1. Aquarius register an asset
-        asset_id = self.market.register_asset(SAMPLE_METADATA['base']['name'], SAMPLE_METADATA['base']['description'], asset_price, publisher_account)
+        asset_id = self.market.register_asset(SAMPLE_METADATA['base']['name'], SAMPLE_METADATA['base']['description'],
+                                              asset_price, publisher_account)
         assert self.market.check_asset(asset_id)
         assert asset_price == self.market.get_asset_price(asset_id)
 
@@ -146,12 +147,10 @@ class TestServiceAgreement(unittest.TestCase):
         # print('seller balance = ', token.get_token_balance(publisher_account))
         # ocean.metadata.retire_asset_ddo(convert_to_string(asset_id))
 
-
         #####################################
         # Service Agreement Template
         #
         # Setup a service agreement template
-
 
         # prepare ddo to use in service agreement
         service_agreement_id = 1000
@@ -166,7 +165,8 @@ class TestServiceAgreement(unittest.TestCase):
         for condition in ddo.conditions:
             values = []
             values_per_condition.append(values)
-        service_agreement.execute_service_agreement(ddo, consumer_account, service_definition_id, timeout, values_per_condition)
+        service_agreement.execute_service_agreement(ddo, consumer_account, service_definition_id, timeout,
+                                                    values_per_condition)
 
         # process ExecuteAgreement event
         # verify consumer balance
@@ -191,4 +191,3 @@ class TestServiceAgreement(unittest.TestCase):
         # refundPayment, should get refund processed
         # process PaymentRefund event
         # verify consumer funds has the original funds returned.
-

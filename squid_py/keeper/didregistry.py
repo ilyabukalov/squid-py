@@ -1,3 +1,7 @@
+"""
+    Keeper module to call keeper-contracts.
+"""
+
 import re
 from urllib.parse import urlparse
 from web3 import Web3
@@ -20,6 +24,11 @@ class DIDRegistry(ContractBase):
     """
 
     def __init__(self, web3, contract_path):
+        """
+
+        :param web3:
+        :param contract_path:
+        """
         ContractBase.__init__(self, web3, contract_path, 'DIDRegistry')
 
     def register(self, did_source, url=None, ddo=None, did=None, key=None, account=None):
@@ -32,6 +41,7 @@ class DIDRegistry(ContractBase):
         :param did: DID to resolve too, can be a 32 byte value or 64 hex string
         :param key: Optional 32 byte key ( 64 char hex )
         :param account: instance of Account to use to register/update the DID
+        :return: Receipt
         """
 
         value_type = VALUE_TYPE_DID
@@ -81,7 +91,8 @@ class DIDRegistry(ContractBase):
             raise ValueError('You must provide an account to use to register a DID')
 
         account.unlock()
-        transaction = self.register_attribute(did_source_id, value_type, key, value, account.address)
+        transaction = self.register_attribute(did_source_id, value_type, key, value,
+                                              account.address)
         receipt = self.get_tx_receipt(transaction)
         return receipt
 

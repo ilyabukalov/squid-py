@@ -113,167 +113,167 @@ class TestRegisterServiceAgreement(unittest.TestCase):
             },
             'conditions': [
                 {
-                'name': 'grantAccess',
-                'timeout': timeout,
-                'isTerminalCondition': 0,
-                'dependencies': [
-                    {
-                        'name': 'lockPayment',
-                        'timeout': 0
-                    }
-                ],
-                'conditionKey': "",
-                'contractName': 'AccessConditions',
-                'functionName': 'grantAccess',
-                'parameters': [
-                    {
-                        'name': 'assetId',
-                        'type': 'bytes32',
-                        'value': did,
-                    },
-                    {
-                        'name': 'documentKeyId',
-                        'type': 'bytes32',
-                        'value': did,
-                    }
-                ],
-                'events': [
-                    {
-                    'name': 'AccessGranted',
-                    'actorType': 'publisher',
-                    'handler': {
-                        'moduleName': 'payment',
-                        'functionName': 'releasePayment',
-                        'version': '0.1'
-                    }},
-                    {
-                    'name': 'AccessGranted',
-                    'actorType': 'consumer',
-                    'handler': {
-                        'moduleName': 'accessControl',
-                        'functionName': 'consumeAsset',
-                        'version': '0.1'
-                    }},
-                    {
-                      "name": "AccessTimeout",
-                      "actorType": "consumer",
-                      "handler": {
-                        "moduleName": "payment",
-                        "functionName": "refundPayment",
-                        "version": "0.1"
-                      }
-                    }
-
-                ],
-            },                 {
-                'name': 'lockPayment',
-                'timeout': 0,
-                'isTerminalCondition': 0,
-                'dependencies': [],
-                'conditionKey': "",
-                'contractName': 'PaymentConditions',
-                'functionName': 'lockPayment',
-                'parameters': [
-                    {
-                        'name': 'assetId',
-                        'type': 'bytes32',
-                        'value': did,
-                    },
-                    {
-                        'name': 'price',
-                        'type': 'uint256',
-                        'value': price,
-                    }
-                ],
-                'events': [{
-                    'name': 'PaymentLocked',
-                    'actorType': 'publisher',
-                    'handler': {
-                        'moduleName': 'accessControl',
-                        'functionName': 'grantAccess',
-                        'version': '0.1'
-                    }
-                }],
-            }, {
-                'name': 'releasePayment',
-                'timeout': 0,
-                'isTerminalCondition': 1,
-                'dependencies': [
-                     {
-                         'name': 'grantAccess',
-                         'timeout': 0
-                     }
-                 ],
-                'conditionKey': "",
-                'contractName': 'PaymentConditions',
-                'functionName': 'releasePayment',
-                'parameters': [
-                    {
-                        'name': 'assetId',
-                        'type': 'bytes32',
-                        'value': did,
-                    },
-                    {
-                        'name': 'price',
-                        'type': 'uint256',
-                        'value': price,
-                    }
-                ],
-                "events": [
-                    {
-                        "name": "PaymentReleased",
-                        "actorType": "consumer",
-                        "handler": {
-                            "moduleName": "serviceAgreement",
-                            "functionName": "fulfillAgreement",
-                            "version": "0.1"
+                    'name': 'grantAccess',
+                    'timeout': timeout,
+                    'isTerminalCondition': 0,
+                    'dependencies': [
+                        {
+                            'name': 'lockPayment',
+                            'timeout': 0
                         }
-                    }
-                ]
-            }]
+                    ],
+                    'conditionKey': "",
+                    'contractName': 'AccessConditions',
+                    'functionName': 'grantAccess',
+                    'parameters': [
+                        {
+                            'name': 'assetId',
+                            'type': 'bytes32',
+                            'value': did,
+                        },
+                        {
+                            'name': 'documentKeyId',
+                            'type': 'bytes32',
+                            'value': did,
+                        }
+                    ],
+                    'events': [
+                        {
+                            'name': 'AccessGranted',
+                            'actorType': 'publisher',
+                            'handler': {
+                                'moduleName': 'payment',
+                                'functionName': 'releasePayment',
+                                'version': '0.1'
+                            }},
+                        {
+                            'name': 'AccessGranted',
+                            'actorType': 'consumer',
+                            'handler': {
+                                'moduleName': 'accessControl',
+                                'functionName': 'consumeAsset',
+                                'version': '0.1'
+                            }},
+                        {
+                            "name": "AccessTimeout",
+                            "actorType": "consumer",
+                            "handler": {
+                                "moduleName": "payment",
+                                "functionName": "refundPayment",
+                                "version": "0.1"
+                            }
+                        }
+
+                    ],
+                }, {
+                    'name': 'lockPayment',
+                    'timeout': 0,
+                    'isTerminalCondition': 0,
+                    'dependencies': [],
+                    'conditionKey': "",
+                    'contractName': 'PaymentConditions',
+                    'functionName': 'lockPayment',
+                    'parameters': [
+                        {
+                            'name': 'assetId',
+                            'type': 'bytes32',
+                            'value': did,
+                        },
+                        {
+                            'name': 'price',
+                            'type': 'uint256',
+                            'value': price,
+                        }
+                    ],
+                    'events': [{
+                        'name': 'PaymentLocked',
+                        'actorType': 'publisher',
+                        'handler': {
+                            'moduleName': 'accessControl',
+                            'functionName': 'grantAccess',
+                            'version': '0.1'
+                        }
+                    }],
+                }, {
+                    'name': 'releasePayment',
+                    'timeout': 0,
+                    'isTerminalCondition': 1,
+                    'dependencies': [
+                        {
+                            'name': 'grantAccess',
+                            'timeout': 0
+                        }
+                    ],
+                    'conditionKey': "",
+                    'contractName': 'PaymentConditions',
+                    'functionName': 'releasePayment',
+                    'parameters': [
+                        {
+                            'name': 'assetId',
+                            'type': 'bytes32',
+                            'value': did,
+                        },
+                        {
+                            'name': 'price',
+                            'type': 'uint256',
+                            'value': price,
+                        }
+                    ],
+                    "events": [
+                        {
+                            "name": "PaymentReleased",
+                            "actorType": "consumer",
+                            "handler": {
+                                "moduleName": "serviceAgreement",
+                                "functionName": "fulfillAgreement",
+                                "version": "0.1"
+                            }
+                        }
+                    ]
+                }]
         }
         if include_refund:
             sa_def['conditions'].append(
                 {
-                "name": "refundPayment",
-                "timeout": timeout,
-                "conditionKey": "",
-                "contractName": "PaymentConditions",
-                "functionName": "refundPayment",
-                "index": 3,
-                "parameters": [
-                    {
-                        "name": "assetId",
-                        "type": "bytes32",
-                        "value": did
-                    }, {
-                        "name": "price",
-                        "type": "uint256",
-                        "value": price
-                    }
-                ],
-                "events": [
-                    {
-                        "name": "PaymentRefund",
-                        "actorType": "consumer",
-                        "handler": {
-                            "moduleName": "serviceAgreement",
-                            "functionName": "terminateAgreement",
-                            "version": "0.1"
+                    "name": "refundPayment",
+                    "timeout": timeout,
+                    "conditionKey": "",
+                    "contractName": "PaymentConditions",
+                    "functionName": "refundPayment",
+                    "index": 3,
+                    "parameters": [
+                        {
+                            "name": "assetId",
+                            "type": "bytes32",
+                            "value": did
+                        }, {
+                            "name": "price",
+                            "type": "uint256",
+                            "value": price
                         }
-                    }
-                ],
-                "dependencies": [
-                     {
-                         'name': 'lockPayment',
-                         'timeout': 0
-                     },
-                     {
-                         'name': 'grantAccess',
-                         'timeout': 1
-                     }
-                 ],
-                "isTerminalCondition": 1
+                    ],
+                    "events": [
+                        {
+                            "name": "PaymentRefund",
+                            "actorType": "consumer",
+                            "handler": {
+                                "moduleName": "serviceAgreement",
+                                "functionName": "terminateAgreement",
+                                "version": "0.1"
+                            }
+                        }
+                    ],
+                    "dependencies": [
+                        {
+                            'name': 'lockPayment',
+                            'timeout': 0
+                        },
+                        {
+                            'name': 'grantAccess',
+                            'timeout': 1
+                        }
+                    ],
+                    "isTerminalCondition": 1
                 }
             )
         for i, cond_dict in enumerate(sa_def['conditions']):
@@ -390,18 +390,23 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         self._execute_service_agreement(service_agreement_id, did, price)
 
         def get_condition_key(i):
-            return self.web3.soliditySha3(['bytes32', 'address', 'bytes4'], [self.template_id, self.contracts[i], self.fingerprints[i]]).hex()
+            return self.web3.soliditySha3(['bytes32', 'address', 'bytes4'],
+                                          [self.template_id, self.contracts[i], self.fingerprints[i]]).hex()
 
         payment_locked = self._wait_for_event(self.payment_conditions.events.PaymentLocked)
-        lock_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id, get_condition_key(1))
+        lock_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id,
+                                                                                      get_condition_key(1))
         assert lock_cond_status > 0
-        grant_access_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id, get_condition_key(0))
-        release_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id, get_condition_key(2))
+        grant_access_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id,
+                                                                                              get_condition_key(0))
+        release_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id,
+                                                                                         get_condition_key(2))
         assert grant_access_cond_status == 0 and release_cond_status == 0, 'grantAccess and/or releasePayment is fulfilled but not expected to.'
 
         payment_refund = self._wait_for_event(self.payment_conditions.events.PaymentRefund)
         if not payment_refund:
-            refund_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id, get_condition_key(3))
+            refund_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id,
+                                                                                            get_condition_key(3))
             assert refund_cond_status > 0, 'refundPayment not fulfilled'
 
         agreement_fulfilled = self._wait_for_event(self.service_agreement.events.AgreementFulfilled)
@@ -425,7 +430,8 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         did = '0x%s' % generate_new_id()
         price = self.price
 
-        record_service_agreement(self.storage_path, service_agreement_id, did, 0, price, self.content_url, self.start_time)
+        record_service_agreement(self.storage_path, service_agreement_id, did, 0, price, self.content_url,
+                                 self.start_time)
 
         def _did_resolver_fn(did):
             return {
@@ -458,7 +464,8 @@ class TestRegisterServiceAgreement(unittest.TestCase):
     @classmethod
     def _setup_service_agreement(cls):
         cls.template_id = '0x%s' % generate_new_id()
-        cls.contract_names = [cls.access_conditions.name, cls.payment_conditions.name, cls.payment_conditions.name, cls.payment_conditions.name]
+        cls.contract_names = [cls.access_conditions.name, cls.payment_conditions.name, cls.payment_conditions.name,
+                              cls.payment_conditions.name]
         cls.contract_abis = [
             cls.access_conditions.contract.abi,
             cls.payment_conditions.contract.abi,
@@ -542,7 +549,8 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         _network_name = get_network_name(self.web3)
         for i, key in enumerate(self.condition_keys):
             fn_name = function_names[i]
-            abi, address = get_contract_abi_and_address(self.web3, self.keeper.contract_path, self.contract_names[i], _network_name)
+            abi, address = get_contract_abi_and_address(self.web3, self.keeper.contract_path, self.contract_names[i],
+                                                        _network_name)
             assert abi == self.contract_abis[i], 'abi does not match.'
             assert address == self.contracts[i], 'address does not match'
             f = hexstr_to_bytes(self.web3, get_fingerprint_by_name(abi, fn_name))

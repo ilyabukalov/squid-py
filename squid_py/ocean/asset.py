@@ -1,3 +1,5 @@
+"""Ocean module."""
+
 import hashlib
 import json
 import logging
@@ -49,7 +51,11 @@ class Asset(OceanBase):
 
     @property
     def did(self):
-        """return the DID for this asset"""
+        """
+        Return the DID for this asset
+
+        :return: DID
+        """
         if not self._ddo:
             raise AttributeError("No DDO object in {}".format(self))
         if not self._ddo.is_valid:
@@ -59,25 +65,45 @@ class Asset(OceanBase):
 
     @property
     def ddo(self):
-        """return ddo object assigned for this asset"""
+        """
+        Return ddo object assigned for this asset
+
+        :return: DDO
+        """
         return self._ddo
 
     @classmethod
     def from_ddo_json_file(cls, json_file_path):
+        """
+
+        :param json_file_path:
+        :return:
+        """
         this_asset = cls(DDO(json_filename=json_file_path))
         logging.debug("Asset {} created from ddo file {} ".format(this_asset.did, json_file_path))
         return this_asset
 
     @classmethod
     def from_ddo_dict(cls, dictionary):
-        """return a new Asset object from DDO dictionary"""
-        this_asset = cls(ddo=DDO(dictionary=dictionary))
-        logging.debug("Asset {} created from ddo dict {} ".format(this_asset.asset_id, dictionary))
-        return this_asset
+        """
+        Return a new Asset object from DDO dictionary
+
+        :param dictionary:
+        :return:
+        """
+        asset = cls(ddo=DDO(dictionary=dictionary))
+        logging.debug("Asset {} created from ddo dict {} ".format(asset.asset_id, dictionary))
+        return asset
 
     @classmethod
     def create_from_metadata_file(cls, filename, service_endpoint):
-        """return a new Asset object from a metadata JSON file"""
+        """
+        Return a new Asset object from a metadata JSON file.
+
+        :param filename:
+        :param service_endpoint:
+        :return:
+        """
         if filename:
             with open(filename, 'r') as file_handle:
                 metadata = json.load(file_handle)
@@ -86,7 +112,13 @@ class Asset(OceanBase):
 
     @classmethod
     def create_from_metadata(cls, metadata, service_endpoint):
-        """return a new Asset object from a metadata dictionary"""
+        """
+        Return a new Asset object from a metadata dictionary
+
+        :param metadata:
+        :param service_endpoint:
+        :return:
+        """
         # calc the asset id
         asset_id = hashlib.sha256(json.dumps(metadata['base']).encode('utf-8')).hexdigest()
 
@@ -98,7 +130,8 @@ class Asset(OceanBase):
         # add a signature
         private_password = new_ddo.add_signature()
         # add the service endpoint with the meta data
-        new_ddo.add_service(ServiceTypes.METADATA, service_endpoint, values={DDO_SERVICE_METADATA_KEY: metadata})
+        new_ddo.add_service(ServiceTypes.METADATA, service_endpoint,
+                            values={DDO_SERVICE_METADATA_KEY: metadata})
         # add the static proof
         new_ddo.add_proof(0, private_password)
         # create the asset object
@@ -106,19 +139,30 @@ class Asset(OceanBase):
         logging.debug("Asset {} created from metadata {} ".format(this_asset.asset_id, metadata))
         return this_asset
 
-
     @property
     def metadata(self):
+        """
+
+        :return:
+        """
         assert self.has_metadata
         return self._get_metadata()
 
     @property
     def has_metadata(self):
-        """return True if this asset has metadata"""
+        """
+        Return True if this asset has metadata
+
+        :return: bool
+        """
         return not self._get_metadata() is None
 
     def _get_metadata(self):
-        """ protected property to read the metadata from the DDO object"""
+        """
+        Protected property to read the metadata from the DDO object
+
+        :return:
+        """
         result = None
         metadata_service = self._ddo.get_service(ServiceTypes.METADATA)
         if metadata_service:
@@ -127,23 +171,14 @@ class Asset(OceanBase):
                 result = values[DDO_SERVICE_METADATA_KEY]
         return result
 
-    def get_metadata(self):
-        result = None
-        metadata_service = self._ddo.get_service(ServiceTypes.METADATA)
-        if metadata_service:
-            values = metadata_service.get_values()
-            if 'metadata' in values:
-                result = values['metadata']
-        return result
-
-
     @property
     def is_valid(self):
-        """return True if this asset has a valid DDO and DID"""
-        return self._ddo and self._ddo.is_valid
+        """
+        Return True if this asset has a valid DDO and DID
 
-    def assign_metadata(self):
-        pass
+        :return: bool
+        """
+        return self._ddo and self._ddo.is_valid
 
     def purchase(self, consumer, timeout):
         """
@@ -177,24 +212,14 @@ class Asset(OceanBase):
 
         return
 
-    def publish_metadata(self):
-        pass
-
-    def update_metadata(self):
-        pass
-
-    def retire_metadata(self):
-        pass
-
-    def get_service_agreements(self):
-        pass
-
-    def getId(self):
+    def get_id(self):
         return self.asset_id
 
     def generate_did(self):
         """
         During development, the DID can be generated here for convenience.
+
+        :return:
         """
         if not self.ddo:
             raise AttributeError("No DDO object in {}".format(self))
@@ -210,4 +235,3 @@ class Asset(OceanBase):
 
         self.asset_id = hashlib.sha256(json.dumps(metadata['base']).encode('utf-8')).hexdigest()
         self._ddo = self._ddo.create_new('did:op:%s' % self.asset_id)
-

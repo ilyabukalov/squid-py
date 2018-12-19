@@ -1,6 +1,5 @@
 """
-    Collection of Keeper contracts
-
+    Keeper module to call keeper-contracts.
 """
 
 import logging
@@ -19,6 +18,9 @@ from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID
 
 
 class Keeper(object):
+    """
+    Class that load all the keeper-contracts.
+    """
 
     def __init__(self, web3, contract_path):
         """
@@ -35,9 +37,10 @@ class Keeper(object):
         logging.info("Keeper contract artifacts (JSON abi files) at: %s", self.contract_path)
 
         if os.environ.get('KEEPER_NETWORK_NAME'):
-            logging.warning('The `KEEPER_NETWORK_NAME` env var is set to %s. This enables the user to '
-                            'override the method of how the network name is inferred from network id.',
-                            os.environ.get('KEEPER_NETWORK_NAME'))
+            logging.warning(
+                'The `KEEPER_NETWORK_NAME` env var is set to %s. This enables the user to '
+                'override the method of how the network name is inferred from network id.',
+                os.environ.get('KEEPER_NETWORK_NAME'))
 
         # try to find contract with this network name
         contract_name = 'ServiceAgreement'
@@ -50,13 +53,16 @@ class Keeper(object):
         try:
             get_contract_by_name(contract_path, network_name, contract_name)
         except Exception as e:
+            logging.error(e)
             logging.error('Cannot find the keeper contracts. \n'
                           '\tCurrent network id is "%s" and network name is "%s"\n'
                           '\tExpected to find contracts ending with ".%s.json", e.g. "%s.%s.json"',
-                          get_network_id(self.web3), network_name, network_name, contract_name, network_name)
+                          get_network_id(self.web3), network_name, network_name, contract_name,
+                          network_name)
             raise OceanKeeperContractsNotFound(
                 'Keeper contracts for keeper network "%s" were not found in "%s". \n'
-                'Found the following contracts: \n\t%s' % (network_name, contract_path, existing_contract_names)
+                'Found the following contracts: \n\t%s' % (
+                    network_name, contract_path, existing_contract_names)
             )
 
         self.network_name = network_name
@@ -65,12 +71,12 @@ class Keeper(object):
         self.market = Market(web3, contract_path)
         self.auth = Auth(web3, contract_path)
         self.token = Token(web3, contract_path)
-        self.didregistry = DIDRegistry(web3, contract_path)
+        self.did_registry = DIDRegistry(web3, contract_path)
         self.service_agreement = ServiceAgreement(web3, contract_path)
         self.payment_conditions = PaymentConditions(web3, contract_path)
         self.access_conditions = AccessConditions(web3, contract_path)
 
-        contracts = [self.market, self.auth, self.token, self.didregistry,
+        contracts = [self.market, self.auth, self.token, self.did_registry,
                      self.service_agreement, self.payment_conditions, self.access_conditions]
         addresses = '\n'.join(['\t{}: {}'.format(c.name, c.address) for c in contracts])
         logging.info('Finished loading keeper contracts:\n'
@@ -83,4 +89,5 @@ class Keeper(object):
                          'the current keeper network.', ACCESS_SERVICE_TEMPLATE_ID)
         else:
             logging.info('Found service agreement template "%s" of type `Access` deployed in '
-                         'the current keeper network published by "%s".', ACCESS_SERVICE_TEMPLATE_ID, template_owner)
+                         'the current keeper network published by "%s".',
+                         ACCESS_SERVICE_TEMPLATE_ID, template_owner)

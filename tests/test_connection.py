@@ -1,4 +1,6 @@
 import docker
+
+
 # print(docker.version)
 #
 # client = docker.from_env()
@@ -11,7 +13,7 @@ def test_connection():
     assert len(client.containers.list()) > 0, "No docker containers found"
     for container in client.containers.list():
         print(container.name, container.status)
-        print('\t',container.image.tags)
-        print('\t',container.labels)
+        print('\t', container.image.tags)
+        print('\t', container.labels)
         print("\n")
     # container.logs()

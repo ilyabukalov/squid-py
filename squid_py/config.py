@@ -1,12 +1,11 @@
-"""Config data
-
+"""
+Config data
 """
 
 import configparser
 import logging
 import os
 import site
-
 
 DEFAULT_KEEPER_HOST = 'localhost'
 DEFAULT_KEEPER_PORT = 8545
@@ -57,6 +56,9 @@ config_defaults = {
 
 
 class Config(configparser.ConfigParser):
+    """
+    Class to manage the squid-py configuration.
+    """
 
     def __init__(self, filename=None, options_dict=None, **kwargs):
         configparser.ConfigParser.__init__(self)

@@ -127,7 +127,9 @@ def test_register_asset(publisher_ocean_instance):
     ##########################################################
     # Register using high-level interface
     ##########################################################
-    service_descriptors = [ServiceDescriptor.access_service_descriptor(asset_price, '/purchaseEndpoint', '/serviceEndpoint', 600, ('0x%s' % generate_new_id()))]
+    service_descriptors = [
+        ServiceDescriptor.access_service_descriptor(asset_price, '/purchaseEndpoint', '/serviceEndpoint', 600,
+                                                    ('0x%s' % generate_new_id()))]
     publisher_ocean_instance.register_asset(asset.metadata, publisher, service_descriptors)
 
 
@@ -137,7 +139,8 @@ def test_resolve_did(publisher_ocean_instance):
     publisher = publisher_ocean_instance.main_account
     original_ddo = publisher_ocean_instance.register_asset(
         metadata, publisher,
-        [ServiceDescriptor.access_service_descriptor(7, '/dummy/url', '/service/endpoint', 3, ('0x%s' % generate_new_id()))]
+        [ServiceDescriptor.access_service_descriptor(7, '/dummy/url', '/service/endpoint', 3,
+                                                     ('0x%s' % generate_new_id()))]
     )
 
     # happy path
@@ -174,7 +177,8 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     assert ServiceAgreement.SERVICE_DEFINITION_ID_KEY in service.as_dictionary()
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
 
-    service_agreement_id = consumer_ocean_instance.sign_service_agreement(registered_ddo.did, sa.sa_definition_id, consumer)
+    service_agreement_id = consumer_ocean_instance.sign_service_agreement(registered_ddo.did, sa.sa_definition_id,
+                                                                          consumer)
     assert service_agreement_id, 'agreement id is None.'
     print('got new service agreement id:', service_agreement_id)
     filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=service_agreement_id)}
@@ -270,10 +274,16 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     locked = wait_for_event(keeper.payment_conditions.events.PaymentLocked, filter_2)
     # assert locked, ''
     if not locked:
-        lock_cond_status = keeper.service_agreement.contract_concise.getConditionStatus(agreement_id, service_agreement.conditions_keys[0])
+        lock_cond_status = keeper.service_agreement.contract_concise.getConditionStatus(agreement_id,
+                                                                                        service_agreement.conditions_keys[
+                                                                                            0])
         assert lock_cond_status > 0
-        grant_access_cond_status = keeper.service_agreement.contract_concise.getConditionStatus(agreement_id, service_agreement.conditions_keys[1])
-        release_cond_status = keeper.service_agreement.contract_concise.getConditionStatus(agreement_id, service_agreement.conditions_keys[2])
+        grant_access_cond_status = keeper.service_agreement.contract_concise.getConditionStatus(agreement_id,
+                                                                                                service_agreement.conditions_keys[
+                                                                                                    1])
+        release_cond_status = keeper.service_agreement.contract_concise.getConditionStatus(agreement_id,
+                                                                                           service_agreement.conditions_keys[
+                                                                                               2])
         assert grant_access_cond_status == 0 and release_cond_status == 0, 'grantAccess and/or releasePayment is fulfilled but not expected to.'
 
     # Grant access
@@ -304,7 +314,7 @@ def test_verify_service_agreement_signature(publisher_ocean_instance, registered
 
 
 def wait_for_event(event, arg_filter, wait_iterations=20):
-    _filter = event.createFilter(fromBlock=0 , argument_filters=arg_filter)
+    _filter = event.createFilter(fromBlock=0, argument_filters=arg_filter)
     for check in range(wait_iterations):
         events = _filter.get_all_entries()
         if events:
@@ -326,7 +336,8 @@ def test_agreement_hash(publisher_ocean_instance):
     print('sid: ', service_agreement_id)
     ddo_file_name = 'shared_ddo_example.json'
 
-    filepath = os.path.join(os.path.sep, *os.path.realpath(__file__).split(os.path.sep)[:-1], 'resources', 'ddo', ddo_file_name)
+    filepath = os.path.join(os.path.sep, *os.path.realpath(__file__).split(os.path.sep)[:-1], 'resources', 'ddo',
+                            ddo_file_name)
     ddo = DDO(json_filename=filepath)
 
     service = ddo.get_service(service_type='Access')
@@ -378,7 +389,7 @@ def test_verify_signature(consumer_ocean_instance):
     address = '0x8248039e67801Ac0B9d0e38201E963194abdb540'
     hex_agr_hash = '0xc8ea6bf6f4f4e2bf26a645dd4a1be20f5151c74964026c36efc2149bfae5f924'
     agreement_hash = Web3.toBytes(hexstr=hex_agr_hash)
-    assert hex_agr_hash == '0x'+agreement_hash.hex()
+    assert hex_agr_hash == '0x' + agreement_hash.hex()
     signature = (
         '0x200ce6aa55f0b4080c5f3a5dbe8385d2d196b0380cbdf388f79b6b004223c68a4f7972deb36417df8599155da2f903e43fe7e7eb40214db6bd6e55fd4c4fcf2a1c'
     )
@@ -391,7 +402,7 @@ def test_verify_signature(consumer_ocean_instance):
     signature = (
         "0x44fa549d33f5993f73e96f91cad01d9b37830da78494e35bda32a280d1b864ac020a761e872633c8149a5b63b65a1143f9f5a3be35822a9e90e0187d4a1f9d101c"
     )
-    assert hex_agr_hash == '0x'+agreement_hash.hex()
+    assert hex_agr_hash == '0x' + agreement_hash.hex()
     verify_signature(address, agreement_hash, signature, 0)
 
 

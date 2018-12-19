@@ -1,6 +1,7 @@
 from collections import namedtuple
 
-Condition = namedtuple('Condition', ('name', 'path', 'dependencies', 'dependencyTimeoutFlags', 'events'))
+Condition = namedtuple('Condition',
+                       ('name', 'path', 'dependencies', 'dependencyTimeoutFlags', 'events'))
 Event = namedtuple('Event', ('name', 'actorType', 'handler'))
 
 
@@ -15,6 +16,7 @@ class AccessServiceTemplate:
                   [Event('AccessGranted', ['consumer'], {})]),
         Condition('releasePayment', 'PaymentConditions.releasePayment', ['grantAccess'], [0],
                   [Event('PaymentReleased', ['publisher'], {})]),
-        Condition('refundPayment', 'PaymentConditions.refundPayment', ['lockPayment', 'grantAccess'], [0, 1],
+        Condition('refundPayment', 'PaymentConditions.refundPayment',
+                  ['lockPayment', 'grantAccess'], [0, 1],
                   [Event('PaymentRefund', ['publisher'], {})])
     ]

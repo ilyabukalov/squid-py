@@ -11,7 +11,7 @@ from squid_py.keeper.utils import (
 from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
 from squid_py.service_agreement.service_types import ServiceTypes
-from squid_py.utils.utilities import get_publickey_from_address
+from squid_py.utils.utilities import get_public_key_from_address
 
 
 def get_sla_template_path(service_type=ServiceTypes.ASSET_ACCESS):
@@ -33,7 +33,8 @@ def get_sla_template_dict(path):
 
 
 def build_condition_key(web3, contract_address, fingerprint, template_id):
-    assert isinstance(fingerprint, bytes), 'Expecting `fingerprint` of type bytes, got %s' % type(fingerprint)
+    assert isinstance(fingerprint, bytes), 'Expecting `fingerprint` of type bytes, got %s' % type(
+        fingerprint)
     return web3.soliditySha3(
         ['bytes32', 'address', 'bytes4'],
         [template_id, contract_address, fingerprint]
@@ -77,16 +78,19 @@ def get_conditions_data_from_keeper_contracts(web3, contract_path, conditions, t
     return contract_addresses, fingerprints, fulfillment_indices, conditions_keys
 
 
-def register_service_agreement_template(service_agreement_contract, contract_path, owner_account, sla_template_instance=None, sla_template_path=None):
+def register_service_agreement_template(service_agreement_contract, contract_path, owner_account,
+                                        sla_template_instance=None, sla_template_path=None):
     if sla_template_instance is None:
         if sla_template_path is None:
-            raise AssertionError('Invalid arguments, a template instance or a template json path is required.')
+            raise AssertionError(
+                'Invalid arguments, a template instance or a template json path is required.')
 
         sla_template_instance = ServiceAgreementTemplate.from_json_file(sla_template_path)
 
     # sla_template_instance.template_id = generate_prefixed_id()
     conditions_data = get_conditions_data_from_keeper_contracts(
-        service_agreement_contract.web3, contract_path, sla_template_instance.conditions, sla_template_instance.template_id
+        service_agreement_contract.web3, contract_path, sla_template_instance.conditions,
+        sla_template_instance.template_id
     )
     contract_addresses, fingerprints, fulfillment_indices, conditions_keys = conditions_data
     # Fill the conditionKey in each condition in the template
@@ -141,9 +145,9 @@ def make_public_key_and_authentication(did, publisher_address, web3):
     :return:
     """
     # set public key
-    public_key_value = get_publickey_from_address(web3, publisher_address).to_hex()
+    public_key_value = get_public_key_from_address(web3, publisher_address).to_hex()
     pub_key = PublicKeyHex('keys-1', **{'value': public_key_value, 'owner': publisher_address,
-                                         'type': PUBLIC_KEY_TYPE_HEX})
+                                        'type': PUBLIC_KEY_TYPE_HEX})
     pub_key.assign_did(did)
     # set authentication
     auth = Authentication(pub_key, AUTHENTICATION_TYPE_HEX)

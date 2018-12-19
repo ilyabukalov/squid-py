@@ -9,5 +9,6 @@ class ComputeServiceTemplate:
         Condition('uploadModel', 'AccessConditions.uploadModel', ['lockPayment'], [0]),
         Condition('grantAccess', 'AccessConditions.grantAccess', ['uploadModel'], [0]),
         Condition('releasePayment', 'PaymentConditions.releasePayment', ['grantAccess'], [0]),
-        Condition('refundPayment', 'PaymentConditions.refundPayment', ['lockPayment', 'grantAccess'], [0, 1])
+        Condition('refundPayment', 'PaymentConditions.refundPayment',
+                  ['lockPayment', 'grantAccess'], [0, 1])
     ]
