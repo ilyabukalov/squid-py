@@ -132,18 +132,18 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
         print(meta_data_assets)
 
     if asset.did in meta_data_assets:
-        pub_ocn.metadata_store.get_asset_metadata(asset.did)
-        pub_ocn.metadata_store.retire_asset_metadata(asset.did)
+        pub_ocn.metadata_store.get_asset_ddo(asset.did)
+        pub_ocn.metadata_store.retire_asset_ddo(asset.did)
     # Publish the metadata
-    this_metadata = pub_ocn.metadata_store.publish_asset_metadata(asset.ddo)
+    this_metadata = pub_ocn.metadata_store.publish_asset_ddo(asset.ddo)
 
     print("Publishing again should raise error")
     with pytest.raises(ValueError):
-        this_metadata = pub_ocn.metadata_store.publish_asset_metadata(asset.ddo)
+        this_metadata = pub_ocn.metadata_store.publish_asset_ddo(asset.ddo)
 
     # TODO: Ensure returned metadata equals sent!
     # get_asset_metadata only returns 'base' key, is this correct?
-    published_metadata = cons_ocn.metadata_store.get_asset_metadata(asset.ddo.did)
+    published_metadata = cons_ocn.metadata_store.get_asset_ddo(asset.ddo.did)
 
     assert published_metadata
     # only compare top level keys
