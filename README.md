@@ -1,4 +1,4 @@
-from squid_py.utils.utilities import get_purchase_endpointfrom squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_IDfrom squid_py.ddo.metadata import Metadata[![banner](https://raw.githubusercontent.com/oceanprotocol/art/master/github/repo-banner%402x.png)](https://oceanprotocol.com)
+[![banner](https://raw.githubusercontent.com/oceanprotocol/art/master/github/repo-banner%402x.png)](https://oceanprotocol.com)
 
 # squid-py
 

@@ -14,7 +14,7 @@ from web3 import Web3
 from squid_py.ddo import DDO
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.ddo.metadata import Metadata
-from squid_py.did import did_generate, did_to_id
+from squid_py.did import DID, did_to_id
 from squid_py.keeper.utils import get_fingerprint_by_name
 from squid_py.service_agreement.utils import build_condition_key
 from squid_py.utils.utilities import generate_new_id, prepare_prefixed_hash
@@ -150,14 +150,12 @@ def test_resolve_did(publisher_ocean_instance):
     # assert ddo == original_ddo.as_dictionary(), 'Resolved ddo does not match original.'
 
     # Can't resolve unregistered asset
-    asset_id = generate_new_id()
-    unregistered_did = did_generate(asset_id)
+    unregistered_did = DID().did
     with pytest.raises(OceanDIDNotFound, message='Expected OceanDIDNotFound error.'):
         publisher_ocean_instance.resolve_did(unregistered_did)
 
     # Raise error on bad did
-    asset_id = '0x0123456789'
-    invalid_did = did_generate(asset_id)
+    invalid_did = "did:op:0123456789"
     with pytest.raises(OceanDIDNotFound, message='Expected a OceanDIDNotFound error when resolving invalid did.'):
         publisher_ocean_instance.resolve_did(invalid_did)
 
