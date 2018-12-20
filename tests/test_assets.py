@@ -3,16 +3,11 @@
 
 import logging
 import pathlib
-from unittest.mock import Mock
 
 import pytest
 
 from squid_py.ocean.asset import Asset
 from squid_py.ddo import DDO
-import squid_py.ocean.ocean as ocean
-
-# Disable low level loggers
-from squid_py.service_agreement.service_factory import ServiceDescriptor
 
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("web3").setLevel(logging.WARNING)
@@ -135,11 +130,11 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
         pub_ocn.metadata_store.get_asset_ddo(asset.did)
         pub_ocn.metadata_store.retire_asset_ddo(asset.did)
     # Publish the metadata
-    this_metadata = pub_ocn.metadata_store.publish_asset_ddo(asset.ddo)
+    pub_ocn.metadata_store.publish_asset_ddo(asset.ddo)
 
     print("Publishing again should raise error")
     with pytest.raises(ValueError):
-        this_metadata = pub_ocn.metadata_store.publish_asset_ddo(asset.ddo)
+        pub_ocn.metadata_store.publish_asset_ddo(asset.ddo)
 
     # TODO: Ensure returned metadata equals sent!
     # get_asset_metadata only returns 'base' key, is this correct?
