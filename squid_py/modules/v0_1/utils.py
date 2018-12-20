@@ -21,7 +21,8 @@ def process_tx_receipt(web3, tx_hash, event, event_name):
         logger.info('Success: got %s event after fulfilling condition.', event_name)
     else:
         logger.debug('Something is not right, cannot find the %s event after calling the '
-                     'fulfillment condition. This is the transaction receipt %s', event_name, receipt)
+                     'fulfillment condition. This is the transaction receipt %s', event_name,
+                     receipt)
 
 
 def handle_action(web3, account, sa_id, contract):
@@ -30,11 +31,13 @@ def handle_action(web3, account, sa_id, contract):
                         asset_id, document_key_id))
     try:
         account.unlock()
-        tx_hash = access_conditions.grantAccess(service_agreement_id, asset_id, document_key_id, transact=transact)
+        tx_hash = access_conditions.grantAccess(service_agreement_id, asset_id, document_key_id,
+                                                transact=transact)
         process_tx_receipt(web3, tx_hash, contract.events.AccessGranted, 'AccessGranted')
     except Exception as e:
         logger.error('Error when calling grantAccess condition function: ', e, exc_info=1)
         raise
+
 
 def is_condition_fulfilled(web3, contract_path, template_id, service_agreement_id,
                            service_agreement_address, condition_address, condition_abi, fn_name):
@@ -53,7 +56,9 @@ def is_condition_fulfilled(web3, contract_path, template_id, service_agreement_i
 
 
 def get_condition_key(web3, template_id, address, abi, fn_name):
-    return build_condition_key(web3, address, hexstr_to_bytes(web3, get_fingerprint_by_name(abi, fn_name)), template_id)
+    return build_condition_key(web3, address,
+                               hexstr_to_bytes(web3, get_fingerprint_by_name(abi, fn_name)),
+                               template_id)
 
 
 def get_condition_contract_data(web3, contract_path, service_definition, name):
@@ -64,7 +69,8 @@ def get_condition_contract_data(web3, contract_path, service_definition, name):
             break
 
     if condition_definition is None:
-        raise InvalidModule('Failed to find the {} condition in the service definition'.format(name))
+        raise InvalidModule(
+            'Failed to find the {} condition in the service definition'.format(name))
 
     contract_name = condition_definition['contractName']
     function_name = condition_definition['functionName']

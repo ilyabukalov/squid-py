@@ -1,42 +1,57 @@
-# Exceptions for squid-py
+"""
+Exceptions for squid-py
+"""
 
 
-# Raised when an invalid address is passed to the contract loader
 class OceanInvalidContractAddress(Exception):
-    pass
+    """
+    Raised when an invalid address is passed to the contract loader.
+    """
 
 
 class OceanKeeperContractsNotFound(Exception):
-    pass
+    """
+    Raised when is not possible to find the keeper contracts abi.
+    """
 
 
-# Raised when an DID attribute is assigned to a DID in the same chain of DIDs
 class OceanDIDCircularReference(Exception):
-    pass
+    """
+    Raised when an DID attribute is assigned to a DID in the same chain of DIDs.
+    """
 
 
-# raised when a requested DID or a DID in the chain cannot be found
 class OceanDIDNotFound(Exception):
-    pass
+    """
+    Raised when a requested DID or a DID in the chain cannot be found.
+    """
 
 
-# raised when a requested DID or a DID in the chain cannot be found
 class OceanDIDUnknownValueType(Exception):
-    pass
+    """
+    Raised when a requested DID or a DID in the chain cannot be found.
+    """
 
 
-# raised when a requested DID is already published in OceanDB
 class OceanDIDAlreadyExist(Exception):
-    pass
+    """
+    Raised when a requested DID is already published in OceanDB.
+    """
 
 
 class OceanInvalidMetadata(Exception):
-    pass
+    """
+    Raised when some value in the metadata is invalid.
+    """
 
 
 class OceanInvalidServiceAgreementSignature(Exception):
-    pass
+    """
+    Raised when the SLA signature is not valid.
+    """
 
 
 class OceanServiceAgreementExists(Exception):
-    pass
+    """
+    Raised when the SLA already exists.
+    """

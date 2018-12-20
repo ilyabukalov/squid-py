@@ -253,7 +253,8 @@ class DDO:
         # if public_key.get_store_type() != PUBLIC_KEY_STORE_TYPE_PEM:
         # key_value = key_value.decode()
 
-        return DDO.validate_signature(signature_text, key_value, signature_value, authentication.get_type())
+        return DDO.validate_signature(signature_text, key_value, signature_value,
+                                      authentication.get_type())
 
     def get_public_key(self, key_id, is_search_embedded=False):
         """key_id can be a string, or int. If int then the index in the list of keys"""
@@ -490,7 +491,8 @@ class DDO:
         key_id = values.get('publicKey')
         authentication_type = values.get('type')
         if not key_id:
-            raise ValueError('Invalid authentication definition, "publicKey" is missing: "%s"' % values)
+            raise ValueError(
+                'Invalid authentication definition, "publicKey" is missing: "%s"' % values)
         if isinstance(key_id, dict):
             public_key = DDO.create_public_key_from_json(key_id)
             authentication = Authentication(public_key, public_key.get_authentication_type())
