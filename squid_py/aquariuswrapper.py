@@ -163,21 +163,7 @@ class AquariusWrapper:
             headers=self._headers
         ).content
 
-        if not response:
-            return {}
-
-        try:
-            parsed_response = json.loads(response)
-        except TypeError:
-            parsed_response = None
-
-        if parsed_response is None:
-            return []
-        elif isinstance(parsed_response, list):
-            return parsed_response
-        else:
-            raise ValueError(
-                'Unknown search response, expecting a list got "%s.' % type(parsed_response))
+        return self._parse_search_response(response)
 
     def query_search(self, search_query):
         """
@@ -200,6 +186,22 @@ class AquariusWrapper:
             headers=self._headers
         ).content
 
+        return self._parse_search_response(response)
+
+    def retire_asset_ddo(self, did):
+        """
+        Retire asset ddo of Aquarius
+
+        :param did: Asset DID string
+        :return: API response (depends on implementation)
+        """
+        response = requests.delete(self._base_url + '/ddo/%s' % did, headers=self._headers)
+        logging.debug("Removed asset DID: {} from metadata store".format(did))
+        return response
+
+    @staticmethod
+    def _parse_search_response(response):
+
         if not response:
             return {}
 
@@ -215,14 +217,3 @@ class AquariusWrapper:
         else:
             raise ValueError(
                 'Unknown search response, expecting a list got "%s.' % type(parsed_response))
-
-    def retire_asset_ddo(self, did):
-        """
-        Retire asset ddo of Aquarius
-
-        :param did: Asset DID string
-        :return: API response (depends on implementation)
-        """
-        response = requests.delete(self._base_url + '/ddo/%s' % did, headers=self._headers)
-        logging.debug("Removed asset DID: {} from metadata store".format(did))
-        return response

@@ -82,7 +82,7 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
 
     # subscribe to the events
     for contract_name, event, dependent_cond_timeout, timeout_event in events:
-        dependent_cond, timeout = None, None
+        timeout = None
         if dependent_cond_timeout and timeout_event:
             dependent_cond_name, timeout = dependent_cond_timeout
 

@@ -33,7 +33,7 @@ def get_contract_abi_by_address(contract_path, address):
             with open(os.path.join(dirname, entry)) as f:
                 try:
                     definition = json.loads(f.read())
-                except Exception:
+                except:
                     continue
 
                 if address != definition['address'].lower():

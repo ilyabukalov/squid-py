@@ -127,7 +127,8 @@ class TestServiceAgreement(unittest.TestCase):
         assert self.market.request_tokens(2000, consumer_account)
 
         # 1. Aquarius register an asset
-        asset_id = self.market.register_asset(SAMPLE_METADATA['base']['name'], SAMPLE_METADATA['base']['description'],
+        asset_id = self.market.register_asset(SAMPLE_METADATA['base']['name'],
+                                              SAMPLE_METADATA['base']['description'],
                                               asset_price, publisher_account)
         assert self.market.check_asset(asset_id)
         assert asset_price == self.market.get_asset_price(asset_id)
