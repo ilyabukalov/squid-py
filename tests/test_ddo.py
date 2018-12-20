@@ -227,14 +227,14 @@ def test_creating_did_using_ddo():
 
 def test_load_ddo_json():
     # TODO: Fix
-    SAMPLE_DDO_PATH = pathlib.Path.cwd() / 'tests' / 'resources' / 'ddo' / 'ddo_sample1.json'
-    assert SAMPLE_DDO_PATH.exists(), "{} does not exist!".format(SAMPLE_DDO_PATH)
-    with open(SAMPLE_DDO_PATH) as f:
-        SAMPLE_DDO_JSON_DICT = json.load(f)
+    sample_ddo_path = pathlib.Path.cwd() / 'tests' / 'resources' / 'ddo' / 'ddo_sample1.json'
+    assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
+    with open(sample_ddo_path) as f:
+        sample_ddo_json_dict = json.load(f)
 
-    SAMPLE_DDO_JSON_STRING = json.dumps(SAMPLE_DDO_JSON_DICT)
+    sample_ddo_json_string = json.dumps(sample_ddo_json_dict)
 
-    this_ddo = DDO(json_text=SAMPLE_DDO_JSON_STRING)
+    this_ddo = DDO(json_text=sample_ddo_json_string)
     service = this_ddo.get_service('Metadata')
     assert service
     assert service.get_type() == 'Metadata'
@@ -262,6 +262,7 @@ def test_generate_test_ddo_files():
             fp.write(ddo.as_text(is_pretty=True))
 
         private_output_filename = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'ddo',
-                                               'ddo_sample_generated_{}_private_key.pem'.format(index))
+                                               'ddo_sample_generated_{}_private_key.pem'.format(
+                                                   index))
         with open(private_output_filename, 'w') as fp:
             fp.write(private_key.decode('utf-8'))

@@ -175,7 +175,8 @@ def test_did_resolver_library(publisher_ocean_instance):
     did_hash = Web3.sha3(text=did_test)
 
     register_account.unlock()
-    register_did = did_registry.register_attribute(did_hash, value_type, key_test, value_test, owner_address)
+    register_did = did_registry.register_attribute(did_hash, value_type, key_test, value_test,
+                                                   owner_address)
     receipt = did_registry.get_tx_receipt(register_did)
     gas_used_url = receipt['gasUsed']
     did_resolved = did_resolver.resolve(did_hash)
@@ -190,7 +191,8 @@ def test_did_resolver_library(publisher_ocean_instance):
     # test update of an already assigned DID
     value_test_new = 'http://aquarius:5000'
     register_account.unlock()
-    register_did = did_registry.register_attribute(did_hash, value_type, key_test, value_test_new, owner_address)
+    register_did = did_registry.register_attribute(did_hash, value_type, key_test, value_test_new,
+                                                   owner_address)
     receipt = did_registry.get_tx_receipt(register_did)
     did_resolved = did_resolver.resolve(did_hash)
     assert did_resolved
@@ -210,7 +212,8 @@ def test_did_resolver_library(publisher_ocean_instance):
     value_type = VALUE_TYPE_DDO
 
     register_account.unlock()
-    register_did = did_registry.register_attribute(did_id_bytes, value_type, key_test, ddo.as_text(), owner_address)
+    register_did = did_registry.register_attribute(did_id_bytes, value_type, key_test,
+                                                   ddo.as_text(), owner_address)
     receipt = did_registry.get_tx_receipt(register_did)
     gas_used_ddo = receipt['gasUsed']
 
@@ -225,7 +228,8 @@ def test_did_resolver_library(publisher_ocean_instance):
     assert did_resolved.owner == owner_address
     assert did_resolved.block_number == receipt['blockNumber']
 
-    logger.info('gas used URL: %d, DDO: %d, DDO +%d extra', gas_used_url, gas_used_ddo, gas_used_ddo - gas_used_url)
+    logger.info('gas used URL: %d, DDO: %d, DDO +%d extra', gas_used_url, gas_used_ddo,
+                gas_used_ddo - gas_used_url)
 
     value_type = VALUE_TYPE_URL
     # resolve chain of direct DID IDS to URL
@@ -240,12 +244,14 @@ def test_did_resolver_library(publisher_ocean_instance):
         if i < len(ids) - 1:
             next_did_id = Web3.toHex(hexstr=ids[i + 1])
             logger.debug('add chain {0} -> {1}'.format(Web3.toHex(did_id_bytes), next_did_id))
-            register_did = did_registry.register_attribute(did_id_bytes, VALUE_TYPE_DID, key_test, next_did_id,
-                                                          owner_address)
+            register_did = did_registry.register_attribute(did_id_bytes, VALUE_TYPE_DID, key_test,
+                                                           next_did_id,
+                                                           owner_address)
         else:
             logger.debug('end chain {0} -> URL'.format(Web3.toHex(did_id_bytes)))
-            register_did = did_registry.register_attribute(did_id_bytes, VALUE_TYPE_URL, key_test, value_test,
-                                                          owner_address)
+            register_did = did_registry.register_attribute(did_id_bytes, VALUE_TYPE_URL, key_test,
+                                                           value_test,
+                                                           owner_address)
         receipt = did_registry.get_tx_receipt(register_did)
 
     did_id_bytes = Web3.toBytes(hexstr=ids[0])
@@ -267,7 +273,8 @@ def test_did_resolver_library(publisher_ocean_instance):
     next_did_id = Web3.toHex(hexstr=ids[0])
     register_account.unlock()
     logger.debug('set end chain {0} -> {1}'.format(Web3.toHex(did_id_bytes), next_did_id))
-    register_did = did_registry.register_attribute(did_id_bytes, VALUE_TYPE_DID, key_test, next_did_id, owner_address)
+    register_did = did_registry.register_attribute(did_id_bytes, VALUE_TYPE_DID, key_test,
+                                                   next_did_id, owner_address)
     did_registry.get_tx_receipt(register_did)
     # get the first DID in the chain
     did_id_bytes = Web3.toBytes(hexstr=ids[0])
@@ -289,7 +296,8 @@ def test_did_resolver_library(publisher_ocean_instance):
 
     # test value type error on a linked DID
     register_account.unlock()
-    register_did = did_registry.register_attribute(did_id_bytes, VALUE_TYPE_DID, key_test, value_test, owner_address)
+    register_did = did_registry.register_attribute(did_id_bytes, VALUE_TYPE_DID, key_test,
+                                                   value_test, owner_address)
     did_registry.get_tx_receipt(register_did)
 
     # resolve to get the error
@@ -298,8 +306,9 @@ def test_did_resolver_library(publisher_ocean_instance):
 
     # test value type error on a linked DID_REF
     register_account.unlock()
-    register_did = did_registry.register_attribute(did_id_bytes, VALUE_TYPE_DID_REF, key_test, value_test,
-                                                  owner_address)
+    register_did = did_registry.register_attribute(did_id_bytes, VALUE_TYPE_DID_REF, key_test,
+                                                   value_test,
+                                                   owner_address)
     did_registry.get_tx_receipt(register_did)
 
     # resolve to get the error

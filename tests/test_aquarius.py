@@ -20,9 +20,11 @@ def test_aquarius():
     for match in ocean_provider.metadata_store.text_search(text='Office'):
         ocean_provider.metadata_store.retire_asset_ddo(match['id'])
 
-    ddo = ocean_provider.metadata_store.publish_asset_ddo(asset1.ddo)
+    ddo_published = ocean_provider.metadata_store.publish_asset_ddo(asset1.ddo)
 
     ddo = ocean_provider.metadata_store.get_asset_ddo(asset1.did)
+
+    assert ddo_published == ddo
 
     assert len(ocean_provider.metadata_store.text_search(text='Office')) == 1
 

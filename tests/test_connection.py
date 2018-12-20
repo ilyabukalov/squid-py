@@ -1,10 +1,6 @@
 import docker
 
 
-# print(docker.version)
-#
-# client = docker.from_env()
-#
 def test_connection():
     print(docker)
     # High level client

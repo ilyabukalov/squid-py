@@ -15,8 +15,10 @@ from squid_py.service_agreement.service_agreement_template import ServiceAgreeme
 
 CONFIG_PATH = 'config_local.ini'
 
-SAMPLE_METADATA_PATH = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'metadata', 'sample_metadata1.json')
-assert os.path.exists(SAMPLE_METADATA_PATH), 'sample metadata is not found: "%s"' % SAMPLE_METADATA_PATH
+SAMPLE_METADATA_PATH = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'metadata',
+                                    'sample_metadata1.json')
+assert os.path.exists(
+    SAMPLE_METADATA_PATH), 'sample metadata is not found: "%s"' % SAMPLE_METADATA_PATH
 with open(SAMPLE_METADATA_PATH) as f:
     SAMPLE_METADATA = json.load(f)
 
@@ -66,10 +68,14 @@ class TestServiceAgreement(unittest.TestCase):
                           self.payment_conditions.address,
                           self.payment_conditions.address]
         self.fingerprints = [
-            get_fingerprint_bytes_by_name(self.web3, self.payment_conditions.contract.abi, 'lockPayment'),
-            get_fingerprint_bytes_by_name(self.web3, self.access_conditions.contract.abi, 'grantAccess'),
-            get_fingerprint_bytes_by_name(self.web3, self.payment_conditions.contract.abi, 'releasePayment'),
-            get_fingerprint_bytes_by_name(self.web3, self.payment_conditions.contract.abi, 'refundPayment'),
+            get_fingerprint_bytes_by_name(self.web3, self.payment_conditions.contract.abi,
+                                          'lockPayment'),
+            get_fingerprint_bytes_by_name(self.web3, self.access_conditions.contract.abi,
+                                          'grantAccess'),
+            get_fingerprint_bytes_by_name(self.web3, self.payment_conditions.contract.abi,
+                                          'releasePayment'),
+            get_fingerprint_bytes_by_name(self.web3, self.payment_conditions.contract.abi,
+                                          'refundPayment'),
         ]
         self.dependencies = [0, 1, 4, 1 | 2 ** 2 | 2 ** 3]
         timeouts = [0, 0, 0, 3]
@@ -77,7 +83,8 @@ class TestServiceAgreement(unittest.TestCase):
         template_name = uuid.uuid4().hex
         serviceTemplateId = Web3.sha3(hexstr=template_name)
         encoded_template_name = template_name.encode()
-        setup_args = [serviceTemplateId, self.contracts, self.fingerprints, self.dependencies, encoded_template_name,
+        setup_args = [serviceTemplateId, self.contracts, self.fingerprints, self.dependencies,
+                      encoded_template_name,
                       [0], 0]
         print('***** ', setup_args)
         receipt = self.service_agreement.contract_concise.setupAgreementTemplate(
@@ -108,11 +115,13 @@ class TestServiceAgreement(unittest.TestCase):
         )
 
     def _load_and_build_ddo(self):
-        ddo = DDO(json_filename=os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'ddo', 'ddo_sa_sample.json'))
+        ddo = DDO(json_filename=os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'ddo',
+                                             'ddo_sa_sample.json'))
         self.asset_ddo = ddo
 
     def _load_sla_template(self):
-        with open(os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'access_sla_template.json')) as jsf:
+        with open(os.path.join(pathlib.Path.cwd(), 'tests', 'resources',
+                               'access_sla_template.json')) as jsf:
             template_json = json.load(jsf)
             self.sla_template = ServiceAgreementTemplate(template_json=template_json)
 
@@ -166,7 +175,8 @@ class TestServiceAgreement(unittest.TestCase):
         for condition in ddo.conditions:
             values = []
             values_per_condition.append(values)
-        service_agreement.execute_service_agreement(ddo, consumer_account, service_definition_id, timeout,
+        service_agreement.execute_service_agreement(ddo, consumer_account, service_definition_id,
+                                                    timeout,
                                                     values_per_condition)
 
         # process ExecuteAgreement event

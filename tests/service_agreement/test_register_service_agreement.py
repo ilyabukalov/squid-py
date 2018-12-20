@@ -60,7 +60,8 @@ class TestRegisterServiceAgreement(unittest.TestCase):
     def _consume_dummy(self, *args):
         pass
 
-    def _register_agreement(self, agreement_id, did, service_definition, actor_type='consumer', num_confirmations=3):
+    def _register_agreement(self, agreement_id, did, service_definition, actor_type='consumer',
+                            num_confirmations=3):
         register_service_agreement(
             self.web3,
             self.config.keeper_path,
@@ -299,9 +300,11 @@ class TestRegisterServiceAgreement(unittest.TestCase):
                 'conditions': []
             },
         )
-        expected_agreements = (service_agreement_id, did, 0, self.price, self.content_url, self.start_time, 'pending')
+        expected_agreements = (
+        service_agreement_id, did, 0, self.price, self.content_url, self.start_time, 'pending')
         stored_agreements = get_service_agreements(self.storage_path)[0]
-        assert sorted([str(i) for i in expected_agreements]) == sorted([str(i) for i in stored_agreements])
+        assert sorted([str(i) for i in expected_agreements]) == sorted(
+            [str(i) for i in stored_agreements])
 
     def test_register_service_agreement_subscribes_to_events(self):
         service_agreement_id = '0x%s' % generate_new_id()
@@ -353,7 +356,8 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         agreement_fulfilled = self._wait_for_event(self.service_agreement.events.AgreementFulfilled)
         assert agreement_fulfilled, 'Agreement was not fulfilled.'
 
-        expected_agreements = (service_agreement_id, did, 0, price, self.content_url, self.start_time, 'fulfilled')
+        expected_agreements = (
+        service_agreement_id, did, 0, price, self.content_url, self.start_time, 'fulfilled')
         expected_agreements = sorted([str(i) for i in expected_agreements])
         agreements = []
         for i in range(5):
@@ -391,28 +395,34 @@ class TestRegisterServiceAgreement(unittest.TestCase):
 
         def get_condition_key(i):
             return self.web3.soliditySha3(['bytes32', 'address', 'bytes4'],
-                                          [self.template_id, self.contracts[i], self.fingerprints[i]]).hex()
+                                          [self.template_id, self.contracts[i],
+                                           self.fingerprints[i]]).hex()
 
         payment_locked = self._wait_for_event(self.payment_conditions.events.PaymentLocked)
-        lock_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id,
-                                                                                      get_condition_key(1))
+        lock_cond_status = self.service_agreement.contract_concise.getConditionStatus(
+            service_agreement_id,
+            get_condition_key(1))
         assert lock_cond_status > 0
-        grant_access_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id,
-                                                                                              get_condition_key(0))
-        release_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id,
-                                                                                         get_condition_key(2))
+        grant_access_cond_status = self.service_agreement.contract_concise.getConditionStatus(
+            service_agreement_id,
+            get_condition_key(0))
+        release_cond_status = self.service_agreement.contract_concise.getConditionStatus(
+            service_agreement_id,
+            get_condition_key(2))
         assert grant_access_cond_status == 0 and release_cond_status == 0, 'grantAccess and/or releasePayment is fulfilled but not expected to.'
 
         payment_refund = self._wait_for_event(self.payment_conditions.events.PaymentRefund)
         if not payment_refund:
-            refund_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id,
-                                                                                            get_condition_key(3))
+            refund_cond_status = self.service_agreement.contract_concise.getConditionStatus(
+                service_agreement_id,
+                get_condition_key(3))
             assert refund_cond_status > 0, 'refundPayment not fulfilled'
 
         agreement_fulfilled = self._wait_for_event(self.service_agreement.events.AgreementFulfilled)
         assert agreement_fulfilled, 'Agreement was not fulfilled.'
 
-        expected_agreements = (service_agreement_id, did, 0, price, self.content_url, self.start_time, 'fulfilled')
+        expected_agreements = (
+        service_agreement_id, did, 0, price, self.content_url, self.start_time, 'fulfilled')
         expected_agreements = sorted([str(i) for i in expected_agreements])
         agreements = []
         for i in range(5):
@@ -430,7 +440,8 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         did = '0x%s' % generate_new_id()
         price = self.price
 
-        record_service_agreement(self.storage_path, service_agreement_id, did, 0, price, self.content_url,
+        record_service_agreement(self.storage_path, service_agreement_id, did, 0, price,
+                                 self.content_url,
                                  self.start_time)
 
         def _did_resolver_fn(did):
@@ -464,7 +475,8 @@ class TestRegisterServiceAgreement(unittest.TestCase):
     @classmethod
     def _setup_service_agreement(cls):
         cls.template_id = '0x%s' % generate_new_id()
-        cls.contract_names = [cls.access_conditions.name, cls.payment_conditions.name, cls.payment_conditions.name,
+        cls.contract_names = [cls.access_conditions.name, cls.payment_conditions.name,
+                              cls.payment_conditions.name,
                               cls.payment_conditions.name]
         cls.contract_abis = [
             cls.access_conditions.contract.abi,
@@ -549,12 +561,14 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         _network_name = get_network_name(self.web3)
         for i, key in enumerate(self.condition_keys):
             fn_name = function_names[i]
-            abi, address = get_contract_abi_and_address(self.web3, self.keeper.contract_path, self.contract_names[i],
+            abi, address = get_contract_abi_and_address(self.web3, self.keeper.contract_path,
+                                                        self.contract_names[i],
                                                         _network_name)
             assert abi == self.contract_abis[i], 'abi does not match.'
             assert address == self.contracts[i], 'address does not match'
             f = hexstr_to_bytes(self.web3, get_fingerprint_by_name(abi, fn_name))
-            assert f == self.fingerprints[i], 'fingerprint mismatch %s vs %s' % (f, self.fingerprints[i])
+            assert f == self.fingerprints[i], 'fingerprint mismatch %s vs %s' % (
+            f, self.fingerprints[i])
             _key = build_condition_key(self.web3, self.contracts[i], f, self.template_id)
             assert _key == key, 'condition key does not match: %s vs %s' % (_key, key)
 
