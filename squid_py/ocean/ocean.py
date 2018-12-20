@@ -45,6 +45,8 @@ class Ocean:
     def __init__(self, config_file=None, config_dict=None, http_client=None,
                  secret_store_client=None):
         """
+        Initialize Ocean class.
+
         This class is an aggregation of
          * the smart contracts via the Keeper class
          * the metadata store
@@ -57,7 +59,6 @@ class Ocean:
         :param http_client: http client used for sending http requests such as `requests`
         :param secret_store_client: reference to `secret_store_client.client.Client` class or similar
         """
-
         # Configuration information for the market is stored in the Config class
         self.config = Config(filename=config_file, options_dict=config_dict)
 
@@ -127,7 +128,7 @@ class Ocean:
 
     def get_asset(self, asset_did):
         """
-        Given an asset_did, return the Asset
+        Given an asset_did, return the Asset.
 
         :param asset_did: Asset did, str
         :return: Asset object
@@ -173,7 +174,7 @@ class Ocean:
 
     def register_asset(self, metadata, publisher, service_descriptors):
         """
-        Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (Aquarius)
+        Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (Aquarius).
 
         :param metadata: dict conforming to the Metadata accepted by Ocean Protocol.
         :param publisher: Account of the publisher registering this asset
@@ -261,11 +262,6 @@ class Ocean:
         return ddo
 
     def _approve_token_transfer(self, amount):
-        """
-
-        :param amount:
-        :return:
-        """
         if self.keeper.token.get_token_balance(self.main_account.address) < amount:
             raise ValueError(
                 'Account "%s" does not have sufficient tokens to approve for transfer.' % self.main_account.address)
@@ -306,6 +302,8 @@ class Ocean:
 
     def sign_service_agreement(self, did, service_index, consumer_address):
         """
+        Sign service agreement.
+
         Sign the service agreement defined in the service section identified
         by `service_index` in the ddo and send the signed agreement to the purchase endpoint
         associated with this service.
@@ -366,9 +364,9 @@ class Ocean:
                                   service_agreement_signature, consumer_address, publisher_address):
         """
         Execute the service agreement on-chain using keeper's ServiceAgreement contract.
-        The on-chain executeAgreement method requires the following arguments:
-        templateId, signature, consumer, hashes, timeouts, serviceAgreementId, did
 
+        The on-chain executeAgreement method requires the following arguments:
+        templateId, signature, consumer, hashes, timeouts, serviceAgreementId, did.
         `agreement_message_hash` is necessary to verify the signature.
         The consumer `signature` includes the conditions timeouts and parameters values which
         is usedon-chain to verify that the values actually match the signed hashes.
@@ -432,12 +430,14 @@ class Ocean:
 
     def check_permissions(self, service_agreement_id, did, consumer_address):
         """
+        Check permission for the agreement.
+
         Verify on-chain that the `consumer_address` has permission to access the given asset `did`
         according to the `service_agreement_id`.
 
-        :param service_agreement_id:
-        :param did:
-        :param consumer_address:
+        :param service_agreement_id: str
+        :param did: DID, str
+        :param consumer_address: Account address, str
         :return: bool True if user has permission
         """
         agreement_consumer = self.keeper.service_agreement.get_service_agreement_consumer(
@@ -454,15 +454,18 @@ class Ocean:
     def verify_service_agreement_signature(self, did, service_agreement_id, service_index,
                                            consumer_address, signature,
                                            ddo=None):
-        """Verify that the given signature is truly signed by the `consumer_address`
+        """
+        Verify service agreement signature.
+
+        Verify that the given signature is truly signed by the `consumer_address`
         and represents this did's service agreement..
 
-        :param did:
-        :param service_agreement_id:
-        :param service_index:
-        :param consumer_address:
-        :param signature:
-        :param ddo:
+        :param did: DID, str
+        :param service_agreement_id: str
+        :param service_index: int
+        :param consumer_address: Account address, str
+        :param signature: Signature, str
+        :param ddo: DDO
         :return: True if signature is legitimate, False otherwise
         :raises: ValueError if service is not found in the ddo
         """
@@ -492,12 +495,6 @@ class Ocean:
         return is_valid
 
     def _register_service_agreement_template(self, template_dict, owner_account=None):
-        """
-
-        :param template_dict:
-        :param owner_account:
-        :return:
-        """
         if not owner_account:
             owner_account = self.main_account
 
@@ -524,10 +521,12 @@ class Ocean:
 
     def _encrypt_metadata_content_urls(self, did, data):
         """
-        encrypt string data using the DID as an secret store id,
+        Encrypt urls.
+
+        Encrypt string data using the DID as an secret store id,
         if secret store is enabled then return the result from secret store encryption
 
-        return None for no encryption performed
+        :return None for no encryption performed
         """
         result = None
         if self.config.secret_store_url and self.config.parity_url and self.main_account:
@@ -545,12 +544,6 @@ class Ocean:
         return result
 
     def _decrypt_content_urls(self, did, encrypted_data):
-        """
-
-        :param did:
-        :param encrypted_data:
-        :return:
-        """
         result = None
         if self.config.secret_store_url and self.config.parity_url and self.main_account:
             consumer = self._secret_store_client(
@@ -568,18 +561,20 @@ class Ocean:
         return result
 
     def consume_service(self, service_agreement_id, did, service_index, consumer_account):
-        """Consume the asset data by using the service endpoint defined in the ddo's
-        service pointed to by service_index.
+        """
+        Consume the asset data.
+
+        Using the service endpoint defined in the ddo's service pointed to by service_index.
         Consumer's permissions is checked implicitly by the secret-store during decryption
         of the contentUrls.
         The service endpoint is expected to also verify the consumer's permissions to consume this
         asset.
         This method downloads and saves the asset datafiles to disk.
 
-        :param service_agreement_id:
-        :param did:
-        :param service_index:
-        :param consumer_account:
+        :param service_agreement_id: str
+        :param did: DID, str
+        :param service_index: int
+        :param consumer_account: Account address, str
         :return: None
         """
         ddo = self.resolve_did(did)
@@ -655,11 +650,6 @@ class Ocean:
                         ' transactions will likely fail if the account is locked.')
 
     def _validate_conditions_keys(self, sa):
-        """
-
-        :param sa:
-        :return:
-        """
         # Debug info
         # (contract_addresses, fingerprints, fulfillment_indices, conditions_keys)
         values = get_conditions_data_from_keeper_contracts(

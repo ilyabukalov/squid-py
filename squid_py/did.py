@@ -1,7 +1,4 @@
-"""
-    DID Lib to do DID's and DDO's
-
-"""
+"""DID Lib to do DID's and DDO's."""
 
 import re
 import uuid
@@ -12,26 +9,26 @@ OCEAN_PREFIX = 'did:op:'
 
 
 class DID:
-    """
-    Class representing an asset DID.
-    """
+    """Class representing an asset DID."""
 
     @property
     def did(self):
         """
-        Create a did with the format:
+        Create a did.
+
+        Format of the did:
         did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865
 
-        :return: Asset did, str
+        :return: Asset did, str.
         """
         return OCEAN_PREFIX + uuid.uuid4().hex + uuid.uuid4().hex
 
 
 def did_parse(did):
     """
-    Parse a DID into it's parts
+    Parse a DID into it's parts.
 
-    :param did: Asset did, str
+    :param did: Asset did, str.
     :return: Python dictionay with the method and the id.
     """
     if not isinstance(did, str):
@@ -51,6 +48,8 @@ def did_parse(did):
 
 def is_did_valid(did):
     """
+    Did validator.
+
     Return True if the did is a valid DID with the method name 'op' and the id
     in the Ocean format
 
@@ -64,7 +63,7 @@ def is_did_valid(did):
 
 
 def id_to_did(did_id, method='op'):
-    """returns an Ocean DID from given a hex id"""
+    """Return an Ocean DID from given a hex id."""
     if isinstance(did_id, bytes):
         did_id = Web3.toHex(did_id)
 
@@ -81,7 +80,7 @@ def id_to_did(did_id, method='op'):
 
 
 def did_to_id(did):
-    """return an id extracted from a DID string"""
+    """Return an id extracted from a DID string."""
     result = did_parse(did)
     if result and result['id'] is not None:
         return result['id']
@@ -90,7 +89,8 @@ def did_to_id(did):
 
 def did_to_id_bytes(did):
     """
-    return an Ocean DID to it's correspondng hex id in bytes
+    Return an Ocean DID to it's correspondng hex id in bytes.
+
     So did:op:<hex>, will return <hex> in byte format
     """
     if isinstance(did, str):

@@ -1,6 +1,4 @@
-"""
-    Keeper module to call keeper-contracts.
-"""
+"""Keeper module to call keeper-contracts."""
 
 import re
 from urllib.parse import urlparse

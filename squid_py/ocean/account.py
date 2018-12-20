@@ -5,12 +5,11 @@ Balance = namedtuple('Balance', ('eth', 'ocn'))
 
 
 class Account:
-    """
-    Class representing and account.
-    """
+    """Class representing and account."""
+
     def __init__(self, keeper, address, password=None):
         """
-        Hold account address, and update balances of Ether and Ocean token
+        Hold account address, and update balances of Ether and Ocean token.
 
         :param keeper: The keeper instance
         :param address: The address of this account
@@ -21,7 +20,7 @@ class Account:
 
     def unlock(self):
         """
-        Unlock the account address using .web3.personal.unlockAccount(address, password)
+        Unlock the account address using .web3.personal.unlockAccount(address, password).
 
         :return: Result of the operation, bool
         """
@@ -51,7 +50,7 @@ class Account:
     @property
     def ether_balance(self):
         """
-        Call the Token contract method .web3.eth.getBalance()
+        Call the Token contract method .web3.eth.getBalance().
 
         :return: Ether balance, int
         """
@@ -60,7 +59,7 @@ class Account:
     @property
     def ocean_balance(self):
         """
-        Call the Token contract method .balanceOf(account_address)
+        Call the Token contract method .balanceOf(account_address).
 
         :return: Ocean token balance, int
         """

@@ -1,6 +1,4 @@
-"""
-    Keeper module to call keeper-contracts.
-"""
+"""Keeper module to call keeper-contracts."""
 
 import logging
 import os
@@ -18,9 +16,7 @@ from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID
 
 
 class Keeper(object):
-    """
-    Class that load all the keeper-contracts.
-    """
+    """Class that load all the keeper-contracts."""
 
     def __init__(self, web3, contract_path):
         """

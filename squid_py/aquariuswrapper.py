@@ -1,19 +1,15 @@
-"""
-Help to communicate with the metadata store.
-"""
+"""Help to communicate with the metadata store."""
 import json
 import logging
 import requests
 
 
 class AquariusWrapper:
-    """
-    Aquarius wrapper to call different endpoint of aquarius component.
-    """
+    """Aquarius wrapper to call different endpoint of aquarius component."""
 
     def __init__(self, aquarius_url):
         """
-        The Metadata class is a wrapper on the Metadata Store, which has exposed a REST API
+        The Metadata class is a wrapper on the Metadata Store, which has exposed a REST API.
 
         :param aquarius_url: Url of the aquarius instance.
         """
@@ -29,7 +25,7 @@ class AquariusWrapper:
 
     @property
     def url(self):
-        """Base URL of the aquarius instance"""
+        """Base URL of the aquarius instance."""
         return self._base_url + '/ddo/'
 
     def get_service_endpoint(self, did):
@@ -138,8 +134,9 @@ class AquariusWrapper:
 
     def text_search(self, text, sort=None, offset=100, page=0):
         """
-        Search in aquarius using text query. Given the string aquarius will do a full-text query to
-        search in all documents.
+        Search in aquarius using text query.
+
+        Given the string aquarius will do a full-text query to search in all documents.
 
         Currently implemented are the MongoDB and Elastic Search drivers.
 
@@ -190,7 +187,7 @@ class AquariusWrapper:
 
     def retire_asset_ddo(self, did):
         """
-        Retire asset ddo of Aquarius
+        Retire asset ddo of Aquarius.
 
         :param did: Asset DID string
         :return: API response (depends on implementation)

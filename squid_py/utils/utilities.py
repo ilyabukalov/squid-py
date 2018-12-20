@@ -229,7 +229,7 @@ def watcher(event_filter, callback, start_time, timeout, timeout_callback, num_c
     :param timeout:
     :param timeout_callback:
     :param num_confirmations:
-    :return:
+    :return: None
     """
     timed_out = False
     while True:
@@ -277,14 +277,21 @@ def watcher(event_filter, callback, start_time, timeout, timeout_callback, num_c
 
 def await_confirmations(event_filter, block_number, block_hash, num_confirmations, callback, event):
     """
+    Listener that is waiting for the confirmation of the events.
 
-    :param event_filter:
-    :param block_number:
-    :param block_hash:
-    :param num_confirmations:
-    :param callback:
-    :param event:
-    :return:
+    If hashes do not match, it means the event did not end up in the longest chain
+    after the given number of confirmations.
+    We stop listening for blocks cause it is now unlikely that the event's chain will
+    be the longest again; ideally though, we should only stop listening for blocks after
+    the alternative chain reaches a certain height.
+
+    :param event_filter: Event filter
+    :param block_number: Block number, int
+    :param block_hash: Block hash, str
+    :param num_confirmations: Number of confirmations, int
+    :param callback: Callback
+    :param event: Event
+    :return: None
     """
     while True:
         latest_block = event_filter.web3.eth.getBlock('latest')
@@ -293,13 +300,6 @@ def await_confirmations(event_filter, block_number, block_hash, num_confirmation
             block = event_filter.web3.eth.getBlock(block_number)
             if block['hash'].hex() == block_hash:
                 callback(event)
-
-            # if hashes do not match, it means the event did not end up in the longest chain
-            # after the given number of confirmations
-            #
-            # we stop listening for blocks cause it is now unlikely that the event's chain will
-            # be the longest again; ideally though, we should only stop listening for blocks after
-            # the alternative chain reaches a certain height
             break
 
         time.sleep(0.1)
