@@ -14,7 +14,9 @@ class ServiceAgreement(object):
     PURCHASE_ENDPOINT_KEY = 'purchaseEndpoint'
     SERVICE_ENDPOINT_KEY = 'serviceEndpoint'
 
-    def __init__(self, sa_definition_id, template_id, conditions, service_agreement_contract, purchase_endpoint=None, service_endpoint=None):
+    def __init__(self, sa_definition_id, template_id, conditions, service_agreement_contract,
+                 purchase_endpoint=None,
+                 service_endpoint=None):
         self.sa_definition_id = sa_definition_id
         self.template_id = add_0x_prefix(template_id)
         self.conditions = conditions
@@ -55,14 +57,17 @@ class ServiceAgreement(object):
     @classmethod
     def from_service_dict(cls, service_dict):
         return cls(
-            service_dict[cls.SERVICE_DEFINITION_ID_KEY], service_dict[ServiceAgreementTemplate.TEMPLATE_ID_KEY],
+            service_dict[cls.SERVICE_DEFINITION_ID_KEY],
+            service_dict[ServiceAgreementTemplate.TEMPLATE_ID_KEY],
             [ServiceAgreementCondition(cond) for cond in service_dict[cls.SERVICE_CONDITIONS_KEY]],
             ServiceAgreementContract(service_dict[cls.SERVICE_CONTRACT_KEY]),
             service_dict.get(cls.PURCHASE_ENDPOINT_KEY), service_dict.get(cls.SERVICE_ENDPOINT_KEY)
         )
 
     @staticmethod
-    def generate_service_agreement_hash(web3, sa_template_id, condition_keys, values_hash_list, timeouts, service_agreement_id):
+    def generate_service_agreement_hash(web3, sa_template_id, condition_keys, values_hash_list,
+                                        timeouts,
+                                        service_agreement_id):
         return web3.soliditySha3(
             ['bytes32', 'bytes32[]', 'bytes32[]', 'uint256[]', 'bytes32'],
             [sa_template_id, condition_keys, values_hash_list, timeouts, service_agreement_id]
@@ -82,7 +87,8 @@ class ServiceAgreement(object):
         )
         return agreement_hash
 
-    def get_signed_agreement_hash(self, web3, contract_path, service_agreement_id, consumer_address):
+    def get_signed_agreement_hash(self, web3, contract_path, service_agreement_id,
+                                  consumer_address):
         """Return the consumer-signed service agreement hash and the raw hash.
 
         :param web3: Object -- instance of web3.Web3 to use for signing the message
@@ -103,13 +109,14 @@ class ServiceAgreement(object):
         :param contract_path:
         :return:
         """
-        self.conditions = get_conditions_with_updated_keys(web3, contract_path, self.conditions, self.template_id)
+        self.conditions = get_conditions_with_updated_keys(web3, contract_path, self.conditions,
+                                                           self.template_id)
 
     def as_dictionary(self):
         return {
             ServiceAgreement.SERVICE_DEFINITION_ID_KEY: self.sa_definition_id,
             ServiceAgreementTemplate.TEMPLATE_ID_KEY: self.template_id,
             ServiceAgreement.SERVICE_CONTRACT_KEY: self.service_agreement_contract.as_dictionary(),
-            ServiceAgreement.SERVICE_CONDITIONS_KEY: [cond.as_dictionary() for cond in self.conditions]
+            ServiceAgreement.SERVICE_CONDITIONS_KEY: [cond.as_dictionary() for cond in
+                                                      self.conditions]
         }
-

@@ -66,9 +66,11 @@ class PublicKeyBase:
             if PUBLIC_KEY_STORE_TYPE_HEX in value:
                 self.set_key_value(value[PUBLIC_KEY_STORE_TYPE_HEX], PUBLIC_KEY_STORE_TYPE_HEX)
             elif PUBLIC_KEY_STORE_TYPE_BASE64 in value:
-                self.set_key_value(value[PUBLIC_KEY_STORE_TYPE_BASE64], PUBLIC_KEY_STORE_TYPE_BASE64)
+                self.set_key_value(value[PUBLIC_KEY_STORE_TYPE_BASE64],
+                                   PUBLIC_KEY_STORE_TYPE_BASE64)
             elif PUBLIC_KEY_STORE_TYPE_BASE85 in value:
-                self.set_key_value(value[PUBLIC_KEY_STORE_TYPE_BASE85], PUBLIC_KEY_STORE_TYPE_BASE85)
+                self.set_key_value(value[PUBLIC_KEY_STORE_TYPE_BASE85],
+                                   PUBLIC_KEY_STORE_TYPE_BASE85)
             elif PUBLIC_KEY_STORE_TYPE_JWK in value:
                 self.set_key_value(value[PUBLIC_KEY_STORE_TYPE_JWK], PUBLIC_KEY_STORE_TYPE_JWK)
             elif PUBLIC_KEY_STORE_TYPE_PEM in value:

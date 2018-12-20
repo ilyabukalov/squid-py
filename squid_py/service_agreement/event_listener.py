@@ -41,9 +41,10 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
     # events from executing the service agreement.
     for event in service_definition['serviceAgreementContract']['events']:
         if event['actorType'] != actor_type:
-                continue
+            continue
 
-        events.append((service_definition['serviceAgreementContract']['contractName'], Event(event), None, None))
+        events.append((service_definition['serviceAgreementContract']['contractName'], Event(event),
+                       None, None))
 
     conditions = [ServiceAgreementCondition(condition_json=condition_dict)
                   for condition_dict in service_definition['conditions']]
@@ -56,27 +57,32 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
                 if cond_instance.timeout_flags[i] == 1:
                     # dependency has a timeout
                     assert cond_dep_name in name_to_cond, 'dependency name "%s" not found in conditions' % cond_dep_name
-                    cond_to_dependants_timeouts[cond_dep_name] = [(cond_instance.name, cond_instance.timeout)]
+                    cond_to_dependants_timeouts[cond_dep_name] = [
+                        (cond_instance.name, cond_instance.timeout)]
 
     for cond_instance in conditions:
         _dependent_cond_timeout = None
         timeout_event = None
         if cond_to_dependants_timeouts.get(cond_instance.name):
             _dependent_cond_timeout = cond_to_dependants_timeouts.get(cond_instance.name)[0]
-            timeout_events = [event for event in cond_instance.events if event.name.endswith('Timeout')]
+            timeout_events = [event for event in cond_instance.events if
+                              event.name.endswith('Timeout')]
             timeout_event = timeout_events[0] if timeout_events else None
             if not timeout_event:
-                raise AssertionError('Expected a timeout event in this condition "%s" because another '
-                                     'condition "%s" depends on this condition timing out.' % (cond_instance.name, _dependent_cond_timeout[0], ))
+                raise AssertionError(
+                    'Expected a timeout event in this condition "%s" because another '
+                    'condition "%s" depends on this condition timing out.' % (
+                        cond_instance.name, _dependent_cond_timeout[0],))
 
         for event in cond_instance.events:
             if event.actor_type != actor_type or event.name.endswith('Timeout'):
                 continue
-            events.append((cond_instance.contract_name, event, _dependent_cond_timeout, timeout_event))
+            events.append(
+                (cond_instance.contract_name, event, _dependent_cond_timeout, timeout_event))
 
     # subscribe to the events
     for contract_name, event, dependent_cond_timeout, timeout_event in events:
-        dependent_cond, timeout = None, None
+        timeout = None
         if dependent_cond_timeout and timeout_event:
             dependent_cond_name, timeout = dependent_cond_timeout
 
@@ -84,7 +90,8 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
         fn = get_event_handler_function(event)
         timeout_fn = None
         if timeout_event and timeout:
-            assert MIN_TIMEOUT < timeout < MAX_TIMEOUT, 'TIMEOUT value not within allowed range %s-%s.' % (MIN_TIMEOUT, MAX_TIMEOUT)
+            assert MIN_TIMEOUT < timeout < MAX_TIMEOUT, 'TIMEOUT value not within allowed range %s-%s.' % (
+                MIN_TIMEOUT, MAX_TIMEOUT)
             timeout_fn = get_event_handler_function(timeout_event)
 
         def _get_callback(func_to_call):

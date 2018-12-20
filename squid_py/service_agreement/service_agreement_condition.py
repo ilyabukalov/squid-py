@@ -32,6 +32,7 @@ class Event:
     }
     }
     """
+
     def __init__(self, event_json):
         self.values_dict = dict(event_json)
 
@@ -84,7 +85,8 @@ class ServiceAgreementCondition(object):
         return dep_list, timeout_flags
 
     def _build_dependencies(self):
-        dependencies = [{'name': dep_name, 'timeout': self.timeout_flags[i]} for i, dep_name in enumerate(self.dependencies)]
+        dependencies = [{'name': dep_name, 'timeout': self.timeout_flags[i]} for i, dep_name in
+                        enumerate(self.dependencies)]
         return dependencies
 
     def init_from_condition_json(self, condition_json):
@@ -94,10 +96,12 @@ class ServiceAgreementCondition(object):
         self.contract_name = condition_json['contractName']
         self.function_name = condition_json['functionName']
         self.is_terminal = bool(condition_json['isTerminalCondition'])
-        self.dependencies, self.timeout_flags = self._read_dependencies(condition_json['dependencies'])
+        self.dependencies, self.timeout_flags = self._read_dependencies(
+            condition_json['dependencies'])
         assert len(self.dependencies) == len(self.timeout_flags)
         if self.dependencies:
-            assert sum(self.timeout_flags) == 0 or self.timeout > 0, 'timeout must be set when any dependency is set to rely on a timeout.'
+            assert sum(
+                self.timeout_flags) == 0 or self.timeout > 0, 'timeout must be set when any dependency is set to rely on a timeout.'
 
         self.parameters = [Parameter(p) for p in condition_json['parameters']]
         self.events = [Event(e) for e in condition_json['events']]

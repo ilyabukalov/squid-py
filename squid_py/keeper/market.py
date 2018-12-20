@@ -1,3 +1,6 @@
+"""
+    Keeper module to call keeper-contracts.
+"""
 import logging
 
 from web3 import Web3
@@ -7,6 +10,9 @@ from squid_py.keeper.contract_base import ContractBase
 
 
 class Market(ContractBase):
+    """
+    Class representing the OceanMarket contract.
+    """
 
     def __init__(self, web3, contract_path):
         ContractBase.__init__(self, web3, contract_path, 'OceanMarket')
@@ -16,6 +22,7 @@ class Market(ContractBase):
     def check_asset(self, asset_id):
         """
         Check that this particular asset is already registered on chain."
+
         :param asset_id: ID of the asset to check for existance
         :return: Boolean
         """
@@ -33,9 +40,15 @@ class Market(ContractBase):
         except Exception:
             logging.error("There are no assets registered with id: %s" % asset_id)
 
-    # Transactions with gas cost
     def request_tokens(self, amount, address):
-        """Request an amount of tokens for a particular address."""
+        """
+        Request an amount of tokens for a particular address.
+        This transanction has gas cost
+
+        :param amount: Amount of tokens, int
+        :param address: Account address, str
+        :return: Tx receipt
+        """
         try:
             receipt = self.contract_concise.requestTokens(amount, transact={'from': address})
             logging.debug("{} requests {} tokens, returning receipt".format(address, amount))
@@ -68,7 +81,18 @@ class Market(ContractBase):
         logging.debug("Registered Asset {} into blockchain".format(asset.asset_id))
         return result
 
-    def pay_order(self, order_id, publisher_address, price, timeout, sender_address, gas_amount=None):
+    def pay_order(self, order_id, publisher_address, price, timeout, sender_address,
+                  gas_amount=None):
+        """
+
+        :param order_id:
+        :param publisher_address:
+        :param price:
+        :param timeout:
+        :param sender_address:
+        :param gas_amount:
+        :return:
+        """
         tx_hash = self.contract_concise.sendPayment(order_id, publisher_address, price, timeout, {
             'from': sender_address,
             'gas': gas_amount if gas_amount else self._defaultGas
@@ -76,12 +100,26 @@ class Market(ContractBase):
         return self.get_tx_receipt(tx_hash)
 
     def purchase_asset(self, asset_id, order, publisher_address, sender_address):
+        """
+
+        :param asset_id:
+        :param order:
+        :param publisher_address:
+        :param sender_address:
+        :return:
+        """
         asset_id_bytes = Web3.toBytes(hexstr=asset_id)
         asset_price = self.contract_concise.getAssetPrice(asset_id_bytes)
-        return self.contract_concise.sendPayment(order.id, publisher_address, asset_price, order.timeout, {
-            'from': sender_address,
-            'gas': self._defaultGas
-        })
+        return self.contract_concise.sendPayment(order.id, publisher_address, asset_price,
+                                                 order.timeout, {
+                                                     'from': sender_address,
+                                                     'gas': self._defaultGas
+                                                 })
 
     def calculate_message_hash(self, message):
+        """
+
+        :param message:
+        :return:
+        """
         return self.contract_concise.generateId(message)

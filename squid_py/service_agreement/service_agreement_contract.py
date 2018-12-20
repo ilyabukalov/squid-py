@@ -27,15 +27,15 @@ class ServiceAgreementContract(object):
     def example_dict():
         return {
             "serviceAgreementContract": {
-              "contractName": "ServiceAgreement",
-              "fulfillmentOperator": 0,
-              "events": [{
-                "name": "ExecuteAgreement",
-                "actorType": "consumer",
-                "handler": {
-                  "moduleName": "payment",
-                  "functionName": "lockPayment",
-                  "version": "0.1"
-                }
-              }]
-        }}
+                "contractName": "ServiceAgreement",
+                "fulfillmentOperator": 0,
+                "events": [{
+                    "name": "ExecuteAgreement",
+                    "actorType": "consumer",
+                    "handler": {
+                        "moduleName": "payment",
+                        "functionName": "lockPayment",
+                        "version": "0.1"
+                    }
+                }]
+            }}
