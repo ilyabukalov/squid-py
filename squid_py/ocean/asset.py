@@ -180,38 +180,6 @@ class Asset(OceanBase):
         """
         return self._ddo and self._ddo.is_valid
 
-    def purchase(self, consumer, timeout):
-        """
-        Generate an order for purchase of this Asset
-
-        :param timeout:
-        :param consumer: Account object of the requester
-        :return: Order object
-        """
-        # Check if asset exists
-
-        # Approve the token transfer
-
-        # Submit access request
-
-        return
-
-    def consume(self, order, consumer):
-        """
-
-        :param order: Order object
-        :param consumer: Consumer Account
-        :return: access_url
-        :rtype: string
-        """
-
-        # Get access token (jwt)
-
-        # Download the asset from the aquarius using the URL in access token
-        # Decode the the access token, get service_endpoint and request_id
-
-        return
-
     def get_id(self):
         return self.asset_id
 

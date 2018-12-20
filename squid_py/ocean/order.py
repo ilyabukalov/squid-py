@@ -15,18 +15,3 @@ class Order(OceanBase):
         self.paid = paid
         self.status = status
         OceanBase.__init__(self, self.order_id)
-
-    def get_status(self):
-        return 0
-
-    def verify_payment(self):
-        return False
-
-    def pay(self):
-        return ''
-
-    def commit(self):
-        return False
-
-    def consume(self):
-        return ''
