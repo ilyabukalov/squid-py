@@ -3,11 +3,11 @@
 
     All keeper contract inherit from this base class
 """
+
 import logging
 
 from web3.contract import ConciseContract
 from squid_py.keeper.utils import get_contract_by_name, get_network_name
-
 
 logger = logging.getLogger('keeper')
 
@@ -31,10 +31,20 @@ class ContractBase(object):
 
     @property
     def events(self):
+        """
+
+        :return:
+        """
         return self.contract.events
 
     def load(self, contract_path, contract_name):
-        """Retrieve a tuple with the concise contract and the contract definition."""
+        """
+        Retrieve a tuple with the concise contract and the contract definition.
+
+        :param contract_path:
+        :param contract_name:
+        :return:
+        """
         contract_definition = get_contract_by_name(
             contract_path,
             get_network_name(self.web3),
@@ -56,16 +66,31 @@ class ContractBase(object):
         return concise_contract, contract, address
 
     def to_checksum_address(self, address):
-        """Validate the address provided."""
+        """
+        Validate the address provided.
+
+        :param address:
+        :return:
+        """
         return self.web3.toChecksumAddress(address)
 
     def get_tx_receipt(self, tx_hash):
-        """Get the receipt of a tx."""
+        """
+        Get the receipt of a tx.
+
+        :param tx_hash:
+        :return:
+        """
         self.web3.eth.waitForTransactionReceipt(tx_hash)
         return self.web3.eth.getTransactionReceipt(tx_hash)
 
     def get_event_signature(self, name):
-        """Return the event signature from a named event. """
+        """
+        Return the event signature from a named event.
+
+        :param name:
+        :return:
+        """
         signature = None
         for item in self.contract.abi:
             if item.get('type') == 'event' and item.get('name') == name:

@@ -14,14 +14,17 @@ def fulfillAgreement(web3, contract_path, account, service_agreement_id,
         ServiceAgreement.fulfillAgreement smart contract function.
     """
     contract_name = service_definition['serviceAgreementContract']['contractName']
-    abi, service_agreement_address = get_contract_abi_and_address(web3, contract_path, contract_name)
-    service_agreement = web3.eth.contract(address=service_agreement_address, abi=abi, ContractFactoryClass=ConciseContract)
+    abi, service_agreement_address = get_contract_abi_and_address(web3, contract_path,
+                                                                  contract_name)
+    service_agreement = web3.eth.contract(address=service_agreement_address, abi=abi,
+                                          ContractFactoryClass=ConciseContract)
 
     logger.info('About to do fulfillAgreement: account {}, saId {}, ServiceAgreement address {}'
                 .format(account.address, service_agreement_id, service_agreement_address))
     try:
         account.unlock()
-        tx_hash = service_agreement.fulfillAgreement(service_agreement_id, transact={'from': account.address})
+        tx_hash = service_agreement.fulfillAgreement(service_agreement_id,
+                                                     transact={'from': account.address})
         contract = web3.eth.contract(address=service_agreement_address, abi=abi)
         process_tx_receipt(web3, tx_hash, contract.events.AgreementFulfilled, 'AgreementFulfilled')
     except Exception as e:
@@ -31,4 +34,5 @@ def fulfillAgreement(web3, contract_path, account, service_agreement_id,
 
 def terminateAgreement(web3, contract_path, account, service_agreement_id,
                        service_definition, *args, **kwargs):
-    fulfillAgreement(web3, contract_path, account, service_agreement_id, service_definition, *args, **kwargs)
+    fulfillAgreement(web3, contract_path, account, service_agreement_id, service_definition, *args,
+                     **kwargs)

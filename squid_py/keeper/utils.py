@@ -1,3 +1,7 @@
+"""
+    Keeper module to call keeper-contracts.
+"""
+
 import json
 import logging
 import os
@@ -6,10 +10,21 @@ from squid_py.keeper.network_names import NETWORK_NAME_MAP, DEFAULT_NETWORK_NAME
 
 
 def get_network_id(web3):
+    """
+
+    :param web3:
+    :return:
+    """
     return int(web3.version.network)
 
 
 def get_contract_abi_by_address(contract_path, address):
+    """
+
+    :param contract_path:
+    :param address:
+    :return:
+    """
     contract_tree = os.walk(contract_path)
     address = address.lower()
     while True:
@@ -18,7 +33,7 @@ def get_contract_abi_by_address(contract_path, address):
             with open(os.path.join(dirname, entry)) as f:
                 try:
                     definition = json.loads(f.read())
-                except Exception:
+                except:
                     continue
 
                 if address != definition['address'].lower():
@@ -28,6 +43,13 @@ def get_contract_abi_by_address(contract_path, address):
 
 
 def get_contract_by_name(contract_path, network_name, contract_name):
+    """
+
+    :param contract_path:
+    :param network_name:
+    :param contract_name:
+    :return:
+    """
     file_name = '{}.{}.json'.format(contract_name, network_name)
     path = os.path.join(contract_path, file_name)
     if not os.path.exists(path):
@@ -47,6 +69,14 @@ def get_contract_by_name(contract_path, network_name, contract_name):
 
 
 def get_contract_abi_and_address(web3, contract_path, contract_name, network_name=None):
+    """
+
+    :param web3:
+    :param contract_path:
+    :param contract_name:
+    :param network_name:
+    :return:
+    """
     if not network_name:
         network_name = get_network_name(web3)
     contract_json = get_contract_by_name(contract_path, network_name, contract_name)
@@ -54,11 +84,25 @@ def get_contract_abi_and_address(web3, contract_path, contract_name, network_nam
 
 
 def get_contract_instance(web3, contract_path, contract_name, network_name=None):
+    """
+
+    :param web3:
+    :param contract_path:
+    :param contract_name:
+    :param network_name:
+    :return:
+    """
     abi, address = get_contract_abi_and_address(web3, contract_path, contract_name, network_name)
     return web3.eth.contract(address=address, abi=abi)
 
 
 def get_event_def_from_abi(abi, event_name):
+    """
+
+    :param abi:
+    :param event_name:
+    :return:
+    """
     for item in abi:
         if item.get('type') == 'event' and item.get('name') == event_name:
             return item
@@ -67,6 +111,12 @@ def get_event_def_from_abi(abi, event_name):
 
 
 def get_fingerprint_by_name(abi, name):
+    """
+
+    :param abi:
+    :param name:
+    :return:
+    """
     for item in abi:
         if item.get('name') == name:
             return item['signature']
@@ -75,17 +125,36 @@ def get_fingerprint_by_name(abi, name):
 
 
 def get_fingerprint_bytes_by_name(web3, abi, name):
+    """
+
+    :param web3:
+    :param abi:
+    :param name:
+    :return:
+    """
     return hexstr_to_bytes(web3, get_fingerprint_by_name(abi, name))
 
 
 def hexstr_to_bytes(web3, hexstr):
+    """
+
+    :param web3:
+    :param hexstr:
+    :return:
+    """
     return web3.toBytes(int(hexstr, 16))
 
 
 def get_network_name(web3):
-    """Return the keeper network name based on the current ethereum network id."""
+    """
+    Return the keeper network name based on the current ethereum network id.
+
+    :param web3: Web3 instance
+    :return: Network name, str
+    """
     if os.environ.get('KEEPER_NETWORK_NAME'):
-        logging.debug('keeper network name overridden by an environment variable: {}'.format(os.environ.get('KEEPER_NETWORK_NAME')))
+        logging.debug('keeper network name overridden by an environment variable: {}'.format(
+            os.environ.get('KEEPER_NETWORK_NAME')))
         return os.environ.get('KEEPER_NETWORK_NAME')
 
     return NETWORK_NAME_MAP.get(get_network_id(web3), DEFAULT_NETWORK_NAME)
