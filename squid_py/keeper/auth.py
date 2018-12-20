@@ -4,10 +4,15 @@ from squid_py.keeper.contract_base import ContractBase
 
 
 class Auth(ContractBase):
-    """
-    Class representing the OceanAuth contract.
-    """
+    """Class representing the OceanAuth contract."""
+
     def __init__(self, web3, contract_path):
+        """
+        Initialize Auth class.
+
+        :param web3: Web3 instance
+        :param contract_path: Contract path, str
+        """
         ContractBase.__init__(self, web3, contract_path, 'OceanAuth')
 
     def cancel_access_request(self, order_id, sender_address):
@@ -82,18 +87,20 @@ class Auth(ContractBase):
 
     def get_order_status(self, order_id):
         """
+        Return order status.
 
-        :param order_id:
-        :return:
+        :param order_id: Order id, str
+        :return: int
         """
         return self.contract_concise.statusOfAccessRequest(order_id)
 
     def get_encrypted_access_token(self, order_id, sender_address):
         """
+        Return the access token encrypted.
 
-        :param order_id:
-        :param sender_address:
-        :return:
+        :param order_id: Order id, str
+        :param sender_address: Account address, str
+        :return: Encrypted access token, bytes
         """
         return self.contract_concise.getEncryptedAccessToken(order_id,
                                                              call={'from': sender_address})

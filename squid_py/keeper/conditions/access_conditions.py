@@ -7,12 +7,21 @@ class AccessConditions(ContractBase):
     """Class representing the AccessConditions contract."""
 
     def __init__(self, web3, contract_path):
+        """
+        Initialize AccessConditions class.
+
+        :param web3: Web3 instance
+        :param contract_path: Contract path, str
+        """
         super().__init__(web3, contract_path, 'AccessConditions')
 
     def check_permissions(self, address, asset_did, sender_address):
         """
+        Check permissions contract call.
+
         This method check that the account address has permission to access the asset represented
         for the asset_did.
+
         :param address: Account address, string
         :param asset_did: Asset did, str
         :param sender_address: Address that call the function, str

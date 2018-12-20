@@ -1,8 +1,4 @@
-"""
-
-    Keeper module
-
-"""
+"""Keeper module."""
 
 from .keeper import (
     Keeper

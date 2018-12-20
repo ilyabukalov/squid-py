@@ -8,9 +8,7 @@ import re
 
 
 class Service:
-    """
-    Service class to create validate service in a DDO
-    """
+    """Service class to create validate service in a DDO"""
 
     def __init__(self, service_id, endpoint, service_type, values):
         self._id = service_id
