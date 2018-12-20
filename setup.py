@@ -36,9 +36,8 @@ test_requirements = [
     'codacy-coverage',
     'coverage',
     'docker',
-    'flake8',
     'mccabe',
-    'pyflakes',
+    'pylint',
     'pytest',
     'tox',
 ]
