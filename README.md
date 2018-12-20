@@ -144,7 +144,7 @@ In addition to the configuration file, you may use the following environment var
 1. Create the local testing environment using [barge](https://github.com/oceanprotocol/barge). Once cloned that repository, you can start the cluster running:
 
     ```
-    bash -x start_ocean.sh --latest --no-brizo --no-pleuston --local-spree-node
+    ./start_ocean.sh --latest --no-brizo --no-pleuston --local-spree-node
     ```
 
     It runs an Aquarius node and an Ethereum RPC client. For details, read `docker-compose.yml`.
