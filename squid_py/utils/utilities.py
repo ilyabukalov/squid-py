@@ -1,13 +1,13 @@
 import json
-import uuid
 import time
+import uuid
 from collections import namedtuple
 from datetime import datetime
 from threading import Thread
 
-from web3 import Web3
 from eth_keys import KeyAPI
 from eth_utils import big_endian_to_int
+from web3 import Web3
 
 from squid_py.service_agreement.service_types import ServiceTypes
 

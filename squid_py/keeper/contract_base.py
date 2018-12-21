@@ -7,15 +7,14 @@
 import logging
 
 from web3.contract import ConciseContract
+
 from squid_py.keeper.utils import get_contract_by_name, get_network_name
 
 logger = logging.getLogger('keeper')
 
 
 class ContractBase(object):
-    """
-    Base class for all contract objects.
-    """
+    """Base class for all contract objects."""
 
     def __init__(self, web3, contract_path, contract_name):
         self.web3 = web3

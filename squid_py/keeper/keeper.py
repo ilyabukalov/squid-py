@@ -4,12 +4,12 @@ import logging
 import os
 
 from squid_py.exceptions import OceanKeeperContractsNotFound
+from squid_py.keeper.auth import Auth
 from squid_py.keeper.conditions.access_conditions import AccessConditions
 from squid_py.keeper.conditions.payment_conditions import PaymentConditions
-from squid_py.keeper.service_agreement import ServiceAgreement
-from squid_py.keeper.auth import Auth
 from squid_py.keeper.didregistry import DIDRegistry
 from squid_py.keeper.market import Market
+from squid_py.keeper.service_agreement import ServiceAgreement
 from squid_py.keeper.token import Token
 from squid_py.keeper.utils import get_contract_by_name, get_network_id, get_network_name
 from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID

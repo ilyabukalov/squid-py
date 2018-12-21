@@ -1,8 +1,9 @@
+import json
+import pathlib
+
+from squid_py.ddo import DDO
 from squid_py.ocean.asset import Asset
 from squid_py.ocean.ocean import Ocean
-from squid_py.ddo import DDO
-import pathlib
-import json
 
 
 def test_aquarius():

@@ -7,19 +7,20 @@ import os.path
 
 from web3 import Web3, HTTPProvider
 
-from squid_py.ddo.metadata import Metadata
-from squid_py.ocean.account import Account
-from squid_py.ocean.asset import Asset
 from squid_py.aquariuswrapper import AquariusWrapper
 from squid_py.config import Config
 from squid_py.ddo import DDO
+from squid_py.ddo.metadata import Metadata
 from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
-from squid_py.keeper import Keeper
-from squid_py.log import setup_logging
+from squid_py.did import did_to_id, DID
 from squid_py.didresolver import DIDResolver
 from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata, \
     OceanInvalidServiceAgreementSignature, \
     OceanServiceAgreementExists
+from squid_py.keeper import Keeper
+from squid_py.log import setup_logging
+from squid_py.ocean.account import Account
+from squid_py.ocean.asset import Asset
 from squid_py.service_agreement.register_service_agreement import register_service_agreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
@@ -31,7 +32,6 @@ from squid_py.service_agreement.utils import make_public_key_and_authentication,
 from squid_py.utils.utilities import generate_prefixed_id, prepare_prefixed_hash, \
     prepare_purchase_payload, \
     get_metadata_url
-from squid_py.did import did_to_id, DID
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 

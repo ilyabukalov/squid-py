@@ -301,7 +301,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
             },
         )
         expected_agreements = (
-        service_agreement_id, did, 0, self.price, self.content_url, self.start_time, 'pending')
+            service_agreement_id, did, 0, self.price, self.content_url, self.start_time, 'pending')
         stored_agreements = get_service_agreements(self.storage_path)[0]
         assert sorted([str(i) for i in expected_agreements]) == sorted(
             [str(i) for i in stored_agreements])
@@ -357,7 +357,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         assert agreement_fulfilled, 'Agreement was not fulfilled.'
 
         expected_agreements = (
-        service_agreement_id, did, 0, price, self.content_url, self.start_time, 'fulfilled')
+            service_agreement_id, did, 0, price, self.content_url, self.start_time, 'fulfilled')
         expected_agreements = sorted([str(i) for i in expected_agreements])
         agreements = []
         for i in range(5):
@@ -422,7 +422,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         assert agreement_fulfilled, 'Agreement was not fulfilled.'
 
         expected_agreements = (
-        service_agreement_id, did, 0, price, self.content_url, self.start_time, 'fulfilled')
+            service_agreement_id, did, 0, price, self.content_url, self.start_time, 'fulfilled')
         expected_agreements = sorted([str(i) for i in expected_agreements])
         agreements = []
         for i in range(5):
@@ -568,7 +568,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
             assert address == self.contracts[i], 'address does not match'
             f = hexstr_to_bytes(self.web3, get_fingerprint_by_name(abi, fn_name))
             assert f == self.fingerprints[i], 'fingerprint mismatch %s vs %s' % (
-            f, self.fingerprints[i])
+                f, self.fingerprints[i])
             _key = build_condition_key(self.web3, self.contracts[i], f, self.template_id)
             assert _key == key, 'condition key does not match: %s vs %s' % (_key, key)
 

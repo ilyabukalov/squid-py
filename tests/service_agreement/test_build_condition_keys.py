@@ -1,5 +1,6 @@
-from squid_py.service_agreement.utils import build_condition_key
 from web3 import Web3
+
+from squid_py.service_agreement.utils import build_condition_key
 
 
 def test_build_condition_key():

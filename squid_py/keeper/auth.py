@@ -46,7 +46,7 @@ class Auth(ContractBase):
                               access_agreement_ref, accesss_agreement_type, sender_address,
                               gas_amount):
         """
-        Aquarius commits the access request of service.
+        Commit the access request of service.
 
         :param order_id:
         :param is_available:
@@ -73,7 +73,7 @@ class Auth(ContractBase):
 
     def deliver_access_token(self, order_id, enc_jwt, sender_address):
         """
-        Aquarius delivers the access token of service to on-chain.
+        Deliver the access token of service to on-chain.
 
         :param order_id:
         :param enc_jwt:

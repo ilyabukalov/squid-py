@@ -2,9 +2,10 @@
     Keeper module to call keeper-contracts.
 """
 
+from web3 import Web3
+
 from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper.contract_base import ContractBase
-from web3 import Web3
 
 
 class ServiceAgreement(ContractBase):
@@ -28,7 +29,7 @@ class ServiceAgreement(ContractBase):
             'dependencies_bits arg: expected list, got {0}'.format(type(dependencies_bits))
         for fin in fingerprints:
             assert isinstance(fin, (
-            bytes, bytearray)), 'function finger print must be `bytes` or `bytearray`'
+                bytes, bytearray)), 'function finger print must be `bytes` or `bytearray`'
 
         assert len(contracts_addresses) == len(fingerprints), ''
         assert len(contracts_addresses) == len(dependencies_bits), ''

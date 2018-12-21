@@ -4,20 +4,18 @@ import logging
 from eth_abi import (
     decode_single,
 )
-
 from web3 import (
     Web3,
-)
-
-from squid_py.exceptions import (
-    OceanDIDCircularReference,
-    OceanDIDNotFound,
-    OceanDIDUnknownValueType
 )
 
 from squid_py.did import (
     did_to_id_bytes,
     id_to_did
+)
+from squid_py.exceptions import (
+    OceanDIDCircularReference,
+    OceanDIDNotFound,
+    OceanDIDUnknownValueType
 )
 
 DIDREGISTRY_EVENT_NAME = 'DIDAttributeRegistered'

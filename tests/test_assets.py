@@ -6,8 +6,8 @@ import pathlib
 
 import pytest
 
-from squid_py.ocean.asset import Asset
 from squid_py.ddo import DDO
+from squid_py.ocean.asset import Asset
 
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("web3").setLevel(logging.WARNING)

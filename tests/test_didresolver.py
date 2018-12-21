@@ -1,13 +1,12 @@
 import logging
 import math
-import pytest
 import secrets
 
+import pytest
 from web3 import Web3
 
 from squid_py.ddo import DDO
 from squid_py.did import id_to_did
-
 from squid_py.didresolver import (
     DIDResolver,
     VALUE_TYPE_DID,
@@ -15,7 +14,6 @@ from squid_py.didresolver import (
     VALUE_TYPE_URL,
     VALUE_TYPE_DDO,
 )
-
 from squid_py.exceptions import (
     OceanDIDCircularReference,
     OceanDIDNotFound,
