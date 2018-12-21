@@ -76,13 +76,14 @@ class Config(configparser.ConfigParser):
 
         :param filename: Path of the config file, str.
         :param options_dict: Python dict with the config, dict.
-        :param kwargs: Additional args.
+        :param kwargs: Additional args. If you pass text, you have to pass the plain text
+        configuration.
         """
         configparser.ConfigParser.__init__(self)
 
         self.read_dict(config_defaults)
         self._section_name = 'keeper-contracts'
-        self._logger = kwargs.get('logger', logging.getLogger('config'))
+        self._logger = logging.getLogger('config')
 
         if filename:
             self._logger.debug('Config: loading config file %s', filename)
