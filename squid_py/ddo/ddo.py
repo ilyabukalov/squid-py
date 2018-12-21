@@ -3,12 +3,13 @@
 """
 import datetime
 import json
+import logging
 import re
 from base64 import b64encode, b64decode
 
+from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
-from Crypto.Hash import SHA256
 from web3 import Web3
 
 from squid_py.ddo.public_key_hex import PublicKeyHex
@@ -17,6 +18,8 @@ from .constants import KEY_PAIR_MODULUS_BIT, DID_DDO_CONTEXT_URL
 from .public_key_base import PublicKeyBase, PUBLIC_KEY_STORE_TYPE_PEM
 from .public_key_rsa import PublicKeyRSA, AUTHENTICATION_TYPE_RSA, PUBLIC_KEY_TYPE_RSA
 from .service import Service
+
+logger = logging.getLogger('ddo')
 
 
 class DDO:
@@ -506,11 +509,14 @@ class DDO:
         """create a service object from a JSON string"""
         # id is the did, no big deal if missing
         if not 'id' in values:
-            print('Service definition in DDO document is missing the "id" key/value.')
-            # raise IndexError
+            logger.error('Service definition in DDO document is missing the "id" key/value.')
+            raise IndexError
         if not 'serviceEndpoint' in values:
+            logger.error(
+                'Service definition in DDO document is missing the "serviceEndpoint" key/value.')
             raise IndexError
         if not 'type' in values:
+            logger.error('Service definition in DDO document is missing the "type" key/value.')
             raise IndexError
         service = Service(values.get('id', ''), values['serviceEndpoint'], values['type'], values)
         return service
