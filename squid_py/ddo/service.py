@@ -8,9 +8,10 @@ import re
 
 
 class Service:
-    """Service class to create validate service in a DDO"""
+    """Service class to create validate service in a DDO."""
 
     def __init__(self, service_id, endpoint, service_type, values):
+        """Initialize Service instance."""
         self._id = service_id
         self._endpoint = endpoint
         self._type = service_type
@@ -24,32 +25,39 @@ class Service:
                     self._values[name] = value
 
     def get_id(self):
-        """Return the service id"""
+        """Return the service id."""
         return self._id
 
     def assign_did(self, did):
-        """ Assign a new DID/Id to the service"""
+        """ Assign a new DID/Id to the service."""
         if re.match('^#.*', self._id):
             self._id = did + self._id
 
     def get_type(self):
-        """get the service type"""
+        """Get the service type."""
         return self._type
 
     def get_endpoint(self):
-        """get the service endpoint"""
+        """Get the service endpoint."""
         return self._endpoint
 
     def get_values(self):
-        """get any service value s"""
+        """Get any service values."""
         return self._values
 
     def update_value(self, name, value):
+        """
+        Update value in the array of values.
+
+        :param name: Key of the value, str
+        :param value: New value, str
+        :return: None
+        """
         if name not in {'id', 'serviceEndpoint', 'type'}:
             self._values[name] = value
 
     def as_text(self, is_pretty=False):
-        """return the service as a JSON string"""
+        """Return the service as a JSON string."""
         values = {
             'id': self._id,
             'type': self._type,
@@ -66,7 +74,7 @@ class Service:
         return json.dumps(values)
 
     def as_dictionary(self):
-        """return the service as a python dictionary"""
+        """Return the service as a python dictionary."""
         values = {
             'id': self._id,
             'type': self._type,
@@ -84,5 +92,5 @@ class Service:
         return values
 
     def is_valid(self):
-        """return True if the sevice is valid"""
+        """Return True if the sevice is valid."""
         return self._endpoint is not None and self._type is not None

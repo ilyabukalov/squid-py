@@ -1,6 +1,4 @@
-"""
-    DID Lib to do DID's and DDO's
-"""
+"""DID Lib to do DID's and DDO's."""
 import datetime
 import json
 import re
@@ -20,13 +18,10 @@ from .service import Service
 
 
 class DDO:
-    """
-    DDO class to create, import, export, validate DDO objects.
-
-    """
+    """DDO class to create, import, export, validate DDO objects."""
 
     def __init__(self, did='', json_text=None, json_filename=None, created=None, dictionary=None):
-        """ clear the DDO data values """
+        """Clear the DDO data values."""
         self._did = ''
         self._public_keys = []
         self._authentications = []
@@ -51,11 +46,22 @@ class DDO:
             self._read_dict(dictionary)
 
     def add_public_key(self, public_key):
-        """add a public key object to the list of public keys"""
+        """
+        Add a public key object to the list of public keys.
+
+        :param public_key: Public key, str
+        :return: None
+        """
         self._public_keys.append(public_key)
 
     def add_authentication(self, key_id, authentication_type=None):
-        """add a authentication public key id and type to the list of authentications"""
+        """
+        Add a authentication public key id and type to the list of authentications.
+
+        :param key_id: Key id, str
+        :param authentication_type:
+        :return: None
+        """
         if isinstance(key_id, Authentication):
             # adding an authentication object
             authentication = key_id
@@ -72,8 +78,15 @@ class DDO:
         self._authentications.append(authentication)
 
     def add_signature(self, public_key_store_type=PUBLIC_KEY_STORE_TYPE_PEM, is_embedded=False):
-        """add a signature with a public key and authentication entry for validating this DDO
-        returns the private key as part of the private/public key pair"""
+        """
+        Add signature.
+
+        Add a signature with a public key and authentication entry for validating this DDO
+        returns the private key as part of the private/public key pair
+        :param public_key_store_type
+        :param is_embedded bool
+        :return Private key pem, str
+        """
 
         key_pair = RSA.generate(KEY_PAIR_MODULUS_BIT, e=65537)
         public_key_raw = key_pair.publickey()
@@ -100,7 +113,15 @@ class DDO:
         return private_key_pem
 
     def add_service(self, service_type, service_endpoint=None, service_id=None, values=None):
-        """add a service to the list of services on the DDO"""
+        """
+        Add a service to the list of services on the DDO.
+
+        :param service_type:
+        :param service_endpoint:
+        :param service_id:
+        :param values:
+        :return:
+        """
         if isinstance(service_type, Service):
             service = service_type
         else:

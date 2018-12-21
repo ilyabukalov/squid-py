@@ -139,12 +139,12 @@ class Ocean:
         """
         Search an asset in oceanDB using aquarius.
 
-        :param text String with the value that you are searching.
-        :param sort Dictionary to choose order base in some value.
-        :param offset Number of elements shows by page.
-        :param page Page number.
-        :param aquarius_url Url of the aquarius where you want to search. If there is not provided take the default.
-        :return: List of assets that match with the query.
+        :param text: String with the value that you are searching
+        :param sort: Dictionary to choose order base in some value
+        :param offset: Number of elements shows by page
+        :param page: Page number
+        :param aquarius_url: Url of the aquarius where you want to search. If there is not provided take the default
+        :return: List of assets that match with the query
         """
         if aquarius_url is not None:
             aquarius = AquariusWrapper(aquarius_url)
@@ -157,7 +157,7 @@ class Ocean:
         """
         Search an asset in oceanDB using search query.
 
-        :param query dict with query parameters
+        :param query: dict with query parameters
             (e.g.) {"offset": 100, "page": 0, "sort": {"value": 1},
                     query: {"service:{$elemMatch:{"metadata": {$exists : true}}}}}
                     Here, OceanDB instance of mongodb can leverage power of mongo queries in 'query' attribute.
