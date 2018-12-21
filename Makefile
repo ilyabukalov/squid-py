@@ -33,6 +33,10 @@ clean-build: ## remove build artifacts
 	rm -fr build/
 	rm -fr dist/
 	rm -fr .eggs/
+	rm *.log
+	rm coverage.xml
+	rm squid_py.db
+	rm .python-version
 	find . -name '*.egg-info' -exec rm -fr {} +
 	find . -name '*.egg' -exec rm -f {} +
 
