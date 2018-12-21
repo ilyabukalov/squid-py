@@ -1,8 +1,9 @@
 """
     Test did_lib
 """
-import pytest
 import secrets
+
+import pytest
 from web3 import Web3
 
 from squid_py.did import (

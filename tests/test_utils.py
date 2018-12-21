@@ -1,18 +1,20 @@
 import os
+
 import pytest
 from web3 import Web3
 
 from squid_py.ddo.metadata import Metadata
 from squid_py.ocean.account import Account
+from squid_py.ocean.ocean import Ocean
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
 from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID
-from squid_py.service_agreement.utils import register_service_agreement_template, get_sla_template_path
+from squid_py.service_agreement.utils import register_service_agreement_template, \
+    get_sla_template_path
 from squid_py.utils import utilities
-from squid_py.ocean.ocean import Ocean
+from squid_py.utils.utilities import get_purchase_endpoint, get_service_endpoint
 from tests.brizo_mock import BrizoMock
 from tests.secret_store_mock import SecretStoreClientMock
-from squid_py.utils.utilities import get_purchase_endpoint, get_service_endpoint
 
 PUBLISHER_INDEX = 1
 CONSUMER_INDEX = 0
@@ -40,8 +42,10 @@ def test_get_publickey_from_address(publisher_ocean_instance):
 
 def test_convert():
     input_text = "my text"
-    print("output %s" % utilities.convert_to_string(Web3, utilities.convert_to_bytes(Web3, input_text)))
-    assert utilities.convert_to_text(Web3, utilities.convert_to_bytes(Web3, input_text)) == input_text
+    print("output %s" % utilities.convert_to_string(Web3,
+                                                    utilities.convert_to_bytes(Web3, input_text)))
+    assert utilities.convert_to_text(Web3,
+                                     utilities.convert_to_bytes(Web3, input_text)) == input_text
 
 
 def init_ocn_tokens(ocn, amount=100):
@@ -108,7 +112,8 @@ def get_registered_ddo(ocean_instance):
     service_endpoint = get_service_endpoint(config)
     ddo = ocean_instance.register_asset(
         Metadata.get_example(), ocean_instance.main_account,
-        [ServiceDescriptor.access_service_descriptor(7, purchase_endpoint, service_endpoint, 360, template_id)]
+        [ServiceDescriptor.access_service_descriptor(7, purchase_endpoint, service_endpoint, 360,
+                                                     template_id)]
     )
 
     return ddo

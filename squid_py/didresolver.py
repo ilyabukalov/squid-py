@@ -1,26 +1,21 @@
-"""
-     DID Resolver Class
-
-"""
+"""DID Resolver Class."""
 import logging
 
 from eth_abi import (
     decode_single,
 )
-
 from web3 import (
     Web3,
-)
-
-from squid_py.exceptions import (
-    OceanDIDCircularReference,
-    OceanDIDNotFound,
-    OceanDIDUnknownValueType
 )
 
 from squid_py.did import (
     did_to_id_bytes,
     id_to_did
+)
+from squid_py.exceptions import (
+    OceanDIDCircularReference,
+    OceanDIDNotFound,
+    OceanDIDUnknownValueType
 )
 
 DIDREGISTRY_EVENT_NAME = 'DIDAttributeRegistered'
@@ -34,23 +29,20 @@ logger = logging.getLogger('keeper')
 
 
 class DIDResolved:
-    """
-    Class that handles the resolved DID information
-    """
+    """Class that handles the resolved DID information."""
 
     def __init__(self):
-        """init the object with an empty set of hops"""
+        """Init the object with an empty set of hops."""
         self._items = []
         self._value = None
 
     def add_data(self, data, value):
         """
-        Add a resolved event data item to the list of resolved items
-        as this could be the last item in the chain.
+        Add a resolved event data item to the list of resolved items as this could be the last item
+        in the chain.
 
         :param data: dictionary of the DIDRegistry event data
         :param value: formated value depending on the data['value_type'] string, bytes32
-
         """
         self._items.append(data)
         if data['value_type'] == VALUE_TYPE_DID:
@@ -60,89 +52,91 @@ class DIDResolved:
 
     @property
     def did_bytes(self):
-        """return the resolved did in bytes"""
+        """Return the resolved did in bytes."""
         if self._items:
             return self._items[-1]['did_bytes']
         return None
 
     @property
     def owner(self):
-        """return the resolved owner address"""
+        """Return the resolved owner address."""
         if self._items:
             return self._items[-1]['owner']
         return None
 
     @property
     def key(self):
-        """return the resolved key"""
+        """Return the resolved key."""
         if self._items:
             return self._items[-1]['key']
         return None
 
     @property
     def block_number(self):
-        """return the resolved block number"""
+        """Return the resolved block number."""
         if self._items:
             return self._items[-1]['block_number']
         return None
 
     @property
     def value(self):
-        """return the resolved value can be a URL/DDO(on chain)/DID(string)"""
+        """Return the resolved value can be a URL/DDO(on chain)/DID(string)."""
         return self._value
 
     @property
     def value_type(self):
-        """return the resolved value type"""
+        """Return the resolved value type."""
         if self._items:
             return self._items[-1]['value_type']
         return None
 
     @property
     def is_url(self):
-        """return True if the resolved value is an URL"""
+        """Return True if the resolved value is an URL."""
         return self._items and self._items[-1]['value_type'] == VALUE_TYPE_URL
 
     @property
     def url(self):
-        """return the resolved URL"""
+        """Return the resolved URL."""
         if self.is_url:
             return self._value
         return None
 
     @property
     def is_ddo(self):
-        """return True if the resolved value is a DDO JSON string"""
+        """Return True if the resolved value is a DDO JSON string."""
         return self._items and self._items[-1]['value_type'] == VALUE_TYPE_DDO
 
     @property
     def ddo(self):
-        """return the resolved DDO JSON string"""
+        """Return the resolved DDO JSON string."""
         if self.is_ddo:
             return self._value
         return None
 
     @property
     def is_did(self):
-        """return True if the resolved value is a DID"""
+        """Return True if the resolved value is a DID."""
         return self._items and self._items[-1]['value_type'] == VALUE_TYPE_DID
 
     @property
     def did(self):
-        """return the resolved DID value as a string"""
+        """Return the resolved DID value as a string."""
         if self.is_did:
             return self._value
         return None
 
     @property
     def items(self):
-        """return the list of DIDRegistry items used to get to this resolved value
-        the last item is the resolved item"""
+        """
+        Return the list of DIDRegistry items used to get to this resolved value
+        the last item is the resolved item.
+        """
         return self._items
 
     @property
     def hop_count(self):
-        """return the number of hops needed to resolve the DID"""
+        """Return the number of hops needed to resolve the DID."""
         if self._items:
             return len(self._items)
         return 0
@@ -151,7 +145,7 @@ class DIDResolved:
 class DIDResolver:
     """
     DID Resolver class
-    Resolve DID to a URL/DDO
+    Resolve DID to a URL/DDO.
     """
 
     def __init__(self, web3, did_registry):
@@ -167,7 +161,7 @@ class DIDResolver:
 
     def resolve(self, did, max_hop_count=0):
         """
-        Resolve a DID to an URL/DDO or later an internal/extrenal DID
+        Resolve a DID to an URL/DDO or later an internal/external DID.
 
         :param did: 32 byte value or DID string to resolver, this is part of the ocean DID did:op:<32 byte value>
         :param max_hop_count: max number of hops allowed to find the destination URL/DDO
@@ -242,7 +236,7 @@ class DIDResolver:
         return None
 
     def get_did(self, did_bytes):
-        """return a did value and value type from the block chain event record using 'did'"""
+        """Return a did value and value type from the block chain event record using 'did'."""
         result = None
         did = Web3.toHex(did_bytes)
         block_number = self._did_registry.get_update_at(did_bytes)

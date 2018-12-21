@@ -1,6 +1,4 @@
-"""
-    Keeper module to call keeper-contracts.
-"""
+"""Keeper module to call keeper-contracts."""
 import logging
 
 from web3 import Web3
@@ -10,9 +8,7 @@ from squid_py.keeper.contract_base import ContractBase
 
 
 class Market(ContractBase):
-    """
-    Class representing the OceanMarket contract.
-    """
+    """Class representing the OceanMarket contract."""
 
     def __init__(self, web3, contract_path):
         ContractBase.__init__(self, web3, contract_path, 'OceanMarket')

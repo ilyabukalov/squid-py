@@ -1,5 +1,4 @@
 from eth_utils import add_0x_prefix
-from web3 import Web3
 
 from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
 from squid_py.service_agreement.service_agreement_contract import ServiceAgreementContract

@@ -5,8 +5,6 @@ import json
 import os
 import pathlib
 
-from squid_py.did import DID
-
 from squid_py.ddo import (
     DDO,
     PUBLIC_KEY_STORE_TYPE_PEM,
@@ -14,6 +12,7 @@ from squid_py.ddo import (
     PUBLIC_KEY_STORE_TYPE_BASE64,
     PUBLIC_KEY_STORE_TYPE_BASE85,
 )
+from squid_py.did import DID
 
 public_key_store_types = [
     PUBLIC_KEY_STORE_TYPE_PEM,

@@ -1,6 +1,4 @@
-"""
-    Keeper module to call keeper-contracts.
-"""
+"""Keeper module to call keeper-contracts."""
 
 import json
 import logging

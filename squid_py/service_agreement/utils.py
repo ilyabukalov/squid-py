@@ -1,5 +1,5 @@
-import os
 import json
+import os
 
 from squid_py.ddo.authentication import Authentication
 from squid_py.ddo.public_key_hex import PublicKeyHex, PUBLIC_KEY_TYPE_HEX, AUTHENTICATION_TYPE_HEX

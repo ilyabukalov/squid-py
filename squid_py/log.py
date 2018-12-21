@@ -1,17 +1,14 @@
-"""
-Class to setup the logging.
-"""
-import os
+"""Class to setup the logging."""
 import logging
 import logging.config
-import yaml
+import os
+
 import coloredlogs
+import yaml
 
 
 def setup_logging(default_path='logging.yaml', default_level=logging.INFO, env_key='LOG_CFG'):
-    """
-    Logging Setup
-    """
+    """Logging setup."""
     path = default_path
     value = os.getenv(env_key, None)
     if value:

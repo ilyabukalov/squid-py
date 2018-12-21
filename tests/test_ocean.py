@@ -2,7 +2,6 @@
     Test ocean class
 
 """
-import json
 import logging
 import os
 import pathlib
@@ -12,12 +11,10 @@ import pytest
 from web3 import Web3
 
 from squid_py.ddo import DDO
-from squid_py.exceptions import OceanDIDNotFound
 from squid_py.ddo.metadata import Metadata
 from squid_py.did import DID, did_to_id
+from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper.utils import get_fingerprint_by_name
-from squid_py.service_agreement.utils import build_condition_key
-from squid_py.utils.utilities import generate_new_id, prepare_prefixed_hash
 from squid_py.modules.v0_1.accessControl import grantAccess
 from squid_py.modules.v0_1.payment import lockPayment, releasePayment
 from squid_py.modules.v0_1.serviceAgreement import fulfillAgreement
@@ -25,6 +22,8 @@ from squid_py.ocean.asset import Asset
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
+from squid_py.service_agreement.utils import build_condition_key
+from squid_py.utils.utilities import generate_new_id, prepare_prefixed_hash
 from tests.test_utils import get_publisher_ocean_instance, get_registered_ddo
 
 
@@ -86,10 +85,6 @@ def test_token_request(publisher_ocean_instance, consumer_ocean_instance):
     assert pub_ocn.main_account.balance.ocn == aquarius_current_ocean
     # assert aquarius_current_eth < aquarius_start_eth
     # assert aquarius_current_ocean == aquarius_start_ocean + amount
-
-
-def test_search_assets(publisher_ocean_instance):
-    pass
 
 
 def test_register_asset(publisher_ocean_instance):

@@ -1,39 +1,36 @@
-"""
-    Keeper module to call keeper-contracts.
-"""
+"""Keeper module to call keeper-contracts."""
 
 import re
 from urllib.parse import urlparse
+
 from web3 import Web3
 
+from squid_py.ddo import DDO
+from squid_py.did import did_to_id_bytes
 from squid_py.didresolver import (
     VALUE_TYPE_DID,
     VALUE_TYPE_URL,
     VALUE_TYPE_DDO,
 )
-
-from squid_py.did import did_to_id_bytes
-from squid_py.ddo import DDO
 from squid_py.exceptions import OceanDIDCircularReference
 from squid_py.keeper.contract_base import ContractBase
 
 
 class DIDRegistry(ContractBase):
-    """
-    Class to register and update Ocean DID's
-    """
+    """Class to register and update Ocean DID's."""
 
     def __init__(self, web3, contract_path):
         """
+        Initialize DIDRegistry class.
 
-        :param web3:
-        :param contract_path:
+        :param web3: Web3 instance
+        :param contract_path: Contract path, str
         """
         ContractBase.__init__(self, web3, contract_path, 'DIDRegistry')
 
     def register(self, did_source, url=None, ddo=None, did=None, key=None, account=None):
         """
-        Register or update a DID on the block chain using the DIDRegistry smart contract
+        Register or update a DID on the block chain using the DIDRegistry smart contract.
 
         :param did_source: DID to register/update, can be a 32 byte or hexstring
         :param url: URL of the resolved DID
@@ -97,7 +94,7 @@ class DIDRegistry(ContractBase):
         return receipt
 
     def register_attribute(self, did_hash, value_type, key, value, account_address):
-        """Register an DID attribute as an event on the block chain
+        """Register an DID attribute as an event on the block chain.
 
             did_hash: 32 byte string/hex of the DID
             value_type: 0 = DID, 1 = DIDREf, 2 = URL, 3 = DDO
@@ -114,5 +111,5 @@ class DIDRegistry(ContractBase):
         )
 
     def get_update_at(self, did):
-        """return the block number the last did was updated on the block chain"""
+        """Return the block number the last did was updated on the block chain."""
         return self.contract_concise.getUpdateAt(did)

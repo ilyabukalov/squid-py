@@ -1,93 +1,25 @@
 import logging
 import math
-import pytest
 import secrets
 
-from web3 import (
-    Web3,
-)
-
-from eth_abi import (
-    decode_single,
-)
+import pytest
+from web3 import Web3
 
 from squid_py.ddo import DDO
 from squid_py.did import id_to_did
-
-from squid_py.ocean.ocean import Ocean
-
 from squid_py.didresolver import (
     DIDResolver,
-    DIDResolved,
     VALUE_TYPE_DID,
     VALUE_TYPE_DID_REF,
     VALUE_TYPE_URL,
     VALUE_TYPE_DDO,
 )
-
 from squid_py.exceptions import (
     OceanDIDCircularReference,
     OceanDIDNotFound,
 )
 
 logger = logging.getLogger()
-
-"""
-def test_did_resolver_raw_test():
-
-    # test basic didregistry , contract loading and register a DID
-    ocean = Ocean(config_file='config_local.ini')
-    didregistry = ocean.keeper.didregistry
-    register_account = list(ocean.accounts)[1]
-    did_test = 'did:op:' + secrets.token_hex(32)
-    did_hash = Web3.sha3(text=did_test)
-    value_type = VALUE_TYPE_URL
-    key_test = Web3.sha3(text='provider')
-    key_test = did_hash
-    value_test = 'http://localhost:5000'
-    register_did = didregistry.register_attribute(did_hash, value_type, key_test, value_test, register_account)
-    receipt = didregistry.get_tx_receipt(register_did)
-
-    block_number = didregistry.get_update_at(did_hash)
-    assert block_number > 0
-
-    event_signature = didregistry.get_event_signature('DIDAttributeRegistered')
-    assert event_signature
-
-    actual_signature = Web3.toHex(receipt['logs'][0]['topics'][0])
-    # print('Actual Signature', actual_signature)
-    # print('event ABI', event_signature)
-
-    calc_signature = Web3.sha3(text="DIDAttributeRegistered(bytes32,address,bytes32,string,uint8,uint256)").hex()
-    # print('Calc signature', Web3.toHex(calc_signature))
-
-    assert actual_signature == calc_signature
-    assert actual_signature == event_signature
-
-    # TODO: fix sync with keeper-contracts
-    # at the moment assign the calc signature, since the loadad ABI sig is incorret
-
-    event_signature = calc_signature
-
-    # transaction_count = ocean._web3.eth.getBlockTransactionCount(block_number)
-    # for index in range(0, transaction_count):
-        # transaction = ocean._web3.eth.getTransactionByBlock(block_number, index)
-        # print('transaction', transaction)
-        # receipt = ocean._web3.eth.getTransactionReceipt(transaction['hash'])
-        # print('receipt', receipt)
-
-    # because createFilter does not return any log events
-    test_filter = ocean._web3.eth.filter({'fromBlock': block_number, 'topics': [event_signature, Web3.toHex(did_hash)]})
-    log_items = test_filter.get_all_entries()
-    assert log_items
-
-    assert len(log_items) > 0
-    log_item = log_items[len(log_items) - 1]
-    decode_value, decode_value_type, decode_block_number = decode_single('(string,uint8,uint256)', Web3.toBytes(hexstr=log_item['data']))
-    assert decode_value_type == value_type
-    assert decode_value.decode('utf8') == value_test
-    assert decode_block_number == block_number
-"""
 
 
 def test_did_resitry_register(publisher_ocean_instance):

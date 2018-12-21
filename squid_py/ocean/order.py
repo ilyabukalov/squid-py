@@ -4,8 +4,20 @@ from .ocean_base import OceanBase
 
 
 class Order(OceanBase):
+    """Class representing and account."""
 
     def __init__(self, order_id, asset, timeout, pub_key, key, paid, status):
+        """
+        Initialize an order.
+
+        :param order_id: Order id, str.
+        :param asset: Asset
+        :param timeout: Timeout, int
+        :param pub_key: Public key, str
+        :param key: Key, str
+        :param paid: Amount paid, int
+        :param status: Status of this order, str
+        """
         self.order_id = order_id
         self.asset = asset
         self.asset_id = self.asset.id

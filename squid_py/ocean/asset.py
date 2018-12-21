@@ -13,16 +13,17 @@ DDO_SERVICE_METADATA_KEY = 'metadata'
 
 
 class Asset(OceanBase):
+    """Class representing and asset."""
+
     def __init__(self, ddo, publisher_id=None):
         """
-        Represent an asset in the MetaData store
+        Represent an asset in the MetaData store.
 
         Constructor methods:
             1. Direct instantiation Asset(**kwargs)
                 - Use this method to manually build an asset
             2. From a json DDO file Asset.from_ddo_json_file()
                 - Create an asset based on a DDO file
-            3.
 
         :param did: `did:op:0x...`, the 0x id portion must be of length 64 (or 32 bytes)
         :param publisher_id:
@@ -52,7 +53,7 @@ class Asset(OceanBase):
     @property
     def did(self):
         """
-        Return the DID for this asset
+        Return the DID for this asset.
 
         :return: DID
         """
@@ -66,7 +67,7 @@ class Asset(OceanBase):
     @property
     def ddo(self):
         """
-        Return ddo object assigned for this asset
+        Return ddo object assigned for this asset.
 
         :return: DDO
         """
@@ -75,21 +76,22 @@ class Asset(OceanBase):
     @classmethod
     def from_ddo_json_file(cls, json_file_path):
         """
+        Return a new Asset from a json file with a ddo.
 
-        :param json_file_path:
-        :return:
+        :param json_file_path: Json file path, str
+        :return: Asset
         """
-        this_asset = cls(DDO(json_filename=json_file_path))
-        logging.debug("Asset {} created from ddo file {} ".format(this_asset.did, json_file_path))
-        return this_asset
+        asset = cls(DDO(json_filename=json_file_path))
+        logging.debug("Asset {} created from ddo file {} ".format(asset.did, json_file_path))
+        return asset
 
     @classmethod
     def from_ddo_dict(cls, dictionary):
         """
-        Return a new Asset object from DDO dictionary
+        Return a new Asset object from DDO dictionary.
 
-        :param dictionary:
-        :return:
+        :param dictionary: dict
+        :return: Asset
         """
         asset = cls(ddo=DDO(dictionary=dictionary))
         logging.debug("Asset {} created from ddo dict {} ".format(asset.asset_id, dictionary))
@@ -113,7 +115,7 @@ class Asset(OceanBase):
     @classmethod
     def create_from_metadata(cls, metadata, service_endpoint):
         """
-        Return a new Asset object from a metadata dictionary
+        Return a new Asset object from a metadata dictionary.
 
         :param metadata:
         :param service_endpoint:
@@ -141,17 +143,14 @@ class Asset(OceanBase):
 
     @property
     def metadata(self):
-        """
-
-        :return:
-        """
+        """Asset metadata object."""
         assert self.has_metadata
         return self._get_metadata()
 
     @property
     def has_metadata(self):
         """
-        Return True if this asset has metadata
+        Return True if this asset has metadata.
 
         :return: bool
         """
@@ -159,7 +158,7 @@ class Asset(OceanBase):
 
     def _get_metadata(self):
         """
-        Protected property to read the metadata from the DDO object
+        Protected property to read the metadata from the DDO object.
 
         :return:
         """
@@ -174,20 +173,25 @@ class Asset(OceanBase):
     @property
     def is_valid(self):
         """
-        Return True if this asset has a valid DDO and DID
+        Return True if this asset has a valid DDO and DID.
 
         :return: bool
         """
         return self._ddo and self._ddo.is_valid
 
     def get_id(self):
+        """
+        Return asset did.
+
+        :return: DID
+        """
         return self.asset_id
 
     def generate_did(self):
         """
         During development, the DID can be generated here for convenience.
 
-        :return:
+        :return: DID
         """
         if not self.ddo:
             raise AttributeError("No DDO object in {}".format(self))
