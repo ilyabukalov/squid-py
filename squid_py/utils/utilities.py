@@ -238,7 +238,7 @@ def watcher(event_filter, callback, start_time, timeout, timeout_callback, num_c
             events = event_filter.get_new_entries()
         except ValueError as err:
             # ignore error, but log it
-            logging.error('Got error grabbing keeper events: ', str(err))
+            logging.error('Got error grabbing keeper events: %s' % str(err))
             events = []
 
         processed = False
