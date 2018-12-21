@@ -526,7 +526,7 @@ class Ocean:
         Encrypt string data using the DID as an secret store id,
         if secret store is enabled then return the result from secret store encryption
 
-        :return None for no encryption performed
+        :return: None for no encryption performed
         """
         result = None
         if self.config.secret_store_url and self.config.parity_url and self.main_account:

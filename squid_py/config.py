@@ -60,6 +60,20 @@ class Config(configparser.ConfigParser):
         """
         Initialize Config class.
 
+        Options available:
+
+        [keeper-contracts]
+        keeper.url = http://localhost:8545                            # Keeper-contracts url.
+        keeper.path = artifacts                                       # Path of json abis.
+        secret_store.url = http://localhost:12001                     # Secret store url.
+        parity.url = http://localhost:8545                            # Parity client url.
+        parity.address = 0x00bd138abd70e2f00903268f3db08f2d25677c9e   # Partity account address.
+        parity.password = node0                                       # Parity account password.
+        [resources]
+        aquarius.url = http://localhost:5000                          # Aquarius url.
+        brizo.url = http://localhost:8030                             # Brizo url.
+        storage.path = squid_py.db                                    # Path of sla back-up storage.
+
         :param filename: Path of the config file, str.
         :param options_dict: Python dict with the config, dict.
         :param kwargs: Additional args.
