@@ -38,7 +38,7 @@ def get_brizo_url(config):
         brizo_url = config.get('resources', 'brizo.url') or brizo_url
 
     brizo_path = '/api/v1/brizo'
-    return '{}{}'.format(brizo_url, brizo_path)
+    return f'{brizo_url}{brizo_path}'
 
 
 def get_purchase_endpoint(config):
@@ -48,7 +48,7 @@ def get_purchase_endpoint(config):
     :param config:Config
     :return: Url, str
     """
-    return '{}/services/access/initialize'.format(get_brizo_url(config))
+    return f'{get_brizo_url(config)}/services/access/initialize'
 
 
 def get_service_endpoint(config):
@@ -58,7 +58,7 @@ def get_service_endpoint(config):
     :param config: Config
     :return: Url, str
     """
-    service_endpoint = '{}/services/consume'.format(get_brizo_url(config))
+    service_endpoint = f'{get_brizo_url(config)}/services/consume'
     return service_endpoint
 
 
@@ -110,7 +110,7 @@ def generate_new_id():
 
 
 def generate_prefixed_id():
-    return '0x%s' % generate_new_id()
+    return f'0x{generate_new_id()}'
 
 
 def to_32byte_hex(web3, val):
@@ -160,8 +160,8 @@ def split_signature(web3, signature):
     :param signature:
     :return:
     """
-    assert len(signature) == 65, 'invalid signature, expecting bytes of length 65, got %s' % len(
-        signature)
+    assert len(signature) == 65, f'invalid signature, ' \
+                                 f'expecting bytes of length 65, got {len(signature)}'
     v = web3.toInt(signature[-1])
     r = to_32byte_hex(web3, int.from_bytes(signature[:32], 'big'))
     s = to_32byte_hex(web3, int.from_bytes(signature[32:64], 'big'))
@@ -238,7 +238,7 @@ def watcher(event_filter, callback, start_time, timeout, timeout_callback, num_c
             events = event_filter.get_new_entries()
         except ValueError as err:
             # ignore error, but log it
-            logging.error('Got error grabbing keeper events: %s' % str(err))
+            logging.error(f'Got error grabbing keeper events: {str(err)}')
             events = []
 
         processed = False

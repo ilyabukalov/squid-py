@@ -18,11 +18,10 @@ def process_tx_receipt(web3, tx_hash, event, event_name):
     receipt = web3.eth.getTransactionReceipt(tx_hash)
     event = event().processReceipt(receipt)
     if event:
-        logger.info('Success: got %s event after fulfilling condition.', event_name)
+        logger.info(f'Success: got {event_name} event after fulfilling condition.')
     else:
-        logger.debug('Something is not right, cannot find the %s event after calling the '
-                     'fulfillment condition. This is the transaction receipt %s', event_name,
-                     receipt)
+        logger.debug(f'Something is not right, cannot find the {event_name} event after calling the'
+                     f' fulfillment condition. This is the transaction receipt {receipt}')
 
 
 def handle_action(web3, account, sa_id, contract):
@@ -69,9 +68,7 @@ def get_condition_contract_data(web3, contract_path, service_definition, name):
             break
 
     if condition_definition is None:
-        raise InvalidModule(
-            'Failed to find the {} condition in the service definition'.format(name))
-
+        raise InvalidModule(f'Failed to find the {name} condition in the service definition')
     contract_name = condition_definition['contractName']
     function_name = condition_definition['functionName']
     abi, address = get_contract_abi_and_address(web3, contract_path, contract_name)

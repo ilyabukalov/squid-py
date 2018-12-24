@@ -1,7 +1,10 @@
 """Ocean module."""
+import logging
 from collections import namedtuple
 
 Balance = namedtuple('Balance', ('eth', 'ocn'))
+
+logger = logging.getLogger('account')
 
 
 class Account:
@@ -25,7 +28,9 @@ class Account:
         :return: Result of the operation, bool
         """
         if self.password:
+            logger.debug(f'Unlocking account {self.address}')
             return self.keeper.web3.personal.unlockAccount(self.address, self.password)
+        logging.warning(f'Failed to unlock the account {self.address}')
         return False
 
     def request_tokens(self, amount):
@@ -36,6 +41,7 @@ class Account:
         :return: Result of the operation, bool
         """
         self.unlock()
+        logger.info(f'Requesting {amount} tokens.')
         return self.keeper.market.request_tokens(amount, self.address)
 
     @property

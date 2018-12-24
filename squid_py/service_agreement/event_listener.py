@@ -13,7 +13,7 @@ MAX_TIMEOUT = 60 * 60 * 24 * 7  # 7 days expressed in seconds
 def get_event_handler_function(event):
     fn_name = event.handler_function_name
     version = event.handler_version.replace('.', '_')
-    import_path = 'squid_py.modules.v{}.{}'.format(version, event.handler_module_name)
+    import_path = f'squid_py.modules.v{version}.{event.handler_module_name}'
     module = importlib.import_module(import_path, 'squid_py')
     return getattr(module, fn_name)
 
@@ -56,7 +56,8 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
             for i, cond_dep_name in enumerate(cond_instance.dependencies):
                 if cond_instance.timeout_flags[i] == 1:
                     # dependency has a timeout
-                    assert cond_dep_name in name_to_cond, 'dependency name "%s" not found in conditions' % cond_dep_name
+                    assert cond_dep_name in name_to_cond, f'dependency name {cond_dep_name}' \
+                                                          f' not found in conditions'
                     cond_to_dependants_timeouts[cond_dep_name] = [
                         (cond_instance.name, cond_instance.timeout)]
 
@@ -70,9 +71,8 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
             timeout_event = timeout_events[0] if timeout_events else None
             if not timeout_event:
                 raise AssertionError(
-                    'Expected a timeout event in this condition "%s" because another '
-                    'condition "%s" depends on this condition timing out.' % (
-                        cond_instance.name, _dependent_cond_timeout[0],))
+                    f'Expected a timeout event in this condition {cond_instance.name} because another'
+                    f'condition {_dependent_cond_timeout[0]} depends on this condition timing out.')
 
         for event in cond_instance.events:
             if event.actor_type != actor_type or event.name.endswith('Timeout'):
@@ -90,8 +90,8 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
         fn = get_event_handler_function(event)
         timeout_fn = None
         if timeout_event and timeout:
-            assert MIN_TIMEOUT < timeout < MAX_TIMEOUT, 'TIMEOUT value not within allowed range %s-%s.' % (
-                MIN_TIMEOUT, MAX_TIMEOUT)
+            assert MIN_TIMEOUT < timeout < MAX_TIMEOUT, f'TIMEOUT value not within allowed ' \
+                                                        f'range {MIN_TIMEOUT}-{MAX_TIMEOUT}.'
             timeout_fn = get_event_handler_function(timeout_event)
 
         def _get_callback(func_to_call):
@@ -107,7 +107,7 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
         event_abi_dict = get_event_def_from_abi(contract.abi, event.name)
         service_id_arg_name = event_abi_dict['inputs'][0]['name']
         assert service_id_arg_name in ('serviceId', ServiceAgreement.SERVICE_AGREEMENT_ID), \
-            'unknown event first arg, expected serviceAgreementId, got "%s"' % service_id_arg_name
+            f'unknown event first arg, expected serviceAgreementId, got {service_id_arg_name}'
 
         _filters = {service_id_arg_name: web3.toBytes(hexstr=service_agreement_id)}
 

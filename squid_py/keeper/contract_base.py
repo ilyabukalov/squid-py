@@ -26,7 +26,7 @@ class ContractBase(object):
         self.address = contract[2]
         self.name = contract_name
 
-        logger.debug("Loaded {}".format(self))
+        logger.debug(f'Loaded {self}')
 
     @property
     def events(self):
@@ -99,4 +99,4 @@ class ContractBase(object):
         return signature
 
     def __str__(self):
-        return "{} at {}".format(self.name, self.address)
+        return f'{self.name} at {self.address}'

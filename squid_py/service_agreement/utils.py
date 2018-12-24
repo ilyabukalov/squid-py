@@ -22,7 +22,7 @@ def get_sla_template_path(service_type=ServiceTypes.ASSET_ACCESS):
     elif service_type == ServiceTypes.FITCHAIN_COMPUTE:
         name = 'fitchain_sla_template.json'
     else:
-        raise ValueError('Invalid/unsupported service agreement type "%s"' % service_type)
+        raise ValueError(f'Invalid/unsupported service agreement type {service_type}')
 
     return os.path.join(os.path.sep, *os.path.realpath(__file__).split(os.path.sep)[1:-1], name)
 
@@ -33,8 +33,8 @@ def get_sla_template_dict(path):
 
 
 def build_condition_key(web3, contract_address, fingerprint, template_id):
-    assert isinstance(fingerprint, bytes), 'Expecting `fingerprint` of type bytes, got %s' % type(
-        fingerprint)
+    assert isinstance(fingerprint, bytes), f'Expecting `fingerprint` of type bytes, ' \
+                                           f'got {type(fingerprint)}'
     return web3.soliditySha3(
         ['bytes32', 'address', 'bytes4'],
         [template_id, contract_address, fingerprint]

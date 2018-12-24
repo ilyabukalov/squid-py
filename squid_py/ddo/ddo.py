@@ -55,6 +55,7 @@ class DDO:
         :param public_key: Public key, PublicKeyHex
         :return: None
         """
+        logger.debug(f'Adding public key {public_key}')
         self._public_keys.append(public_key)
 
     def add_authentication(self, key_id, authentication_type=None):
@@ -78,6 +79,7 @@ class DDO:
                 raise ValueError
             authentication = Authentication(key_id, authentication_type)
 
+        logger.debug(f'Adding authentication {authentication}')
         self._authentications.append(authentication)
 
     def add_signature(self, public_key_store_type=PUBLIC_KEY_STORE_TYPE_PEM, is_embedded=False):
@@ -98,7 +100,7 @@ class DDO:
 
         # find the current public key count
         next_index = self.get_public_key_count() + 1
-        key_id = '{0}#keys={1}'.format(self._did, next_index)
+        key_id = f'{self._did}#keys={next_index}'
 
         public_key = PublicKeyRSA(key_id, owner=key_id)
 
@@ -114,6 +116,7 @@ class DDO:
             # add the public key id and type for this key to the authentication
             self.add_authentication(public_key.get_id(), public_key.get_authentication_type())
 
+        logger.debug('Adding signature to the ddo object.')
         return private_key_pem
 
     def add_service(self, service_type, service_endpoint=None, service_id=None, values=None):
@@ -133,6 +136,8 @@ class DDO:
             if service_id is None:
                 service_id = self._did
             service = Service(service_id, service_endpoint, service_type, values)
+        logger.debug(f'Adding service {service_id} with service type {service_type} '
+                     f'with did {self._did}')
         self._services.append(service)
 
     def as_text(self, is_proof=True, is_pretty=False):
@@ -509,7 +514,7 @@ class DDO:
         authentication_type = values.get('type')
         if not key_id:
             raise ValueError(
-                'Invalid authentication definition, "publicKey" is missing: "%s"' % values)
+                f'Invalid authentication definition, "publicKey" is missing: {values}')
         if isinstance(key_id, dict):
             public_key = DDO.create_public_key_from_json(key_id)
             authentication = Authentication(public_key, public_key.get_authentication_type())

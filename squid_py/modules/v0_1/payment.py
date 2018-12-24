@@ -40,7 +40,7 @@ def handlePaymentAction(web3, contract_path, account, service_agreement_id,
                                                              transact=transact)
         process_tx_receipt(web3, tx_hash, getattr(contract.events, event_name), event_name)
     except Exception as e:
-        logger.error('Error when calling %s function: %s', event_name, e, exc_info=1)
+        logger.error(f'Error when calling {event_name} function: {e}')
         raise
 
 

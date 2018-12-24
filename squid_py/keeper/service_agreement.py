@@ -22,11 +22,11 @@ class ServiceAgreement(ContractBase):
         assert isinstance(service_description,
                           str) and service_description.strip() != '', 'bad service description.'
         assert contracts_addresses and isinstance(contracts_addresses, list), \
-            'contracts arg: expected list, got {0}'.format(type(contracts_addresses))
+            f'contracts arg: expected list, got {type(contracts_addresses)}'
         assert fingerprints and isinstance(fingerprints, list), \
-            'fingerprints arg: expected list, got {0}'.format(type(fingerprints))
+            f'fingerprints arg: expected list, got {type(fingerprints)}'
         assert dependencies_bits and isinstance(dependencies_bits, list), \
-            'dependencies_bits arg: expected list, got {0}'.format(type(dependencies_bits))
+            f'dependencies_bits arg: expected list, got {type(dependencies_bits)}'
         for fin in fingerprints:
             assert isinstance(fin, (
                 bytes, bytearray)), 'function finger print must be `bytes` or `bytearray`'
