@@ -13,12 +13,8 @@ class ServiceAgreement(object):
     PURCHASE_ENDPOINT_KEY = 'purchaseEndpoint'
     SERVICE_ENDPOINT_KEY = 'serviceEndpoint'
 
-<<<<<<< Updated upstream
     def __init__(self, sa_definition_id, template_id, conditions, service_agreement_contract,
                  purchase_endpoint=None,
-=======
-    def __init__(self, sa_definition_id, template_id, conditions, service_agreement_contract, purchase_endpoint=None,
->>>>>>> Stashed changes
                  service_endpoint=None):
         self.sa_definition_id = sa_definition_id
         self.template_id = add_0x_prefix(template_id)
@@ -68,12 +64,8 @@ class ServiceAgreement(object):
         )
 
     @staticmethod
-<<<<<<< Updated upstream
     def generate_service_agreement_hash(web3, sa_template_id, condition_keys, values_hash_list,
                                         timeouts,
-=======
-    def generate_service_agreement_hash(web3, sa_template_id, condition_keys, values_hash_list, timeouts,
->>>>>>> Stashed changes
                                         service_agreement_id):
         return web3.soliditySha3(
             ['bytes32', 'bytes32[]', 'bytes32[]', 'uint256[]', 'bytes32'],

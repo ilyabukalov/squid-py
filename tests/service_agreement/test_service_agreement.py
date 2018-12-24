@@ -15,15 +15,10 @@ from squid_py.service_agreement.service_agreement_template import ServiceAgreeme
 
 CONFIG_PATH = 'config_local.ini'
 
-<<<<<<< Updated upstream
 SAMPLE_METADATA_PATH = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'metadata',
                                     'sample_metadata1.json')
 assert os.path.exists(
     SAMPLE_METADATA_PATH), 'sample metadata is not found: "%s"' % SAMPLE_METADATA_PATH
-=======
-SAMPLE_METADATA_PATH = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'metadata', 'sample_metadata1.json')
-assert os.path.exists(SAMPLE_METADATA_PATH), 'sample metadata is not found: "%s"' % SAMPLE_METADATA_PATH
->>>>>>> Stashed changes
 with open(SAMPLE_METADATA_PATH) as f:
     SAMPLE_METADATA = json.load(f)
 
@@ -88,12 +83,8 @@ class TestServiceAgreement(unittest.TestCase):
         template_name = uuid.uuid4().hex
         serviceTemplateId = Web3.sha3(hexstr=template_name)
         encoded_template_name = template_name.encode()
-<<<<<<< Updated upstream
         setup_args = [serviceTemplateId, self.contracts, self.fingerprints, self.dependencies,
                       encoded_template_name,
-=======
-        setup_args = [serviceTemplateId, self.contracts, self.fingerprints, self.dependencies, encoded_template_name,
->>>>>>> Stashed changes
                       [0], 0]
         print('***** ', setup_args)
         receipt = self.service_agreement.contract_concise.setupAgreementTemplate(
@@ -145,12 +136,8 @@ class TestServiceAgreement(unittest.TestCase):
         assert self.market.request_tokens(2000, consumer_account)
 
         # 1. Aquarius register an asset
-<<<<<<< Updated upstream
         asset_id = self.market.register_asset(SAMPLE_METADATA['base']['name'],
                                               SAMPLE_METADATA['base']['description'],
-=======
-        asset_id = self.market.register_asset(SAMPLE_METADATA['base']['name'], SAMPLE_METADATA['base']['description'],
->>>>>>> Stashed changes
                                               asset_price, publisher_account)
         assert self.market.check_asset(asset_id)
         assert asset_price == self.market.get_asset_price(asset_id)
@@ -188,12 +175,8 @@ class TestServiceAgreement(unittest.TestCase):
         for condition in ddo.conditions:
             values = []
             values_per_condition.append(values)
-<<<<<<< Updated upstream
         service_agreement.execute_service_agreement(ddo, consumer_account, service_definition_id,
                                                     timeout,
-=======
-        service_agreement.execute_service_agreement(ddo, consumer_account, service_definition_id, timeout,
->>>>>>> Stashed changes
                                                     values_per_condition)
 
         # process ExecuteAgreement event
