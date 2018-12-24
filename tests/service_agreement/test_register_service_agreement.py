@@ -395,6 +395,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
 
         def get_condition_key(i):
             return self.web3.soliditySha3(['bytes32', 'address', 'bytes4'],
+<<<<<<< Updated upstream
                                           [self.template_id, self.contracts[i],
                                            self.fingerprints[i]]).hex()
 
@@ -409,13 +410,30 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         release_cond_status = self.service_agreement.contract_concise.getConditionStatus(
             service_agreement_id,
             get_condition_key(2))
+=======
+                                          [self.template_id, self.contracts[i], self.fingerprints[i]]).hex()
+
+        payment_locked = self._wait_for_event(self.payment_conditions.events.PaymentLocked)
+        lock_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id,
+                                                                                      get_condition_key(1))
+        assert lock_cond_status > 0
+        grant_access_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id,
+                                                                                              get_condition_key(0))
+        release_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id,
+                                                                                         get_condition_key(2))
+>>>>>>> Stashed changes
         assert grant_access_cond_status == 0 and release_cond_status == 0, 'grantAccess and/or releasePayment is fulfilled but not expected to.'
 
         payment_refund = self._wait_for_event(self.payment_conditions.events.PaymentRefund)
         if not payment_refund:
+<<<<<<< Updated upstream
             refund_cond_status = self.service_agreement.contract_concise.getConditionStatus(
                 service_agreement_id,
                 get_condition_key(3))
+=======
+            refund_cond_status = self.service_agreement.contract_concise.getConditionStatus(service_agreement_id,
+                                                                                            get_condition_key(3))
+>>>>>>> Stashed changes
             assert refund_cond_status > 0, 'refundPayment not fulfilled'
 
         agreement_fulfilled = self._wait_for_event(self.service_agreement.events.AgreementFulfilled)
@@ -440,8 +458,12 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         did = '0x%s' % generate_new_id()
         price = self.price
 
+<<<<<<< Updated upstream
         record_service_agreement(self.storage_path, service_agreement_id, did, 0, price,
                                  self.content_url,
+=======
+        record_service_agreement(self.storage_path, service_agreement_id, did, 0, price, self.content_url,
+>>>>>>> Stashed changes
                                  self.start_time)
 
         def _did_resolver_fn(did):
@@ -475,8 +497,12 @@ class TestRegisterServiceAgreement(unittest.TestCase):
     @classmethod
     def _setup_service_agreement(cls):
         cls.template_id = '0x%s' % generate_new_id()
+<<<<<<< Updated upstream
         cls.contract_names = [cls.access_conditions.name, cls.payment_conditions.name,
                               cls.payment_conditions.name,
+=======
+        cls.contract_names = [cls.access_conditions.name, cls.payment_conditions.name, cls.payment_conditions.name,
+>>>>>>> Stashed changes
                               cls.payment_conditions.name]
         cls.contract_abis = [
             cls.access_conditions.contract.abi,
@@ -561,8 +587,12 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         _network_name = get_network_name(self.web3)
         for i, key in enumerate(self.condition_keys):
             fn_name = function_names[i]
+<<<<<<< Updated upstream
             abi, address = get_contract_abi_and_address(self.web3, self.keeper.contract_path,
                                                         self.contract_names[i],
+=======
+            abi, address = get_contract_abi_and_address(self.web3, self.keeper.contract_path, self.contract_names[i],
+>>>>>>> Stashed changes
                                                         _network_name)
             assert abi == self.contract_abis[i], 'abi does not match.'
             assert address == self.contracts[i], 'address does not match'

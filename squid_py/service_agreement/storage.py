@@ -1,8 +1,12 @@
 import sqlite3
 
 
+<<<<<<< Updated upstream
 def record_service_agreement(storage_path, service_agreement_id, did, service_index, price,
                              content_urls, start_time,
+=======
+def record_service_agreement(storage_path, service_agreement_id, did, service_index, price, content_urls, start_time,
+>>>>>>> Stashed changes
                              status='pending'):
     """ Records the given pending service agreement.
     """

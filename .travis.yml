@@ -1,4 +1,12 @@
 language: python
+<<<<<<< Updated upstream
+=======
+matrix:
+  include:
+  - python: 3.6
+    dist: xenial
+    sudo: true
+>>>>>>> Stashed changes
 
 
 python:

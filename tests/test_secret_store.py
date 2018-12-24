@@ -13,6 +13,7 @@ publisher_address = "0x594d9f933f4f2df6bb66bb34e7ff9d27acc1c019"
 publisher_password = 'password'
 
 
+# TODO This test is passing running docker-images. We need to add it again when we run IT in the flow.
 def test_secret_store():
     config = Config('config_local.ini')
     test_document = os.path.join('tests', 'resources', 'metadata', 'sample_metadata1.json')
