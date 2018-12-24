@@ -74,6 +74,7 @@ setup(
     extras_require={
         'test': test_requirements,
         'dev': dev_requirements + test_requirements + docs_requirements,
+        'docs': docs_requirements,
     },
     install_requires=install_requirements,
     license="Apache Software License 2.0",
