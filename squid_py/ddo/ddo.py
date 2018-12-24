@@ -55,6 +55,7 @@ class DDO:
         :param public_key: Public key, PublicKeyHex
         :return: None
         """
+        logger.debug('Adding public key %s' % public_key)
         self._public_keys.append(public_key)
 
     def add_authentication(self, key_id, authentication_type=None):
@@ -78,6 +79,7 @@ class DDO:
                 raise ValueError
             authentication = Authentication(key_id, authentication_type)
 
+        logger.debug('Adding authentication %s' % authentication)
         self._authentications.append(authentication)
 
     def add_signature(self, public_key_store_type=PUBLIC_KEY_STORE_TYPE_PEM, is_embedded=False):
@@ -114,6 +116,7 @@ class DDO:
             # add the public key id and type for this key to the authentication
             self.add_authentication(public_key.get_id(), public_key.get_authentication_type())
 
+        logger.debug('Adding signature to the ddo object.')
         return private_key_pem
 
     def add_service(self, service_type, service_endpoint=None, service_id=None, values=None):
@@ -133,6 +136,8 @@ class DDO:
             if service_id is None:
                 service_id = self._did
             service = Service(service_id, service_endpoint, service_type, values)
+        logger.debug('Adding service %s with service type %s with did %s' % (
+            service_id, service_type, self._did))
         self._services.append(service)
 
     def as_text(self, is_proof=True, is_pretty=False):

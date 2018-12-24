@@ -133,6 +133,7 @@ class Ocean:
         :param asset_did: Asset did, str
         :return: Asset object
         """
+        logger.debug('Getting asset with did: %s' % asset_did)
         return Asset.from_ddo_dict(self.resolve_did(asset_did))
 
     def search_assets_by_text(self, text, sort=None, offset=100, page=0, aquarius_url=None):
@@ -146,6 +147,7 @@ class Ocean:
         :param aquarius_url: Url of the aquarius where you want to search. If there is not provided take the default
         :return: List of assets that match with the query
         """
+        logger.info('Searching asset containing:' % text)
         if aquarius_url is not None:
             aquarius = AquariusWrapper(aquarius_url)
             return [Asset.from_ddo_dict(i) for i in aquarius.text_search(text, sort, offset, page)]
@@ -165,7 +167,7 @@ class Ocean:
         :return: List of assets that match with the query.
         """
         aquarius_url = self.config.aquarius_url
-
+        logger.info('Searching asset query: %s' % query)
         if aquarius_url is not None:
             aquarius = AquariusWrapper(aquarius_url)
             return [Asset.from_ddo_dict(i) for i in aquarius.query_search(query)]
@@ -194,6 +196,7 @@ class Ocean:
 
         # Create a DDO object
         did = DID().did
+        logger.debug('Generating new did: %s' % did)
         # Check if it's already registered first!
         if did in self.metadata_store.list_assets():
             raise OceanDIDAlreadyExist(
@@ -212,17 +215,18 @@ class Ocean:
         assert metadata_copy['base'][
             'contentUrls'], 'contentUrls is required in the metadata base attributes.'
         assert Metadata.validate(metadata), 'metadata seems invalid.'
-
+        logger.debug('Encrypting content urls in the metadata.')
         content_urls_encrypted = self._encrypt_metadata_content_urls(did,
                                                                      json.dumps(
                                                                          metadata_copy['base'][
                                                                              'contentUrls']))
         # only assign if the encryption worked
         if content_urls_encrypted:
+            logger.debug('Content urls encrypted successfully.')
             metadata_copy['base']['contentUrls'] = [content_urls_encrypted]
         else:
-            raise AssertionError('Encrypting the contentUrls failed. '
-                                 'Make sure the secret store is setup properly in your config file.')
+            raise AssertionError('Encrypting the contentUrls failed. Make sure the secret store is'
+                                 ' setup properly in your config file.')
 
         # DDO url and `Metadata` service
         ddo_service_endpoint = self.metadata_store.get_service_endpoint(did)
@@ -258,7 +262,7 @@ class Ocean:
             url=ddo_service_endpoint,
             account=publisher
         )
-
+        logger.info('DDO with did %s successfully registered on chaing.' %did)
         return ddo
 
     def _approve_token_transfer(self, amount):
@@ -333,6 +337,7 @@ class Ocean:
         self._approve_token_transfer(service_agreement.get_price())
 
         # subscribe to events related to this service_agreement_id before sending the request.
+        logger.debug('Registering service agreement with id: %s' % agreement_id)
         register_service_agreement(self._web3, self.keeper.contract_path, self.config.storage_path,
                                    self.main_account,
                                    agreement_id, did, service_def, 'consumer', service_index,
@@ -405,7 +410,7 @@ class Ocean:
         ):
             raise OceanInvalidServiceAgreementSignature(
                 "Verifying consumer signature failed: signature {}, consumerAddress {}"
-                    .format(service_agreement_signature, consumer_address)
+                .format(service_agreement_signature, consumer_address)
             )
 
         # subscribe to events related to this service_agreement_id
@@ -425,7 +430,7 @@ class Ocean:
             asset_id,
             self.main_account
         )
-
+        logger.info('Service agreement %s executed successfully.' % service_agreement_id)
         return receipt
 
     def check_permissions(self, service_agreement_id, did, consumer_address):

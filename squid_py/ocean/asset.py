@@ -200,10 +200,10 @@ class Asset(OceanBase):
 
         metadata = self._get_metadata()
         if not metadata:
-            raise ValueError("No metedata in {}".format(self))
+            raise ValueError("No metadata in {}".format(self))
 
         if not 'base' in metadata:
-            raise ValueError("Invalid metedata in {}".format(self))
+            raise ValueError("Invalid metadata in {}".format(self))
 
         self.asset_id = hashlib.sha256(json.dumps(metadata['base']).encode('utf-8')).hexdigest()
         self._ddo = self._ddo.create_new('did:op:%s' % self.asset_id)
