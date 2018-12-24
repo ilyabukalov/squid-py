@@ -17,9 +17,9 @@ def grantAccess(web3, contract_path, account, service_agreement_id, service_defi
     """ Checks if grantAccess condition has been fulfilled and if not calls
         AccessConditions.grantAccess smart contract function.
     """
-    logger.debug('Start handling `grantAccess` action: account {}, saId {}, templateId {}'
-                 .format(account.address, service_agreement_id,
-                         service_definition[ServiceAgreementTemplate.TEMPLATE_ID_KEY]))
+    logger.debug(f'Start handling `grantAccess` action: account {account.address}, '
+                 f'saId {service_agreement_id}, '
+                 f'templateId {service_definition[ServiceAgreementTemplate.TEMPLATE_ID_KEY]}')
     access_conditions, contract, abi, access_condition_definition = get_condition_contract_data(
         web3,
         contract_path,
@@ -40,17 +40,16 @@ def grantAccess(web3, contract_path, account, service_agreement_id, service_defi
     asset_id = name_to_parameter['assetId']['value']
     document_key_id = name_to_parameter['documentKeyId']['value']
     transact = {'from': account.address, 'gas': DEFAULT_GAS_LIMIT}
-    logger.info('About to do grantAccess: account {}, saId {}, assetId {}, documentKeyId {}'
-                .format(account.address, service_agreement_id,
-                        asset_id, document_key_id))
+    logger.info(f'About to do grantAccess: account {account.address}, saId {service_agreement_id}, '
+                f'assetId {asset_id}, documentKeyId {document_key_id}')
     try:
         account.unlock()
         tx_hash = access_conditions.grantAccess(service_agreement_id, asset_id, document_key_id,
                                                 transact=transact)
         process_tx_receipt(web3, tx_hash, contract.events.AccessGranted, 'AccessGranted')
     except Exception as e:
-        logger.error('Error when calling grantAccess condition function: %s' % e, exc_info=1)
-        raise
+        logger.error(f'Error when calling grantAccess condition function: {e}')
+        raise e
 
 
 def consumeAsset(web3, contract_path, account, service_agreement_id, service_definition,

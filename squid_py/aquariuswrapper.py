@@ -17,17 +17,17 @@ class AquariusWrapper:
         if '/api/v1/aquarius/assets' in aquarius_url:
             aquarius_url = aquarius_url[:aquarius_url.find('/api/v1/aquarius/assets')]
 
-        self._base_url = '{}/api/v1/aquarius/assets'.format(aquarius_url)
+        self._base_url = f'{aquarius_url}/api/v1/aquarius/assets'
         self._headers = {'content-type': 'application/json'}
 
-        logging.debug("Metadata Store connected at {}".format(aquarius_url))
-        logging.debug("Metadata Store API documentation at {}/api/v1/docs".format(aquarius_url))
-        logging.debug("Metadata assets at {}".format(self._base_url))
+        logging.debug(f'Metadata Store connected at {aquarius_url}')
+        logging.debug(f'Metadata Store API documentation at {aquarius_url}/api/v1/docs')
+        logging.debug(f'Metadata assets at {self._base_url}')
 
     @property
     def url(self):
         """Base URL of the aquarius instance."""
-        return self._base_url + '/ddo/'
+        return f'{self._base_url}/ddo/'
 
     def get_service_endpoint(self, did):
         """
@@ -36,7 +36,7 @@ class AquariusWrapper:
         :param did: Asset DID string
         :return: Return the url of the the ddo location
         """
-        return self._base_url + '/ddo/%s' % did
+        return f'{self._base_url}/ddo/{did}'
 
     def list_assets(self):
         """
@@ -56,7 +56,7 @@ class AquariusWrapper:
         :param did: Asset DID string
         :return: DDO instance
         """
-        response = requests.get(self._base_url + '/ddo/%s' % did).content
+        response = requests.get(f'{self._base_url}/ddo/{did}').content
         if not response:
             return {}
 
@@ -76,7 +76,7 @@ class AquariusWrapper:
         :param did: Asset DID string
         :return: metadata key of the DDO instance
         """
-        response = requests.get(self._base_url + '/metadata/%s' % did).content
+        response = requests.get(f'{self._base_url}/metadata/{did}').content
         if not response:
             return {}
 
@@ -95,7 +95,7 @@ class AquariusWrapper:
 
         :return: List of DDO instance
         """
-        return json.loads(requests.get(self._base_url + '/ddo').content)
+        return json.loads(requests.get(f'{self._base_url}/ddo').content)
 
     def publish_asset_ddo(self, ddo):
         """
@@ -105,21 +105,19 @@ class AquariusWrapper:
         :return: API response (depends on implementation)
         """
         asset_did = ddo.did
-        response = requests.post(self._base_url + '/ddo', data=ddo.as_text(), headers=self._headers)
+        response = requests.post(f'{self._base_url}/ddo', data=ddo.as_text(), headers=self._headers)
         if response.status_code == 500:
             raise ValueError(
-                "This Asset ID already exists! \n\tHTTP Error message: \n\t\t{}".format(
-                    response.text))
+                f'This Asset ID already exists! \n\tHTTP Error message: \n\t\t{response.text}')
         elif response.status_code != 201:
-            raise Exception("{} ERROR Full error: \n{}".format(response.status_code, response.text))
+            raise Exception(f'{response.status_code} ERROR Full error: \n{response.text}')
         elif response.status_code == 201:
             response = json.loads(response.content)
-            logging.debug("Published asset DID {}".format(asset_did))
+            logging.debug(f'Published asset DID {asset_did}')
             return response
         else:
-            raise Exception(
-                "Unhandled ERROR: status-code {}, error message {}".format(response.status_code,
-                                                                           response.text))
+            raise Exception(f'Unhandled ERROR: status-code {response.status_code}, '
+                            f'error message {response.text}')
 
     def update_asset_ddo(self, did, ddo):
         """
@@ -130,7 +128,7 @@ class AquariusWrapper:
         :return: API response (depends on implementation)
         """
         return json.loads(
-            requests.put(self._base_url + '/ddo/%s' % did, data=ddo.as_text(),
+            requests.put(f'{self._base_url}/ddo/{did}', data=ddo.as_text(),
                          headers=self._headers).content)
 
     def text_search(self, text, sort=None, offset=100, page=0):
@@ -156,7 +154,7 @@ class AquariusWrapper:
         """
         payload = {"text": text, "sort": sort, "offset": offset, "page": page}
         response = requests.get(
-            self._base_url + '/ddo/query',
+            f'{self._base_url}/ddo/query',
             params=payload,
             headers=self._headers
         ).content
@@ -179,7 +177,7 @@ class AquariusWrapper:
         :return: List of DDO instance
         """
         response = requests.post(
-            self._base_url + '/ddo/query',
+            f'{self._base_url}/ddo/query',
             data=json.dumps(search_query),
             headers=self._headers
         ).content
@@ -193,8 +191,8 @@ class AquariusWrapper:
         :param did: Asset DID string
         :return: API response (depends on implementation)
         """
-        response = requests.delete(self._base_url + '/ddo/%s' % did, headers=self._headers)
-        logging.debug("Removed asset DID: {} from metadata store".format(did))
+        response = requests.delete(f'{self._base_url}/ddo/{did}', headers=self._headers)
+        logging.debug(f'Removed asset DID: {did} from metadata store')
         return response
 
     @staticmethod
@@ -214,4 +212,4 @@ class AquariusWrapper:
             return parsed_response
         else:
             raise ValueError(
-                'Unknown search response, expecting a list got "%s.' % type(parsed_response))
+                f'Unknown search response, expecting a list got {type(parsed_response)}.')

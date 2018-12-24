@@ -47,13 +47,13 @@ class DIDRegistry(ContractBase):
         did_source_id = did_to_id_bytes(did_source)
 
         if not did_source_id:
-            raise ValueError('{} must be a valid DID to register'.format(did_source))
+            raise ValueError(f'{did_source} must be a valid DID to register')
 
         if url:
             value_type = VALUE_TYPE_URL
             value = url
             if not urlparse(url):
-                raise ValueError('Invalid URL {0} to register for DID {1}'.format(url, did_source))
+                raise ValueError(f'Invalid URL {url} to register for DID {did_source}')
 
         if ddo:
             value_type = VALUE_TYPE_DDO
@@ -62,13 +62,13 @@ class DIDRegistry(ContractBase):
             elif isinstance(ddo, str):
                 value = ddo
             else:
-                raise ValueError('Invalid DDO {0} to register for DID {1}'.format(ddo, did_source))
+                raise ValueError(f'Invalid DDO {ddo} to register for DID {did_source}')
 
         if did:
             value_type = VALUE_TYPE_DID
             id_bytes = did_to_id_bytes(did)
             if not id_bytes:
-                raise ValueError('Invalid DID {}'.format(did))
+                raise ValueError(f'Invalid DID {did}')
 
             if did_source_id == id_bytes:
                 raise OceanDIDCircularReference('Cannot have the same DID that points to itself')
@@ -82,7 +82,7 @@ class DIDRegistry(ContractBase):
             key = Web3.toBytes(0)
 
         if not isinstance(key, bytes):
-            raise ValueError('Invalid key value {}, must be bytes or string'.format(key))
+            raise ValueError(f'Invalid key value {key}, must be bytes or string')
 
         if account is None:
             raise ValueError('You must provide an account to use to register a DID')

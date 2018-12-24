@@ -34,7 +34,7 @@ class Market(ContractBase):
         try:
             return self.contract_concise.getAssetPrice(asset_id_bytes)
         except Exception:
-            logging.error("There are no assets registered with id: %s" % asset_id)
+            logging.error(f'There are no assets registered with id: {asset_id}')
 
     def request_tokens(self, amount, address):
         """
@@ -47,7 +47,7 @@ class Market(ContractBase):
         """
         try:
             receipt = self.contract_concise.requestTokens(amount, transact={'from': address})
-            logging.debug("{} requests {} tokens, returning receipt".format(address, amount))
+            logging.debug(f'{address} requests {amount} tokens, returning receipt')
             return receipt
         except Exception:
             # TODO: Specify error
@@ -74,7 +74,7 @@ class Market(ContractBase):
         )
 
         self.get_tx_receipt(result)
-        logging.debug("Registered Asset {} into blockchain".format(asset.asset_id))
+        logging.debug(f'Registered Asset {asset.asset_id} on chain.')
         return result
 
     def pay_order(self, order_id, publisher_address, price, timeout, sender_address,

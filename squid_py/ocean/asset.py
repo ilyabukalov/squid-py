@@ -41,7 +41,7 @@ class Asset(OceanBase):
         OceanBase.__init__(self, self.asset_id)
 
     def __str__(self):
-        return "Asset {}, publisher: {}".format(self.did, self.publisher_id)
+        return f'Asset {self.did}, publisher: {self.publisher_id}'
 
     def assign_did_from_ddo(self):
         """
@@ -58,9 +58,9 @@ class Asset(OceanBase):
         :return: DID
         """
         if not self._ddo:
-            raise AttributeError("No DDO object in {}".format(self))
+            raise AttributeError(f'No DDO object in {self}')
         if not self._ddo.is_valid:
-            raise ValueError("Invalid DDO object in {}".format(self))
+            raise ValueError(f'Invalid DDO object in {self}')
 
         return self._ddo.did
 
@@ -82,7 +82,7 @@ class Asset(OceanBase):
         :return: Asset
         """
         asset = cls(DDO(json_filename=json_file_path))
-        logging.debug("Asset {} created from ddo file {} ".format(asset.did, json_file_path))
+        logging.debug(f'Asset {asset.did} created from ddo file {json_file_path}.')
         return asset
 
     @classmethod
@@ -94,7 +94,7 @@ class Asset(OceanBase):
         :return: Asset
         """
         asset = cls(ddo=DDO(dictionary=dictionary))
-        logging.debug("Asset {} created from ddo dict {} ".format(asset.asset_id, dictionary))
+        logging.debug(f'Asset {asset.asset_id} created from ddo dict {dictionary}.')
         return asset
 
     @classmethod
@@ -138,7 +138,7 @@ class Asset(OceanBase):
         new_ddo.add_proof(0, private_password)
         # create the asset object
         this_asset = cls(ddo=new_ddo)
-        logging.debug("Asset {} created from metadata {} ".format(this_asset.asset_id, metadata))
+        logging.debug(f'Asset {this_asset.asset_id} created from metadata {metadata}.')
         return this_asset
 
     @property
@@ -194,16 +194,16 @@ class Asset(OceanBase):
         :return: DID
         """
         if not self.ddo:
-            raise AttributeError("No DDO object in {}".format(self))
+            raise AttributeError(f'No DDO object in {self}')
         if not self.ddo.is_valid:
-            raise ValueError("Invalid DDO object in {}".format(self))
+            raise ValueError(f'Invalid DDO object in {self}')
 
         metadata = self._get_metadata()
         if not metadata:
-            raise ValueError("No metadata in {}".format(self))
+            raise ValueError(f'No metadata in {self}')
 
         if not 'base' in metadata:
-            raise ValueError("Invalid metadata in {}".format(self))
+            raise ValueError(f'Invalid metadata in {self}')
 
         self.asset_id = hashlib.sha256(json.dumps(metadata['base']).encode('utf-8')).hexdigest()
-        self._ddo = self._ddo.create_new('did:op:%s' % self.asset_id)
+        self._ddo = self._ddo.create_new(f'did:op:{self.asset_id}')

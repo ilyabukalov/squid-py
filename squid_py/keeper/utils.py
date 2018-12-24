@@ -48,10 +48,10 @@ def get_contract_by_name(contract_path, network_name, contract_name):
     :param contract_name:
     :return:
     """
-    file_name = '{}.{}.json'.format(contract_name, network_name)
+    file_name = f'{contract_name}.{network_name}.json'
     path = os.path.join(contract_path, file_name)
     if not os.path.exists(path):
-        file_name = '{}.{}.json'.format(contract_name, network_name.lower())
+        file_name = f'{contract_name}.{network_name.lower()}.json'
         for name in os.listdir(contract_path):
             if name.lower() == file_name.lower():
                 file_name = name
@@ -59,7 +59,7 @@ def get_contract_by_name(contract_path, network_name, contract_name):
                 break
 
     if not os.path.exists(path):
-        raise FileNotFoundError('Keeper contract {} file not found: {}'.format(contract_name, path))
+        raise FileNotFoundError(f'Keeper contract {contract_name} file not found: {path}')
 
     with open(path) as f:
         contract = json.loads(f.read())
@@ -105,7 +105,7 @@ def get_event_def_from_abi(abi, event_name):
         if item.get('type') == 'event' and item.get('name') == event_name:
             return item
 
-    raise ValueError('event {} not found in the given ABI'.format(event_name))
+    raise ValueError(f'event {event_name} not found in the given ABI')
 
 
 def get_fingerprint_by_name(abi, name):
@@ -119,7 +119,7 @@ def get_fingerprint_by_name(abi, name):
         if item.get('name') == name:
             return item['signature']
 
-    raise ValueError('{} not found in the given ABI'.format(name))
+    raise ValueError(f'{name} not found in the given ABI')
 
 
 def get_fingerprint_bytes_by_name(web3, abi, name):
@@ -151,8 +151,8 @@ def get_network_name(web3):
     :return: Network name, str
     """
     if os.environ.get('KEEPER_NETWORK_NAME'):
-        logging.debug('keeper network name overridden by an environment variable: {}'.format(
-            os.environ.get('KEEPER_NETWORK_NAME')))
+        logging.debug(f'keeper network name overridden by an environment variable: '
+                      f'{os.environ.get("KEEPER_NETWORK_NAME")}')
         return os.environ.get('KEEPER_NETWORK_NAME')
 
     return NETWORK_NAME_MAP.get(get_network_id(web3), DEFAULT_NETWORK_NAME)

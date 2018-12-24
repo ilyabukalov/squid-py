@@ -86,7 +86,7 @@ class Config(configparser.ConfigParser):
         self._logger = logging.getLogger('config')
 
         if filename:
-            self._logger.debug('Config: loading config file %s', filename)
+            self._logger.debug(f'Config: loading config file {filename}')
             with open(filename) as fp:
                 text = fp.read()
                 self.read_string(text)
@@ -95,7 +95,7 @@ class Config(configparser.ConfigParser):
                 self.read_string(kwargs['text'])
 
         if options_dict:
-            self._logger.debug('Config: loading from dict %s', options_dict)
+            self._logger.debug(f'Config: loading from dict {options_dict}')
             self.read_dict(options_dict)
 
         self._load_environ()
@@ -104,7 +104,7 @@ class Config(configparser.ConfigParser):
         for option_name, environ_item in environ_names.items():
             value = os.environ.get(environ_item[0])
             if value is not None:
-                self._logger.debug('Config: setting environ %s = %s', option_name, value)
+                self._logger.debug(f'Config: setting environ {option_name} = {value}')
                 self.set(self._section_name, option_name, value)
 
     @property

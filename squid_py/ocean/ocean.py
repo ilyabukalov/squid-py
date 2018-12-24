@@ -104,16 +104,18 @@ class Ocean:
             self._secret_store_client = Client
 
         logger.info('Squid Ocean instance initialized: ')
-        logger.info('\tmain account: %s (is password set? %s)',
-                    self.main_account.address, bool(self.main_account.password))
-        logger.info('\tOther accounts: %s', sorted(self.accounts))
-        logger.info('\taquarius: %s', self.metadata_store.url)
-        logger.info('\tDIDRegistry @ %s', self.keeper.did_registry.address)
+        logger.info(
+            f'\tmain account: {self.main_account.address} '
+            f'(is password set? {bool(self.main_account.password)})'
+        )
+        logger.info(f'\tOther accounts: {sorted(self.accounts)}')
+        logger.info(f'\taquarius: {self.metadata_store.url}')
+        logger.info(f'\tDIDRegistry @ { self.keeper.did_registry.address}')
 
         if self.config.secret_store_url and self.config.parity_url and self.main_account:
-            logger.info('\tSecretStore: url %s, parity-client %s, account  %s',
-                        self.config.secret_store_url, self.config.parity_url,
-                        self.config.parity_address)
+            logger.info(f'\tSecretStore: url {self.config.secret_store_url}, '
+                        f'parity-client {self.config.parity_url}, '
+                        f'account {self.config.parity_address}')
 
     def get_accounts(self):
         """
@@ -133,7 +135,7 @@ class Ocean:
         :param asset_did: Asset did, str
         :return: Asset object
         """
-        logger.debug('Getting asset with did: %s' % asset_did)
+        logger.debug(f'Getting asset with did: {asset_did}')
         return Asset.from_ddo_dict(self.resolve_did(asset_did))
 
     def search_assets_by_text(self, text, sort=None, offset=100, page=0, aquarius_url=None):
@@ -147,7 +149,7 @@ class Ocean:
         :param aquarius_url: Url of the aquarius where you want to search. If there is not provided take the default
         :return: List of assets that match with the query
         """
-        logger.info('Searching asset containing:' % text)
+        logger.info(f'Searching asset containing: {text}')
         if aquarius_url is not None:
             aquarius = AquariusWrapper(aquarius_url)
             return [Asset.from_ddo_dict(i) for i in aquarius.text_search(text, sort, offset, page)]
@@ -167,7 +169,7 @@ class Ocean:
         :return: List of assets that match with the query.
         """
         aquarius_url = self.config.aquarius_url
-        logger.info('Searching asset query: %s' % query)
+        logger.info(f'Searching asset query: {query}')
         if aquarius_url is not None:
             aquarius = AquariusWrapper(aquarius_url)
             return [Asset.from_ddo_dict(i) for i in aquarius.query_search(query)]
@@ -185,8 +187,7 @@ class Ocean:
             item is a dict of parameters and values required by the service
         :return: DDO instance
         """
-        assert isinstance(metadata, dict), 'Expected metadata of type dict, got "%s"' % type(
-            metadata)
+        assert isinstance(metadata, dict), f'Expected metadata of type dict, got {type(metadata)}'
         if not metadata or not Metadata.validate(metadata):
             raise OceanInvalidMetadata('Metadata seems invalid. '
                                        'Please make sure the required metadata values are filled in.')
@@ -196,11 +197,11 @@ class Ocean:
 
         # Create a DDO object
         did = DID().did
-        logger.debug('Generating new did: %s' % did)
+        logger.debug(f'Generating new did: {did}')
         # Check if it's already registered first!
         if did in self.metadata_store.list_assets():
             raise OceanDIDAlreadyExist(
-                'Asset id "%s" is already registered to another asset.' % did)
+                f'Asset id {did} is already registered to another asset.')
 
         ddo = DDO(did)
 
@@ -240,17 +241,18 @@ class Ocean:
             ddo.add_service(service)
 
         logger.debug(
-            'Generated ddo and services, DID is %s, metadata service @%s, `Access` service purchase @%s.',
-            ddo.did, ddo_service_endpoint, ddo.services[0].get_values()['purchaseEndpoint'])
+            f'Generated ddo and services, DID is {ddo.did},'
+            f' metadata service @{ddo_service_endpoint}, '
+            f'`Access` service purchase @{ddo.services[0].get_values()["purchaseEndpoint"]}.')
         response = None
         try:
             # publish the new ddo in ocean-db/Aquarius
             response = self.metadata_store.publish_asset_ddo(ddo)
             logger.debug('Asset/ddo published successfully in aquarius.')
         except ValueError as ve:
-            logger.error('Publish asset in aquarius failed: %s', str(ve))
+            logger.error(f'Publish asset in aquarius failed: {str(ve)}')
         except Exception as e:
-            logger.error('Publish asset in aquarius failed: %s', str(e))
+            logger.error(f'Publish asset in aquarius failed: {str(e)}')
 
         if not response:
             return None
@@ -262,13 +264,14 @@ class Ocean:
             url=ddo_service_endpoint,
             account=publisher
         )
-        logger.info('DDO with did %s successfully registered on chaing.' %did)
+        logger.info(f'DDO with DID {did} successfully registered on chain.')
         return ddo
 
     def _approve_token_transfer(self, amount):
         if self.keeper.token.get_token_balance(self.main_account.address) < amount:
             raise ValueError(
-                'Account "%s" does not have sufficient tokens to approve for transfer.' % self.main_account.address)
+                f'Account {self.main_account.address} does not have sufficient tokens '
+                f'to approve for transfer.')
 
         self.keeper.token.token_approve(self.keeper.payment_conditions.address, amount,
                                         self.main_account)
@@ -286,7 +289,7 @@ class Ocean:
                                                 service_index)
         if not service:
             raise ValueError(
-                'Service with definition id "%s" is not found in this DDO.' % service_index)
+                f'Service with definition id {service_index} is not found in this DDO.')
         service = service.as_dictionary()
         sa = ServiceAgreement.from_service_dict(service)
         service[ServiceAgreement.SERVICE_CONDITIONS_KEY] = [cond.as_dictionary() for cond in
@@ -317,15 +320,14 @@ class Ocean:
         :param consumer_address: ethereum address of consumer signing the agreement and initiating a purchase/access transaction
         :return: hex str the service agreement id (can be used to query the keeper-contracts for the status of the service agreement)
         """
-        assert consumer_address in self.accounts, 'Unrecognized consumer address %s' \
-                                                  % consumer_address
+        assert consumer_address in self.accounts, f'Unrecognized consumer address consumer_address'
         assert consumer_address == self.main_account.address, \
             'consumer address must be already set as the main account in this instance of Ocean.'
 
         agreement_id, service_agreement, service_def, ddo = self._get_service_agreement_to_sign(did,
                                                                                                 service_index)
         if not self.main_account.unlock():
-            logger.warning('Unlock of consumer account failed %s', self.main_account.address)
+            logger.warning(f'Unlock of consumer account failed {self.main_account.address}')
 
         signature = service_agreement.get_signed_agreement_hash(
             self._web3, self.keeper.contract_path, agreement_id, consumer_address
@@ -337,7 +339,7 @@ class Ocean:
         self._approve_token_transfer(service_agreement.get_price())
 
         # subscribe to events related to this service_agreement_id before sending the request.
-        logger.debug('Registering service agreement with id: %s' % agreement_id)
+        logger.debug(f'Registering service agreement with id: {agreement_id}')
         register_service_agreement(self._web3, self.keeper.contract_path, self.config.storage_path,
                                    self.main_account,
                                    agreement_id, did, service_def, 'consumer', service_index,
@@ -352,16 +354,14 @@ class Ocean:
         )
         if response and hasattr(response, 'status_code'):
             if response.status_code != 201:
-                logger.error(
-                    'Initialize service agreement failed at the purchaseEndpoint %s, '
-                    'reason %s, status %s',
-                    service_agreement.purchase_endpoint, response.text, response.status_code)
+                logger.error(f'Initialize service agreement failed at the '
+                             f'purchaseEndpoint {service_agreement.purchase_endpoint}, '
+                             f'reason { response.text}, status {response.status_code}')
                 return None
             else:
-                logger.debug(
-                    'Service agreement initialized successfully, service agreement id %s,'
-                    ' purchaseEndpoint %s',
-                    agreement_id, service_agreement.purchase_endpoint)
+                logger.debug(f'Service agreement initialized successfully, '
+                             f'service agreement id {agreement_id},'
+                             f' purchaseEndpoint {service_agreement.purchase_endpoint}')
 
         return agreement_id
 
@@ -388,11 +388,11 @@ class Ocean:
         :return: dict the `executeAgreement` transaction receipt
         """
         assert consumer_address and self._web3.isChecksumAddress(
-            consumer_address), 'Invalid consumer address "%s"' % consumer_address
+            consumer_address), f'Invalid consumer address {consumer_address}'
         assert publisher_address and self._web3.isChecksumAddress(
-            publisher_address), 'Invalid publisher address "%s"' % publisher_address
-        assert publisher_address in self.accounts, 'Unrecognized publisher address %s' % \
-                                                   publisher_address
+            publisher_address), f'Invalid publisher address {publisher_address}'
+        assert publisher_address in self.accounts, f'Unrecognized publisher address' \
+                                                   f' {publisher_address}'
 
         asset_id = did_to_id(did)
         ddo, service_agreement, service_def = self._get_ddo_and_service_agreement(did,
@@ -402,15 +402,15 @@ class Ocean:
         if self.keeper.service_agreement.get_service_agreement_consumer(
                 service_agreement_id) is not None:
             raise OceanServiceAgreementExists(
-                'Service agreement {} is already executed.'.format(service_agreement_id))
+                f'Service agreement {service_agreement_id} is already executed.')
 
         if not self.verify_service_agreement_signature(
                 did, service_agreement_id, service_index,
                 consumer_address, service_agreement_signature, ddo=ddo
         ):
             raise OceanInvalidServiceAgreementSignature(
-                "Verifying consumer signature failed: signature {}, consumerAddress {}"
-                .format(service_agreement_signature, consumer_address)
+                f'Verifying consumer signature failed: signature {service_agreement_signature},'
+                f' consumerAddress {consumer_address}'
             )
 
         # subscribe to events related to this service_agreement_id
@@ -430,7 +430,7 @@ class Ocean:
             asset_id,
             self.main_account
         )
-        logger.info('Service agreement %s executed successfully.' % service_agreement_id)
+        logger.info(f'Service agreement {service_agreement_id} executed successfully.')
         return receipt
 
     def check_permissions(self, service_agreement_id, did, consumer_address):
@@ -448,8 +448,8 @@ class Ocean:
         agreement_consumer = self.keeper.service_agreement.get_service_agreement_consumer(
             service_agreement_id)
         if agreement_consumer != consumer_address:
-            logger.warning('Invalid consumer address %s and/or service agreement id %s (did %s)',
-                           consumer_address, service_agreement_id, did)
+            logger.warning(f'Invalid consumer address {consumer_address} and/or '
+                           f'service agreement id {service_agreement_id} (did {did})')
             return False
 
         document_id = did_to_id(did)
@@ -481,7 +481,7 @@ class Ocean:
                                                 service_index)
         if not service:
             raise ValueError(
-                'Service with definition id "%s" is not found in this DDO.' % service_index)
+                f'Service with definition id {service_index} is not found in this DDO.')
 
         service = service.as_dictionary()
         sa = ServiceAgreement.from_service_dict(service)
@@ -493,7 +493,7 @@ class Ocean:
         recovered_address = self._web3.eth.account.recoverHash(prefixed_hash, signature=signature)
         is_valid = (recovered_address == consumer_address)
         if not is_valid:
-            logger.warning('Agreement signature failed: agreement hash is %s', agreement_hash.hex())
+            logger.warning(f'Agreement signature failed: agreement hash is {agreement_hash.hex()}')
 
         self._validate_conditions_keys(sa)
 
@@ -601,7 +601,7 @@ class Ocean:
         decrypted_content_urls = json.loads(self._decrypt_content_urls(did, content_urls))
         if isinstance(decrypted_content_urls, str):
             decrypted_content_urls = [decrypted_content_urls]
-        logger.debug('got decrypted contentUrls: %s', decrypted_content_urls)
+        logger.debug(f'got decrypted contentUrls: {decrypted_content_urls}')
 
         asset_folder = self.get_asset_folder_path(did, service_index)
         if not os.path.exists(self._downloads_path):
@@ -614,9 +614,8 @@ class Ocean:
                 url = url[1:-1]
 
             consume_url = (
-                    '%s?url=%s&serviceAgreementId=%s&consumerAddress=%s' %
-                    (service_url, url, service_agreement_id, consumer_account.address)
-            )
+                    f'{service_url}?url={url}&serviceAgreementId={service_agreement_id}'
+                    f'&consumerAddress={consumer_account.address}')
             logger.info('invoke consume endpoint with this url: %s', consume_url)
             response = self._http_client.get(consume_url)
             if response.status_code == 200:
@@ -624,9 +623,9 @@ class Ocean:
                 file_name = os.path.basename(download_url)
                 with open(os.path.join(asset_folder, file_name), 'wb') as f:
                     f.write(response.content)
-                    logger.info('Saved downloaded file in "%s"', f.name)
+                    logger.info(f'Saved downloaded file in {f.name}')
             else:
-                logger.warning('consume failed: %s', response.reason)
+                logger.warning(f'Consume failed: {response.reason}')
 
     def get_asset_folder_path(self, did, service_index):
         """
@@ -635,8 +634,7 @@ class Ocean:
         :param service_index:
         :return:
         """
-        return os.path.join(self._downloads_path,
-                            'datafile.%s.%s' % (did_to_id(did), service_index))
+        return os.path.join(self._downloads_path, f'datafile.{did_to_id(did)}.{service_index}')
 
     def set_main_account(self, address, password):
         """
@@ -647,7 +645,7 @@ class Ocean:
         """
         self.main_account = Account(self.keeper, self._web3.toChecksumAddress(address), password)
         self.keeper.web3.eth.defaultAccount = self.main_account.address
-        logger.debug('main account set to %s', self.main_account.address)
+        logger.debug(f'main account set to {self.main_account.address}')
         if password:
             logger.debug('main account password is also set.')
         else:
@@ -661,7 +659,7 @@ class Ocean:
             self._web3, self.keeper.contract_path, sa.conditions, sa.template_id
         )
         assert values[3] == sa.conditions_keys
-        logger.debug('conditions keys: %s', sa.conditions_keys)
-        logger.debug('conditions contracts: %s', values[0])
-        logger.debug('conditions fingerprints: %s', [fn.hex() for fn in values[1]])
-        logger.debug('template id: %s', sa.template_id)
+        logger.debug(f'conditions keys: {sa.conditions_keys}')
+        logger.debug(f'conditions contracts: {values[0]}')
+        logger.debug(f'conditions fingerprints: {fn.hex() for fn in values[1]}')
+        logger.debug(f'template id: {sa.template_id}')

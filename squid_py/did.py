@@ -33,11 +33,11 @@ def did_parse(did):
     :return: Python dictionay with the method and the id.
     """
     if not isinstance(did, str):
-        raise TypeError('Expecting DID of string type, got %s of %s type' % (did, type(did)))
+        raise TypeError(f'Expecting DID of string type, got {did} of {type(did)} type')
 
     match = re.match('^did:([a-z0-9]+):([a-zA-Z0-9-.]+)(.*)', did)
     if not match:
-        raise ValueError('DID %s does not seem to be valid.' % did)
+        raise ValueError(f'DID {did} does not seem to be valid.')
 
     result = {
         'method': match.group(1),
@@ -77,7 +77,7 @@ def id_to_did(did_id, method='op'):
     # test for zero address
     if Web3.toBytes(hexstr=did_id) == b'':
         did_id = '0'
-    return 'did:{0}:{1}'.format(method, did_id)
+    return f'did:{method}:{did_id}'
 
 
 def did_to_id(did):
@@ -96,17 +96,17 @@ def did_to_id_bytes(did):
     """
     if isinstance(did, str):
         if re.match('^[0x]?[0-9A-Za-z]+$', did):
-            raise ValueError('{} must be a DID not a hex string'.format(did))
+            raise ValueError(f'{did} must be a DID not a hex string')
         else:
             did_result = did_parse(did)
             if not did_result:
-                raise ValueError('{} is not a valid did'.format(did))
+                raise ValueError(f'{did} is not a valid did')
             if not did_result['id']:
-                raise ValueError('{} is not a valid ocean did'.format(did))
+                raise ValueError(f'{did} is not a valid ocean did')
             id_bytes = Web3.toBytes(hexstr=did_result['id'])
     elif isinstance(did, bytes):
         id_bytes = did
     else:
         raise TypeError(
-            'Unknown did format, expected str or bytes, got {} of type {}'.format(did, type(did)))
+            f'Unknown did format, expected str or bytes, got {did} of type {type(did)}')
     return id_bytes
