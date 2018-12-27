@@ -1,7 +1,7 @@
 """Keeper module."""
 
-from .auth import (
-    Auth
+from .didregistry import (
+    DIDRegistry
 )
 from .keeper import (
     Keeper
@@ -11,4 +11,7 @@ from .market import (
 )
 from .token import (
     Token
+)
+from .service_agreement import (
+    ServiceAgreement
 )
