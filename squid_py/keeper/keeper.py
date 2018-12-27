@@ -4,7 +4,6 @@ import logging
 import os
 
 from squid_py.exceptions import OceanKeeperContractsNotFound
-from squid_py.keeper.auth import Auth
 from squid_py.keeper.conditions.access_conditions import AccessConditions
 from squid_py.keeper.conditions.payment_conditions import PaymentConditions
 from squid_py.keeper.didregistry import DIDRegistry
