@@ -40,7 +40,7 @@ def test_ocean_instance(publisher_ocean_instance):
     assert publisher_ocean_instance.keeper.token is not None
 
     # There is ONE Web3 instance
-    assert publisher_ocean_instance.keeper.market.web3 is publisher_ocean_instance.keeper.auth.web3 is publisher_ocean_instance.keeper.token.web3
+    assert publisher_ocean_instance.keeper.market.web3 is publisher_ocean_instance.keeper.token.web3
     assert publisher_ocean_instance._web3 is publisher_ocean_instance.keeper.web3
 
     print_config(publisher_ocean_instance)

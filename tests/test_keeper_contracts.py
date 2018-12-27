@@ -18,16 +18,6 @@ def get_ocean_instance():
     return ocean
 
 
-def test_auth_contract():
-    ocean = get_ocean_instance()
-    assert ocean
-
-    assert ocean.keeper.auth
-
-    test_id = secrets.token_hex(32)
-    assert ocean.keeper.auth.get_order_status(test_id) == 0
-
-
 def test_didresitry_contract():
     ocean = get_ocean_instance()
     assert ocean

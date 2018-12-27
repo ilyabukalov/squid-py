@@ -63,14 +63,13 @@ class Keeper(object):
 
         # The contract objects
         self.market = Market(web3, contract_path)
-        self.auth = Auth(web3, contract_path)
         self.token = Token(web3, contract_path)
         self.did_registry = DIDRegistry(web3, contract_path)
         self.service_agreement = ServiceAgreement(web3, contract_path)
         self.payment_conditions = PaymentConditions(web3, contract_path)
         self.access_conditions = AccessConditions(web3, contract_path)
 
-        contracts = [self.market, self.auth, self.token, self.did_registry,
+        contracts = [self.market, self.token, self.did_registry,
                      self.service_agreement, self.payment_conditions, self.access_conditions]
         addresses = '\n'.join([f'\t{c.name}: {c.address}' for c in contracts])
         logging.info(f'Finished loading keeper contracts:\n{addresses}')
