@@ -13,8 +13,8 @@ from squid_py.service_agreement.utils import register_service_agreement_template
     get_sla_template_path
 from squid_py.utils import utilities
 from squid_py.utils.utilities import get_purchase_endpoint, get_service_endpoint
-from tests.brizo_mock import BrizoMock
-from tests.secret_store_mock import SecretStoreClientMock
+from tests.mocks.brizo_mock import BrizoMock
+from tests.mocks.secret_store_mock import SecretStoreClientMock
 
 PUBLISHER_INDEX = 1
 CONSUMER_INDEX = 0
