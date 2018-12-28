@@ -342,7 +342,7 @@ def test_agreement_hash(publisher_ocean_instance):
     print('sid: ', service_agreement_id)
     ddo_file_name = 'shared_ddo_example.json'
 
-    file_path = os.path.join(os.path.sep, *os.path.realpath(__file__).split(os.path.sep)[:-1],
+    file_path = os.path.join(os.path.sep, *os.path.realpath(__file__).split(os.path.sep)[:-2],
                              'resources', 'ddo',
                              ddo_file_name)
     ddo = DDO(json_filename=file_path)
