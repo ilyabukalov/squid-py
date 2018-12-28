@@ -189,8 +189,8 @@ class Ocean:
         """
         assert isinstance(metadata, dict), f'Expected metadata of type dict, got {type(metadata)}'
         if not metadata or not Metadata.validate(metadata):
-            raise OceanInvalidMetadata('Metadata seems invalid. '
-                                       'Please make sure the required metadata values are filled in.')
+            raise OceanInvalidMetadata('Metadata seems invalid. Please make sure'
+                                       ' the required metadata values are filled in.')
 
         # copy metadata so we don't change the original
         metadata_copy = metadata.copy()
@@ -250,7 +250,7 @@ class Ocean:
             response = self.metadata_store.publish_asset_ddo(ddo)
             logger.debug('Asset/ddo published successfully in aquarius.')
         except ValueError as ve:
-            logger.error(f'Publish asset in aquarius failed: {str(ve)}')
+            raise ValueError(f'Invalid value to publish in the metadata: {str(ve)}')
         except Exception as e:
             logger.error(f'Publish asset in aquarius failed: {str(e)}')
 
