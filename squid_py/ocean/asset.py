@@ -1,11 +1,9 @@
 """Ocean module."""
 
-import hashlib
-import json
 import logging
 
 from squid_py.ddo import DDO
-from squid_py.did import did_to_id, id_to_did
+from squid_py.did import did_to_id
 from squid_py.ocean.ocean_base import OceanBase
 from squid_py.service_agreement.service_types import ServiceTypes
 
