@@ -32,23 +32,11 @@ class Asset(OceanBase):
 
         self._ddo = ddo
         self.publisher_id = publisher_id
-        self.asset_id = None
-        if self._ddo and self._ddo.is_did_assigend() and self._ddo.is_valid:
-            self.assign_did_from_ddo()
-        else:
-            self.asset_id = hashlib.sha256('assetId'.encode('utf-8')).hexdigest()
-
-        OceanBase.__init__(self, self.asset_id)
+        self.asset_id = did_to_id(self._ddo.did)
+        OceanBase.__init__(self, self.ddo.did)
 
     def __str__(self):
         return f'Asset {self.did}, publisher: {self.publisher_id}'
-
-    def assign_did_from_ddo(self):
-        """
-        #TODO: This is a temporary hack, need to clearly define how DID is assigned!
-        :return:
-        """
-        self.asset_id = did_to_id(self._ddo.did)
 
     @property
     def did(self):
@@ -186,24 +174,3 @@ class Asset(OceanBase):
         :return: DID
         """
         return self.asset_id
-
-    def generate_did(self):
-        """
-        During development, the DID can be generated here for convenience.
-
-        :return: DID
-        """
-        if not self.ddo:
-            raise AttributeError(f'No DDO object in {self}')
-        if not self.ddo.is_valid:
-            raise ValueError(f'Invalid DDO object in {self}')
-
-        metadata = self._get_metadata()
-        if not metadata:
-            raise ValueError(f'No metadata in {self}')
-
-        if not 'base' in metadata:
-            raise ValueError(f'Invalid metadata in {self}')
-
-        self.asset_id = hashlib.sha256(json.dumps(metadata['base']).encode('utf-8')).hexdigest()
-        self._ddo = self._ddo.create_new(f'did:op:{self.asset_id}')
