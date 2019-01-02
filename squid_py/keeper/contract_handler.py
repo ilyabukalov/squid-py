@@ -50,7 +50,7 @@ class ContractHandler(object):
             )
 
         keeper = Keeper.get_instance()
-        contracts = [keeper.market, keeper.auth, keeper.token, keeper.did_registry,
+        contracts = [keeper.market, keeper.token, keeper.did_registry,
                      keeper.service_agreement, keeper.payment_conditions, keeper.access_conditions]
         addresses = '\n'.join(['\t{}: {}'.format(c.name, c.address) for c in contracts])
         logging.info('Finished loading keeper contracts:\n'

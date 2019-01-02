@@ -27,7 +27,7 @@ from squid_py.ocean.asset import Asset
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
-from tests.brizo_mock import BrizoMock
+from tests.mocks.brizo_mock import BrizoMock
 from tests.test_utils import get_publisher_ocean_instance, get_registered_ddo
 
 

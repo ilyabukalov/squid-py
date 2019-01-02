@@ -9,7 +9,6 @@ from squid_py.config_provider import ConfigProvider
 from squid_py.keeper.conditions.access_conditions import AccessConditions
 from squid_py.keeper.conditions.payment_conditions import PaymentConditions
 from squid_py.keeper.service_agreement import ServiceAgreement
-from squid_py.keeper.auth import Auth
 from squid_py.keeper.didregistry import DIDRegistry
 from squid_py.keeper.market import Market
 from squid_py.keeper.token import Token
@@ -55,7 +54,6 @@ class Keeper(object):
 
             # The contract objects
             Keeper.market = Market.get_instance()
-            Keeper.auth = Auth.get_instance()
             Keeper.token = Token.get_instance()
             Keeper.did_registry = DIDRegistry.get_instance()
             Keeper.service_agreement = ServiceAgreement.get_instance()
