@@ -190,8 +190,8 @@ class DIDResolver:
                 if data['value']:
                     try:
                         result = data['value'].decode('utf8')
-                    except:
-                        raise TypeError(f'Invalid string (URL or DDO) data type for a DID'
+                    except Exception:
+                        raise Exception(f'Invalid string (URL or DDO) data type for a DID'
                                         f' value at {Web3.toHex(did_bytes)}')
                 resolved.add_data(data, result)
                 data = None
@@ -200,8 +200,8 @@ class DIDResolver:
                 logger.debug(f'found: did {Web3.toHex(did_bytes)} -> did:op:{data["value"]}')
                 try:
                     did_bytes = Web3.toBytes(hexstr=data['value'].decode('utf8'))
-                except:
-                    raise TypeError(f'Invalid data type for a DID value at {Web3.toHex(did_bytes)}.'
+                except Exception:
+                    raise Exception(f'Invalid data type for a DID value at {Web3.toHex(did_bytes)}.'
                                     f'Got {data["value"].decode("utf8")} which does '
                                     f'not seem like a valid did.')
                 resolved.add_data(data, did_bytes)
@@ -211,8 +211,8 @@ class DIDResolver:
                 logger.debug(f'found did {Web3.toHex(did_bytes)} -> #{data["value"]}')
                 try:
                     did_bytes = Web3.toBytes(hexstr=data['value'].decode('utf8'))
-                except:
-                    raise TypeError(f'Invalid data type for a DID value at {Web3.toHex(did_bytes)}')
+                except Exception:
+                    raise Exception(f'Invalid data type for a DID value at {Web3.toHex(did_bytes)}')
                 resolved.add_data(data, did_bytes)
                 result = did_bytes
             else:

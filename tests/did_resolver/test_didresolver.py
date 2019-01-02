@@ -233,7 +233,7 @@ def test_did_resolver_library(publisher_ocean_instance):
     did_registry.get_tx_receipt(register_did)
 
     # resolve to get the error
-    with pytest.raises(TypeError):
+    with pytest.raises(Exception):
         did_resolver.resolve(did_id_bytes)
 
     # test value type error on a linked DID_REF
@@ -244,5 +244,5 @@ def test_did_resolver_library(publisher_ocean_instance):
     did_registry.get_tx_receipt(register_did)
 
     # resolve to get the error
-    with pytest.raises(TypeError):
+    with pytest.raises(Exception):
         did_resolver.resolve(did_id_bytes)

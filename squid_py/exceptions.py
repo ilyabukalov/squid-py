@@ -35,3 +35,7 @@ class OceanInvalidServiceAgreementSignature(Exception):
 
 class OceanServiceAgreementExists(Exception):
     """Raised when the SLA already exists."""
+
+
+class OceanInvalidTransaction(Exception):
+    """Raised when an on-chain transaction fail."""
