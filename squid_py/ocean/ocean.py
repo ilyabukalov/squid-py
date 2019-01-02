@@ -5,34 +5,44 @@ import logging
 import os
 import os.path
 
-from web3 import Web3, HTTPProvider
+from web3 import Web3
 
+from squid_py.config_provider import ConfigProvider
 from squid_py.ddo.metadata import Metadata
+from squid_py.keeper.contract_handler import ContractHandler
+from squid_py.keeper.diagnostics import Diagnostics
 from squid_py.ocean.account import Account
 from squid_py.ocean.asset import Asset
-from squid_py.aquariuswrapper import AquariusWrapper
-from squid_py.config import Config
+from squid_py.aquarius import Aquarius
 from squid_py.ddo import DDO
 from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
-from squid_py.keeper import Keeper
+from squid_py.keeper import Keeper, web3_provider
 from squid_py.log import setup_logging
-from squid_py.didresolver import DIDResolver
-from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata, \
-    OceanInvalidServiceAgreementSignature, \
-    OceanServiceAgreementExists
-from squid_py.exceptions import OceanDIDAlreadyExist, OceanInvalidMetadata, OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists
+from squid_py.did_resolver import DIDResolver
+from squid_py.exceptions import (
+    OceanDIDAlreadyExist,
+    OceanInvalidMetadata,
+    OceanInvalidServiceAgreementSignature,
+    OceanServiceAgreementExists,
+)
+from squid_py.ocean.brizo import Brizo
 from squid_py.ocean.secret_store import SecretStore
+from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.service_agreement.register_service_agreement import register_service_agreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
 from squid_py.service_agreement.service_factory import ServiceFactory, ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
-from squid_py.service_agreement.utils import make_public_key_and_authentication, \
-    register_service_agreement_template, \
-    get_conditions_data_from_keeper_contracts
-from squid_py.utils.utilities import generate_prefixed_id, prepare_prefixed_hash, \
-    prepare_purchase_payload, \
-    get_metadata_url
+from squid_py.service_agreement.utils import (
+    make_public_key_and_authentication,
+    register_service_agreement_template,
+    get_conditions_data_from_keeper_contracts,
+)
+from squid_py.utils.utilities import (
+    generate_prefixed_id,
+    prepare_prefixed_hash,
+    get_metadata_url,
+)
 from squid_py.did import did_to_id, DID
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
@@ -44,8 +54,7 @@ logger = logging.getLogger('ocean')
 class Ocean:
     """The Ocean class is the entry point into Ocean Protocol."""
 
-    def __init__(self, config_file=None, config_dict=None, http_client=None,
-                 secret_store_client=None):
+    def __init__(self, config=None):
         """
         This class is an aggregation of
          * the smart contracts via the Keeper class
@@ -54,24 +63,22 @@ class Ocean:
         Ocean is also a wrapper for the web3.py interface (https://github.com/ethereum/web3.py)
         An instance of Ocean is parameterized by a configuration file.
 
-        :param config_file: path to configuration file
-        :param config_dict: dict with keys for section names, values are dicts with options names and values
-        :param http_client: http client used for sending http requests such as `requests`
-        :param secret_store_client: reference to `secret_store_client.client.Client` class or similar
+        :param config: Config instance
         """
 
         # Configuration information for the market is stored in the Config class
-        self.config = Config(filename=config_file, options_dict=config_dict)
+        # config = Config(filename=config_file, options_dict=config_dict)
+        if config:
+            ConfigProvider.set_config(config)
 
-        # For development, we use the HTTPProvider Web3 interface
-        self._web3 = Web3(HTTPProvider(self.config.keeper_url))
+        self.config = ConfigProvider.get_config()
 
         # With the interface loaded, the Keeper node is connected with all contracts
-        self.keeper = Keeper(self._web3, self.config.keeper_path)
+        self.keeper = Keeper.get_instance()
 
         # Add the Metadata store to the interface
         if self.config.aquarius_url:
-            self.metadata_store = AquariusWrapper(self.config.aquarius_url)
+            self.metadata_store = Aquarius(self.config.aquarius_url)
         else:
             self.metadata_store = None
 
@@ -84,25 +91,22 @@ class Ocean:
         self.accounts = self.get_accounts()
         assert self.accounts
 
-        parity_address = self._web3.toChecksumAddress(
-            self.config.parity_address) if self.config.parity_address else None
+        parity_address = (
+            Web3Provider.get_web3().toChecksumAddress(self.config.parity_address)
+            if self.config.parity_address
+            else None
+        )
         if parity_address and parity_address in self.accounts:
             self.main_account = self.accounts[parity_address]
             self.main_account.password = self.config.parity_password
         else:
-            self.main_account = self.accounts[self._web3.eth.accounts[0]]
+            self.main_account = self.accounts[Web3Provider.get_web3().eth.accounts[0]]
 
-        self.did_resolver = DIDResolver(self._web3, self.keeper.did_registry)
+        self.did_resolver = DIDResolver(Web3Provider.get_web3(), self.keeper.did_registry)
 
-        self._http_client = http_client
-        if not http_client:
-            import requests
-            self._http_client = requests
-
-        self._secret_store_client = secret_store_client
-        if not secret_store_client:
-            from secret_store_client.client import Client
-            self._secret_store_client = Client
+        # Verify keeper contracts
+        ContractHandler.verify_contracts()
+        Diagnostics.check_deployed_agreement_templates()
 
         logger.info('Squid Ocean instance initialized: ')
         logger.info('\tmain account: %s (is password set? %s)',
@@ -123,7 +127,7 @@ class Ocean:
         :return: dict of account-address: Account instance
         """
         accounts_dict = dict()
-        for account_address in self._web3.eth.accounts:
+        for account_address in self.keeper.accounts:
             accounts_dict[account_address] = Account(self.keeper, account_address)
         return accounts_dict
 
@@ -148,7 +152,7 @@ class Ocean:
         :return: List of assets that match with the query.
         """
         if aquarius_url is not None:
-            aquarius = AquariusWrapper(aquarius_url)
+            aquarius = Aquarius(aquarius_url)
             return [Asset.from_ddo_dict(i) for i in aquarius.text_search(text, sort, offset, page)]
         else:
             return [Asset.from_ddo_dict(i) for i in
@@ -168,7 +172,7 @@ class Ocean:
         aquarius_url = self.config.aquarius_url
 
         if aquarius_url is not None:
-            aquarius = AquariusWrapper(aquarius_url)
+            aquarius = Aquarius(aquarius_url)
             return [Asset.from_ddo_dict(i) for i in aquarius.query_search(query)]
         else:
             return [Asset.from_ddo_dict(i) for i in self.metadata_store.query_search(query)]
@@ -204,7 +208,7 @@ class Ocean:
 
         # Add public key and authentication
         publisher.unlock()
-        pub_key, auth = make_public_key_and_authentication(did, publisher.address, self._web3)
+        pub_key, auth = make_public_key_and_authentication(did, publisher.address, Web3Provider.get_web3())
         ddo.add_public_key(pub_key)
         ddo.add_authentication(auth, PUBLIC_KEY_TYPE_RSA)
 
@@ -232,7 +236,7 @@ class Ocean:
 
         # Add all services to ddo
         _service_descriptors = service_descriptors + [metadata_service_desc]
-        for service in ServiceFactory.build_services(self._web3, self.keeper.contract_path, did,
+        for service in ServiceFactory.build_services(Web3Provider.get_web3(), self.keeper.artifacts_path, did,
                                                      _service_descriptors):
             ddo.add_service(service)
 
@@ -327,9 +331,7 @@ class Ocean:
         if not self.main_account.unlock():
             logger.warning('Unlock of consumer account failed %s', self.main_account.address)
 
-        signature = service_agreement.get_signed_agreement_hash(
-            self._web3, self.keeper.contract_path, agreement_id, consumer_address
-        )[0]
+        signature = service_agreement.get_signed_agreement_hash(agreement_id, self.main_account)[0]
 
         self._validate_conditions_keys(service_agreement)
 
@@ -337,30 +339,16 @@ class Ocean:
         self._approve_token_transfer(service_agreement.get_price())
 
         # subscribe to events related to this service_agreement_id before sending the request.
-        register_service_agreement(self._web3, self.keeper.contract_path, self.config.storage_path,
+        register_service_agreement(Web3Provider.get_web3(), self.keeper.artifacts_path, self.config.storage_path,
                                    self.main_account,
                                    agreement_id, did, service_def, 'consumer', service_index,
                                    service_agreement.get_price(), get_metadata_url(ddo),
                                    self.consume_service, 0)
 
-        payload = prepare_purchase_payload(did, agreement_id, service_index, signature,
-                                           consumer_address)
-        response = self._http_client.post(
-            service_agreement.purchase_endpoint, data=payload,
-            headers={'content-type': 'application/json'}
+        Brizo.initialize_service_agreement(
+            did, agreement_id, service_index, signature, consumer_address,
+            service_agreement.purchase_endpoint
         )
-        if response and hasattr(response, 'status_code'):
-            if response.status_code != 201:
-                logger.error(
-                    'Initialize service agreement failed at the purchaseEndpoint %s, '
-                    'reason %s, status %s',
-                    service_agreement.purchase_endpoint, response.text, response.status_code)
-                return None
-            else:
-                logger.debug(
-                    'Service agreement initialized successfully, service agreement id %s,'
-                    ' purchaseEndpoint %s',
-                    agreement_id, service_agreement.purchase_endpoint)
 
         return agreement_id
 
@@ -386,9 +374,9 @@ class Ocean:
         :param publisher_address: ethereum account address of publisher
         :return: dict the `executeAgreement` transaction receipt
         """
-        assert consumer_address and self._web3.isChecksumAddress(
+        assert consumer_address and Web3Provider.get_web3().isChecksumAddress(
             consumer_address), 'Invalid consumer address "%s"' % consumer_address
-        assert publisher_address and self._web3.isChecksumAddress(
+        assert publisher_address and Web3Provider.get_web3().isChecksumAddress(
             publisher_address), 'Invalid publisher address "%s"' % publisher_address
         assert publisher_address in self.accounts, 'Unrecognized publisher address %s' % \
                                                    publisher_address
@@ -409,11 +397,11 @@ class Ocean:
         ):
             raise OceanInvalidServiceAgreementSignature(
                 "Verifying consumer signature failed: signature {}, consumerAddress {}"
-                    .format(service_agreement_signature, consumer_address)
+                .format(service_agreement_signature, consumer_address)
             )
 
         # subscribe to events related to this service_agreement_id
-        register_service_agreement(self._web3, self.keeper.contract_path, self.config.storage_path,
+        register_service_agreement(Web3Provider.get_web3(), self.keeper.artifacts_path, self.config.storage_path,
                                    self.main_account,
                                    service_agreement_id, did, service_def, 'publisher',
                                    service_index,
@@ -481,10 +469,10 @@ class Ocean:
         sa = ServiceAgreement.from_service_dict(service)
 
         agreement_hash = sa.get_service_agreement_hash(
-            self._web3, self.keeper.contract_path, service_agreement_id
+            service_agreement_id
         )
         prefixed_hash = prepare_prefixed_hash(agreement_hash)
-        recovered_address = self._web3.eth.account.recoverHash(prefixed_hash, signature=signature)
+        recovered_address = Web3Provider.get_web3().eth.account.recoverHash(prefixed_hash, signature=signature)
         is_valid = (recovered_address == consumer_address)
         if not is_valid:
             logger.warning('Agreement signature failed: agreement hash is %s', agreement_hash.hex())
@@ -505,7 +493,7 @@ class Ocean:
 
         sla_template = ServiceAgreementTemplate(template_json=template_dict)
         return register_service_agreement_template(
-            self.keeper.service_agreement, self.keeper.contract_path, owner_account, sla_template
+            self.keeper.service_agreement, self.keeper.artifacts_path, owner_account, sla_template
         )
 
     def resolve_did(self, did):
@@ -519,7 +507,7 @@ class Ocean:
         if resolver.is_ddo:
             return self.did_resolver.resolve(did).ddo
         elif resolver.is_url:
-            aquarius = AquariusWrapper(resolver.url)
+            aquarius = Aquarius(resolver.url)
             return DDO(json_text=json.dumps(aquarius.get_asset_ddo(did)))
         else:
             return None
@@ -576,24 +564,8 @@ class Ocean:
         if not os.path.exists(asset_folder):
             os.mkdir(asset_folder)
 
-        for url in decrypted_content_urls:
-            if url.startswith('"') or url.startswith("'"):
-                url = url[1:-1]
-
-            consume_url = (
-                    '%s?url=%s&serviceAgreementId=%s&consumerAddress=%s' %
-                    (service_url, url, service_agreement_id, consumer_account.address)
-            )
-            logger.info('invoke consume endpoint with this url: %s', consume_url)
-            response = self._http_client.get(consume_url)
-            if response.status_code == 200:
-                download_url = response.url.split('?')[0]
-                file_name = os.path.basename(download_url)
-                with open(os.path.join(asset_folder, file_name), 'wb') as f:
-                    f.write(response.content)
-                    logger.info('Saved downloaded file in "%s"', f.name)
-            else:
-                logger.warning('consume failed: %s', response.reason)
+        Brizo.consume_service(
+            service_agreement_id, service_url, consumer_account.address, decrypted_content_urls, asset_folder)
 
     def get_asset_folder_path(self, did, service_index):
         """
@@ -612,8 +584,8 @@ class Ocean:
         :param password:
         :return:
         """
-        self.main_account = Account(self.keeper, self._web3.toChecksumAddress(address), password)
-        self.keeper.web3.eth.defaultAccount = self.main_account.address
+        self.main_account = Account(self.keeper, Web3Provider.get_web3().toChecksumAddress(address), password)
+        Web3Provider.get_web3().eth.defaultAccount = self.main_account.address
         logger.debug('main account set to %s', self.main_account.address)
         if password:
             logger.debug('main account password is also set.')
@@ -630,7 +602,7 @@ class Ocean:
         # Debug info
         # (contract_addresses, fingerprints, fulfillment_indices, conditions_keys)
         values = get_conditions_data_from_keeper_contracts(
-            self._web3, self.keeper.contract_path, sa.conditions, sa.template_id
+            sa.conditions, sa.template_id
         )
         assert values[3] == sa.conditions_keys
         logger.debug('conditions keys: %s', sa.conditions_keys)

@@ -3,11 +3,16 @@ from secret_store_client.client import Client
 
 
 class SecretStore(object):
+    _client_class = Client
 
     def __init__(self, secret_store_url, node_url, account):
-        self._secret_store_client = Client(
+        self._secret_store_client = SecretStore._client_class(
             secret_store_url, node_url, account.address, account.password
         )
+
+    @staticmethod
+    def set_client(secret_store_client):
+        SecretStore._client_class = secret_store_client
 
     def encrypt_document(self, document_id, content, threshold=0):
         """

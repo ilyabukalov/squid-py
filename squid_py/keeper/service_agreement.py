@@ -10,9 +10,9 @@ from web3 import Web3
 class ServiceAgreement(ContractBase):
     SERVICE_AGREEMENT_ID = 'serviceAgreementId'
 
-    def __init__(self, web3, contract_path):
-        ContractBase.__init__(self, web3, contract_path, 'ServiceAgreement')
-        self._defaultGas = DEFAULT_GAS_LIMIT
+    @staticmethod
+    def get_instance():
+        return ServiceAgreement('ServiceAgreement')
 
     def setup_agreement_template(self, template_id, contracts_addresses, fingerprints,
                                  dependencies_bits,

@@ -6,7 +6,10 @@ import logging
 import requests
 
 
-class AquariusWrapper:
+logger = logging.getLogger('aquarius')
+
+
+class Aquarius:
     """
     Aquarius wrapper to call different endpoint of aquarius component.
     """
@@ -17,15 +20,16 @@ class AquariusWrapper:
 
         :param aquarius_url: Url of the aquarius instance.
         """
+        # :HACK:
         if '/api/v1/aquarius/assets' in aquarius_url:
             aquarius_url = aquarius_url[:aquarius_url.find('/api/v1/aquarius/assets')]
 
         self._base_url = '{}/api/v1/aquarius/assets'.format(aquarius_url)
         self._headers = {'content-type': 'application/json'}
 
-        logging.debug("Metadata Store connected at {}".format(aquarius_url))
-        logging.debug("Metadata Store API documentation at {}/api/v1/docs".format(aquarius_url))
-        logging.debug("Metadata assets at {}".format(self._base_url))
+        logger.debug("Metadata Store connected at {}".format(aquarius_url))
+        logger.debug("Metadata Store API documentation at {}/api/v1/docs".format(aquarius_url))
+        logger.debug("Metadata assets at {}".format(self._base_url))
 
     @property
     def url(self):
@@ -117,7 +121,7 @@ class AquariusWrapper:
             raise Exception("{} ERROR Full error: \n{}".format(response.status_code, response.text))
         elif response.status_code == 201:
             response = json.loads(response.content)
-            logging.debug("Published asset DID {}".format(asset_did))
+            logger.debug("Published asset DID {}".format(asset_did))
             return response
         else:
             raise Exception(
@@ -224,5 +228,5 @@ class AquariusWrapper:
         :return: API response (depends on implementation)
         """
         response = requests.delete(self._base_url + '/ddo/%s' % did, headers=self._headers)
-        logging.debug("Removed asset DID: {} from metadata store".format(did))
+        logger.debug("Removed asset DID: {} from metadata store".format(did))
         return response

@@ -8,8 +8,11 @@ from squid_py.ddo import DDO
 from squid_py.did import did_to_id, id_to_did
 from squid_py.ocean.ocean_base import OceanBase
 from squid_py.service_agreement.service_types import ServiceTypes
+from squid_py.utils.utilities import generate_prefixed_id
 
 DDO_SERVICE_METADATA_KEY = 'metadata'
+
+logger = logging.getLogger('asset')
 
 
 class Asset(OceanBase):
@@ -24,30 +27,24 @@ class Asset(OceanBase):
                 - Create an asset based on a DDO file
             3.
 
-        :param did: `did:op:0x...`, the 0x id portion must be of length 64 (or 32 bytes)
         :param publisher_id:
         :param ddo: DDO instance
         """
-
+        assert ddo and isinstance(ddo, DDO), 'Must provide a valid DDO instance.'
         self._ddo = ddo
         self.publisher_id = publisher_id
-        self.asset_id = None
         if self._ddo and self._ddo.is_did_assigend() and self._ddo.is_valid:
-            self.assign_did_from_ddo()
+            asset_id = did_to_id(self._ddo.did)
         else:
-            self.asset_id = hashlib.sha256('assetId'.encode('utf-8')).hexdigest()
+            asset_id = generate_prefixed_id()
 
-        OceanBase.__init__(self, self.asset_id)
+        OceanBase.__init__(self, asset_id)
 
     def __str__(self):
         return "Asset {}, publisher: {}".format(self.did, self.publisher_id)
 
-    def assign_did_from_ddo(self):
-        """
-        #TODO: This is a temporary hack, need to clearly define how DID is assigned!
-        :return:
-        """
-        self.asset_id = did_to_id(self._ddo.did)
+    def get_id(self):
+        return self.id
 
     @property
     def did(self):
@@ -80,7 +77,7 @@ class Asset(OceanBase):
         :return:
         """
         this_asset = cls(DDO(json_filename=json_file_path))
-        logging.debug("Asset {} created from ddo file {} ".format(this_asset.did, json_file_path))
+        logger.debug("Asset {} created from ddo file {} ".format(this_asset.did, json_file_path))
         return this_asset
 
     @classmethod
@@ -92,7 +89,7 @@ class Asset(OceanBase):
         :return:
         """
         asset = cls(ddo=DDO(dictionary=dictionary))
-        logging.debug("Asset {} created from ddo dict {} ".format(asset.asset_id, dictionary))
+        logger.debug("Asset {} created from ddo dict {} ".format(asset.asset_id, dictionary))
         return asset
 
     @classmethod
@@ -136,7 +133,7 @@ class Asset(OceanBase):
         new_ddo.add_proof(0, private_password)
         # create the asset object
         this_asset = cls(ddo=new_ddo)
-        logging.debug("Asset {} created from metadata {} ".format(this_asset.asset_id, metadata))
+        logger.debug("Asset {} created from metadata {} ".format(this_asset.asset_id, metadata))
         return this_asset
 
     @property
@@ -212,9 +209,6 @@ class Asset(OceanBase):
 
         return
 
-    def get_id(self):
-        return self.asset_id
-
     def generate_did(self):
         """
         During development, the DID can be generated here for convenience.
@@ -230,7 +224,7 @@ class Asset(OceanBase):
         if not metadata:
             raise ValueError("No metedata in {}".format(self))
 
-        if not 'base' in metadata:
+        if 'base' not in metadata:
             raise ValueError("Invalid metedata in {}".format(self))
 
         self.asset_id = hashlib.sha256(json.dumps(metadata['base']).encode('utf-8')).hexdigest()

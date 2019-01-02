@@ -55,3 +55,15 @@ class OceanServiceAgreementExists(Exception):
     """
     Raised when the SLA already exists.
     """
+
+
+class OceanInitializeServiceAgreementError(Exception):
+    """
+    Error on invoking purchase endpoint
+    """
+
+
+class OceanServiceConsumeError(Exception):
+    """
+    Error invoking a consume endpoint
+    """

@@ -9,8 +9,10 @@ class Auth(ContractBase):
     """
     Class representing the OceanAuth contract.
     """
-    def __init__(self, web3, contract_path):
-        ContractBase.__init__(self, web3, contract_path, 'OceanAuth')
+
+    @staticmethod
+    def get_instance():
+        return Auth('OceanAuth')
 
     def cancel_access_request(self, order_id, sender_address):
         """

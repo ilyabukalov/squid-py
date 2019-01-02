@@ -10,8 +10,9 @@ class AccessConditions(ContractBase):
     Class representing the AccessConditions contract.
     """
 
-    def __init__(self, web3, contract_path):
-        super().__init__(web3, contract_path, 'AccessConditions')
+    @staticmethod
+    def get_instance():
+        return AccessConditions('AccessConditions')
 
     def check_permissions(self, address, asset_did, sender_address):
         """

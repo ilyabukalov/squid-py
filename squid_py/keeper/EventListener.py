@@ -2,12 +2,12 @@ import time
 from datetime import datetime
 from threading import Thread
 
-from .utils import get_contract_instance
+from squid_py.keeper.contract_handler import ContractHandler
 
 
 class EventListener(object):
     def __init__(self, contract_name, event_name, contract_path, web3, from_block='latest', to_block='latest', filters=None):
-        contract = get_contract_instance(web3, contract_path, contract_name)
+        contract = ContractHandler.get(contract_name)
         self.event = getattr(contract.events, event_name)
         self.filters = filters if filters else {}
         self.event_filter = self.event().createFilter(

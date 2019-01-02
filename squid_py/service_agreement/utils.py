@@ -3,11 +3,12 @@ import json
 
 from squid_py.ddo.authentication import Authentication
 from squid_py.ddo.public_key_hex import PublicKeyHex, PUBLIC_KEY_TYPE_HEX, AUTHENTICATION_TYPE_HEX
+from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (
     get_fingerprint_by_name,
-    get_contract_abi_and_address,
     hexstr_to_bytes,
-    get_network_name)
+    generate_multi_value_hash)
+from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
 from squid_py.service_agreement.service_types import ServiceTypes
@@ -32,49 +33,46 @@ def get_sla_template_dict(path):
         return json.load(template_file)
 
 
-def build_condition_key(web3, contract_address, fingerprint, template_id):
+def build_condition_key(contract_address, fingerprint, template_id):
     assert isinstance(fingerprint, bytes), 'Expecting `fingerprint` of type bytes, got %s' % type(
         fingerprint)
-    return web3.soliditySha3(
+    return generate_multi_value_hash(
         ['bytes32', 'address', 'bytes4'],
         [template_id, contract_address, fingerprint]
     ).hex()
 
 
-def build_conditions_keys(web3, contract_addresses, fingerprints, template_id):
-    return [build_condition_key(web3, address, fingerprints[i], template_id)
+def build_conditions_keys(contract_addresses, fingerprints, template_id):
+    return [build_condition_key(address, fingerprints[i], template_id)
             for i, address in enumerate(contract_addresses)]
 
 
-def get_conditions_data_from_keeper_contracts(web3, contract_path, conditions, template_id):
+def get_conditions_data_from_keeper_contracts(conditions, template_id):
     """Helper function to generate conditions data that is typically used together in a
     service agreement.
 
-    :param web3:
-    :param contract_path: str path to contracts artifacts
     :param conditions: list of ServiceAgreementCondition instances
     :param template_id:
     :return:
     """
-    _network_name = get_network_name(web3)
     names = {cond.contract_name for cond in conditions}
-    name_to_contract_abi_n_address = {
-        name: get_contract_abi_and_address(web3, contract_path, name, _network_name)
+    name_to_contract = {
+        name: ContractHandler.get(name)
         for name in names
     }
     contract_addresses = [
-        web3.toChecksumAddress(name_to_contract_abi_n_address[cond.contract_name][1])
+        Web3Provider.get_web3().toChecksumAddress(name_to_contract[cond.contract_name].address)
         for cond in conditions
     ]
     fingerprints = [
-        hexstr_to_bytes(web3, get_fingerprint_by_name(
-            name_to_contract_abi_n_address[cond.contract_name][0],
+        hexstr_to_bytes(Web3Provider.get_web3(), get_fingerprint_by_name(
+            name_to_contract[cond.contract_name].abi,
             cond.function_name
         ))
         for i, cond in enumerate(conditions)
     ]
     fulfillment_indices = [i for i, cond in enumerate(conditions) if cond.is_terminal]
-    conditions_keys = build_conditions_keys(web3, contract_addresses, fingerprints, template_id)
+    conditions_keys = build_conditions_keys(contract_addresses, fingerprints, template_id)
     return contract_addresses, fingerprints, fulfillment_indices, conditions_keys
 
 
@@ -89,7 +87,7 @@ def register_service_agreement_template(service_agreement_contract, contract_pat
 
     # sla_template_instance.template_id = generate_prefixed_id()
     conditions_data = get_conditions_data_from_keeper_contracts(
-        service_agreement_contract.web3, contract_path, sla_template_instance.conditions,
+        sla_template_instance.conditions,
         sla_template_instance.template_id
     )
     contract_addresses, fingerprints, fulfillment_indices, conditions_keys = conditions_data
@@ -122,7 +120,7 @@ def get_conditions_with_updated_keys(web3, contract_path, conditions, template_i
     :return:
     """
     conditions_data = get_conditions_data_from_keeper_contracts(
-        web3, contract_path, conditions, template_id
+        conditions, template_id
     )
     fingerprints, fulfillment_indices, conditions_keys = conditions_data[1:]
     # Fill the conditionKey in each condition in the template

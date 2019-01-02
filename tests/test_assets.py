@@ -7,6 +7,7 @@ from unittest.mock import Mock
 
 import pytest
 
+from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ocean.asset import Asset
 from squid_py.ddo import DDO
 import squid_py.ocean.ocean as ocean
@@ -52,10 +53,10 @@ def test_register_data_asset_market(publisher_ocean_instance, consumer_ocean_ins
     # ensure Ocean token balance
     if aquarius_acct.ocean_balance == 0:
         rcpt = aquarius_acct.request_tokens(200)
-        pub_ocn._web3.eth.waitForTransactionReceipt(rcpt)
+        Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
     if consumer_acct.ocean_balance == 0:
         rcpt = consumer_acct.request_tokens(200)
-        cons_ocn._web3.eth.waitForTransactionReceipt(rcpt)
+        Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
 
     # You will need some token to make this transfer!
     assert aquarius_acct.ocean_balance > 0
@@ -109,10 +110,10 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
     # ensure Ocean token balance
     if aquarius_acct.ocean_balance == 0:
         rcpt = aquarius_acct.request_tokens(200)
-        pub_ocn._web3.eth.waitForTransactionReceipt(rcpt)
+        Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
     if consumer_acct.ocean_balance == 0:
         rcpt = consumer_acct.request_tokens(200)
-        cons_ocn._web3.eth.waitForTransactionReceipt(rcpt)
+        Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
 
     # You will need some token to make this transfer!
     assert aquarius_acct.ocean_balance > 0

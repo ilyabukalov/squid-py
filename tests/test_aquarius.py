@@ -1,3 +1,4 @@
+from squid_py.config import Config
 from squid_py.ocean.asset import Asset
 from squid_py.ocean.ocean import Ocean
 from squid_py.ddo import DDO
@@ -6,7 +7,7 @@ import json
 
 
 def test_aquarius():
-    ocean_provider = Ocean(config_file='config_local.ini')
+    ocean_provider = Ocean(Config('config_local.ini'))
     sample_ddo_path = pathlib.Path.cwd() / 'tests/resources/ddo' / 'ddo_sample1.json'
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
@@ -20,6 +21,7 @@ def test_aquarius():
     for match in ocean_provider.metadata_store.text_search(text='Office'):
         ocean_provider.metadata_store.retire_asset_ddo(match['id'])
 
+    num_assets = len(ocean_provider.metadata_store.list_assets())
     ddo = ocean_provider.metadata_store.publish_asset_ddo(asset1.ddo)
 
     ddo = ocean_provider.metadata_store.get_asset_ddo(asset1.did)
@@ -28,7 +30,7 @@ def test_aquarius():
 
     sample_ddo_path2 = pathlib.Path.cwd() / 'tests' / 'resources' / 'ddo' / 'ddo_sample2.json'
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
-    assert len(ocean_provider.metadata_store.list_assets()) == 1
+    assert len(ocean_provider.metadata_store.list_assets()) == (num_assets + 1)
     asset2 = Asset.from_ddo_json_file(sample_ddo_path2)
 
     ocean_provider.metadata_store.update_asset_ddo(asset2.did, asset2.ddo)

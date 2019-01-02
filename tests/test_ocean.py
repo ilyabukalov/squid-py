@@ -16,6 +16,9 @@ from squid_py.exceptions import OceanDIDNotFound
 from squid_py.ddo.metadata import Metadata
 from squid_py.did import DID, did_to_id
 from squid_py.keeper.utils import get_fingerprint_by_name
+from squid_py.keeper.web3_provider import Web3Provider
+from squid_py.ocean.brizo import Brizo
+from squid_py.ocean.secret_store import SecretStore
 from squid_py.service_agreement.utils import build_condition_key
 from squid_py.utils.utilities import generate_new_id, prepare_prefixed_hash
 from squid_py.modules.v0_1.accessControl import grantAccess
@@ -25,6 +28,7 @@ from squid_py.ocean.asset import Asset
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
+from tests.brizo_mock import BrizoMock
 from tests.test_utils import get_publisher_ocean_instance, get_registered_ddo
 
 
@@ -39,10 +43,6 @@ def print_config(ocean_instance):
 def test_ocean_instance(publisher_ocean_instance):
     print_config(publisher_ocean_instance)
     assert publisher_ocean_instance.keeper.token is not None
-
-    # There is ONE Web3 instance
-    assert publisher_ocean_instance.keeper.market.web3 is publisher_ocean_instance.keeper.auth.web3 is publisher_ocean_instance.keeper.token.web3
-    assert publisher_ocean_instance._web3 is publisher_ocean_instance.keeper.web3
 
     print_config(publisher_ocean_instance)
 
@@ -70,9 +70,9 @@ def test_token_request(publisher_ocean_instance, consumer_ocean_instance):
 
     # Make requests, assert success on request
     rcpt = pub_ocn.main_account.request_tokens(amount)
-    pub_ocn._web3.eth.waitForTransactionReceipt(rcpt)
+    Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
     rcpt = cons_ocn.main_account.request_tokens(amount)
-    publisher_ocean_instance._web3.eth.waitForTransactionReceipt(rcpt)
+    Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
 
     # Update and print balances
     # Ocean.accounts is a dict address: account
@@ -106,7 +106,7 @@ def test_register_asset(publisher_ocean_instance):
     # ensure Ocean token balance
     if publisher.ocean_balance == 0:
         rcpt = publisher.request_tokens(200)
-        publisher_ocean_instance._web3.eth.waitForTransactionReceipt(rcpt)
+        Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
 
     # You will need some token to make this transfer!
     assert publisher.ocean_balance > 0
@@ -171,14 +171,17 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     consumer = consumer_ocean_instance.main_account.address
 
     # point consumer_ocean_instance's brizo mock to the publisher's ocean instance
-    consumer_ocean_instance._http_client.ocean_instance = publisher_ocean_instance
+    Brizo.set_http_client(BrizoMock(publisher_ocean_instance))
     # sign agreement using the registered asset did above
     service = registered_ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     assert ServiceAgreement.SERVICE_DEFINITION_ID_KEY in service.as_dictionary()
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
 
-    service_agreement_id = consumer_ocean_instance.sign_service_agreement(registered_ddo.did, sa.sa_definition_id,
-                                                                          consumer)
+    service_agreement_id = consumer_ocean_instance.sign_service_agreement(
+        registered_ddo.did,
+        sa.sa_definition_id,
+        consumer
+    )
     assert service_agreement_id, 'agreement id is None.'
     print('got new service agreement id:', service_agreement_id)
     filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=service_agreement_id)}
@@ -206,7 +209,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     """
     consumer_ocn = consumer_ocean_instance
     keeper = consumer_ocn.keeper
-    web3 = keeper.web3
+    web3 = Web3Provider.get_web3()
     consumer_acc = consumer_ocn.main_account
     publisher_acc = publisher_ocean_instance.main_account
     service_index = '0'
@@ -217,7 +220,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
 
     consumer_ocn.main_account.unlock()
     signature, sa_hash = service_agreement.get_signed_agreement_hash(
-        web3, consumer_ocn.keeper.contract_path, agreement_id, consumer_acc.address
+        agreement_id, consumer_acc
     )
     # Must approve token transfer for this purchase
     consumer_ocn._approve_token_transfer(service_agreement.get_price())
@@ -258,7 +261,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     template_id = web3.toHex(sa_contract.getTemplateId(agreement_id))
     assert template_id == service_agreement.template_id
 
-    k = build_condition_key(web3, pay_cont_address, web3.toBytes(hexstr=fn_fingerprint), service_agreement.template_id)
+    k = build_condition_key(pay_cont_address, web3.toBytes(hexstr=fn_fingerprint), service_agreement.template_id)
     cond_key = web3.toHex(sa_contract.getConditionByFingerprint(agreement_id, pay_cont_address, fn_fingerprint))
     assert k == cond_key, 'problem with condition keys: %s vs %s' % (k, cond_key)
     assert cond_key == service_agreement.conditions_keys[0]
@@ -269,7 +272,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     assert pay_has_dependencies is False
 
     # Lock payment
-    lockPayment(web3, keeper.contract_path, consumer_acc, agreement_id, service_def)
+    lockPayment(web3, keeper.artifacts_path, consumer_acc, agreement_id, service_def)
     # WAIT FOR ####### PaymentLocked event
     locked = wait_for_event(keeper.payment_conditions.events.PaymentLocked, filter_2)
     # assert locked, ''
@@ -287,17 +290,17 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
         assert grant_access_cond_status == 0 and release_cond_status == 0, 'grantAccess and/or releasePayment is fulfilled but not expected to.'
 
     # Grant access
-    grantAccess(web3, keeper.contract_path, publisher_acc, agreement_id, service_def)
+    grantAccess(web3, keeper.artifacts_path, publisher_acc, agreement_id, service_def)
     # WAIT FOR ####### AccessGranted event
     granted = wait_for_event(keeper.access_conditions.events.AccessGranted, filter_2)
     assert granted, ''
     # Release payment
-    releasePayment(web3, keeper.contract_path, publisher_acc, agreement_id, service_def)
+    releasePayment(web3, keeper.artifacts_path, publisher_acc, agreement_id, service_def)
     # WAIT FOR ####### PaymentReleased event
     released = wait_for_event(keeper.payment_conditions.events.PaymentReleased, filter_2)
     assert released, ''
     # Fulfill agreement
-    fulfillAgreement(web3, keeper.contract_path, publisher_acc, agreement_id, service_def)
+    fulfillAgreement(web3, keeper.artifacts_path, publisher_acc, agreement_id, service_def)
     # Wait for ####### AgreementFulfilled event (verify agreement was fulfilled)
     fulfilled = wait_for_event(keeper.service_agreement.events.AgreementFulfilled, filter1)
     assert fulfilled, ''
@@ -330,7 +333,7 @@ def test_agreement_hash(publisher_ocean_instance):
     pub_ocn = publisher_ocean_instance
 
     did = "did:op:0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
-    user_address = pub_ocn.keeper.web3.toChecksumAddress("0x00bd138abd70e2f00903268f3db08f2d25677c9e")
+    user_address = Web3Provider.get_web3().toChecksumAddress("0x00bd138abd70e2f00903268f3db08f2d25677c9e")
     template_id = "0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d"
     service_agreement_id = '0xf136d6fadecb48fdb2fc1fb420f5a5d1c32d22d9424e47ab9461556e058fefaa'
     print('sid: ', service_agreement_id)
@@ -347,13 +350,13 @@ def test_agreement_hash(publisher_ocean_instance):
     assert template_id == sa.template_id, ''
     assert did == ddo.did
     agreement_hash = ServiceAgreement.generate_service_agreement_hash(
-        pub_ocn.keeper.web3, sa.template_id, sa.conditions_keys,
+        sa.template_id, sa.conditions_keys,
         sa.conditions_params_value_hashes, sa.conditions_timeouts, service_agreement_id
     )
     print('agreement hash: ', agreement_hash.hex())
     print('expected hash: ', "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb")
     assert agreement_hash.hex() == "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb", 'hash does not match.'
-    # signed_hash = pub_ocn.keeper.web3.eth.sign(user_address, agreement_hash).hex()
+    # signed_hash = Web3Provider.get_web3().eth.sign(user_address, agreement_hash).hex()
     # print('signed agreement hash:', signed_hash)
 
 
@@ -373,7 +376,7 @@ def test_verify_signature(consumer_ocean_instance):
 
     """
     ocn = consumer_ocean_instance
-    w3 = ocn.keeper.web3
+    w3 = Web3Provider.get_web3()
 
     def verify_signature(_address, _agreement_hash, _signature, expected_match):
         prefixed_hash = prepare_prefixed_hash(_agreement_hash)
@@ -408,7 +411,7 @@ def test_verify_signature(consumer_ocean_instance):
 
 def test_integration(consumer_ocean_instance):
     # this test is disabled for now.
-    return
+    # return
     # This test requires all services running including:
     # secret store
     # parity node
@@ -422,10 +425,9 @@ def test_integration(consumer_ocean_instance):
     pub_ocn = get_publisher_ocean_instance()
 
     # restore the proper http requests client and secret store client
-    pub_ocn._http_client = requests
-    pub_ocn._secret_store_client = Client
-    consumer_ocean_instance._http_client = requests
-    consumer_ocean_instance._secret_store_client = Client
+    Brizo.set_http_client(requests)
+    # pub_ocn._http_client = requests
+    SecretStore.set_client(Client)
 
     # Register ddo
     ddo = get_registered_ddo(pub_ocn)
