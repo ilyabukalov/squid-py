@@ -59,7 +59,6 @@ class AquariusWrapper:
         response = requests.get(f'{self._base_url}/ddo/{did}').content
         if not response:
             return {}
-
         try:
             parsed_response = json.loads(response)
         except TypeError:
@@ -79,7 +78,6 @@ class AquariusWrapper:
         response = requests.get(f'{self._base_url}/metadata/{did}').content
         if not response:
             return {}
-
         try:
             parsed_response = json.loads(response)
         except TypeError:
@@ -104,8 +102,12 @@ class AquariusWrapper:
         :param ddo: DDO instance
         :return: API response (depends on implementation)
         """
-        asset_did = ddo.did
-        response = requests.post(f'{self._base_url}/ddo', data=ddo.as_text(), headers=self._headers)
+        try:
+            asset_did = ddo.did
+            response = requests.post(f'{self._base_url}/ddo', data=ddo.as_text(),
+                                     headers=self._headers)
+        except AttributeError:
+            raise AttributeError('DDO invalid. Review that all the required parameters are filled.')
         if response.status_code == 500:
             raise ValueError(
                 f'This Asset ID already exists! \n\tHTTP Error message: \n\t\t{response.text}')
@@ -127,9 +129,12 @@ class AquariusWrapper:
         :param ddo: DDO instance
         :return: API response (depends on implementation)
         """
-        return json.loads(
-            requests.put(f'{self._base_url}/ddo/{did}', data=ddo.as_text(),
-                         headers=self._headers).content)
+        response = requests.put(f'{self._base_url}/ddo/{did}', data=ddo.as_text(),
+                                headers=self._headers)
+        if response.status_code == 200 or response.status_code == 201:
+            return json.loads(response.content)
+        else:
+            raise Exception(f'Unable to update DDO: {response.content}')
 
     def text_search(self, text, sort=None, offset=100, page=0):
         """
@@ -157,9 +162,11 @@ class AquariusWrapper:
             f'{self._base_url}/ddo/query',
             params=payload,
             headers=self._headers
-        ).content
-
-        return self._parse_search_response(response)
+        )
+        if response.status_code == 200:
+            return self._parse_search_response(response.content)
+        else:
+            raise Exception(f'Unable to search for DDO: {response.content}')
 
     def query_search(self, search_query):
         """
@@ -180,9 +187,11 @@ class AquariusWrapper:
             f'{self._base_url}/ddo/query',
             data=json.dumps(search_query),
             headers=self._headers
-        ).content
-
-        return self._parse_search_response(response)
+        )
+        if response.status_code == 200:
+            return self._parse_search_response(response.content)
+        else:
+            raise Exception(f'Unable to search for DDO: {response.content}')
 
     def retire_asset_ddo(self, did):
         """
@@ -192,15 +201,16 @@ class AquariusWrapper:
         :return: API response (depends on implementation)
         """
         response = requests.delete(f'{self._base_url}/ddo/{did}', headers=self._headers)
-        logging.debug(f'Removed asset DID: {did} from metadata store')
-        return response
+        if response.status_code == 200:
+            logging.debug(f'Removed asset DID: {did} from metadata store')
+            return response
+        else:
+            raise Exception(f'Unable to remove DID: {response}')
 
     @staticmethod
     def _parse_search_response(response):
-
         if not response:
             return {}
-
         try:
             parsed_response = json.loads(response)
         except TypeError:

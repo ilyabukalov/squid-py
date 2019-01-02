@@ -3,6 +3,7 @@ import logging
 
 from web3 import Web3
 
+from squid_py.exceptions import OceanDIDNotFound, OceanInvalidTransaction
 from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper.contract_base import ContractBase
 
@@ -33,8 +34,8 @@ class Market(ContractBase):
         asset_id_bytes = Web3.toBytes(hexstr=asset_id)
         try:
             return self.contract_concise.getAssetPrice(asset_id_bytes)
-        except Exception:
-            logging.error(f'There are no assets registered with id: {asset_id}')
+        except OceanDIDNotFound:
+            raise OceanDIDNotFound(f'There are no assets registered with id: {asset_id}')
 
     def request_tokens(self, amount, address):
         """
@@ -43,15 +44,16 @@ class Market(ContractBase):
 
         :param amount: Amount of tokens, int
         :param address: Account address, str
+        :raise OceanInvalidTransaction: Transaction failed
         :return: Tx receipt
         """
         try:
             receipt = self.contract_concise.requestTokens(amount, transact={'from': address})
             logging.debug(f'{address} requests {amount} tokens, returning receipt')
             return receipt
-        except Exception:
-            # TODO: Specify error
-            raise
+        except OceanInvalidTransaction:
+            raise OceanInvalidTransaction(f'Transaction on chain requesting {amount} tokens'
+                                          f' to {address} failed.')
 
     def register_asset(self, asset, price, publisher_address):
         """
