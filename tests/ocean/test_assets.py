@@ -65,11 +65,6 @@ def test_register_data_asset_market(publisher_ocean_instance, consumer_ocean_ins
     ##########################################################
     # Register
     ##########################################################
-    # The asset requires an ID before registration!
-    # Hack, clear the did to allow generating a new one
-    asset.ddo._did = None
-    asset.generate_did()
-
     # Call the Register function
     result = pub_ocn.keeper.market.register_asset(asset, asset_price, aquarius_acct.address)
 
