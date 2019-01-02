@@ -5,19 +5,25 @@
 > 💧 Python wrapper, allowing to integrate the basic Ocean/web3.py capabilities
 > [oceanprotocol.com](https://oceanprotocol.com)
 
-[![Travis (.com)](https://img.shields.io/travis/com/oceanprotocol/squid-py.svg)](https://travis-ci.com/oceanprotocol/squid-py)
-[![Codacy coverage](https://img.shields.io/codacy/coverage/7084fbf528934327904a49d458bc46d1.svg)](https://app.codacy.com/project/ocean-protocol/squid-py/dashboard)
 [![PyPI](https://img.shields.io/pypi/v/squid-py.svg)](https://pypi.org/project/squid-py/)
+[![Travis (.com)](https://img.shields.io/travis/com/oceanprotocol/squid-py.svg)](https://travis-ci.com/oceanprotocol/squid-py)
 [![GitHub contributors](https://img.shields.io/github/contributors/oceanprotocol/squid-py.svg)](https://github.com/oceanprotocol/squid-py/graphs/contributors)
+[![Codacy Badge](https://img.shields.io/codacy/grade/7084fbf528934327904a49d458bc46d1.svg)](https://app.codacy.com/project/ocean-protocol/squid-py/dashboard)
+[![Codacy coverage](https://img.shields.io/codacy/coverage/7084fbf528934327904a49d458bc46d1.svg)](https://app.codacy.com/project/ocean-protocol/squid-py/dashboard)
 
 ---
 
 ## Table of Contents
 
   - [Features](#features)
+  - [Prerequisites](#prerequisites)
   - [Quick-start](#quick-start)
+     - [Usage:](#usage)
   - [Configuration](#configuration)
   - [Development](#development)
+        - [Code style](#code-style)
+        - [Testing](#testing)
+        - [New Version / New Release](#new-version-new-release)
   - [License](#license)
 
 ---
@@ -25,7 +31,7 @@
 ## Features
 
 Squid-py include the methods to make easy the connection with contracts deployed in different networks.
-This repository include also the methods to encrypt and decrypt information.
+This repository include also the methods to encrypt and decrypt information using the Parity Secret Store.
 
 ## Prerequisites
 
@@ -46,8 +52,8 @@ import os
 import time
 
 from squid_py import (
-    Ocean, 
-    ServiceDescriptor, 
+    Ocean,
+    ServiceDescriptor,
     ACCESS_SERVICE_TEMPLATE_ID,
     get_service_endpoint,
     get_purchase_endpoint,
@@ -56,14 +62,14 @@ from squid_py.ddo.metadata import Metadata
 
 # Make a new instance of Ocean
 ocean = Ocean('config.ini')  # or Ocean(config_dict)
-# You can set a specific ethereum account to use by using `ocean.set_main_account(address, password)` 
+# You can set a specific ethereum account to use by using `ocean.set_main_account(address, password)`
 # Ocean picks up address and password by default from the parity.address and parity.password in the config
 
 # PUBLISHER
 # Let's start by registering an asset in the Ocean network
 metadata = Metadata.get_example()
 
-# purchase and service endpoints require `brizo.url` is set in the config file 
+# purchase and service endpoints require `brizo.url` is set in the config file
 # or passed to Ocean instance in the config_dict.
 purchase_endpoint = get_purchase_endpoint(ocean.config)
 service_endpoint = get_service_endpoint(ocean.config)
@@ -100,20 +106,20 @@ config_dict = {
     'keeper-contracts': {
         # Point to an Ethereum RPC client. Note that Squid learns the name of the network to work with from this client.
         'keeper.url': 'http://localhost:8545',
-        # Specify the keeper contracts artifacts folder (has the smart contracts definitions json files). When you 
-        # install the package, the artifacts are automatically picked up from the `keeper-contracts` Python 
+        # Specify the keeper contracts artifacts folder (has the smart contracts definitions json files). When you
+        # install the package, the artifacts are automatically picked up from the `keeper-contracts` Python
         # dependency unless you are using a local ethereum network.
-        'keeper.path': 'artifacts', 
+        'keeper.path': 'artifacts',
         'secret_store.url': 'http://localhost:12001',
         'parity.url': 'http://localhost:8545',
         'parity.address': '',
         'parity.password': '',
-    
+
     },
     'resources': {
         # aquarius is the metadata store. It stores the assets DDO/DID-document
         'aquarius.url': 'http://localhost:5000',
-        # Brizo is the publisher's agent. It serves purchase and requests for both data access and compute services 
+        # Brizo is the publisher's agent. It serves purchase and requests for both data access and compute services
         'brizo.url': 'http://localhost:8030',
         # points to the local database file used for storing temporary information (for instance, pending service agreements).
         'storage.path': 'squid_py.db',
@@ -135,16 +141,21 @@ In addition to the configuration file, you may use the following environment var
 
 1. Set up a virtual environment
 
+    ```bash
+    virtualenv venv -p python3.6
+    source venv/bin/activate 
+    ```
+
 1. Install requirements
 
     ```
     pip install -r requirements_dev.txt
     ```
 
-1. Run Docker images. Alternatively, set up and run some or all of the corresponding services locally.
+1. Create the local testing environment using [barge](https://github.com/oceanprotocol/barge). Once cloned that repository, you can start the cluster running:
 
     ```
-    docker-compose -f ./docker/docker-compose.yml up
+    ./start_ocean.sh --latest --no-brizo --no-pleuston --local-spree-node
     ```
 
     It runs an Aquarius node and an Ethereum RPC client. For details, read `docker-compose.yml`.
@@ -158,7 +169,7 @@ In addition to the configuration file, you may use the following environment var
    `config_local.ini` is used by unit tests.
 
 1. Copy keeper artifacts
-    
+
     A bash script is available to copy keeper artifacts into this file directly from a running docker image. This script needs to run in the root of the project.
     The script waits until the keeper contracts are deployed, and then copies the artifacts.
 
@@ -178,7 +189,7 @@ In addition to the configuration file, you may use the following environment var
 
 The information about code style in python is documented in this two links [python-developer-guide](https://github.com/oceanprotocol/dev-ocean/blob/master/doc/development/python-developer-guide.md)
 and [python-style-guide](https://github.com/oceanprotocol/dev-ocean/blob/master/doc/development/python-style-guide.md).
-    
+
 #### Testing
 
 Automatic tests are setup via Travis, executing `tox`.

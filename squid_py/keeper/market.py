@@ -1,18 +1,15 @@
-"""
-    Keeper module to call keeper-contracts.
-"""
+"""Keeper module to call keeper-contracts."""
 import logging
 
 from web3 import Web3
 
+from squid_py.exceptions import OceanDIDNotFound, OceanInvalidTransaction
 from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper.contract_base import ContractBase
 
 
 class Market(ContractBase):
-    """
-    Class representing the OceanMarket contract.
-    """
+    """Class representing the OceanMarket contract."""
 
     @staticmethod
     def get_instance():
@@ -36,8 +33,8 @@ class Market(ContractBase):
         asset_id_bytes = Web3.toBytes(hexstr=asset_id)
         try:
             return self.contract_concise.getAssetPrice(asset_id_bytes)
-        except Exception:
-            logging.error("There are no assets registered with id: %s" % asset_id)
+        except OceanDIDNotFound:
+            raise OceanDIDNotFound(f'There are no assets registered with id: {asset_id}')
 
     def request_tokens(self, amount, address):
         """
@@ -46,15 +43,16 @@ class Market(ContractBase):
 
         :param amount: Amount of tokens, int
         :param address: Account address, str
+        :raise OceanInvalidTransaction: Transaction failed
         :return: Tx receipt
         """
         try:
             receipt = self.contract_concise.requestTokens(amount, transact={'from': address})
-            logging.debug("{} requests {} tokens, returning receipt".format(address, amount))
+            logging.debug(f'{address} requests {amount} tokens, returning receipt')
             return receipt
-        except Exception:
-            # TODO: Specify error
-            raise
+        except OceanInvalidTransaction:
+            raise OceanInvalidTransaction(f'Transaction on chain requesting {amount} tokens'
+                                          f' to {address} failed.')
 
     def register_asset(self, asset, price, publisher_address):
         """
@@ -77,5 +75,5 @@ class Market(ContractBase):
         )
 
         self.get_tx_receipt(result)
-        logging.debug("Registered Asset {} into blockchain".format(asset.asset_id))
+        logging.debug(f'Registered Asset {asset.asset_id} on chain.')
         return result

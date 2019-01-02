@@ -1,6 +1,4 @@
-"""
-    Keeper module to call keeper-contracts.
-"""
+"""Keeper module to call keeper-contracts."""
 
 import json
 import os
@@ -23,7 +21,7 @@ def get_contract_abi_by_address(contract_path, address):
             with open(os.path.join(dirname, entry)) as f:
                 try:
                     definition = json.loads(f.read())
-                except Exception:
+                except:
                     continue
 
                 if address != definition['address'].lower():
@@ -43,7 +41,7 @@ def get_event_def_from_abi(abi, event_name):
         if item.get('type') == 'event' and item.get('name') == event_name:
             return item
 
-    raise ValueError('event {} not found in the given ABI'.format(event_name))
+    raise ValueError(f'event {event_name} not found in the given ABI')
 
 
 def get_fingerprint_by_name(abi, name):
@@ -57,7 +55,7 @@ def get_fingerprint_by_name(abi, name):
         if item.get('name') == name:
             return item['signature']
 
-    raise ValueError('{} not found in the given ABI'.format(name))
+    raise ValueError(f'{name} not found in the given ABI')
 
 
 def get_fingerprint_bytes_by_name(web3, abi, name):

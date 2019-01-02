@@ -1,12 +1,13 @@
-"""
-     DID Resolver Class
-
-"""
+"""DID Resolver Class."""
 import logging
 
 from eth_abi import decode_single
 from web3 import Web3
 
+from squid_py.did import (
+    did_to_id_bytes,
+    id_to_did
+)
 from squid_py.exceptions import (
     OceanDIDCircularReference,
     OceanDIDNotFound,
@@ -25,7 +26,7 @@ logger = logging.getLogger('keeper')
 class DIDResolver:
     """
     DID Resolver class
-    Resolve DID to a URL/DDO
+    Resolve DID to a URL/DDO.
     """
 
     def __init__(self, web3, did_registry):
@@ -37,11 +38,11 @@ class DIDResolver:
 
         self._event_signature = self._did_registry.get_event_signature(DIDREGISTRY_EVENT_NAME)
         if not self._event_signature:
-            raise ValueError('Cannot find Event {} signature'.format(DIDREGISTRY_EVENT_NAME))
+            raise ValueError(f'Cannot find Event {DIDREGISTRY_EVENT_NAME} signature.')
 
     def resolve(self, did, max_hop_count=0):
         """
-        Resolve a DID to an URL/DDO or later an internal/extrenal DID
+        Resolve a DID to an URL/DDO or later an internal/external DID.
 
         :param did: 32 byte value or DID string to resolver, this is part of the ocean
             DID did:op:<32 byte value>
@@ -91,7 +92,7 @@ class DIDResolver:
                 result = did_bytes
             elif data['value_type'] == ResolverValueType.DID_REF:
                 # at the moment the same method as DID, get the hexstr and convert to bytes
-                logger.debug('found did {0} -> #{1}'.format(Web3.toHex(did_bytes), data['value']))
+                logger.debug(f'found did {Web3.toHex(did_bytes)} -> #{data["value"]}')
                 try:
                     did_bytes = Web3.toBytes(hexstr=data['value'].decode('utf8'))
                 except Exception:
@@ -100,7 +101,7 @@ class DIDResolver:
                 resolved.add_data(data, did_bytes)
                 result = did_bytes
             else:
-                raise OceanDIDUnknownValueType('Unknown value type {}'.format(data['value_type']))
+                raise OceanDIDUnknownValueType(f'Unknown value type {data["value_type"]}')
 
             data = None
             if did_bytes:
@@ -108,7 +109,7 @@ class DIDResolver:
                     did_visited[did_bytes] = True
                 else:
                     raise OceanDIDCircularReference(
-                        'circular reference found at did {}'.format(Web3.toHex(did_bytes)))
+                        f'circular reference found at did {Web3.toHex(did_bytes)}')
                 data = self.get_did(did_bytes)
 
         if resolved.hop_count > 0:
@@ -116,16 +117,16 @@ class DIDResolver:
         return None
 
     def get_did(self, did_bytes):
-        """return a did value and value type from the block chain event record using 'did'"""
+        """Return a did value and value type from the block chain event record using 'did'."""
         result = None
         did = Web3.toHex(did_bytes)
         block_number = self._did_registry.get_update_at(did_bytes)
-        logger.debug('got blockNumber %d for did %s', block_number, did)
+        logger.debug(f'got blockNumber {block_number} for did {did}')
         if block_number == 0:
-            raise OceanDIDNotFound('DID "{}" is not found on-chain in the current did registry. '
-                                   'Please ensure assets are registered in the correct keeper '
-                                   'contracts. The keeper-contracts DIDRegistry address is {}'
-                                   .format(did, self._did_registry.address))
+            raise OceanDIDNotFound(
+                f'DID "{did}" is not found on-chain in the current did registry. '
+                f'Please ensure assets are registered in the correct keeper contracts. '
+                f'The keeper-contracts DIDRegistry address is {self._did_registry.address}')
 
         block_filter = self._web3.eth.filter({
             'fromBlock': block_number,
@@ -138,7 +139,7 @@ class DIDResolver:
             value, value_type, block_number = decode_single(
                 '(string,uint8,uint256)', Web3.toBytes(hexstr=log_item['data']))
             topics = log_item['topics']
-            logger.debug('topics {}'.format(topics))
+            logger.debug(f'topics {topics}')
             result = {
                 'value_type': value_type,
                 'value': value,
@@ -148,6 +149,6 @@ class DIDResolver:
                 'key': Web3.toBytes(topics[3]),
             }
         else:
-            logger.warning('Could not find %s event logs for did %s at blockNumber %s',
-                           DIDREGISTRY_EVENT_NAME, did, block_number)
+            logger.warning(f'Could not find {DIDREGISTRY_EVENT_NAME} event logs for '
+                           f'did {did} at blockNumber {block_number}')
         return result

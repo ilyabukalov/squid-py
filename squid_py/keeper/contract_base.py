@@ -14,9 +14,7 @@ logger = logging.getLogger('keeper')
 
 
 class ContractBase(object):
-    """
-    Base class for all contract objects.
-    """
+    """Base class for all contract objects."""
 
     def __init__(self, contract_name):
 
@@ -27,7 +25,7 @@ class ContractBase(object):
         self.contract_concise = web3.contract.ConciseContract(contract)
         self.contract = contract
 
-        logger.debug("Loaded {}".format(self))
+        logger.debug(f'Loaded {self}')
 
     @property
     def address(self):
@@ -76,4 +74,4 @@ class ContractBase(object):
         return signature
 
     def __str__(self):
-        return "{} at {}".format(self.name, self.address)
+        return f'{self.name} at {self.address}'

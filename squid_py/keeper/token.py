@@ -1,12 +1,11 @@
-"""
-    Keeper module to call keeper-contracts.
-"""
+"""Keeper module to call keeper-contracts."""
 
 from squid_py.keeper.contract_base import ContractBase
 from squid_py.keeper.web3_provider import Web3Provider
 
 
 class Token(ContractBase):
+    """Class representing the Token contract."""
 
     @staticmethod
     def get_instance():

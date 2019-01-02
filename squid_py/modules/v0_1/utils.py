@@ -19,11 +19,10 @@ def process_tx_receipt(web3, tx_hash, event, event_name):
     receipt = web3.eth.getTransactionReceipt(tx_hash)
     event = event().processReceipt(receipt)
     if event:
-        logger.info('Success: got %s event after fulfilling condition.', event_name)
+        logger.info(f'Success: got {event_name} event after fulfilling condition.')
     else:
-        logger.debug('Something is not right, cannot find the %s event after calling the '
-                     'fulfillment condition. This is the transaction receipt %s', event_name,
-                     receipt)
+        logger.debug(f'Something is not right, cannot find the {event_name} event after calling the'
+                     f' fulfillment condition. This is the transaction receipt {receipt}')
 
 
 def handle_action(web3, account, sa_id, contract):

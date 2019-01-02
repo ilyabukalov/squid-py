@@ -3,7 +3,7 @@
 
 """The setup script."""
 
-from setuptools import setup, find_packages
+from setuptools import setup
 import os
 from os.path import join
 
@@ -37,9 +37,8 @@ test_requirements = [
     'codacy-coverage',
     'coverage',
     'docker',
-    'flake8',
     'mccabe',
-    'pyflakes',
+    'pylint',
     'pytest',
     'tox',
 ]
@@ -54,7 +53,6 @@ dev_requirements = [
 
 docs_requirements = [
     'Sphinx',
-    'sphinx-rtd-theme',
     'sphinxcontrib-apidoc',
 ]
 
@@ -77,6 +75,7 @@ setup(
     extras_require={
         'test': test_requirements,
         'dev': dev_requirements + test_requirements + docs_requirements,
+        'docs': docs_requirements,
     },
     install_requires=install_requirements,
     license="Apache Software License 2.0",

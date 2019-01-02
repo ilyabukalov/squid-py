@@ -62,7 +62,7 @@ class ServiceFactory(object):
                 kwargs['purchaseEndpoint'], kwargs['serviceEndpoint'], kwargs['timeout']
             )
 
-        raise ValueError('Unknown service type "%s"' % service_type)
+        raise ValueError(f'Unknown service type {service_type}')
 
     @staticmethod
     def build_metadata_service(did, metadata, service_endpoint):

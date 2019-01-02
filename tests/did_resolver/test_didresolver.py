@@ -1,11 +1,9 @@
 import logging
 import math
-import pytest
 import secrets
 
-from web3 import (
-    Web3,
-)
+import pytest
+from web3 import Web3
 
 from squid_py.ddo import DDO
 from squid_py.did import id_to_did
@@ -22,63 +20,6 @@ from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.models.resolver_value_type import ResolverValueType
 
 logger = logging.getLogger()
-
-"""
-def test_did_resolver_raw_test():
-
-    # test basic didregistry , contract loading and register a DID
-    ocean = Ocean(config_file='config_local.ini')
-    didregistry = ocean.keeper.didregistry
-    register_account = list(ocean.accounts)[1]
-    did_test = 'did:op:' + secrets.token_hex(32)
-    did_hash = Web3.sha3(text=did_test)
-    value_type = ResolverValueType.URL
-    key_test = Web3.sha3(text='provider')
-    key_test = did_hash
-    value_test = 'http://localhost:5000'
-    register_did = didregistry.register_attribute(did_hash, value_type, key_test, value_test, register_account)
-    receipt = didregistry.get_tx_receipt(register_did)
-
-    block_number = didregistry.get_update_at(did_hash)
-    assert block_number > 0
-
-    event_signature = didregistry.get_event_signature('DIDAttributeRegistered')
-    assert event_signature
-
-    actual_signature = Web3.toHex(receipt['logs'][0]['topics'][0])
-    # print('Actual Signature', actual_signature)
-    # print('event ABI', event_signature)
-
-    calc_signature = Web3.sha3(text="DIDAttributeRegistered(bytes32,address,bytes32,string,uint8,uint256)").hex()
-    # print('Calc signature', Web3.toHex(calc_signature))
-
-    assert actual_signature == calc_signature
-    assert actual_signature == event_signature
-
-    # TODO: fix sync with keeper-contracts
-    # at the moment assign the calc signature, since the loadad ABI sig is incorret
-
-    event_signature = calc_signature
-
-    # transaction_count = Web3Provider.get_web3().eth.getBlockTransactionCount(block_number)
-    # for index in range(0, transaction_count):
-        # transaction = Web3Provider.get_web3().eth.getTransactionByBlock(block_number, index)
-        # print('transaction', transaction)
-        # receipt = Web3Provider.get_web3().eth.getTransactionReceipt(transaction['hash'])
-        # print('receipt', receipt)
-
-    # because createFilter does not return any log events
-    test_filter = Web3Provider.get_web3().eth.filter({'fromBlock': block_number, 'topics': [event_signature, Web3.toHex(did_hash)]})
-    log_items = test_filter.get_all_entries()
-    assert log_items
-
-    assert len(log_items) > 0
-    log_item = log_items[len(log_items) - 1]
-    decode_value, decode_value_type, decode_block_number = decode_single('(string,uint8,uint256)', Web3.toBytes(hexstr=log_item['data']))
-    assert decode_value_type == value_type
-    assert decode_value.decode('utf8') == value_test
-    assert decode_block_number == block_number
-"""
 
 
 def test_did_resitry_register(publisher_ocean_instance):
@@ -166,7 +107,8 @@ def test_did_resolver_library(publisher_ocean_instance):
     did_hash = Web3.sha3(text=did_test)
 
     register_account.unlock()
-    register_did = did_registry.register_attribute(did_hash, value_type, key_test, value_test, owner_address)
+    register_did = did_registry.register_attribute(did_hash, value_type, key_test, value_test,
+                                                   owner_address)
     receipt = did_registry.get_tx_receipt(register_did)
     gas_used_url = receipt['gasUsed']
     did_resolved = did_resolver.resolve(did_hash)
@@ -181,7 +123,8 @@ def test_did_resolver_library(publisher_ocean_instance):
     # test update of an already assigned DID
     value_test_new = 'http://aquarius:5000'
     register_account.unlock()
-    register_did = did_registry.register_attribute(did_hash, value_type, key_test, value_test_new, owner_address)
+    register_did = did_registry.register_attribute(did_hash, value_type, key_test, value_test_new,
+                                                   owner_address)
     receipt = did_registry.get_tx_receipt(register_did)
     did_resolved = did_resolver.resolve(did_hash)
     assert did_resolved
@@ -201,7 +144,8 @@ def test_did_resolver_library(publisher_ocean_instance):
     value_type = ResolverValueType.DDO
 
     register_account.unlock()
-    register_did = did_registry.register_attribute(did_id_bytes, value_type, key_test, ddo.as_text(), owner_address)
+    register_did = did_registry.register_attribute(did_id_bytes, value_type, key_test,
+                                                   ddo.as_text(), owner_address)
     receipt = did_registry.get_tx_receipt(register_did)
     gas_used_ddo = receipt['gasUsed']
 
@@ -216,7 +160,8 @@ def test_did_resolver_library(publisher_ocean_instance):
     assert did_resolved.owner == owner_address
     assert did_resolved.block_number == receipt['blockNumber']
 
-    logger.info('gas used URL: %d, DDO: %d, DDO +%d extra', gas_used_url, gas_used_ddo, gas_used_ddo - gas_used_url)
+    logger.info('gas used URL: %d, DDO: %d, DDO +%d extra', gas_used_url, gas_used_ddo,
+                gas_used_ddo - gas_used_url)
 
     value_type = ResolverValueType.URL
     # resolve chain of direct DID IDS to URL
@@ -287,7 +232,7 @@ def test_did_resolver_library(publisher_ocean_instance):
     did_registry.get_tx_receipt(register_did)
 
     # resolve to get the error
-    with pytest.raises(TypeError):
+    with pytest.raises(Exception):
         did_resolver.resolve(did_id_bytes)
 
     # test value type error on a linked DID_REF
@@ -297,5 +242,5 @@ def test_did_resolver_library(publisher_ocean_instance):
     did_registry.get_tx_receipt(register_did)
 
     # resolve to get the error
-    with pytest.raises(TypeError):
+    with pytest.raises(Exception):
         did_resolver.resolve(did_id_bytes)

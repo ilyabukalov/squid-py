@@ -1,13 +1,14 @@
 import json
-import uuid
+import logging
 import time
+import uuid
 from collections import namedtuple
 from datetime import datetime
 from threading import Thread
 
-from web3 import Web3
 from eth_keys import KeyAPI
 from eth_utils import big_endian_to_int
+from web3 import Web3
 
 from squid_py.service_agreement.service_types import ServiceTypes
 
@@ -37,7 +38,7 @@ def get_brizo_url(config):
         brizo_url = config.get('resources', 'brizo.url') or brizo_url
 
     brizo_path = '/api/v1/brizo'
-    return '{}{}'.format(brizo_url, brizo_path)
+    return f'{brizo_url}{brizo_path}'
 
 
 def get_purchase_endpoint(config):
@@ -47,7 +48,7 @@ def get_purchase_endpoint(config):
     :param config:Config
     :return: Url, str
     """
-    return '{}/services/access/initialize'.format(get_brizo_url(config))
+    return f'{get_brizo_url(config)}/services/access/initialize'
 
 
 def get_service_endpoint(config):
@@ -57,7 +58,7 @@ def get_service_endpoint(config):
     :param config: Config
     :return: Url, str
     """
-    service_endpoint = '{}/services/consume'.format(get_brizo_url(config))
+    service_endpoint = f'{get_brizo_url(config)}/services/consume'
     return service_endpoint
 
 
@@ -109,7 +110,12 @@ def generate_new_id():
 
 
 def generate_prefixed_id():
-    return '0x%s' % generate_new_id()
+    """
+    Generate a new id prefixed with 0x that is used as identifier for the service agreements ids.
+
+    :return: Id, str
+    """
+    return f'0x{generate_new_id()}'
 
 
 def to_32byte_hex(web3, val):
@@ -159,8 +165,8 @@ def split_signature(web3, signature):
     :param signature:
     :return:
     """
-    assert len(signature) == 65, 'invalid signature, expecting bytes of length 65, got %s' % len(
-        signature)
+    assert len(signature) == 65, f'invalid signature, ' \
+                                 f'expecting bytes of length 65, got {len(signature)}'
     v = web3.toInt(signature[-1])
     r = to_32byte_hex(web3, int.from_bytes(signature[:32], 'big'))
     s = to_32byte_hex(web3, int.from_bytes(signature[32:64], 'big'))
@@ -229,7 +235,7 @@ def watcher(event_filter, callback, start_time, timeout, timeout_callback, num_c
     :param timeout:
     :param timeout_callback:
     :param num_confirmations:
-    :return:
+    :return: None
     """
     timed_out = False
     while True:
@@ -237,7 +243,7 @@ def watcher(event_filter, callback, start_time, timeout, timeout_callback, num_c
             events = event_filter.get_new_entries()
         except ValueError as err:
             # ignore error, but log it
-            print('Got error grabbing keeper events: ', str(err))
+            logging.error(f'Got error grabbing keeper events: {str(err)}')
             events = []
 
         processed = False
@@ -277,14 +283,21 @@ def watcher(event_filter, callback, start_time, timeout, timeout_callback, num_c
 
 def await_confirmations(event_filter, block_number, block_hash, num_confirmations, callback, event):
     """
+    Listener that is waiting for the confirmation of the events.
 
-    :param event_filter:
-    :param block_number:
-    :param block_hash:
-    :param num_confirmations:
-    :param callback:
-    :param event:
-    :return:
+    If hashes do not match, it means the event did not end up in the longest chain
+    after the given number of confirmations.
+    We stop listening for blocks cause it is now unlikely that the event's chain will
+    be the longest again; ideally though, we should only stop listening for blocks after
+    the alternative chain reaches a certain height.
+
+    :param event_filter: Event filter
+    :param block_number: Block number, int
+    :param block_hash: Block hash, str
+    :param num_confirmations: Number of confirmations, int
+    :param callback: Callback
+    :param event: Event
+    :return: None
     """
     while True:
         latest_block = event_filter.web3.eth.getBlock('latest')
@@ -293,13 +306,6 @@ def await_confirmations(event_filter, block_number, block_hash, num_confirmation
             block = event_filter.web3.eth.getBlock(block_number)
             if block['hash'].hex() == block_hash:
                 callback(event)
-
-            # if hashes do not match, it means the event did not end up in the longest chain
-            # after the given number of confirmations
-            #
-            # we stop listening for blocks cause it is now unlikely that the event's chain will
-            # be the longest again; ideally though, we should only stop listening for blocks after
-            # the alternative chain reaches a certain height
             break
 
         time.sleep(0.1)

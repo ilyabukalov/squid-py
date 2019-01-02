@@ -19,10 +19,7 @@ PUBLIC_KEY_STORE_TYPE_BASE85 = 'publicKeyBase85'
 
 
 class PublicKeyBase:
-    """
-    Base Public Key class, to allow to perfom basic key storage and validation
-    using DDO keys
-    """
+    """Base Public Key class, to allow to perfom basic key storage and validation using DDO keys."""
 
     def __init__(self, key_id, **kwargs):
         self._id = key_id
@@ -32,7 +29,7 @@ class PublicKeyBase:
         self._type = kwargs.get('type', None)
 
     def get_id(self):
-        """ get the key id"""
+        """Get the key id."""
         return self._id
 
     def assign_did(self, did):

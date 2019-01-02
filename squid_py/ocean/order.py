@@ -4,6 +4,17 @@ from .ocean_base import OceanBase
 
 class Order(OceanBase):
     def __init__(self, order_id, asset, timeout, pub_key, key, paid, status):
+        """
+        Initialize an order.
+
+        :param order_id: Order id, str.
+        :param asset: Asset
+        :param timeout: Timeout, int
+        :param pub_key: Public key, str
+        :param key: Key, str
+        :param paid: Amount paid, int
+        :param status: Status of this order, str
+        """
         self.order_id = order_id
         self.asset = asset
         self.asset_id = self.asset.id
@@ -13,18 +24,3 @@ class Order(OceanBase):
         self.paid = paid
         self.status = status
         OceanBase.__init__(self, self.order_id)
-
-    def get_status(self):
-        return self.status
-
-    def verify_payment(self):
-        return self.paid
-
-    def pay(self):
-        return self.status
-
-    def commit(self):
-        return self.status
-
-    def consume(self):
-        return self.status

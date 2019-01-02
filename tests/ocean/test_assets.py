@@ -3,17 +3,12 @@
 
 import logging
 import pathlib
-from unittest.mock import Mock
 
 import pytest
 
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.ocean.asset import Asset
 from squid_py.ddo import DDO
-import squid_py.ocean.ocean as ocean
-
-# Disable low level loggers
-from squid_py.service_agreement.service_factory import ServiceDescriptor
+from squid_py.ocean.asset import Asset
 
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("web3").setLevel(logging.WARNING)
@@ -71,11 +66,6 @@ def test_register_data_asset_market(publisher_ocean_instance, consumer_ocean_ins
     ##########################################################
     # Register
     ##########################################################
-    # The asset requires an ID before registration!
-    # Hack, clear the did to allow generating a new one
-    asset.ddo._did = None
-    asset.generate_did()
-
     # Call the Register function
     result = pub_ocn.keeper.market.register_asset(asset, asset_price, aquarius_acct.address)
 
@@ -136,11 +126,11 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
         pub_ocn.metadata_store.get_asset_ddo(asset.did)
         pub_ocn.metadata_store.retire_asset_ddo(asset.did)
     # Publish the metadata
-    this_metadata = pub_ocn.metadata_store.publish_asset_ddo(asset.ddo)
+    pub_ocn.metadata_store.publish_asset_ddo(asset.ddo)
 
     print("Publishing again should raise error")
     with pytest.raises(ValueError):
-        this_metadata = pub_ocn.metadata_store.publish_asset_ddo(asset.ddo)
+        pub_ocn.metadata_store.publish_asset_ddo(asset.ddo)
 
     # TODO: Ensure returned metadata equals sent!
     # get_asset_metadata only returns 'base' key, is this correct?
