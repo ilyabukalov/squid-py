@@ -16,9 +16,14 @@
 ## Table of Contents
 
   - [Features](#features)
+  - [Prerequisites](#prerequisites)
   - [Quick-start](#quick-start)
+     - [Usage:](#usage)
   - [Configuration](#configuration)
   - [Development](#development)
+        - [Code style](#code-style)
+        - [Testing](#testing)
+        - [New Version / New Release](#new-version-new-release)
   - [License](#license)
 
 ---
@@ -26,7 +31,7 @@
 ## Features
 
 Squid-py include the methods to make easy the connection with contracts deployed in different networks.
-This repository include also the methods to encrypt and decrypt information.
+This repository include also the methods to encrypt and decrypt information using the Parity Secret Store.
 
 ## Prerequisites
 
@@ -135,6 +140,11 @@ In addition to the configuration file, you may use the following environment var
 ## Development
 
 1. Set up a virtual environment
+
+    ```bash
+    virtualenv venv -p python3.6
+    source venv/bin/activate 
+    ```
 
 1. Install requirements
 
