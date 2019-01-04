@@ -1,13 +1,11 @@
 import logging
 
-from web3.contract import ConciseContract
-
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (
-    get_contract_abi_by_address,
     get_fingerprint_by_name,
     hexstr_to_bytes,
 )
+from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.modules.v0_1.exceptions import InvalidModule
 from squid_py.service_agreement.utils import build_condition_key
 
@@ -25,40 +23,18 @@ def process_tx_receipt(web3, tx_hash, event, event_name):
                      f' fulfillment condition. This is the transaction receipt {receipt}')
 
 
-def handle_action(web3, account, sa_id, contract):
-    logger.info('About to do grantAccess: account %s, saId %s, assetId %s, documentKeyId %s'
-                .format(account.address, service_agreement_id,
-                        asset_id, document_key_id))
-    try:
-        account.unlock()
-        tx_hash = access_conditions.grantAccess(service_agreement_id, asset_id, document_key_id,
-                                                transact=transact)
-        process_tx_receipt(web3, tx_hash, contract.events.AccessGranted, 'AccessGranted')
-    except Exception as e:
-        logger.error('Error when calling grantAccess condition function: ', e, exc_info=1)
-        raise
-
-
-def is_condition_fulfilled(web3, contract_path, template_id, service_agreement_id,
-                           service_agreement_address, condition_address, condition_abi, fn_name):
-    service_agreement = _get_concise_contract(web3, contract_path, service_agreement_address)
-    status = service_agreement.getConditionStatus(
+def is_condition_fulfilled(template_id, service_agreement_id,
+                           service_agreement_contract, condition_address, condition_abi, fn_name):
+    status = service_agreement_contract.getConditionStatus(
         service_agreement_id,
-        get_condition_key(
-            web3,
-            template_id,
+        build_condition_key(
             condition_address,
-            condition_abi,
-            fn_name,
-        ),
+            hexstr_to_bytes(Web3Provider.get_web3(),
+                            get_fingerprint_by_name(condition_abi, fn_name)),
+            template_id
+        )
     )
     return status == 1
-
-
-def get_condition_key(web3, template_id, address, abi, fn_name):
-    return build_condition_key(address,
-                               hexstr_to_bytes(web3, get_fingerprint_by_name(abi, fn_name)),
-                               template_id)
 
 
 def get_condition_contract_data(service_definition, name):
@@ -73,29 +49,5 @@ def get_condition_contract_data(service_definition, name):
             'Failed to find the {} condition in the service definition'.format(name))
 
     contract = ContractHandler.get(condition_definition['contractName'])
-    return ConciseContract(contract), contract, contract.abi, condition_definition
-
-
-def get_eth_contracts(web3, contract_path, address):
-    abi = get_contract_abi_by_address(contract_path, address)
-    concise_contract = web3.eth.contract(
-        address=address,
-        abi=abi,
-        ContractFactoryClass=ConciseContract,
-    )
-    contract = web3.eth.contract(
-        address=address,
-        abi=abi
-    )
-
-    return concise_contract, contract
-
-
-def _get_concise_contract(web3, contract_path, address):
-    abi = get_contract_abi_by_address(contract_path, address)
-
-    return web3.eth.contract(
-        address=address,
-        abi=abi,
-        ContractFactoryClass=ConciseContract,
-    )
+    concise_contract = ContractHandler.get_concise_contract(condition_definition['contractName'])
+    return concise_contract, contract, contract.abi, condition_definition

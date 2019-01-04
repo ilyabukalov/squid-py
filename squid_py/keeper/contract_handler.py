@@ -2,8 +2,8 @@ import json
 import logging
 import os
 
-from squid_py.config_provider import ConfigProvider
-from squid_py.exceptions import OceanKeeperContractsNotFound
+from web3.contract import ConciseContract
+
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 
@@ -11,54 +11,24 @@ logger = logging.getLogger(__name__)
 
 
 class ContractHandler(object):
+    """
+    Manages loading contracts and also keeps a cache of loaded contracts.
+
+    Retrieval of deployed keeper contracts must use this `ContractHandler`.
+    Example:
+        contract = ContractHandler.get('ServiceAgreement')
+        concise_contract = ContractHandler.get_concise_contract('ServiceAgreement')
+
+    """
     _contracts = dict()
-
-    @staticmethod
-    def verify_contracts():
-        web3 = Web3Provider.get_web3()
-        artifacts_path = ConfigProvider.get_config().keeper_path
-        network_id = int(web3.version.network)
-        logger.info("Keeper contract artifacts (JSON abi files) at: %s", artifacts_path)
-
-        if os.environ.get('KEEPER_NETWORK_NAME'):
-            logger.warning(
-                'The `KEEPER_NETWORK_NAME` env var is set to %s. This enables the user to '
-                'override the method of how the network name is inferred from network id.',
-                os.environ.get('KEEPER_NETWORK_NAME'))
-
-        # try to find contract with this network name
-        contract_name = 'ServiceAgreement'
-        network_name = Keeper.get_network_name()
-        logger.info('Using keeper contracts from network `%s`, network id is %s',
-                    network_name, network_id)
-        logger.info('Looking for keeper contracts ending with ".%s.json", e.g. "%s.%s.json"',
-                    network_name, contract_name, network_name)
-        existing_contract_names = os.listdir(artifacts_path)
-        try:
-            ContractHandler.get(contract_name)
-        except Exception as e:
-            logger.error(e)
-            logger.error('Cannot find the keeper contracts. \n'
-                         '\tCurrent network id is "%s" and network name is "%s"\n'
-                         '\tExpected to find contracts ending with ".%s.json", e.g. "%s.%s.json"',
-                         network_id, network_name, network_name, contract_name,
-                         network_name)
-            raise OceanKeeperContractsNotFound(
-                'Keeper contracts for keeper network "%s" were not found in "%s". \n'
-                'Found the following contracts: \n\t%s' % (
-                    network_name, artifacts_path, existing_contract_names)
-            )
-
-        keeper = Keeper.get_instance()
-        contracts = [keeper.market, keeper.token, keeper.did_registry,
-                     keeper.service_agreement, keeper.payment_conditions, keeper.access_conditions]
-        addresses = '\n'.join(['\t{}: {}'.format(c.name, c.address) for c in contracts])
-        logging.info('Finished loading keeper contracts:\n'
-                     '%s', addresses)
 
     @staticmethod
     def get(name):
         return ContractHandler._contracts.get(name) or ContractHandler._load(name)
+
+    @staticmethod
+    def get_concise_contract(name):
+        return ConciseContract(ContractHandler.get(name))
 
     @staticmethod
     def set(name, contract):

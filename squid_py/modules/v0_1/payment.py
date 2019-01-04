@@ -19,10 +19,9 @@ def handlePaymentAction(web3, contract_path, account, service_agreement_id,
     )
 
     contract_name = service_definition['serviceAgreementContract']['contractName']
-    service_agreement_address = ContractHandler.get(contract_name).address
-    if is_condition_fulfilled(web3, contract_path,
-                              service_definition[ServiceAgreementTemplate.TEMPLATE_ID_KEY],
-                              service_agreement_id, service_agreement_address,
+    service_agreement_contract = ContractHandler.get_concise_contract(contract_name)
+    if is_condition_fulfilled(service_definition[ServiceAgreementTemplate.TEMPLATE_ID_KEY],
+                              service_agreement_id, service_agreement_contract,
                               payment_conditions.address, abi, function_name):
         return
 

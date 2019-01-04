@@ -1,7 +1,5 @@
 import logging
 
-from web3.contract import ConciseContract
-
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.modules.v0_1.utils import process_tx_receipt
 
@@ -16,7 +14,7 @@ def fulfillAgreement(web3, contract_path, account, service_agreement_id,
     contract_name = service_definition['serviceAgreementContract']['contractName']
     service_agreement = ContractHandler.get(contract_name)
     service_agreement_address = service_agreement.address
-    service_agreement_concise = ConciseContract(service_agreement)
+    service_agreement_concise = ContractHandler.get_concise_contract(contract_name)
 
     logger.info(f'About to do fulfillAgreement: account {account.address}, '
                 f'saId {service_agreement_id}, '

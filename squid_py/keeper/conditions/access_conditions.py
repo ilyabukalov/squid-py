@@ -1,4 +1,4 @@
-"""Keeper module to call keeper-contracts."""
+"""Keeper module to transact/call `AccessConditions` keeper contract methods."""
 
 from squid_py.keeper.contract_base import ContractBase
 

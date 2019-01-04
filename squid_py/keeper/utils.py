@@ -21,7 +21,7 @@ def get_contract_abi_by_address(contract_path, address):
             with open(os.path.join(dirname, entry)) as f:
                 try:
                     definition = json.loads(f.read())
-                except:
+                except Exception:
                     continue
 
                 if address != definition['address'].lower():
@@ -80,6 +80,16 @@ def hexstr_to_bytes(web3, hexstr):
 
 
 def generate_multi_value_hash(types, values):
+    """
+    Return the hash of the given list of values.
+    This is equivalent to packing and hashing values in a solidity smart contract
+    hence the use of `soliditySha3`.
+
+    :param types: list of solidity types expressed as strings
+    :param values: list of values matching the `types` list
+    :return: bytes
+    """
+    assert len(types) == len(values)
     return Web3Provider.get_web3().soliditySha3(
         types,
         values

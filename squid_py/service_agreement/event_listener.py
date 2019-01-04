@@ -120,7 +120,7 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
             start_time=start_time,
             timeout=timeout,
             timeout_callback=_get_callback(timeout_fn) if timeout_fn else None,
-            fromBlock='latest',
+            from_block='latest',
             filters=_filters,
             num_confirmations=num_confirmations,
         )
@@ -141,7 +141,7 @@ def watch_service_agreement_fulfilled(web3, contract_path, service_agreement_id,
         callback,
         interval=0.5,
         start_time=start_time,
-        fromBlock='latest',
+        from_block='latest',
         filters=filters,
         num_confirmations=num_confirmations,
     )

@@ -1,8 +1,11 @@
+import logging
 import time
 from datetime import datetime
 from threading import Thread
 
 from squid_py.keeper.contract_handler import ContractHandler
+
+logger = logging.getLogger(__name__)
 
 
 class EventListener(object):
@@ -35,7 +38,7 @@ class EventListener(object):
 
             except ValueError as err:
                 # ignore error, but log it
-                print('Got error grabbing keeper events: ', str(err))
+                logger.error(f'Got error grabbing keeper events: {str(err)}')
 
             time.sleep(0.1)
             if 0 < timeout < (int(datetime.now().timestamp()) - start_time):

@@ -1,4 +1,3 @@
-import json
 import logging
 import time
 import uuid
@@ -10,56 +9,10 @@ from eth_keys import KeyAPI
 from eth_utils import big_endian_to_int
 from web3 import Web3
 
+from squid_py.keeper.utils import generate_multi_value_hash
 from squid_py.service_agreement.service_types import ServiceTypes
 
 Signature = namedtuple('Signature', ('v', 'r', 's'))
-
-
-def prepare_purchase_payload(did, agreement_id, service_index, signature, consumer_address):
-    # Prepare a payload to send to `Brizo`
-    return json.dumps({
-        'did': did,
-        'serviceAgreementId': agreement_id,
-        'serviceDefinitionId': service_index,
-        'signature': signature,
-        'consumerAddress': consumer_address
-    })
-
-
-def get_brizo_url(config):
-    """
-    Return the Brizo component url.
-
-    :param config: Config
-    :return: Url, str
-    """
-    brizo_url = 'http://localhost:8030'
-    if config.has_option('resources', 'brizo.url'):
-        brizo_url = config.get('resources', 'brizo.url') or brizo_url
-
-    brizo_path = '/api/v1/brizo'
-    return f'{brizo_url}{brizo_path}'
-
-
-def get_purchase_endpoint(config):
-    """
-    Return the endpoint to purchase the asset.
-
-    :param config:Config
-    :return: Url, str
-    """
-    return f'{get_brizo_url(config)}/services/access/initialize'
-
-
-def get_service_endpoint(config):
-    """
-    Return the url to consume the asset.
-
-    :param config: Config
-    :return: Url, str
-    """
-    service_endpoint = f'{get_brizo_url(config)}/services/consume'
-    return service_endpoint
 
 
 def get_metadata_url(ddo):
@@ -81,9 +34,10 @@ def prepare_prefixed_hash(msg_hash):
     :param msg_hash:
     :return:
     """
-    prefixed_hash = Web3.soliditySha3(['string', 'bytes32'],
-                                      ["\x19Ethereum Signed Message:\n32", msg_hash])
-    return prefixed_hash
+    return generate_multi_value_hash(
+        ['string', 'bytes32'],
+        ["\x19Ethereum Signed Message:\n32", msg_hash]
+    )
 
 
 def get_public_key_from_address(web3, address):
@@ -178,7 +132,7 @@ def split_signature(web3, signature):
 
 def watch_event(contract_name, event_name, callback, interval,
                 start_time, timeout=None, timeout_callback=None,
-                fromBlock=0, toBlock='latest',
+                from_block=0, to_block='latest',
                 filters=None, num_confirmations=12):
     """
 
@@ -189,14 +143,14 @@ def watch_event(contract_name, event_name, callback, interval,
     :param start_time:
     :param timeout:
     :param timeout_callback:
-    :param fromBlock:
-    :param toBlock:
+    :param from_block:
+    :param to_block:
     :param filters:
     :param num_confirmations:
     :return:
     """
     event_filter = install_filter(
-        contract_name, event_name, fromBlock, toBlock, filters
+        contract_name, event_name, from_block, to_block, filters
     )
     event_filter.poll_interval = interval
     Thread(
@@ -208,20 +162,20 @@ def watch_event(contract_name, event_name, callback, interval,
     return event_filter
 
 
-def install_filter(contract, event_name, fromBlock=0, toBlock='latest', filters=None):
+def install_filter(contract, event_name, from_block=0, to_block='latest', filters=None):
     """
 
     :param contract:
     :param event_name:
-    :param fromBlock:
-    :param toBlock:
+    :param from_block:
+    :param to_block:
     :param filters:
     :return:
     """
     # contract_instance = self.contracts[contract_name][1]
     event = getattr(contract.events, event_name)
     event_filter = event().createFilter(
-        fromBlock=fromBlock, toBlock=toBlock, argument_filters=filters
+        fromBlock=from_block, toBlock=to_block, argument_filters=filters
     )
     return event_filter
 

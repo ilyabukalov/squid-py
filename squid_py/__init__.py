@@ -24,7 +24,3 @@ from .service_agreement import (
     ServiceAgreementTemplate,
     ACCESS_SERVICE_TEMPLATE_ID,
 )
-from .utils import (
-    get_purchase_endpoint,
-    get_service_endpoint,
-)

@@ -8,6 +8,12 @@ class Web3Provider(object):
 
     @staticmethod
     def get_web3():
+        """Return the web3 instance to interact with the ethereum client.
+
+
+
+        :return:
+        """
         if Web3Provider._web3 is None:
             config = ConfigProvider.get_config()
             provider = config.web3_provider if config.web3_provider else HTTPProvider(config.keeper_url)

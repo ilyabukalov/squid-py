@@ -3,6 +3,9 @@ from secret_store_client.client import Client
 
 
 class SecretStore(object):
+    """
+    Wrapper around the secret store client.
+    """
     _client_class = Client
 
     def __init__(self, secret_store_url, node_url, account):

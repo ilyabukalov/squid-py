@@ -17,7 +17,9 @@ from squid_py.keeper.web3_provider import Web3Provider
 
 class Keeper(object):
     """
-    The Keeper class aggregates all contracts in the Ocean Protocol node
+    The Keeper class aggregates all contracts in the Ocean Protocol node.
+    Currently this is implemented as a singleton.
+
     """
 
     DEFAULT_NETWORK_NAME = 'development'
@@ -45,6 +47,7 @@ class Keeper(object):
 
     @staticmethod
     def get_instance():
+        """Return the Keeper instance (singleton)."""
         if Keeper._instance is None:
             Keeper._instance = Keeper()
 
@@ -76,3 +79,7 @@ class Keeper(object):
 
         web3 = Web3Provider.get_web3()
         return Keeper._network_name_map.get(int(web3.version.network), Keeper.DEFAULT_NETWORK_NAME)
+
+    @staticmethod
+    def get_network_id():
+        return int(Web3Provider.get_web3().version.network)

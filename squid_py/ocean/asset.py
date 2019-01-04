@@ -88,50 +88,6 @@ class Asset(OceanBase):
         logger.debug(f'Asset {asset.asset_id} created from ddo dict {dictionary}.')
         return asset
 
-    @classmethod
-    def create_from_metadata_file(cls, filename, service_endpoint):
-        """
-        Return a new Asset object from a metadata JSON file.
-
-        :param filename:
-        :param service_endpoint:
-        :return:
-        """
-        if filename:
-            with open(filename, 'r') as file_handle:
-                metadata = json.load(file_handle)
-                return Asset.create_from_metadata(metadata, service_endpoint)
-        return None
-
-    @classmethod
-    def create_from_metadata(cls, metadata, service_endpoint):
-        """
-        Return a new Asset object from a metadata dictionary
-
-        :param metadata:
-        :param service_endpoint:
-        :return:
-        """
-        # calc the asset id
-        asset_id = hashlib.sha256(json.dumps(metadata['base']).encode('utf-8')).hexdigest()
-
-        # generate a DID from an asset_id
-        new_did = id_to_did(asset_id)
-
-        # create a new DDO
-        new_ddo = DDO(new_did)
-        # add a signature
-        private_password = new_ddo.add_signature()
-        # add the service endpoint with the meta data
-        new_ddo.add_service(ServiceTypes.METADATA, service_endpoint,
-                            values={DDO_SERVICE_METADATA_KEY: metadata})
-        # add the static proof
-        new_ddo.add_proof(0, private_password)
-        # create the asset object
-        this_asset = cls(ddo=new_ddo)
-        logger.debug("Asset {} created from metadata {} ".format(this_asset.asset_id, metadata))
-        return this_asset
-
     @property
     def metadata(self):
         """Asset metadata object."""

@@ -24,6 +24,12 @@ class Account:
         self.password = password
 
     def sign_hash(self, msg_hash):
+        """
+        Return signed hash using this user account keys.
+
+        :param msg_hash:
+        :return: signed hash
+        """
         return Web3Provider.get_web3().eth.sign(self.address, msg_hash).hex()
 
     def unlock(self):

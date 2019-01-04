@@ -8,8 +8,6 @@ import os.path
 from web3 import Web3
 
 from squid_py.config_provider import ConfigProvider
-from squid_py.ddo.metadata import Metadata
-from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.diagnostics import Diagnostics
 from squid_py.ocean.account import Account
 from squid_py.ocean.asset import Asset
@@ -17,7 +15,7 @@ from squid_py.aquarius import Aquarius
 from squid_py.ddo import DDO
 from squid_py.ddo.metadata import Metadata
 from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
-from squid_py.keeper import Keeper, web3_provider
+from squid_py.keeper import Keeper
 from squid_py.log import setup_logging
 from squid_py.did_resolver import DIDResolver
 from squid_py.exceptions import (
@@ -107,7 +105,7 @@ class Ocean:
         self.did_resolver = DIDResolver(Web3Provider.get_web3(), self.keeper.did_registry)
 
         # Verify keeper contracts
-        ContractHandler.verify_contracts()
+        Diagnostics.verify_contracts()
         Diagnostics.check_deployed_agreement_templates()
 
         logger.info('Squid Ocean instance initialized: ')
@@ -488,7 +486,7 @@ class Ocean:
         if not is_valid:
             logger.warning(f'Agreement signature failed: agreement hash is {agreement_hash.hex()}')
 
-        self._validate_conditions_keys(sa)
+        Ocean._validate_conditions_keys(sa)
 
         return is_valid
 
@@ -599,7 +597,8 @@ class Ocean:
             logger.info('main account password is not set,'
                         ' transactions will likely fail if the account is locked.')
 
-    def _validate_conditions_keys(self, sa):
+    @staticmethod
+    def _validate_conditions_keys(sa):
         # Debug info
         # (contract_addresses, fingerprints, fulfillment_indices, conditions_keys)
         values = get_conditions_data_from_keeper_contracts(
@@ -608,5 +607,5 @@ class Ocean:
         assert values[3] == sa.conditions_keys
         logger.debug(f'conditions keys: {sa.conditions_keys}')
         logger.debug(f'conditions contracts: {values[0]}')
-        logger.debug(f'conditions fingerprints: {fn.hex() for fn in values[1]}')
+        logger.debug(f'conditions fingerprints: {[fn.hex() for fn in values[1]]}')
         logger.debug(f'template id: {sa.template_id}')
