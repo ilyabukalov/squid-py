@@ -1,16 +1,16 @@
 import json
-import pathlib
 import pytest
 
 from squid_py.ddo import DDO
 from squid_py.config import Config
 from squid_py.ocean.asset import Asset
 from squid_py.ocean.ocean import Ocean
+from squid_py.test_resources.helper_functions import get_resource_path
 
 
 def test_aquarius():
     ocean_provider = Ocean(Config('config_local.ini'))
-    sample_ddo_path = pathlib.Path.cwd() / 'squid_py/test_resources/ddo' / 'ddo_sample1.json'
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
     asset1 = Asset.from_ddo_json_file(sample_ddo_path)
@@ -35,7 +35,7 @@ def test_aquarius():
 
     assert len(ocean_provider.metadata_store.text_search(text='Office')) == (num_matches + 1)
 
-    sample_ddo_path2 = pathlib.Path.cwd() / 'squid_py' / 'test_resources' / 'ddo' / 'ddo_sample2.json'
+    sample_ddo_path2 = get_resource_path('ddo', 'ddo_sample2.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
     assert len(ocean_provider.metadata_store.list_assets()) == (num_assets + 1)
     asset2 = Asset.from_ddo_json_file(sample_ddo_path2)
@@ -60,7 +60,7 @@ def test_error_publishing():
     with pytest.raises(AttributeError):
         ocn.metadata_store.publish_asset_ddo({"did":"did:op:3809174ce71dd460faf4941140323ebafdc062f062d3932fe0195c78719a8716"})
 
-    sample_ddo_path = pathlib.Path.cwd() / 'squid_py/test_resources/ddo' / 'ddo_sample1.json'
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
     asset1 = Asset.from_ddo_json_file(sample_ddo_path)

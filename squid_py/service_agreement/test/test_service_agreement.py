@@ -1,6 +1,5 @@
 import json
 import os.path
-import pathlib
 import time
 import unittest
 import uuid
@@ -12,11 +11,12 @@ from squid_py.ddo import DDO
 from squid_py.keeper.utils import get_fingerprint_bytes_by_name
 from squid_py.ocean.ocean import Ocean
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
+from squid_py.test_resources.helper_functions import get_resource_path
 
 CONFIG_PATH = 'config_local.ini'
 
-SAMPLE_METADATA_PATH = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'metadata',
-                                    'sample_metadata1.json')
+SAMPLE_METADATA_PATH = get_resource_path('metadata', 'sample_metadata1.json')
+
 assert os.path.exists(
     SAMPLE_METADATA_PATH), 'sample metadata is not found: "%s"' % SAMPLE_METADATA_PATH
 with open(SAMPLE_METADATA_PATH) as f:
@@ -115,13 +115,11 @@ class TestServiceAgreement(unittest.TestCase):
         )
 
     def _load_and_build_ddo(self):
-        ddo = DDO(json_filename=os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'ddo',
-                                             'ddo_sa_sample.json'))
+        ddo = DDO(json_filename=get_resource_path('ddo', 'ddo_sa_sample.json'))
         self.asset_ddo = ddo
 
     def _load_sla_template(self):
-        with open(os.path.join(pathlib.Path.cwd(), 'tests', 'resources',
-                               'access_sla_template.json')) as jsf:
+        with open(get_resource_path('', 'access_sla_template.json')) as jsf:
             template_json = json.load(jsf)
             self.sla_template = ServiceAgreementTemplate(template_json=template_json)
 

@@ -6,6 +6,7 @@ import secrets
 from secret_store_client.client import Client
 
 from squid_py.config import Config
+from squid_py.test_resources.helper_functions import get_resource_path
 
 secret_store_url = 'http://localhost:8010'
 parity_client_publish_url = 'http://localhost:9545'
@@ -15,7 +16,7 @@ publisher_password = 'password'
 
 def test_secret_store():
     config = Config('config_local.ini')
-    test_document = os.path.join('tests', 'resources', 'metadata', 'sample_metadata1.json')
+    test_document = get_resource_path('metadata', 'sample_metadata1.json')
     with open(test_document, 'r') as file_handle:
         metadata = json.load(file_handle)
 

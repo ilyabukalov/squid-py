@@ -22,7 +22,7 @@ from squid_py.models.resolver_value_type import ResolverValueType
 logger = logging.getLogger()
 
 
-def test_did_resitry_register(publisher_ocean_instance):
+def test_did_registry_register(publisher_ocean_instance):
     ocean = publisher_ocean_instance
 
     register_account = ocean.main_account

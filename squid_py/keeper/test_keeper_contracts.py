@@ -19,7 +19,7 @@ def get_ocean_instance():
     return ocean
 
 
-def test_didresitry_contract():
+def test_didregistry_contract():
     ocean = get_ocean_instance()
     assert ocean
 
