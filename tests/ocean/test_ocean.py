@@ -334,11 +334,8 @@ def test_agreement_hash(publisher_ocean_instance):
     This test verifies generating agreement hash using fixed inputs and ddo example.
     This will make it easier to compare the hash generated from different languages.
     """
-    pub_ocn = publisher_ocean_instance
-
     did = "did:op:0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
-    user_address = Web3Provider.get_web3().toChecksumAddress(
-        "0x00bd138abd70e2f00903268f3db08f2d25677c9e")
+    # user_address = "0x00bd138abd70e2f00903268f3db08f2d25677c9e"
     template_id = "0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d"
     service_agreement_id = '0xf136d6fadecb48fdb2fc1fb420f5a5d1c32d22d9424e47ab9461556e058fefaa'
     print('sid: ', service_agreement_id)
@@ -363,8 +360,6 @@ def test_agreement_hash(publisher_ocean_instance):
     print('agreement hash: ', agreement_hash.hex())
     print('expected hash: ', "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb")
     assert agreement_hash.hex() == "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb", 'hash does not match.'
-    # signed_hash = Web3Provider.get_web3().eth.sign(user_address, agreement_hash).hex()
-    # print('signed agreement hash:', signed_hash)
 
 
 def test_verify_signature(consumer_ocean_instance):

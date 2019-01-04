@@ -1,6 +1,5 @@
 from eth_utils import add_0x_prefix
 
-from squid_py.keeper import Keeper
 from squid_py.keeper.utils import generate_multi_value_hash
 from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
 from squid_py.service_agreement.service_agreement_contract import ServiceAgreementContract

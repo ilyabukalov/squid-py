@@ -4,7 +4,6 @@ import pytest
 from web3 import Web3
 
 from squid_py.config import Config
-from squid_py.config_provider import ConfigProvider
 from squid_py.ddo.metadata import Metadata
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ocean.brizo import Brizo
