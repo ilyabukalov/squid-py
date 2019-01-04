@@ -226,7 +226,7 @@ def test_creating_did_using_ddo():
 
 def test_load_ddo_json():
     # TODO: Fix
-    sample_ddo_path = pathlib.Path.cwd() / 'tests' / 'resources' / 'ddo' / 'ddo_sample1.json'
+    sample_ddo_path = pathlib.Path.cwd() / 'squid_py' / 'test_resources' / 'ddo' / 'ddo_sample1.json'
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
     with open(sample_ddo_path) as f:
         sample_ddo_json_dict = json.load(f)
@@ -242,7 +242,7 @@ def test_load_ddo_json():
 
 
 def test_ddo_dict():
-    sample_ddo_path = pathlib.Path.cwd() / 'tests' / 'resources' / 'ddo' / 'ddo_sample1.json'
+    sample_ddo_path = pathlib.Path.cwd() / 'squid_py' / 'test_resources' / 'ddo' / 'ddo_sample1.json'
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
     ddo1 = DDO(json_filename=sample_ddo_path)

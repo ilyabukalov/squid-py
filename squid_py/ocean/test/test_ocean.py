@@ -29,8 +29,8 @@ from squid_py.ocean.asset import Asset
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
-from tests.mocks.brizo_mock import BrizoMock
-from tests.utils import get_registered_ddo, get_publisher_ocean_instance
+from squid_py.test_resources.mocks import BrizoMock
+from squid_py.test_resources.helper_functions import get_registered_ddo, get_publisher_ocean_instance
 
 
 def print_config(ocean_instance):
@@ -92,7 +92,7 @@ def test_token_request(publisher_ocean_instance, consumer_ocean_instance):
 def test_register_asset(publisher_ocean_instance):
     logging.debug("".format())
     asset_price = 100
-    sample_ddo_path = pathlib.Path.cwd() / 'tests/resources/ddo' / 'ddo_sample2.json'
+    sample_ddo_path = pathlib.Path.cwd() / 'squid_py/test_resources/ddo' / 'ddo_sample2.json'
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
     ##########################################################

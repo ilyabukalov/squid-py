@@ -5,8 +5,8 @@ from web3 import Web3, HTTPProvider
 
 from squid_py.config import Config
 from squid_py.config_provider import ConfigProvider
-from tests.mocks.secret_store_mock import SecretStoreClientMock
-from tests.utils import get_registered_ddo, get_consumer_ocean_instance, get_publisher_ocean_instance
+from squid_py.test_resources.helper_functions import get_registered_ddo, get_consumer_ocean_instance, get_publisher_ocean_instance
+from squid_py.test_resources.mocks.secret_store_mock import SecretStoreClientMock
 
 ConfigProvider.set_config(Config('config_local.ini'))
 

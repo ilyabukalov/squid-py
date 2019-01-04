@@ -1,12 +1,20 @@
 import os
 
-from squid_py import ServiceAgreementTemplate, ACCESS_SERVICE_TEMPLATE_ID, get_purchase_endpoint, get_service_endpoint, ServiceDescriptor, Ocean, \
+from squid_py import (
+    ServiceAgreementTemplate,
+    ACCESS_SERVICE_TEMPLATE_ID,
+    ServiceDescriptor,
+    Ocean,
     Account
+)
+from squid_py.config import Config
 from squid_py.ddo.metadata import Metadata
+from squid_py.keeper.web3_provider import Web3Provider
+from squid_py.ocean.brizo import Brizo
 from squid_py.service_agreement.utils import get_sla_template_path, register_service_agreement_template
-from tests.brizo_mock import BrizoMock
-from tests.secret_store_mock import SecretStoreClientMock
-from tests.test_utils import CONSUMER_INDEX, PUBLISHER_INDEX
+from squid_py.test_resources.mocks.brizo_mock import BrizoMock
+from squid_py.test_resources.mocks.secret_store_mock import SecretStoreClientMock
+from squid_py.utils.test_utils import CONSUMER_INDEX, PUBLISHER_INDEX
 
 
 def get_registered_ddo(ocean_instance):
@@ -22,8 +30,8 @@ def get_registered_ddo(ocean_instance):
         )
 
     config = ocean_instance.config
-    purchase_endpoint = get_purchase_endpoint(config)
-    service_endpoint = get_service_endpoint(config)
+    purchase_endpoint = Brizo.get_purchase_endpoint(config)
+    service_endpoint = Brizo.get_service_endpoint(config)
     ddo = ocean_instance.register_asset(
         Metadata.get_example(), ocean_instance.main_account,
         [ServiceDescriptor.access_service_descriptor(7, purchase_endpoint, service_endpoint, 360, template_id)]
@@ -38,7 +46,7 @@ def get_consumer_ocean_instance():
     if ocn.config.has_option('keeper-contracts', 'parity.address1'):
         address = ocn.config.get('keeper-contracts', 'parity.address1')
 
-    address = ocn._web3.toChecksumAddress(address) if address else None
+    address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
     if address and address in ocn.accounts:
         password = ocn.config.get('keeper-contracts', 'parity.password1') \
             if ocn.config.has_option('keeper-contracts', 'parity.password1') else None
@@ -52,7 +60,7 @@ def get_publisher_ocean_instance():
     address = None
     if ocn.config.has_option('keeper-contracts', 'parity.address'):
         address = ocn.config.get('keeper-contracts', 'parity.address')
-    address = ocn._web3.toChecksumAddress(address) if address else None
+    address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
     if address and address in ocn.accounts:
         password = ocn.config.get('keeper-contracts', 'parity.password') \
             if ocn.config.has_option('keeper-contracts', 'parity.password') else None
@@ -64,7 +72,7 @@ def get_publisher_ocean_instance():
 def make_ocean_instance(secret_store_client, account_index):
     path_config = 'config_local.ini'
     os.environ['CONFIG_FILE'] = path_config
-    ocn = Ocean(os.environ['CONFIG_FILE'], secret_store_client=secret_store_client)
+    ocn = Ocean(Config())
     ocn._http_client = BrizoMock(ocn)
     ocn.main_account = Account(ocn.keeper, list(ocn.accounts)[account_index])
     return ocn
