@@ -1,18 +1,15 @@
 """Keeper module to call keeper-contracts."""
 
 from squid_py.keeper.contract_base import ContractBase
+from squid_py.keeper.web3_provider import Web3Provider
 
 
 class Token(ContractBase):
     """Class representing the Token contract."""
 
-    def __init__(self, web3, contract_path):
-        """
-
-        :param web3:
-        :param contract_path:
-        """
-        ContractBase.__init__(self, web3, contract_path, 'OceanToken')
+    @staticmethod
+    def get_instance():
+        return Token('OceanToken')
 
     def get_token_balance(self, account_address):
         """
@@ -41,8 +38,8 @@ class Token(ContractBase):
         :param from_account:
         :return:
         """
-        if not self.web3.isChecksumAddress(spender_address):
-            spender_address = self.web3.toChecksumAddress(spender_address)
+        if not Web3Provider.get_web3().isChecksumAddress(spender_address):
+            spender_address = Web3Provider.get_web3().toChecksumAddress(spender_address)
 
         from_account.unlock()
         return self.contract_concise.approve(spender_address,

@@ -39,3 +39,15 @@ class OceanServiceAgreementExists(Exception):
 
 class OceanInvalidTransaction(Exception):
     """Raised when an on-chain transaction fail."""
+
+
+class OceanInitializeServiceAgreementError(Exception):
+    """
+    Error on invoking purchase endpoint
+    """
+
+
+class OceanServiceConsumeError(Exception):
+    """
+    Error invoking a consume endpoint
+    """

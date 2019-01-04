@@ -1,7 +1,8 @@
 import importlib
 
+from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.service_agreement import ServiceAgreement
-from squid_py.keeper.utils import get_contract_instance, get_event_def_from_abi
+from squid_py.keeper.utils import get_event_def_from_abi
 from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition, Event
 from squid_py.service_agreement.storage import update_service_agreement_status
 from squid_py.utils import watch_event
@@ -103,7 +104,7 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
 
             return _callback
 
-        contract = get_contract_instance(web3, contract_path, contract_name)
+        contract = ContractHandler.get(contract_name)
         event_abi_dict = get_event_def_from_abi(contract.abi, event.name)
         service_id_arg_name = event_abi_dict['inputs'][0]['name']
         assert service_id_arg_name in ('serviceId', ServiceAgreement.SERVICE_AGREEMENT_ID), \
@@ -119,7 +120,7 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
             start_time=start_time,
             timeout=timeout,
             timeout_callback=_get_callback(timeout_fn) if timeout_fn else None,
-            fromBlock='latest',
+            from_block='latest',
             filters=_filters,
             num_confirmations=num_confirmations,
         )
@@ -131,7 +132,7 @@ def watch_service_agreement_fulfilled(web3, contract_path, service_agreement_id,
         service agreement ID.
     """
     contract_name = service_definition['serviceAgreementContract']['contractName']
-    contract = get_contract_instance(web3, contract_path, contract_name)
+    contract = ContractHandler.get(contract_name)
 
     filters = {ServiceAgreement.SERVICE_AGREEMENT_ID: web3.toBytes(hexstr=service_agreement_id)}
     watch_event(
@@ -140,7 +141,7 @@ def watch_service_agreement_fulfilled(web3, contract_path, service_agreement_id,
         callback,
         interval=0.5,
         start_time=start_time,
-        fromBlock='latest',
+        from_block='latest',
         filters=filters,
         num_confirmations=num_confirmations,
     )

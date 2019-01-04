@@ -10,6 +10,8 @@ class BrizoMock(object):
         response = Mock()
         response.data = b'good luck squiddo.'
         response.status_code = 200
+        response.url = 'http://mock.url/filename.mock?blahblah'
+        response.content = 'asset data goes here.'
         return response
 
     def post(self, url, data=None, **kwargs):

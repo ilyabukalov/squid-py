@@ -1,5 +1,5 @@
 """
-    Keeper module to call keeper-contracts.
+    Keeper module to transact/call `ServiceAgreement` keeper contract methods.
 """
 
 from web3 import Web3
@@ -11,14 +11,34 @@ from squid_py.keeper.contract_base import ContractBase
 class ServiceAgreement(ContractBase):
     SERVICE_AGREEMENT_ID = 'serviceAgreementId'
 
-    def __init__(self, web3, contract_path):
-        ContractBase.__init__(self, web3, contract_path, 'ServiceAgreement')
-        self._defaultGas = DEFAULT_GAS_LIMIT
+    @staticmethod
+    def get_instance():
+        return ServiceAgreement('ServiceAgreement')
 
     def setup_agreement_template(self, template_id, contracts_addresses, fingerprints,
                                  dependencies_bits,
                                  service_description, fulfillment_indices, fulfillment_operator,
                                  owner_account):
+        """
+        Wrapper around the `setupAgreementTemplate` solidity function
+        Deploy a service agreement template that can be used in executing service agreements
+        for asset data access and compute services.
+
+        :param template_id: hex str -- id of this service agreement template
+        :param contracts_addresses: list of hex str
+        :param fingerprints: list of bytes arrays -- each fingerprint is the function selector
+        :param dependencies_bits:  list of int -- each int represents the dependencies and the
+            timeout flags of a condition
+        :param service_description: hex str -- hash of service description
+        :param fulfillment_indices: list of int -- the indices of the fulfillment/terminal
+            conditions
+        :param fulfillment_operator: int -- the logical operator used to determine the agreement
+            fulfillment based on the conditions matching the `fulfillment_indices`
+        :param owner_account: hex str -- ethereum address of account publishing this agreement
+            template
+        :return: dict -- transaction receipt
+        """
+
         assert isinstance(service_description,
                           str) and service_description.strip() != '', 'bad service description.'
         assert contracts_addresses and isinstance(contracts_addresses, list), \
@@ -54,6 +74,22 @@ class ServiceAgreement(ContractBase):
     def execute_service_agreement(self, template_id, signature, consumer, hashes, timeouts,
                                   service_agreement_id,
                                   did_id, publisher_account):
+        """
+        Wrapper around the `executeAgreement` solidity function.
+        Start/initialize a service agreement on the blockchain. This is really the entry point for
+        buying asset services (Access, Compute, etc.)
+
+        :param template_id: hex str -- id of the service agreement template that defines the
+            agreement conditions and dependencies
+        :param signature: hex str -- the signed agreement hash. Signed by the `consumer`
+        :param consumer: hex str -- consumer's ethereum address
+        :param hashes: list of hex str -- each value is the hash of a condition's parameters values
+        :param timeouts: list of int -- timeout value of each condition
+        :param service_agreement_id: hex str
+        :param did_id: hex str -- the asset id portion of did
+        :param publisher_account: Account instance -- account of the publisher of this asset
+        :return: dict -- transaction receipt
+        """
         assert len(hashes) == len(timeouts), ''
 
         publisher_account.unlock()

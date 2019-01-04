@@ -5,8 +5,13 @@ import logging
 import requests
 
 
-class AquariusWrapper:
-    """Aquarius wrapper to call different endpoint of aquarius component."""
+logger = logging.getLogger('aquarius')
+
+
+class Aquarius:
+    """
+    Aquarius wrapper to call different endpoint of aquarius component.
+    """
 
     def __init__(self, aquarius_url):
         """
@@ -14,6 +19,7 @@ class AquariusWrapper:
 
         :param aquarius_url: Url of the aquarius instance.
         """
+        # :HACK:
         if '/api/v1/aquarius/assets' in aquarius_url:
             aquarius_url = aquarius_url[:aquarius_url.find('/api/v1/aquarius/assets')]
 
@@ -115,7 +121,7 @@ class AquariusWrapper:
             raise Exception(f'{response.status_code} ERROR Full error: \n{response.text}')
         elif response.status_code == 201:
             response = json.loads(response.content)
-            logging.debug(f'Published asset DID {asset_did}')
+            logger.debug(f'Published asset DID {asset_did}')
             return response
         else:
             raise Exception(f'Unhandled ERROR: status-code {response.status_code}, '

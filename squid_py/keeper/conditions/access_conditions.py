@@ -1,4 +1,4 @@
-"""Keeper module to call keeper-contracts."""
+"""Keeper module to transact/call `AccessConditions` keeper contract methods."""
 
 from squid_py.keeper.contract_base import ContractBase
 
@@ -6,14 +6,9 @@ from squid_py.keeper.contract_base import ContractBase
 class AccessConditions(ContractBase):
     """Class representing the AccessConditions contract."""
 
-    def __init__(self, web3, contract_path):
-        """
-        Initialize AccessConditions class.
-
-        :param web3: Web3 instance
-        :param contract_path: Contract path, str
-        """
-        super().__init__(web3, contract_path, 'AccessConditions')
+    @staticmethod
+    def get_instance():
+        return AccessConditions('AccessConditions')
 
     def check_permissions(self, address, asset_did, sender_address):
         """

@@ -4,9 +4,12 @@ import pytest
 from web3 import Web3, HTTPProvider
 
 from squid_py.config import Config
+from squid_py.config_provider import ConfigProvider
 from tests.mocks.secret_store_mock import SecretStoreClientMock
 from tests.test_utils import get_publisher_ocean_instance, get_consumer_ocean_instance, \
     get_registered_ddo
+
+ConfigProvider.set_config(Config('config_local.ini'))
 
 
 @pytest.fixture

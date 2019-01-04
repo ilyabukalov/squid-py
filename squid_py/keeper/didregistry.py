@@ -5,28 +5,19 @@ from urllib.parse import urlparse
 
 from web3 import Web3
 
-from squid_py.ddo import DDO
 from squid_py.did import did_to_id_bytes
-from squid_py.didresolver import (
-    VALUE_TYPE_DID,
-    VALUE_TYPE_URL,
-    VALUE_TYPE_DDO,
-)
+from squid_py.ddo import DDO
 from squid_py.exceptions import OceanDIDCircularReference
 from squid_py.keeper.contract_base import ContractBase
+from squid_py.models.resolver_value_type import ResolverValueType
 
 
 class DIDRegistry(ContractBase):
     """Class to register and update Ocean DID's."""
 
-    def __init__(self, web3, contract_path):
-        """
-        Initialize DIDRegistry class.
-
-        :param web3: Web3 instance
-        :param contract_path: Contract path, str
-        """
-        ContractBase.__init__(self, web3, contract_path, 'DIDRegistry')
+    @staticmethod
+    def get_instance():
+        return DIDRegistry('DIDRegistry')
 
     def register(self, did_source, url=None, ddo=None, did=None, key=None, account=None):
         """
@@ -41,7 +32,7 @@ class DIDRegistry(ContractBase):
         :return: Receipt
         """
 
-        value_type = VALUE_TYPE_DID
+        value_type = ResolverValueType.DID
         value = None
 
         did_source_id = did_to_id_bytes(did_source)
@@ -50,13 +41,13 @@ class DIDRegistry(ContractBase):
             raise ValueError(f'{did_source} must be a valid DID to register')
 
         if url:
-            value_type = VALUE_TYPE_URL
+            value_type = ResolverValueType.URL
             value = url
             if not urlparse(url):
                 raise ValueError(f'Invalid URL {url} to register for DID {did_source}')
 
         if ddo:
-            value_type = VALUE_TYPE_DDO
+            value_type = ResolverValueType.DDO
             if isinstance(ddo, DDO):
                 value = ddo.as_text()
             elif isinstance(ddo, str):
@@ -65,7 +56,7 @@ class DIDRegistry(ContractBase):
                 raise ValueError(f'Invalid DDO {ddo} to register for DID {did_source}')
 
         if did:
-            value_type = VALUE_TYPE_DID
+            value_type = ResolverValueType.DID
             id_bytes = did_to_id_bytes(did)
             if not id_bytes:
                 raise ValueError(f'Invalid DID {did}')

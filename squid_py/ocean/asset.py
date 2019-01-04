@@ -9,6 +9,8 @@ from squid_py.service_agreement.service_types import ServiceTypes
 
 DDO_SERVICE_METADATA_KEY = 'metadata'
 
+logger = logging.getLogger('asset')
+
 
 class Asset(OceanBase):
     """Class representing and asset."""
@@ -23,18 +25,20 @@ class Asset(OceanBase):
             2. From a json DDO file Asset.from_ddo_json_file()
                 - Create an asset based on a DDO file
 
-        :param did: `did:op:0x...`, the 0x id portion must be of length 64 (or 32 bytes)
         :param publisher_id:
         :param ddo: DDO instance
         """
-
+        assert ddo and isinstance(ddo, DDO), 'Must provide a valid DDO instance.'
         self._ddo = ddo
         self.publisher_id = publisher_id
         self.asset_id = did_to_id(self._ddo.did)
-        OceanBase.__init__(self, self.ddo.did)
+        OceanBase.__init__(self, self.asset_id)
 
     def __str__(self):
         return f'Asset {self.did}, publisher: {self.publisher_id}'
+
+    def get_id(self):
+        return self.id
 
     @property
     def did(self):
@@ -80,7 +84,7 @@ class Asset(OceanBase):
         :return: Asset
         """
         asset = cls(ddo=DDO(dictionary=dictionary))
-        logging.debug(f'Asset {asset.asset_id} created from ddo dict {dictionary}.')
+        logger.debug(f'Asset {asset.asset_id} created from ddo dict {dictionary}.')
         return asset
 
     @property
@@ -120,11 +124,3 @@ class Asset(OceanBase):
         :return: bool
         """
         return self._ddo and self._ddo.is_valid
-
-    def get_id(self):
-        """
-        Return asset did.
-
-        :return: DID
-        """
-        return self.asset_id

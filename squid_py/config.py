@@ -82,6 +82,7 @@ class Config(configparser.ConfigParser):
         configparser.ConfigParser.__init__(self)
 
         self.read_dict(config_defaults)
+        self._web3_provider = None
         self._section_name = 'keeper-contracts'
         self._logger = logging.getLogger('config')
 
@@ -158,3 +159,11 @@ class Config(configparser.ConfigParser):
     def parity_password(self):
         """Parity password for your address. (e.g.): Mypass."""
         return self.get(self._section_name, NAME_PARITY_PASSWORD)
+
+    @property
+    def web3_provider(self):
+        return self._web3_provider
+
+    @web3_provider.setter
+    def web3_provider(self, web3_provider):
+        self._web3_provider = web3_provider

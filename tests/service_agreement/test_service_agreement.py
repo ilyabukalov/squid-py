@@ -29,7 +29,7 @@ class TestServiceAgreement(unittest.TestCase):
         self.config = Config(CONFIG_PATH)
         self.web3 = Web3(HTTPProvider(self.config.keeper_url))
 
-        self.ocean = Ocean(CONFIG_PATH)
+        self.ocean = Ocean(self.config)
         self.market = self.ocean.keeper.market
         self.token = self.ocean.keeper.token
         self.payment_conditions = self.ocean.keeper.payment_conditions

@@ -1,11 +1,8 @@
 """Ocean module."""
-
 from .ocean_base import OceanBase
 
 
 class Order(OceanBase):
-    """Class representing and account."""
-
     def __init__(self, order_id, asset, timeout, pub_key, key, paid, status):
         """
         Initialize an order.

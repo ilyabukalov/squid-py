@@ -1,19 +1,9 @@
 """Keeper module to call keeper-contracts."""
 
 import json
-import logging
 import os
 
-from squid_py.keeper.network_names import NETWORK_NAME_MAP, DEFAULT_NETWORK_NAME
-
-
-def get_network_id(web3):
-    """
-
-    :param web3:
-    :return:
-    """
-    return int(web3.version.network)
+from squid_py.keeper.web3_provider import Web3Provider
 
 
 def get_contract_abi_by_address(contract_path, address):
@@ -31,67 +21,13 @@ def get_contract_abi_by_address(contract_path, address):
             with open(os.path.join(dirname, entry)) as f:
                 try:
                     definition = json.loads(f.read())
-                except:
+                except Exception:
                     continue
 
                 if address != definition['address'].lower():
                     continue
 
                 return definition['abi']
-
-
-def get_contract_by_name(contract_path, network_name, contract_name):
-    """
-
-    :param contract_path:
-    :param network_name:
-    :param contract_name:
-    :return:
-    """
-    file_name = f'{contract_name}.{network_name}.json'
-    path = os.path.join(contract_path, file_name)
-    if not os.path.exists(path):
-        file_name = f'{contract_name}.{network_name.lower()}.json'
-        for name in os.listdir(contract_path):
-            if name.lower() == file_name.lower():
-                file_name = name
-                path = os.path.join(contract_path, file_name)
-                break
-
-    if not os.path.exists(path):
-        raise FileNotFoundError(f'Keeper contract {contract_name} file not found: {path}')
-
-    with open(path) as f:
-        contract = json.loads(f.read())
-        return contract
-
-
-def get_contract_abi_and_address(web3, contract_path, contract_name, network_name=None):
-    """
-
-    :param web3:
-    :param contract_path:
-    :param contract_name:
-    :param network_name:
-    :return:
-    """
-    if not network_name:
-        network_name = get_network_name(web3)
-    contract_json = get_contract_by_name(contract_path, network_name, contract_name)
-    return contract_json['abi'], web3.toChecksumAddress(contract_json['address'])
-
-
-def get_contract_instance(web3, contract_path, contract_name, network_name=None):
-    """
-
-    :param web3:
-    :param contract_path:
-    :param contract_name:
-    :param network_name:
-    :return:
-    """
-    abi, address = get_contract_abi_and_address(web3, contract_path, contract_name, network_name)
-    return web3.eth.contract(address=address, abi=abi)
 
 
 def get_event_def_from_abi(abi, event_name):
@@ -143,16 +79,18 @@ def hexstr_to_bytes(web3, hexstr):
     return web3.toBytes(int(hexstr, 16))
 
 
-def get_network_name(web3):
+def generate_multi_value_hash(types, values):
     """
-    Return the keeper network name based on the current ethereum network id.
+    Return the hash of the given list of values.
+    This is equivalent to packing and hashing values in a solidity smart contract
+    hence the use of `soliditySha3`.
 
-    :param web3: Web3 instance
-    :return: Network name, str
+    :param types: list of solidity types expressed as strings
+    :param values: list of values matching the `types` list
+    :return: bytes
     """
-    if os.environ.get('KEEPER_NETWORK_NAME'):
-        logging.debug(f'keeper network name overridden by an environment variable: '
-                      f'{os.environ.get("KEEPER_NETWORK_NAME")}')
-        return os.environ.get('KEEPER_NETWORK_NAME')
-
-    return NETWORK_NAME_MAP.get(get_network_id(web3), DEFAULT_NETWORK_NAME)
+    assert len(types) == len(values)
+    return Web3Provider.get_web3().soliditySha3(
+        types,
+        values
+    )

@@ -7,11 +7,11 @@ from datetime import datetime
 from web3 import Web3, HTTPProvider
 
 from squid_py.config import Config
+from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (
     get_fingerprint_by_name,
     hexstr_to_bytes,
-    get_contract_abi_and_address,
-    get_network_name)
+)
 from squid_py.ocean.ocean import Ocean
 from squid_py.service_agreement.register_service_agreement import (
     execute_pending_service_agreements,
@@ -33,7 +33,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         cls.config = Config(CONFIG_PATH)
         cls.web3 = Web3(HTTPProvider(cls.config.keeper_url))
 
-        cls.ocean = Ocean(CONFIG_PATH)
+        cls.ocean = Ocean(cls.config)
         cls.keeper = cls.ocean.keeper
         cls.market = cls.ocean.keeper.market
         cls.token = cls.ocean.keeper.token
@@ -558,18 +558,15 @@ class TestRegisterServiceAgreement(unittest.TestCase):
             ).hex()
         ]
         function_names = ['grantAccess', 'lockPayment', 'releasePayment', 'refundPayment']
-        _network_name = get_network_name(self.web3)
         for i, key in enumerate(self.condition_keys):
             fn_name = function_names[i]
-            abi, address = get_contract_abi_and_address(self.web3, self.keeper.contract_path,
-                                                        self.contract_names[i],
-                                                        _network_name)
-            assert abi == self.contract_abis[i], 'abi does not match.'
-            assert address == self.contracts[i], 'address does not match'
-            f = hexstr_to_bytes(self.web3, get_fingerprint_by_name(abi, fn_name))
+            contract = ContractHandler.get(self.contract_names[i])
+            assert contract.abi == self.contract_abis[i], 'abi does not match.'
+            assert contract.address == self.contracts[i], 'address does not match'
+            f = hexstr_to_bytes(self.web3, get_fingerprint_by_name(contract.abi, fn_name))
             assert f == self.fingerprints[i], 'fingerprint mismatch %s vs %s' % (
                 f, self.fingerprints[i])
-            _key = build_condition_key(self.web3, self.contracts[i], f, self.template_id)
+            _key = build_condition_key(self.contracts[i], f, self.template_id)
             assert _key == key, 'condition key does not match: %s vs %s' % (_key, key)
 
         timeouts = [3, 0, 0, 3]

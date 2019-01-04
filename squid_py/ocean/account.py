@@ -2,13 +2,15 @@
 import logging
 from collections import namedtuple
 
+from squid_py.keeper.web3_provider import Web3Provider
+
 Balance = namedtuple('Balance', ('eth', 'ocn'))
 
 logger = logging.getLogger('account')
 
 
 class Account:
-    """Class representing and account."""
+    """Class representing an account."""
 
     def __init__(self, keeper, address, password=None):
         """
@@ -21,6 +23,15 @@ class Account:
         self.address = address
         self.password = password
 
+    def sign_hash(self, msg_hash):
+        """
+        Return signed hash using this user account keys.
+
+        :param msg_hash:
+        :return: signed hash
+        """
+        return Web3Provider.get_web3().eth.sign(self.address, msg_hash).hex()
+
     def unlock(self):
         """
         Unlock the account address using .web3.personal.unlockAccount(address, password).
@@ -29,7 +40,7 @@ class Account:
         """
         if self.password:
             logger.debug(f'Unlocking account {self.address}')
-            return self.keeper.web3.personal.unlockAccount(self.address, self.password)
+            return Web3Provider.get_web3().personal.unlockAccount(self.address, self.password)
         logging.warning(f'Failed to unlock the account {self.address}')
         return False
 
@@ -60,7 +71,7 @@ class Account:
 
         :return: Ether balance, int
         """
-        return self.keeper.web3.eth.getBalance(self.address, block_identifier='latest')
+        return Web3Provider.get_web3().eth.getBalance(self.address, block_identifier='latest')
 
     @property
     def ocean_balance(self):

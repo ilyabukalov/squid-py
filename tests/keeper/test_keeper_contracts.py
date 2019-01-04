@@ -8,13 +8,14 @@
 import os
 import secrets
 
+from squid_py.config import Config
 from squid_py.ocean.ocean import Ocean
 
 
 def get_ocean_instance():
     path_config = 'config_local.ini'
     os.environ['CONFIG_FILE'] = path_config
-    ocean = Ocean(os.environ['CONFIG_FILE'])
+    ocean = Ocean(Config(os.environ['CONFIG_FILE']))
     return ocean
 
 
