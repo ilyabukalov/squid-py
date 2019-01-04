@@ -1,5 +1,6 @@
-from squid_py.service_agreement.utils import build_condition_key
 from web3 import Web3
+
+from squid_py.service_agreement.utils import build_condition_key
 
 
 def test_build_condition_key():
@@ -9,12 +10,12 @@ def test_build_condition_key():
     fingerprint_lock_payment = '0x668453f0'
     condition_key = '0x1699b99d88626025f8b13de3b666cccec63eaf744d664d901a95b62c36d2b531'
     # LockPayment
-    assert build_condition_key(Web3, contract_address=contract_address,
+    assert build_condition_key(contract_address=contract_address,
                                fingerprint=Web3.toBytes(hexstr=fingerprint_lock_payment),
                                template_id=template_id) == condition_key
     # GrantAccess
     fingerprint_grant_access = '0x25bfdd8a'
     condition_key = '0x600b855012216922339cafd208590e02fdd8c8b8bbfd761d951976801a2b2b05'
-    assert build_condition_key(Web3, contract_address=contract_address,
+    assert build_condition_key(contract_address=contract_address,
                                fingerprint=Web3.toBytes(hexstr=fingerprint_grant_access),
                                template_id=template_id) == condition_key

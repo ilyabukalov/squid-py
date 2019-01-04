@@ -1,15 +1,18 @@
+"""Keeper module to call keeper-contracts."""
+
 import json
-import logging
 import os
 
-from squid_py.keeper.network_names import NETWORK_NAME_MAP, DEFAULT_NETWORK_NAME
-
-
-def get_network_id(web3):
-    return int(web3.version.network)
+from squid_py.keeper.web3_provider import Web3Provider
 
 
 def get_contract_abi_by_address(contract_path, address):
+    """
+
+    :param contract_path:
+    :param address:
+    :return:
+    """
     contract_tree = os.walk(contract_path)
     address = address.lower()
     while True:
@@ -27,65 +30,67 @@ def get_contract_abi_by_address(contract_path, address):
                 return definition['abi']
 
 
-def get_contract_by_name(contract_path, network_name, contract_name):
-    file_name = '{}.{}.json'.format(contract_name, network_name)
-    path = os.path.join(contract_path, file_name)
-    if not os.path.exists(path):
-        file_name = '{}.{}.json'.format(contract_name, network_name.lower())
-        for name in os.listdir(contract_path):
-            if name.lower() == file_name.lower():
-                file_name = name
-                path = os.path.join(contract_path, file_name)
-                break
-
-    if not os.path.exists(path):
-        raise FileNotFoundError('Keeper contract {} file not found: {}'.format(contract_name, path))
-
-    with open(path) as f:
-        contract = json.loads(f.read())
-        return contract
-
-
-def get_contract_abi_and_address(web3, contract_path, contract_name, network_name=None):
-    if not network_name:
-        network_name = get_network_name(web3)
-    contract_json = get_contract_by_name(contract_path, network_name, contract_name)
-    return contract_json['abi'], web3.toChecksumAddress(contract_json['address'])
-
-
-def get_contract_instance(web3, contract_path, contract_name, network_name=None):
-    abi, address = get_contract_abi_and_address(web3, contract_path, contract_name, network_name)
-    return web3.eth.contract(address=address, abi=abi)
-
-
 def get_event_def_from_abi(abi, event_name):
+    """
+
+    :param abi:
+    :param event_name:
+    :return:
+    """
     for item in abi:
         if item.get('type') == 'event' and item.get('name') == event_name:
             return item
 
-    raise ValueError('event {} not found in the given ABI'.format(event_name))
+    raise ValueError(f'event {event_name} not found in the given ABI')
 
 
 def get_fingerprint_by_name(abi, name):
+    """
+
+    :param abi:
+    :param name:
+    :return:
+    """
     for item in abi:
         if item.get('name') == name:
             return item['signature']
 
-    raise ValueError('{} not found in the given ABI'.format(name))
+    raise ValueError(f'{name} not found in the given ABI')
 
 
 def get_fingerprint_bytes_by_name(web3, abi, name):
+    """
+
+    :param web3:
+    :param abi:
+    :param name:
+    :return:
+    """
     return hexstr_to_bytes(web3, get_fingerprint_by_name(abi, name))
 
 
 def hexstr_to_bytes(web3, hexstr):
+    """
+
+    :param web3:
+    :param hexstr:
+    :return:
+    """
     return web3.toBytes(int(hexstr, 16))
 
 
-def get_network_name(web3):
-    """Return the keeper network name based on the current ethereum network id."""
-    if os.environ.get('KEEPER_NETWORK_NAME'):
-        logging.debug('keeper network name overridden by an environment variable: {}'.format(os.environ.get('KEEPER_NETWORK_NAME')))
-        return os.environ.get('KEEPER_NETWORK_NAME')
+def generate_multi_value_hash(types, values):
+    """
+    Return the hash of the given list of values.
+    This is equivalent to packing and hashing values in a solidity smart contract
+    hence the use of `soliditySha3`.
 
-    return NETWORK_NAME_MAP.get(get_network_id(web3), DEFAULT_NETWORK_NAME)
+    :param types: list of solidity types expressed as strings
+    :param values: list of values matching the `types` list
+    :return: bytes
+    """
+    assert len(types) == len(values)
+    return Web3Provider.get_web3().soliditySha3(
+        types,
+        values
+    )

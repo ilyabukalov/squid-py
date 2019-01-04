@@ -64,8 +64,16 @@
             "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.zip"
           ],
           "links": [
-            { "name": "Sample of Asset Data", "type": "sample", "url": "https://foo.com/sample.csv" },
-            { "name": "Data Format Definition", "type": "format", "AssetID": "4d517500da0acb0d65a716f61330969334630363ce4a6a9d39691026ac7908ea" }
+            {
+              "name": "Sample of Asset Data",
+              "type": "sample",
+              "url": "https://foo.com/sample.csv"
+            },
+            {
+              "name": "Data Format Definition",
+              "type": "format",
+              "AssetID": "4d517500da0acb0d65a716f61330969334630363ce4a6a9d39691026ac7908ea"
+            }
           ],
           "inLanguage": "en",
           "tags": "weather, uk, 2011, temperature, humidity",

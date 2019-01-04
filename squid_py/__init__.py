@@ -1,13 +1,20 @@
 __author__ = """OceanProtocol"""
 __version__ = '0.2.17'
 
+from .ddo import (
+    ddo, PublicKeyRSA, PublicKeyHex, PublicKeyBase, Authentication, Metadata, Service, DDO
+)
 from .exceptions import (
-    OceanInvalidContractAddress,
+    OceanInvalidContractAddress, OceanDIDNotFound, OceanDIDAlreadyExist, OceanDIDCircularReference,
+    OceanDIDUnknownValueType, OceanInvalidMetadata, OceanInvalidServiceAgreementSignature,
+    OceanKeeperContractsNotFound, OceanServiceAgreementExists,
 )
 from .ocean import (
     Ocean,
     Account,
     Asset,
+    Order,
+    OceanBase
 )
 from .service_agreement import (
     ServiceTypes,
@@ -16,8 +23,4 @@ from .service_agreement import (
     ServiceAgreement,
     ServiceAgreementTemplate,
     ACCESS_SERVICE_TEMPLATE_ID,
-)
-from .utils import (
-    get_purchase_endpoint,
-    get_service_endpoint,
 )

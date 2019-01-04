@@ -1,7 +1,7 @@
 import logging
 
 from squid_py.config import DEFAULT_GAS_LIMIT
-from squid_py.keeper.utils import get_contract_abi_and_address
+from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.modules.v0_1.utils import (
     get_condition_contract_data,
     is_condition_fulfilled,
@@ -14,31 +14,31 @@ logger = logging.getLogger('service_agreement')
 def handlePaymentAction(web3, contract_path, account, service_agreement_id,
                         service_definition, function_name, event_name):
     payment_conditions, contract, abi, payment_condition_definition = get_condition_contract_data(
-        web3,
-        contract_path,
         service_definition,
         function_name,
     )
 
     contract_name = service_definition['serviceAgreementContract']['contractName']
-    service_agreement_address = get_contract_abi_and_address(web3, contract_path, contract_name)[1]
-    if is_condition_fulfilled(web3, contract_path, service_definition[ServiceAgreementTemplate.TEMPLATE_ID_KEY],
-                              service_agreement_id, service_agreement_address,
+    service_agreement_contract = ContractHandler.get_concise_contract(contract_name)
+    if is_condition_fulfilled(service_definition[ServiceAgreementTemplate.TEMPLATE_ID_KEY],
+                              service_agreement_id, service_agreement_contract,
                               payment_conditions.address, abi, function_name):
         return
 
-    name_to_parameter = {param['name']: param for param in payment_condition_definition['parameters']}
+    name_to_parameter = {param['name']: param for param in
+                         payment_condition_definition['parameters']}
     asset_id = name_to_parameter['assetId']['value']
     price = name_to_parameter['price']['value']
     transact = {'from': account.address, 'gas': DEFAULT_GAS_LIMIT}
 
     try:
         account.unlock()
-        tx_hash = getattr(payment_conditions, function_name)(service_agreement_id, asset_id, price, transact=transact)
+        tx_hash = getattr(payment_conditions, function_name)(service_agreement_id, asset_id, price,
+                                                             transact=transact)
         process_tx_receipt(web3, tx_hash, getattr(contract.events, event_name), event_name)
     except Exception as e:
-        logger.error('Error when calling %s function: %s', event_name, e, exc_info=1)
-        raise
+        logger.error(f'Error when calling {event_name} function: {e}')
+        raise e
 
 
 def lockPayment(web3, contract_path, account, service_agreement_id,

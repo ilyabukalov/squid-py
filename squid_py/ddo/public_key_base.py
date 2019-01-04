@@ -19,10 +19,7 @@ PUBLIC_KEY_STORE_TYPE_BASE85 = 'publicKeyBase85'
 
 
 class PublicKeyBase:
-    """
-    Base Public Key class, to allow to perfom basic key storage and validation
-    using DDO keys
-    """
+    """Base Public Key class, to allow to perfom basic key storage and validation using DDO keys."""
 
     def __init__(self, key_id, **kwargs):
         self._id = key_id
@@ -32,7 +29,7 @@ class PublicKeyBase:
         self._type = kwargs.get('type', None)
 
     def get_id(self):
-        """ get the key id"""
+        """Get the key id."""
         return self._id
 
     def assign_did(self, did):
@@ -66,9 +63,11 @@ class PublicKeyBase:
             if PUBLIC_KEY_STORE_TYPE_HEX in value:
                 self.set_key_value(value[PUBLIC_KEY_STORE_TYPE_HEX], PUBLIC_KEY_STORE_TYPE_HEX)
             elif PUBLIC_KEY_STORE_TYPE_BASE64 in value:
-                self.set_key_value(value[PUBLIC_KEY_STORE_TYPE_BASE64], PUBLIC_KEY_STORE_TYPE_BASE64)
+                self.set_key_value(value[PUBLIC_KEY_STORE_TYPE_BASE64],
+                                   PUBLIC_KEY_STORE_TYPE_BASE64)
             elif PUBLIC_KEY_STORE_TYPE_BASE85 in value:
-                self.set_key_value(value[PUBLIC_KEY_STORE_TYPE_BASE85], PUBLIC_KEY_STORE_TYPE_BASE85)
+                self.set_key_value(value[PUBLIC_KEY_STORE_TYPE_BASE85],
+                                   PUBLIC_KEY_STORE_TYPE_BASE85)
             elif PUBLIC_KEY_STORE_TYPE_JWK in value:
                 self.set_key_value(value[PUBLIC_KEY_STORE_TYPE_JWK], PUBLIC_KEY_STORE_TYPE_JWK)
             elif PUBLIC_KEY_STORE_TYPE_PEM in value:

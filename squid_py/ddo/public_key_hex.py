@@ -10,7 +10,7 @@ PUBLIC_KEY_TYPE_HEX = 'PublicKeyHex'
 
 
 class PublicKeyHex(PublicKeyBase):
-    """Encode key value using Hex"""
+    """Encode key value using Hex."""
 
     def __init__(self, key_id, **kwargs):
         PublicKeyBase.__init__(self, key_id, **kwargs)
@@ -18,5 +18,5 @@ class PublicKeyHex(PublicKeyBase):
         self._store_type = PUBLIC_KEY_STORE_TYPE_HEX
 
     def get_authentication_type(self):
-        """return the type of authentication supported by this class"""
+        """Return the type of authentication supported by this class."""
         return AUTHENTICATION_TYPE_HEX

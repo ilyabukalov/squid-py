@@ -1,86 +1,85 @@
 """
-    Collection of Keeper contracts
-
+    Keeper module to call keeper-contracts.
 """
 
 import logging
 import os
 
-from squid_py.exceptions import OceanKeeperContractsNotFound
+from squid_py.config_provider import ConfigProvider
 from squid_py.keeper.conditions.access_conditions import AccessConditions
 from squid_py.keeper.conditions.payment_conditions import PaymentConditions
 from squid_py.keeper.service_agreement import ServiceAgreement
-from squid_py.keeper.auth import Auth
 from squid_py.keeper.didregistry import DIDRegistry
 from squid_py.keeper.market import Market
 from squid_py.keeper.token import Token
-from squid_py.keeper.utils import get_contract_by_name, get_network_id, get_network_name
-from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID
+from squid_py.keeper.web3_provider import Web3Provider
 
 
 class Keeper(object):
+    """
+    The Keeper class aggregates all contracts in the Ocean Protocol node.
+    Currently this is implemented as a singleton.
 
-    def __init__(self, web3, contract_path):
+    """
+
+    DEFAULT_NETWORK_NAME = 'development'
+    _network_name_map = {
+        1: 'Main',
+        2: 'Morden',
+        3: 'Ropsten',
+        4: 'Rinkeby',
+        42: 'Kovan',
+        77: 'POA_Sokol',
+        99: 'POA_Core',
+        8995: 'nile',
+        8996: 'spree',
+    }
+    _instance = None
+    artifacts_path = None
+    accounts = []
+    market = None
+    auth = None
+    token = None
+    did_registry = None
+    service_agreement = None
+    payment_conditions = None
+    access_conditions = None
+
+    @staticmethod
+    def get_instance():
+        """Return the Keeper instance (singleton)."""
+        if Keeper._instance is None:
+            Keeper._instance = Keeper()
+
+            Keeper.network_name = Keeper.get_network_name()
+            Keeper.artifacts_path = ConfigProvider.get_config().keeper_path
+            Keeper.accounts = Web3Provider.get_web3().eth.accounts
+
+            # The contract objects
+            Keeper.market = Market.get_instance()
+            Keeper.token = Token.get_instance()
+            Keeper.did_registry = DIDRegistry.get_instance()
+            Keeper.service_agreement = ServiceAgreement.get_instance()
+            Keeper.payment_conditions = PaymentConditions.get_instance()
+            Keeper.access_conditions = AccessConditions.get_instance()
+
+        return Keeper._instance
+
+    @staticmethod
+    def get_network_name():
         """
-        The Keeper class aggregates all contracts in the Ocean Protocol node
+        Return the keeper network name based on the current ethereum network id.
 
-        :param web3: The common web3 object
-        :param contract_path: Path for
-        :param address_list:
+        :return: Network name, str
         """
-
-        self.web3 = web3
-        self.contract_path = contract_path
-
-        logging.info("Keeper contract artifacts (JSON abi files) at: %s", self.contract_path)
-
         if os.environ.get('KEEPER_NETWORK_NAME'):
-            logging.warning('The `KEEPER_NETWORK_NAME` env var is set to %s. This enables the user to '
-                            'override the method of how the network name is inferred from network id.',
-                            os.environ.get('KEEPER_NETWORK_NAME'))
+            logging.debug('keeper network name overridden by an environment variable: {}'.format(
+                os.environ.get('KEEPER_NETWORK_NAME')))
+            return os.environ.get('KEEPER_NETWORK_NAME')
 
-        # try to find contract with this network name
-        contract_name = 'ServiceAgreement'
-        network_name = get_network_name(self.web3)
-        logging.info('Using keeper contracts from network `%s`, network id is %s',
-                     network_name, get_network_id(self.web3))
-        logging.info('Looking for keeper contracts ending with ".%s.json", e.g. "%s.%s.json"',
-                     network_name, contract_name, network_name)
-        existing_contract_names = os.listdir(contract_path)
-        try:
-            get_contract_by_name(contract_path, network_name, contract_name)
-        except Exception as e:
-            logging.error('Cannot find the keeper contracts. \n'
-                          '\tCurrent network id is "%s" and network name is "%s"\n'
-                          '\tExpected to find contracts ending with ".%s.json", e.g. "%s.%s.json"',
-                          get_network_id(self.web3), network_name, network_name, contract_name, network_name)
-            raise OceanKeeperContractsNotFound(
-                'Keeper contracts for keeper network "%s" were not found in "%s". \n'
-                'Found the following contracts: \n\t%s' % (network_name, contract_path, existing_contract_names)
-            )
+        web3 = Web3Provider.get_web3()
+        return Keeper._network_name_map.get(int(web3.version.network), Keeper.DEFAULT_NETWORK_NAME)
 
-        self.network_name = network_name
-
-        # The contract objects
-        self.market = Market(web3, contract_path)
-        self.auth = Auth(web3, contract_path)
-        self.token = Token(web3, contract_path)
-        self.didregistry = DIDRegistry(web3, contract_path)
-        self.service_agreement = ServiceAgreement(web3, contract_path)
-        self.payment_conditions = PaymentConditions(web3, contract_path)
-        self.access_conditions = AccessConditions(web3, contract_path)
-
-        contracts = [self.market, self.auth, self.token, self.didregistry,
-                     self.service_agreement, self.payment_conditions, self.access_conditions]
-        addresses = '\n'.join(['\t{}: {}'.format(c.name, c.address) for c in contracts])
-        logging.info('Finished loading keeper contracts:\n'
-                     '%s', addresses)
-
-        # Check for known service agreement templates
-        template_owner = self.service_agreement.get_template_owner(ACCESS_SERVICE_TEMPLATE_ID)
-        if not template_owner or template_owner == 0:
-            logging.info('The `Access` Service agreement template "%s" is not deployed to '
-                         'the current keeper network.', ACCESS_SERVICE_TEMPLATE_ID)
-        else:
-            logging.info('Found service agreement template "%s" of type `Access` deployed in '
-                         'the current keeper network published by "%s".', ACCESS_SERVICE_TEMPLATE_ID, template_owner)
+    @staticmethod
+    def get_network_id():
+        return int(Web3Provider.get_web3().version.network)

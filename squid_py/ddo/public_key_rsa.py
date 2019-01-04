@@ -10,7 +10,7 @@ PUBLIC_KEY_TYPE_RSA = 'RsaSignatureAuthentication2018'
 
 
 class PublicKeyRSA(PublicKeyBase):
-    """Encode key value using RSA"""
+    """Encode key value using RSA."""
 
     def __init__(self, key_id, **kwargs):
         PublicKeyBase.__init__(self, key_id, **kwargs)

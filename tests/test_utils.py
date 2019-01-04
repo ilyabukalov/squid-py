@@ -19,7 +19,7 @@ def test_get_publickey_from_address(publisher_ocean_instance):
     from eth_keys.exceptions import BadSignature
     for account in publisher_ocean_instance.accounts:
         try:
-            pub_key = utilities.get_publickey_from_address(publisher_ocean_instance._web3, account)
+            pub_key = utilities.get_public_key_from_address(Web3Provider.get_web3(), account)
             assert pub_key.to_checksum_address() == account, 'recovered public key address does not match original address.'
         except BadSignature:
             pytest.fail("BadSignature")
@@ -29,7 +29,9 @@ def test_get_publickey_from_address(publisher_ocean_instance):
 
 def test_convert():
     input_text = "my text"
-    print("output %s" % utilities.convert_to_string(Web3, utilities.convert_to_bytes(Web3, input_text)))
-    assert utilities.convert_to_text(Web3, utilities.convert_to_bytes(Web3, input_text)) == input_text
+    print("output %s" % utilities.convert_to_string(Web3,
+                                                    utilities.convert_to_bytes(Web3, input_text)))
+    assert utilities.convert_to_text(Web3,
+                                     utilities.convert_to_bytes(Web3, input_text)) == input_text
 
 

@@ -109,3 +109,5 @@ docker/docs
 /config_local.ini
 /artifacts
 squid_py.db
+consume-downloads
+.log
