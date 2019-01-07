@@ -5,10 +5,10 @@ import logging
 
 import pytest
 
-from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ddo import DDO
+from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ocean.asset import Asset
-from squid_py.test_resources.helper_functions import get_resource_path
+from tests.resources.helper_functions import get_resource_path
 
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("web3").setLevel(logging.WARNING)

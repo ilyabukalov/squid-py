@@ -13,8 +13,8 @@ from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ocean.brizo import Brizo
 from squid_py.ocean.secret_store import SecretStore
 from squid_py.service_agreement.utils import get_sla_template_path, register_service_agreement_template
-from squid_py.test_resources.mocks.brizo_mock import BrizoMock
-from squid_py.test_resources.mocks.secret_store_mock import SecretStoreClientMock
+from tests.resources.mocks.brizo_mock import BrizoMock
+from tests.resources.mocks.secret_store_mock import SecretStoreClientMock
 
 
 PUBLISHER_INDEX = 1

@@ -11,7 +11,7 @@ from squid_py.ddo import (
     PUBLIC_KEY_STORE_TYPE_BASE85,
 )
 from squid_py.did import DID
-from squid_py.test_resources.helper_functions import get_resource_path
+from tests.resources.helper_functions import get_resource_path
 
 public_key_store_types = [
     PUBLIC_KEY_STORE_TYPE_PEM,
