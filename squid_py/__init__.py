@@ -1,5 +1,5 @@
 __author__ = """OceanProtocol"""
-__version__ = '0.2.17'
+__version__ = '0.2.18'
 
 from .ddo import (
     ddo, PublicKeyRSA, PublicKeyHex, PublicKeyBase, Authentication, Metadata, Service, DDO
