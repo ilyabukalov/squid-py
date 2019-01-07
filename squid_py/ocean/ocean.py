@@ -53,7 +53,7 @@ logger = logging.getLogger('ocean')
 class Ocean:
     """The Ocean class is the entry point into Ocean Protocol."""
 
-    def __init__(self, config=None):
+    def __init__(self, config=None, keeper_instance=None):
         """
         Initialize Ocean class.
 
@@ -74,7 +74,10 @@ class Ocean:
         self.config = ConfigProvider.get_config()
 
         # With the interface loaded, the Keeper node is connected with all contracts
-        self.keeper = Keeper.get_instance()
+        if keeper_instance:
+            self.keeper = keeper_instance
+        else:
+            self.keeper = Keeper.get_instance()
 
         # Add the Metadata store to the interface
         if self.config.aquarius_url:
@@ -106,8 +109,10 @@ class Ocean:
 
         # Verify keeper contracts
         Diagnostics.verify_contracts()
-        Diagnostics.check_deployed_agreement_templates()
-
+        if keeper_instance:
+            Diagnostics.check_deployed_agreement_templates(keeper_instance)
+        else:
+            Diagnostics.check_deployed_agreement_templates()
         logger.info('Squid Ocean instance initialized: ')
         logger.info(
             f'\tmain account: {self.main_account.address} '
@@ -400,9 +405,8 @@ class Ocean:
                 consumer_address, service_agreement_signature, ddo=ddo
         ):
             raise OceanInvalidServiceAgreementSignature(
-                "Verifying consumer signature failed: signature {}, consumerAddress {}"
-                .format(service_agreement_signature, consumer_address)
-            )
+                f'Verifying consumer signature failed: signature {service_agreement_signature}, '
+                f'consumerAddress {consumer_address}')
 
         # subscribe to events related to this service_agreement_id
         register_service_agreement(Web3Provider.get_web3(), self.keeper.artifacts_path, self.config.storage_path,
@@ -590,7 +594,7 @@ class Ocean:
         """
         self.main_account = Account(self.keeper, Web3Provider.get_web3().toChecksumAddress(address), password)
         Web3Provider.get_web3().eth.defaultAccount = self.main_account.address
-        logger.debug('main account set to %s', self.main_account.address)
+        logger.debug(f'main account set to {self.main_account.address}')
         if password:
             logger.debug('main account password is also set.')
         else:

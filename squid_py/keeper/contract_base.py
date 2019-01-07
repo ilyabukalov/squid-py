@@ -6,6 +6,8 @@
 
 import logging
 
+from web3.contract import ConciseContract
+
 from squid_py.keeper.web3_provider import Web3Provider
 
 logger = logging.getLogger('keeper')
@@ -14,13 +16,15 @@ logger = logging.getLogger('keeper')
 class ContractBase(object):
     """Base class for all contract objects."""
 
-    def __init__(self, contract_name):
+    def __init__(self, contract_name, contract=None):
 
         self.name = contract_name
 
         from squid_py.keeper.contract_handler import ContractHandler
-        contract = ContractHandler.get(contract_name)
-        self.contract_concise = ContractHandler.get_concise_contract(contract_name)
+
+        if not contract:
+            contract = ContractHandler.get(contract_name)
+        self.contract_concise = ConciseContract(contract)
         self.contract = contract
 
         logger.debug(f'Loaded {self}')
@@ -28,13 +32,13 @@ class ContractBase(object):
     @property
     def address(self):
         """Return the ethereum address of the solidity contract deployed
-        in current keeper network
+        in current keeper network.
         """
         return self.contract.address
 
     @property
     def events(self):
-        """Expose the underlying contract's events
+        """Expose the underlying contract's events.
 
         :return:
         """
