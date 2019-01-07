@@ -2,13 +2,13 @@
 """
 
 import logging
-import pathlib
 
 import pytest
 
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ddo import DDO
 from squid_py.ocean.asset import Asset
+from squid_py.test_resources.helper_functions import get_resource_path
 
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("web3").setLevel(logging.WARNING)
@@ -16,7 +16,7 @@ logging.getLogger("web3").setLevel(logging.WARNING)
 
 def test_create_asset_ddo_file():
     # An asset can be created directly from a DDO .json file
-    sample_ddo_path = pathlib.Path.cwd() / 'tests/resources/ddo' / 'ddo_sample1.json'
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
     asset1 = Asset.from_ddo_json_file(sample_ddo_path)
@@ -36,7 +36,7 @@ def test_register_data_asset_market(publisher_ocean_instance, consumer_ocean_ins
     cons_ocn = consumer_ocean_instance
     logging.debug("".format())
     asset_price = 100
-    sample_ddo_path = pathlib.Path.cwd() / 'tests/resources/ddo' / 'ddo_sample1.json'
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
     ##########################################################
@@ -88,7 +88,7 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
     cons_ocn = consumer_ocean_instance
 
     logging.debug("".format())
-    sample_ddo_path = pathlib.Path.cwd() / 'tests/resources/ddo' / 'ddo_sample1.json'
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
     ##########################################################

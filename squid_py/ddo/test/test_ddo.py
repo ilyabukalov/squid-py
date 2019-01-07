@@ -2,8 +2,6 @@
     Test did_lib
 """
 import json
-import os
-import pathlib
 
 from squid_py.ddo import (
     DDO,
@@ -13,6 +11,7 @@ from squid_py.ddo import (
     PUBLIC_KEY_STORE_TYPE_BASE85,
 )
 from squid_py.did import DID
+from squid_py.test_resources.helper_functions import get_resource_path
 
 public_key_store_types = [
     PUBLIC_KEY_STORE_TYPE_PEM,
@@ -226,7 +225,7 @@ def test_creating_did_using_ddo():
 
 def test_load_ddo_json():
     # TODO: Fix
-    sample_ddo_path = pathlib.Path.cwd() / 'tests' / 'resources' / 'ddo' / 'ddo_sample1.json'
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
     with open(sample_ddo_path) as f:
         sample_ddo_json_dict = json.load(f)
@@ -242,7 +241,7 @@ def test_load_ddo_json():
 
 
 def test_ddo_dict():
-    sample_ddo_path = pathlib.Path.cwd() / 'tests' / 'resources' / 'ddo' / 'ddo_sample1.json'
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
     ddo1 = DDO(json_filename=sample_ddo_path)
@@ -255,13 +254,10 @@ def test_generate_test_ddo_files():
     for index in range(1, 3):
         ddo, private_key = generate_sample_ddo()
 
-        json_output_filename = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'ddo',
-                                            'ddo_sample_generated_{}.json'.format(index))
+        json_output_filename = get_resource_path('ddo', 'ddo_sample_generated_{}.json'.format(index))
         with open(json_output_filename, 'w') as fp:
             fp.write(ddo.as_text(is_pretty=True))
 
-        private_output_filename = os.path.join(pathlib.Path.cwd(), 'tests', 'resources', 'ddo',
-                                               'ddo_sample_generated_{}_private_key.pem'.format(
-                                                   index))
+        private_output_filename = get_resource_path('ddo', 'ddo_sample_generated_{}_private_key.pem'.format(index))
         with open(private_output_filename, 'w') as fp:
             fp.write(private_key.decode('utf-8'))

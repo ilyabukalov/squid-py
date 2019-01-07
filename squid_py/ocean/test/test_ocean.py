@@ -4,11 +4,12 @@
 """
 import logging
 import os
-import pathlib
 import time
 
+import requests
 import pytest
 from web3 import Web3
+from secret_store_client.client import Client
 
 from squid_py.ddo import DDO
 from squid_py.ddo.metadata import Metadata
@@ -19,6 +20,7 @@ from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ocean.brizo import Brizo
 from squid_py.ocean.secret_store import SecretStore
 from squid_py.service_agreement.utils import build_condition_key
+from squid_py.test_resources.mocks.brizo_mock import BrizoMock
 from squid_py.utils.utilities import generate_new_id, prepare_prefixed_hash
 from squid_py.modules.v0_1.accessControl import grantAccess
 from squid_py.modules.v0_1.payment import lockPayment, releasePayment
@@ -27,8 +29,7 @@ from squid_py.ocean.asset import Asset
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
-from tests.mocks.brizo_mock import BrizoMock
-from tests.test_utils import get_publisher_ocean_instance, get_registered_ddo
+from squid_py.test_resources.helper_functions import get_registered_ddo, get_publisher_ocean_instance, get_resource_path
 
 
 def print_config(ocean_instance):
@@ -90,7 +91,7 @@ def test_token_request(publisher_ocean_instance, consumer_ocean_instance):
 def test_register_asset(publisher_ocean_instance):
     logging.debug("".format())
     asset_price = 100
-    sample_ddo_path = pathlib.Path.cwd() / 'tests/resources/ddo' / 'ddo_sample2.json'
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sample2.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
     ##########################################################
@@ -341,9 +342,7 @@ def test_agreement_hash(publisher_ocean_instance):
     print('sid: ', service_agreement_id)
     ddo_file_name = 'shared_ddo_example.json'
 
-    file_path = os.path.join(os.path.sep, *os.path.realpath(__file__).split(os.path.sep)[:-2],
-                             'resources', 'ddo',
-                             ddo_file_name)
+    file_path = get_resource_path('ddo', ddo_file_name)
     ddo = DDO(json_filename=file_path)
 
     service = ddo.get_service(service_type='Access')
@@ -413,9 +412,7 @@ def test_verify_signature(consumer_ocean_instance):
     verify_signature(address, agreement_hash, signature, 0)
 
 
-def test_integration(consumer_ocean_instance):
-    # this test is disabled for now.
-    return
+def test_consume_flow(consumer_ocean_instance):
     # This test requires all services running including:
     # secret store
     # parity node
@@ -423,9 +420,7 @@ def test_integration(consumer_ocean_instance):
     # brizo
     # mongodb/bigchaindb
 
-    import requests
-    from secret_store_client.client import Client
-
+    return
     pub_ocn = get_publisher_ocean_instance()
 
     # restore the proper http requests client and secret store client

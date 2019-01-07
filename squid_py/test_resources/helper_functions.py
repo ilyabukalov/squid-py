@@ -1,53 +1,32 @@
 import os
+import pathlib
 
-import pytest
-from web3 import Web3
-
+from squid_py import (
+    ServiceAgreementTemplate,
+    ACCESS_SERVICE_TEMPLATE_ID,
+    ServiceDescriptor,
+    Ocean,
+)
 from squid_py.config import Config
 from squid_py.ddo.metadata import Metadata
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ocean.brizo import Brizo
 from squid_py.ocean.secret_store import SecretStore
-from squid_py.ocean.ocean import Ocean
-from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
-from squid_py.service_agreement.service_factory import ServiceDescriptor
-from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID
-from squid_py.service_agreement.utils import register_service_agreement_template, \
-    get_sla_template_path
-from squid_py.utils import utilities
-from tests.mocks.brizo_mock import BrizoMock
-from tests.mocks.secret_store_mock import SecretStoreClientMock
+from squid_py.service_agreement.utils import get_sla_template_path, register_service_agreement_template
+from squid_py.test_resources.mocks.brizo_mock import BrizoMock
+from squid_py.test_resources.mocks.secret_store_mock import SecretStoreClientMock
+
 
 PUBLISHER_INDEX = 1
 CONSUMER_INDEX = 0
 
 
-def test_split_signature():
-    signature = b'\x19\x15!\xecwnX1o/\xdeho\x9a9\xdd9^\xbb\x8c2z\x88!\x95\xdc=\xe6\xafc\x0f\xe9\x14\x12\xc6\xde\x0b\n\xa6\x11\xc0\x1cvv\x9f\x99O8\x15\xf6f\xe7\xab\xea\x982Ds\x0bX\xd9\x94\xa42\x01'
-    split_signature = utilities.split_signature(Web3, signature=signature)
-    assert split_signature.v == 28
-    assert split_signature.r == b'\x19\x15!\xecwnX1o/\xdeho\x9a9\xdd9^\xbb\x8c2z\x88!\x95\xdc=\xe6\xafc\x0f\xe9'
-    assert split_signature.s == b'\x14\x12\xc6\xde\x0b\n\xa6\x11\xc0\x1cvv\x9f\x99O8\x15\xf6f\xe7\xab\xea\x982Ds\x0bX\xd9\x94\xa42'
-
-
-def test_get_publickey_from_address(publisher_ocean_instance):
-    from eth_keys.exceptions import BadSignature
-    for account in publisher_ocean_instance.accounts:
-        try:
-            pub_key = utilities.get_public_key_from_address(Web3Provider.get_web3(), account)
-            assert pub_key.to_checksum_address() == account, 'recovered public key address does not match original address.'
-        except BadSignature:
-            pytest.fail("BadSignature")
-        except ValueError:
-            pass
-
-
-def test_convert():
-    input_text = "my text"
-    print("output %s" % utilities.convert_to_string(Web3,
-                                                    utilities.convert_to_bytes(Web3, input_text)))
-    assert utilities.convert_to_text(Web3,
-                                     utilities.convert_to_bytes(Web3, input_text)) == input_text
+def get_resource_path(dir_name, file_name):
+    base = os.path.realpath(__file__).split(os.path.sep)[1:-1]
+    if dir_name:
+        return pathlib.Path(os.path.join(os.path.sep, *base, dir_name, file_name))
+    else:
+        return pathlib.Path(os.path.join(os.path.sep, *base, file_name))
 
 
 def init_ocn_tokens(ocn, amount=100):
