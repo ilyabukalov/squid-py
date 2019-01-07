@@ -2,6 +2,7 @@ import json
 import os
 
 from web3 import Web3
+
 from squid_py.keeper.conditions.access_conditions import AccessConditions
 from squid_py.keeper.conditions.payment_conditions import PaymentConditions
 from squid_py.keeper.didregistry import DIDRegistry
@@ -24,6 +25,13 @@ def test_deploy_contracts():
 
 
 def init_keeper(w3, account=None):
+    """
+    Create a keeper instance with all the contracts deployed.
+
+    :param w3: Web3 instance
+    :param account: Account address, str
+    :return: Keeper instance
+    """
     keeper = Keeper()
     keeper.accounts = w3.eth.accounts
     keeper.token = Token('OceanToken', deploy_contract(w3, account, 'OceanToken'))
@@ -45,14 +53,30 @@ def init_keeper(w3, account=None):
 
 
 def init_ocean(w3, account=None):
+    """
+    Create an ocean instance with all the contracts deployed.
+
+    :param w3: Web3 instance
+    :param account: Account address, str
+    :return: Ocean instance
+    """
     keeper = init_keeper(w3, account)
     ocn = Ocean(keeper_instance=keeper)
     return ocn
 
 
 def deploy_contract(w3, account, contract_name, *args):
+    """
+    Deploy a json abi artifact on the chain that web3 is connected.
+
+    :param w3: Web3 instance
+    :param account: Account address, str
+    :param contract_name: Contract name, str
+    :param args: Args that the contract need to be deployed. Should be a list.
+    :return: Contract instance
+    """
     w3.eth.defaultAccount = account
-    contract_instance = get_contract_by_name('artifacts', 'spree', contract_name)
+    contract_instance = get_contract_by_name('venv/artifacts', 'development', contract_name)
     contract_initial = w3.eth.contract(abi=contract_instance['abi'],
                                        bytecode=contract_instance['bytecode'])
     # Using deploy because the new option constructor().transact() is not stable now.
@@ -68,10 +92,12 @@ def deploy_contract(w3, account, contract_name, *args):
 
 def get_contract_by_name(contract_path, network_name, contract_name):
     """
-    :param contract_path:
-    :param network_name:
-    :param contract_name:
-    :return:
+    Return contract allocated in a path.
+
+    :param contract_path: Path of the contract, str
+    :param network_name: Network name, str
+    :param contract_name: Name of the contract, str
+    :return: Contract instance
     """
     file_name = f'{contract_name}.{network_name}.json'
     path = os.path.join(contract_path, file_name)
