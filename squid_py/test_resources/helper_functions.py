@@ -15,7 +15,10 @@ from squid_py.ocean.secret_store import SecretStore
 from squid_py.service_agreement.utils import get_sla_template_path, register_service_agreement_template
 from squid_py.test_resources.mocks.brizo_mock import BrizoMock
 from squid_py.test_resources.mocks.secret_store_mock import SecretStoreClientMock
-from squid_py.utils.test_utils import CONSUMER_INDEX, PUBLISHER_INDEX
+
+
+PUBLISHER_INDEX = 1
+CONSUMER_INDEX = 0
 
 
 def get_resource_path(dir_name, file_name):
