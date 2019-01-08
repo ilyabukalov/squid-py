@@ -76,7 +76,7 @@ def deploy_contract(w3, account, contract_name, *args):
     :return: Contract instance
     """
     w3.eth.defaultAccount = account
-    contract_instance = get_contract_by_name('venv/artifacts', 'development', contract_name)
+    contract_instance = get_contract_by_name('artifacts', 'spree', contract_name)
     contract_initial = w3.eth.contract(abi=contract_instance['abi'],
                                        bytecode=contract_instance['bytecode'])
     # Using deploy because the new option constructor().transact() is not stable now.
