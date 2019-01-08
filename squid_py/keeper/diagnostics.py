@@ -12,11 +12,8 @@ logger = logging.getLogger(__name__)
 
 class Diagnostics:
     @staticmethod
-    def check_deployed_agreement_templates(keeper_instance=None):
-        if keeper_instance:
-            keeper = keeper_instance
-        else:
-            keeper = Keeper.get_instance()
+    def check_deployed_agreement_templates():
+        keeper = Keeper.get_instance()
         # Check for known service agreement templates
         template_owner = keeper.service_agreement.get_template_owner(ACCESS_SERVICE_TEMPLATE_ID)
         if not template_owner or template_owner == 0:

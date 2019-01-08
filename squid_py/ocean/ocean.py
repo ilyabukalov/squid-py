@@ -53,7 +53,7 @@ logger = logging.getLogger('ocean')
 class Ocean:
     """The Ocean class is the entry point into Ocean Protocol."""
 
-    def __init__(self, config=None, keeper_instance=None):
+    def __init__(self, config=None):
         """
         Initialize Ocean class.
 
@@ -74,10 +74,7 @@ class Ocean:
         self.config = ConfigProvider.get_config()
 
         # With the interface loaded, the Keeper node is connected with all contracts
-        if keeper_instance:
-            self.keeper = keeper_instance
-        else:
-            self.keeper = Keeper.get_instance()
+        self.keeper = Keeper.get_instance()
 
         # Add the Metadata store to the interface
         if self.config.aquarius_url:
@@ -109,10 +106,7 @@ class Ocean:
 
         # Verify keeper contracts
         Diagnostics.verify_contracts()
-        if keeper_instance:
-            Diagnostics.check_deployed_agreement_templates(keeper_instance)
-        else:
-            Diagnostics.check_deployed_agreement_templates()
+        Diagnostics.check_deployed_agreement_templates()
         logger.info('Squid Ocean instance initialized: ')
         logger.info(
             f'\tmain account: {self.main_account.address} '

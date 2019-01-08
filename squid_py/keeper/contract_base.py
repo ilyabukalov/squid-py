@@ -6,8 +6,6 @@
 
 import logging
 
-from web3.contract import ConciseContract
-
 from squid_py.keeper.web3_provider import Web3Provider
 
 logger = logging.getLogger('keeper')
@@ -16,16 +14,13 @@ logger = logging.getLogger('keeper')
 class ContractBase(object):
     """Base class for all contract objects."""
 
-    def __init__(self, contract_name, contract=None):
+    def __init__(self, contract_name):
 
         self.name = contract_name
 
         from squid_py.keeper.contract_handler import ContractHandler
-
-        if not contract:
-            contract = ContractHandler.get(contract_name)
-        self.contract_concise = ConciseContract(contract)
-        self.contract = contract
+        self.contract_concise = ContractHandler.get_concise_contract(contract_name)
+        self.contract = ContractHandler.get(contract_name)
 
         logger.debug(f'Loaded {self}')
 
