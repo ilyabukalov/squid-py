@@ -1,12 +1,11 @@
 import hashlib
 import json
-import os
 import secrets
 
 from secret_store_client.client import Client
 
 from squid_py.config import Config
-from tests.resources.helper_functions import get_resource_path
+from squid_py.examples.helper_functions import get_resource_path
 
 secret_store_url = 'http://localhost:8010'
 parity_client_publish_url = 'http://localhost:9545'

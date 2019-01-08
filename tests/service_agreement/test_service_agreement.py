@@ -11,7 +11,7 @@ from squid_py.ddo import DDO
 from squid_py.keeper.utils import get_fingerprint_bytes_by_name
 from squid_py.ocean.ocean import Ocean
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
-from tests.resources.helper_functions import get_resource_path
+from squid_py.examples.helper_functions import get_resource_path
 
 CONFIG_PATH = 'config_local.ini'
 

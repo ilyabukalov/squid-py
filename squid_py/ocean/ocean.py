@@ -496,7 +496,7 @@ class Ocean:
 
         sla_template = ServiceAgreementTemplate(template_json=template_dict)
         return register_service_agreement_template(
-            self.keeper.service_agreement, self.keeper.artifacts_path, owner_account, sla_template
+            self.keeper.service_agreement, owner_account, sla_template
         )
 
     def resolve_did(self, did):

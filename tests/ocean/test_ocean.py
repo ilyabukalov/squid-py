@@ -3,12 +3,9 @@
 
 """
 import logging
-import os
 import time
 
 import pytest
-import requests
-from secret_store_client.client import Client
 from web3 import Web3
 
 from squid_py.ddo import DDO
@@ -22,14 +19,12 @@ from squid_py.modules.v0_1.payment import lockPayment, releasePayment
 from squid_py.modules.v0_1.serviceAgreement import fulfillAgreement
 from squid_py.ocean.asset import Asset
 from squid_py.ocean.brizo import Brizo
-from squid_py.ocean.secret_store import SecretStore
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
 from squid_py.service_agreement.utils import build_condition_key
 from squid_py.utils.utilities import generate_new_id, prepare_prefixed_hash
-from tests.resources.helper_functions import get_registered_ddo, get_publisher_ocean_instance, \
-    get_resource_path
+from squid_py.examples.helper_functions import get_resource_path, wait_for_event
 from tests.resources.mocks.brizo_mock import BrizoMock
 
 
@@ -322,15 +317,6 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     # Repeat execute test but with a refund payment (i.e. don't grant access)
 
 
-def wait_for_event(event, arg_filter, wait_iterations=20):
-    _filter = event.createFilter(fromBlock=0, argument_filters=arg_filter)
-    for check in range(wait_iterations):
-        events = _filter.get_all_entries()
-        if events:
-            return events[0]
-        time.sleep(0.5)
-
-
 def test_agreement_hash(publisher_ocean_instance):
     """
     This test verifies generating agreement hash using fixed inputs and ddo example.
@@ -411,73 +397,3 @@ def test_verify_signature(consumer_ocean_instance):
     )
     assert hex_agr_hash == '0x' + agreement_hash.hex()
     verify_signature(address, agreement_hash, signature, 0)
-
-
-def test_consume_flow(consumer_ocean_instance):
-    # This test requires all services running including:
-    # secret store
-    # parity node
-    # aquarius
-    # brizo
-    # mongodb/bigchaindb
-
-    return
-    pub_ocn = get_publisher_ocean_instance()
-
-    # restore the proper http requests client and secret store client
-    Brizo.set_http_client(requests)
-    # pub_ocn._http_client = requests
-    SecretStore.set_client(Client)
-
-    # Register ddo
-    ddo = get_registered_ddo(pub_ocn)
-    # did = 'did:op:0x96a49018357a4a1e9f179a3a746af5a087559b4ca133499198428dc4b0868731'
-    # ddo = consumer_ocean_instance.resolve_did(did)
-
-    path = os.path.join(consumer_ocean_instance._downloads_path, 'testfiles')
-    consumer_ocean_instance._downloads_path = path
-
-    # pub_ocn here will be used only to publish the asset. Handling the asset by the publisher
-    # will be performed by the Brizo server running locally
-
-    consumer = consumer_ocean_instance.main_account.address
-
-    # sign agreement using the registered asset did above
-    service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
-    assert ServiceAgreement.SERVICE_DEFINITION_ID_KEY in service.as_dictionary()
-    sa = ServiceAgreement.from_service_dict(service.as_dictionary())
-    # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
-    service_agreement_id = consumer_ocean_instance.sign_service_agreement(ddo.did,
-                                                                          sa.sa_definition_id,
-                                                                          consumer)
-    print('got new service agreement id:', service_agreement_id)
-    filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=service_agreement_id)}
-    filter_2 = {'serviceId': Web3.toBytes(hexstr=service_agreement_id)}
-
-    executed = wait_for_event(
-        consumer_ocean_instance.keeper.service_agreement.events.ExecuteAgreement, filter1)
-    assert executed
-    granted = wait_for_event(consumer_ocean_instance.keeper.access_conditions.events.AccessGranted,
-                             filter_2)
-    assert granted
-    fulfilled = wait_for_event(
-        consumer_ocean_instance.keeper.service_agreement.events.AgreementFulfilled, filter1)
-    assert fulfilled
-
-    path = consumer_ocean_instance._downloads_path
-    # check consumed data file in the downloads folder
-    assert os.path.exists(path), ''
-    folder_names = os.listdir(path)
-    assert folder_names, ''
-    for name in folder_names:
-        asset_path = os.path.join(path, name)
-        if os.path.isfile(asset_path):
-            continue
-
-        filenames = os.listdir(asset_path)
-        assert filenames, 'no files created in this dir'
-        assert os.path.isfile(os.path.join(asset_path, filenames[0])), ''
-
-    print('agreement was fulfilled.')
-    import shutil
-    shutil.rmtree(consumer_ocean_instance._downloads_path)
