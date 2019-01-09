@@ -13,13 +13,10 @@ def _log_event(event_name):
 
 
 def consume_service():
-    # This test requires all services running including:
-    # secret store
-    # parity node
-    # aquarius
-    # brizo
-    # mongodb/bigchaindb
+    """
+    Requires all ocean services running.
 
+    """
     w3 = Web3Provider.get_web3()
     # make ocean instance
     path_config = 'config_local.ini'
@@ -63,7 +60,7 @@ def consume_service():
         blocking=True
     )
     event = EventListener('ServiceAgreement', 'AgreementFulfilled', filters=filter1).listen_once(
-        _log_event('AccessGranted'),
+        _log_event('AgreementFulfilled'),
         10,
         blocking=True
     )
@@ -72,4 +69,4 @@ def consume_service():
 
 
 if __name__ == '__main__':
-    consume_asset()
+    consume_service()

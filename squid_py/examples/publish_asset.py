@@ -5,7 +5,6 @@ from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.config import Config
 from squid_py.config_provider import ConfigProvider
 from tests.resources.helper_functions import get_registered_access_service_template
-from squid_py.brizo.brizo import Brizo
 
 
 def publish_asset():
