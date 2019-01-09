@@ -25,11 +25,19 @@ class ContractBase(object):
         logger.debug(f'Loaded {self}')
 
     @property
+    def _contract_concise(self):
+        return self.contract_concise
+
+    @property
+    def _contract(self):
+        return self.contract
+
+    @property
     def address(self):
         """Return the ethereum address of the solidity contract deployed
         in current keeper network.
         """
-        return self.contract.address
+        return self._contract.address
 
     @property
     def events(self):
