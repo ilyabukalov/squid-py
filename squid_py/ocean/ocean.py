@@ -110,7 +110,6 @@ class Ocean:
         # Verify keeper contracts
         Diagnostics.verify_contracts()
         Diagnostics.check_deployed_agreement_templates()
-
         logger.info('Squid Ocean instance initialized: ')
         logger.info(
             f'\tmain account: {self.main_account.address} '
@@ -630,7 +629,7 @@ class Ocean:
         """
         self.main_account = Account(self.keeper, Web3Provider.get_web3().toChecksumAddress(address), password)
         Web3Provider.get_web3().eth.defaultAccount = self.main_account.address
-        logger.debug('main account set to %s', self.main_account.address)
+        logger.debug(f'main account set to {self.main_account.address}')
         if password:
             logger.debug('main account password is also set.')
         else:

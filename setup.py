@@ -21,7 +21,7 @@ install_requirements = [
     'keeper-contracts==0.5.2',
     'pyopenssl',
     'PyJWT',  # not jwt
-    'PyYAML',
+    'PyYAML>=4.2b1',
     'web3==4.5.0',
     'ocean-secret-store-client==0.0.1',
     'requests'
