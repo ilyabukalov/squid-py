@@ -4,6 +4,7 @@ import logging
 
 import requests
 
+from squid_py.config_provider import ConfigProvider
 
 logger = logging.getLogger('aquarius')
 
@@ -13,12 +14,15 @@ class Aquarius:
     Aquarius wrapper to call different endpoint of aquarius component.
     """
 
-    def __init__(self, aquarius_url):
+    def __init__(self, aquarius_url=None):
         """
         The Metadata class is a wrapper on the Metadata Store, which has exposed a REST API.
 
         :param aquarius_url: Url of the aquarius instance.
         """
+        if aquarius_url is None:
+            aquarius_url = ConfigProvider.get_config().aquarius_url
+
         # :HACK:
         if '/api/v1/aquarius/assets' in aquarius_url:
             aquarius_url = aquarius_url[:aquarius_url.find('/api/v1/aquarius/assets')]

@@ -63,8 +63,6 @@ class TestRegisterServiceAgreement(unittest.TestCase):
     def _register_agreement(self, agreement_id, did, service_definition, actor_type='consumer',
                             num_confirmations=3):
         register_service_agreement(
-            self.web3,
-            self.config.keeper_path,
             self.storage_path,
             self.consumer_acc,
             agreement_id,
@@ -452,8 +450,6 @@ class TestRegisterServiceAgreement(unittest.TestCase):
             }
 
         execute_pending_service_agreements(
-            self.web3,
-            self.config.keeper_path,
             self.storage_path,
             self.consumer_acc,
             'consumer',

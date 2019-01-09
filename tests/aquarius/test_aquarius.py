@@ -5,7 +5,7 @@ from squid_py.ddo import DDO
 from squid_py.config import Config
 from squid_py.ocean.asset import Asset
 from squid_py.ocean.ocean import Ocean
-from squid_py.examples.helper_functions import get_resource_path
+from tests.resources.helper_functions import get_resource_path
 
 
 def test_aquarius():

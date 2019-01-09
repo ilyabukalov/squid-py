@@ -12,8 +12,8 @@ from squid_py.config import Config
 from squid_py.ddo.metadata import Metadata
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.ocean.brizo import Brizo
-from squid_py.ocean.secret_store import SecretStore
+from squid_py.brizo.brizo import Brizo
+from squid_py.secret_store.secret_store import SecretStore
 from squid_py.service_agreement.utils import get_sla_template_path, register_service_agreement_template
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.mocks.secret_store_mock import SecretStoreClientMock
@@ -95,6 +95,7 @@ def get_account_from_config(config, config_account_key, config_account_password_
         password = config.get('keeper-contracts', config_account_password_key)
 
     return Account(Keeper.get_instance(), address, password)
+
 
 def get_registered_access_service_template(ocean_instance):
     # register an asset Access service agreement template

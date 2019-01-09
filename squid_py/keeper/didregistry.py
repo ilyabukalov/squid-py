@@ -9,7 +9,7 @@ from squid_py.did import did_to_id_bytes
 from squid_py.ddo import DDO
 from squid_py.exceptions import OceanDIDCircularReference
 from squid_py.keeper.contract_base import ContractBase
-from squid_py.models.resolver_value_type import ResolverValueType
+from squid_py.did_resolver.resolver_value_type import ResolverValueType
 
 
 class DIDRegistry(ContractBase):

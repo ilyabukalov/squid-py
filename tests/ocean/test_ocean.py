@@ -3,7 +3,6 @@
 
 """
 import logging
-import time
 
 import pytest
 from web3 import Web3
@@ -18,13 +17,13 @@ from squid_py.modules.v0_1.accessControl import grantAccess
 from squid_py.modules.v0_1.payment import lockPayment, releasePayment
 from squid_py.modules.v0_1.serviceAgreement import fulfillAgreement
 from squid_py.ocean.asset import Asset
-from squid_py.ocean.brizo import Brizo
+from squid_py.brizo.brizo import Brizo
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
 from squid_py.service_agreement.utils import build_condition_key
 from squid_py.utils.utilities import generate_new_id, prepare_prefixed_hash
-from squid_py.examples.helper_functions import get_resource_path, wait_for_event
+from tests.resources.helper_functions import get_resource_path, wait_for_event
 from tests.resources.mocks.brizo_mock import BrizoMock
 
 
@@ -168,15 +167,22 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     Brizo.set_http_client(BrizoMock(publisher_ocean_instance))
     # sign agreement using the registered asset did above
     service = registered_ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
-    assert ServiceAgreement.SERVICE_DEFINITION_ID_KEY in service.as_dictionary()
+    assert ServiceAgreement.SERVICE_DEFINITION_ID in service.as_dictionary()
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
 
-    service_agreement_id = consumer_ocean_instance.sign_service_agreement(
+    service_agreement_id, signature = consumer_ocean_instance.sign_service_agreement(
         registered_ddo.did,
         sa.sa_definition_id,
         consumer
     )
     assert service_agreement_id, 'agreement id is None.'
+    consumer_ocean_instance.initialize_service_agreement(
+        registered_ddo.did,
+        sa.sa_definition_id,
+        service_agreement_id,
+        signature,
+        consumer
+    )
     print('got new service agreement id:', service_agreement_id)
     filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=service_agreement_id)}
     filter_2 = {'serviceId': Web3.toBytes(hexstr=service_agreement_id)}
@@ -211,13 +217,18 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     web3 = Web3Provider.get_web3()
     consumer_acc = consumer_ocn.main_account
     publisher_acc = publisher_ocean_instance.main_account
-    service_index = '0'
+    service_definition_id = '0'
     did = registered_ddo.did
 
-    # sign agreement
-    agreement_id, service_agreement, service_def, ddo = consumer_ocn._get_service_agreement_to_sign(
-        did, service_index)
+    agreement_id = ServiceAgreement.create_new_agreement_id()
+    ddo = consumer_ocn.resolve_did(did)
+    service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
+    service_def = ddo.find_service_by_key_value(
+        ServiceAgreement.SERVICE_DEFINITION_ID,
+        service_definition_id
+    ).as_dictionary()
 
+    # sign agreement
     consumer_ocn.main_account.unlock()
     signature, sa_hash = service_agreement.get_signed_agreement_hash(
         agreement_id, consumer_acc
@@ -228,8 +239,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     # execute the agreement
     pub_ocn = publisher_ocean_instance
     asset_id = did_to_id(ddo.did)
-    ddo, service_agreement, service_def = pub_ocn._get_ddo_and_service_agreement(ddo.did,
-                                                                                 service_index)
+
     pub_ocn.keeper.service_agreement.execute_service_agreement(
         service_agreement.template_id,
         signature,
@@ -335,8 +345,8 @@ def test_agreement_hash(publisher_ocean_instance):
     service = ddo.get_service(service_type='Access')
     service = service.as_dictionary()
     sa = ServiceAgreement.from_service_dict(service)
-    service[ServiceAgreement.SERVICE_CONDITIONS_KEY] = [cond.as_dictionary() for cond in
-                                                        sa.conditions]
+    service[ServiceAgreement.SERVICE_CONDITIONS] = [cond.as_dictionary() for cond in
+                                                    sa.conditions]
     assert template_id == sa.template_id, ''
     assert did == ddo.did
     agreement_hash = ServiceAgreement.generate_service_agreement_hash(
@@ -363,7 +373,6 @@ def test_verify_signature(consumer_ocean_instance):
     created by `web3.eth.account.signHash()` does not add a prefix before signing.
 
     """
-    ocn = consumer_ocean_instance
     w3 = Web3Provider.get_web3()
 
     def verify_signature(_address, _agreement_hash, _signature, expected_match):

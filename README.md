@@ -89,7 +89,8 @@ asset = ocean.search_assets_by_text('Ocean protocol')[0]
 ocean.main_account.unlock()
 ocean.keeper.market.request_tokens(10, ocean.main_account.address)
 # Start the purchase/consume request. This will automatically make a payment from the specified account.
-service_agreement_id = ocean.sign_service_agreement(asset.did, 0, ocean.main_account.address)
+service_agreement_id, signature = ocean.sign_service_agreement(asset.did, 0, ocean.main_account.address)
+ocean.initialize_service_agreement(asset.did, 0, service_agreement_id, signature, ocean.main_account.address)
 # after a short wait (seconds to minutes) the asset data files should be available in the `downloads.path` defined in config
 # wait a bit to let things happen
 time.sleep(30)

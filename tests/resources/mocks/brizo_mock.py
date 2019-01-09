@@ -1,6 +1,8 @@
 import json
 from unittest.mock import Mock
 
+from squid_py import ServiceAgreement
+
 
 class BrizoMock(object):
     def __init__(self, ocean_instance):
@@ -20,7 +22,7 @@ class BrizoMock(object):
             payload = json.loads(data)
             did = payload['did']
             sa_id = payload['serviceAgreementId']
-            sa_def_id = payload['serviceDefinitionId']
+            sa_def_id = payload[ServiceAgreement.SERVICE_DEFINITION_ID]
             signature = payload['signature']
             consumer = payload['consumerAddress']
             valid_signature = self.ocean_instance.verify_service_agreement_signature(did, sa_id,

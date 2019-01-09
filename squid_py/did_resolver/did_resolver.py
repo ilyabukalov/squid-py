@@ -10,8 +10,8 @@ from squid_py.exceptions import (
     OceanDIDUnknownValueType
 )
 from squid_py.did import did_to_id_bytes
-from squid_py.models.resolved_did import ResolvedDID
-from squid_py.models.resolver_value_type import ResolverValueType
+from squid_py.did_resolver.resolved_did import ResolvedDID
+from squid_py.did_resolver.resolver_value_type import ResolverValueType
 
 DIDREGISTRY_EVENT_NAME = 'DIDAttributeRegistered'
 

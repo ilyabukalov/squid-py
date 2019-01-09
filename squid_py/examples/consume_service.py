@@ -1,7 +1,7 @@
 
 from squid_py import Ocean, ServiceTypes, ServiceAgreement
 from squid_py.config import Config
-from squid_py.examples.helper_functions import get_account_from_config, get_registered_ddo
+from tests.resources.helper_functions import get_account_from_config, get_registered_ddo
 from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.web3_provider import Web3Provider
 
@@ -41,10 +41,13 @@ def consume_service():
 
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
-    assert ServiceAgreement.SERVICE_DEFINITION_ID_KEY in service.as_dictionary()
+    assert ServiceAgreement.SERVICE_DEFINITION_ID in service.as_dictionary()
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
     # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
-    service_agreement_id = cons_ocn.sign_service_agreement(ddo.did, sa.sa_definition_id, consumer)
+    service_agreement_id, signature = cons_ocn.sign_service_agreement(
+        ddo.did, sa.sa_definition_id, consumer)
+    cons_ocn.initialize_service_agreement(
+        ddo.did, sa.sa_definition_id, service_agreement_id, signature, consumer)
     print('got new service agreement id:', service_agreement_id)
     filter1 = {'serviceAgreementId': w3.toBytes(hexstr=service_agreement_id)}
     filter2 = {'serviceId': w3.toBytes(hexstr=service_agreement_id)}
