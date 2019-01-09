@@ -1,6 +1,8 @@
 from eth_utils import remove_0x_prefix
 from secret_store_client.client import Client
 
+from squid_py.config_provider import ConfigProvider
+
 
 class SecretStore(object):
     """
@@ -8,9 +10,10 @@ class SecretStore(object):
     """
     _client_class = Client
 
-    def __init__(self, secret_store_url, node_url, account):
+    def __init__(self):
+        config = ConfigProvider.get_config()
         self._secret_store_client = SecretStore._client_class(
-            secret_store_url, node_url, account.address, account.password
+            config.secret_store_url, config.parity_url, config.parity_address, config.parity_password
         )
 
     @staticmethod

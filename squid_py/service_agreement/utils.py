@@ -76,7 +76,7 @@ def get_conditions_data_from_keeper_contracts(conditions, template_id):
     return contract_addresses, fingerprints, fulfillment_indices, conditions_keys
 
 
-def register_service_agreement_template(service_agreement_contract, contract_path, owner_account,
+def register_service_agreement_template(service_agreement_contract, owner_account,
                                         sla_template_instance=None, sla_template_path=None):
     if sla_template_instance is None:
         if sla_template_path is None:
@@ -103,7 +103,7 @@ def register_service_agreement_template(service_agreement_contract, contract_pat
         fulfillment_indices, sla_template_instance.service_agreement_contract.fulfillment_operator,
         owner_account
     )
-    return sla_template_instance.template_id
+    return sla_template_instance
 
 
 def get_conditions_with_updated_keys(web3, contract_path, conditions, template_id):

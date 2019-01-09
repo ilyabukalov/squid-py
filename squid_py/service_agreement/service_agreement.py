@@ -4,15 +4,16 @@ from squid_py.keeper.utils import generate_multi_value_hash
 from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
 from squid_py.service_agreement.service_agreement_contract import ServiceAgreementContract
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
-from squid_py.service_agreement.utils import get_conditions_with_updated_keys
+from squid_py.service_agreement.utils import get_conditions_with_updated_keys, get_conditions_data_from_keeper_contracts
+from squid_py.utils import generate_prefixed_id
 
 
 class ServiceAgreement(object):
-    SERVICE_DEFINITION_ID_KEY = 'serviceDefinitionId'
-    SERVICE_CONTRACT_KEY = 'serviceAgreementContract'
-    SERVICE_CONDITIONS_KEY = 'conditions'
-    PURCHASE_ENDPOINT_KEY = 'purchaseEndpoint'
-    SERVICE_ENDPOINT_KEY = 'serviceEndpoint'
+    SERVICE_DEFINITION_ID = 'serviceDefinitionId'
+    SERVICE_CONTRACT = 'serviceAgreementContract'
+    SERVICE_CONDITIONS = 'conditions'
+    PURCHASE_ENDPOINT = 'purchaseEndpoint'
+    SERVICE_ENDPOINT = 'serviceEndpoint'
 
     def __init__(self, sa_definition_id, template_id, conditions, service_agreement_contract,
                  purchase_endpoint=None,
@@ -55,23 +56,42 @@ class ServiceAgreement(object):
         return [cond.function_fingerprint for cond in self.conditions]
 
     @classmethod
+    def from_ddo(cls, service_definition_id, ddo):
+        service_def = ddo.find_service_by_key_value(
+            ServiceAgreement.SERVICE_DEFINITION_ID,
+            service_definition_id
+        ).as_dictionary()
+        if not service_def:
+            raise ValueError(
+                f'Service with definition id {service_definition_id} is not found in this DDO.')
+
+        return cls.from_service_dict(service_def)
+
+    @classmethod
     def from_service_dict(cls, service_dict):
         return cls(
-            service_dict[cls.SERVICE_DEFINITION_ID_KEY],
+            service_dict[cls.SERVICE_DEFINITION_ID],
             service_dict[ServiceAgreementTemplate.TEMPLATE_ID_KEY],
-            [ServiceAgreementCondition(cond) for cond in service_dict[cls.SERVICE_CONDITIONS_KEY]],
-            ServiceAgreementContract(service_dict[cls.SERVICE_CONTRACT_KEY]),
-            service_dict.get(cls.PURCHASE_ENDPOINT_KEY), service_dict.get(cls.SERVICE_ENDPOINT_KEY)
+            [ServiceAgreementCondition(cond) for cond in service_dict[cls.SERVICE_CONDITIONS]],
+            ServiceAgreementContract(service_dict[cls.SERVICE_CONTRACT]),
+            service_dict.get(cls.PURCHASE_ENDPOINT), service_dict.get(cls.SERVICE_ENDPOINT)
         )
 
     @staticmethod
-    def generate_service_agreement_hash(sa_template_id, condition_keys, values_hash_list,
-                                        timeouts,
-                                        service_agreement_id):
+    def generate_service_agreement_hash(
+            sa_template_id,
+            condition_keys,
+            values_hash_list,
+            timeouts,
+            service_agreement_id):
         return generate_multi_value_hash(
             ['bytes32', 'bytes32[]', 'bytes32[]', 'uint256[]', 'bytes32'],
             [sa_template_id, condition_keys, values_hash_list, timeouts, service_agreement_id]
         )
+
+    @staticmethod
+    def create_new_agreement_id():
+        return generate_prefixed_id()
 
     def get_service_agreement_hash(self, service_agreement_id):
         """Return the hash of the service agreement values to be signed by a consumer.
@@ -109,11 +129,21 @@ class ServiceAgreement(object):
         self.conditions = get_conditions_with_updated_keys(web3, contract_path, self.conditions,
                                                            self.template_id)
 
+    def validate_conditions(self):
+        # conditions_data = (contract_addresses, fingerprints, fulfillment_indices, conditions_keys)
+        conditions_data = get_conditions_data_from_keeper_contracts(
+            self.conditions, self.template_id
+        )
+        if conditions_data[3] != self.conditions_keys:
+            raise AssertionError(f'Conditions keys set in this service agreement do not match the '
+                                 f'conditions keys from the keeper\'s agreement template '
+                                 f'"{self.template_id}".')
+
     def as_dictionary(self):
         return {
-            ServiceAgreement.SERVICE_DEFINITION_ID_KEY: self.sa_definition_id,
+            ServiceAgreement.SERVICE_DEFINITION_ID: self.sa_definition_id,
             ServiceAgreementTemplate.TEMPLATE_ID_KEY: self.template_id,
-            ServiceAgreement.SERVICE_CONTRACT_KEY: self.service_agreement_contract.as_dictionary(),
-            ServiceAgreement.SERVICE_CONDITIONS_KEY: [cond.as_dictionary() for cond in
-                                                      self.conditions]
+            ServiceAgreement.SERVICE_CONTRACT: self.service_agreement_contract.as_dictionary(),
+            ServiceAgreement.SERVICE_CONDITIONS: [cond.as_dictionary() for cond in
+                                                  self.conditions]
         }

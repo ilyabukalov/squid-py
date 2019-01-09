@@ -1,6 +1,5 @@
 import hashlib
 import json
-import os
 import secrets
 
 from secret_store_client.client import Client

@@ -31,7 +31,7 @@ class ServiceFactory(object):
     @staticmethod
     def build_services(web3, contract_path, did, service_descriptors):
         services = []
-        sa_def_key = ServiceAgreement.SERVICE_DEFINITION_ID_KEY
+        sa_def_key = ServiceAgreement.SERVICE_DEFINITION_ID
         for i, service_desc in enumerate(service_descriptors):
             service = ServiceFactory.build_service(web3, contract_path, service_desc, did)
             # set serviceDefinitionId for each service
@@ -95,10 +95,10 @@ class ServiceFactory(object):
                               sla_template.service_agreement_contract)
         sa.update_conditions_keys(web3, contract_path)
         other_values = {
-            ServiceAgreement.SERVICE_DEFINITION_ID_KEY: sa.sa_definition_id,
+            ServiceAgreement.SERVICE_DEFINITION_ID: sa.sa_definition_id,
             ServiceAgreementTemplate.TEMPLATE_ID_KEY: sla_template.template_id,
-            ServiceAgreement.SERVICE_CONTRACT_KEY: sa.service_agreement_contract,
-            ServiceAgreement.SERVICE_CONDITIONS_KEY: sa.conditions,
+            ServiceAgreement.SERVICE_CONTRACT: sa.service_agreement_contract,
+            ServiceAgreement.SERVICE_CONDITIONS: sa.conditions,
             'purchaseEndpoint': purchase_endpoint
         }
 

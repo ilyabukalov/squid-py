@@ -4,6 +4,7 @@ import logging
 
 import requests
 
+from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.exceptions import OceanInitializeServiceAgreementError
 
 logger = logging.getLogger(__name__)
@@ -27,7 +28,7 @@ class Brizo(object):
         Brizo._http_client = http_client
 
     @staticmethod
-    def initialize_service_agreement(did, agreement_id, service_index, signature, account_address,
+    def initialize_service_agreement(did, agreement_id, service_definition_id, signature, account_address,
                                      purchase_endpoint):
         """
         Send a request to the service provider (purchase_endpoint) to initialize the service
@@ -35,14 +36,14 @@ class Brizo(object):
 
         :param did: str -- id of the asset includes the `did:op:` prefix
         :param agreement_id: hex str
-        :param service_index: str -- identifier of the service inside the asset DDO
+        :param service_definition_id: str -- identifier of the service inside the asset DDO
         :param signature: hex str -- signed agreement hash
         :param account_address: hex str -- ethereum address of the consumer signing this agreement
         :param purchase_endpoint: str -- url of the service provider
         :return:
         """
         payload = Brizo.prepare_purchase_payload(
-            did, agreement_id, service_index, signature, account_address
+            did, agreement_id, service_definition_id, signature, account_address
         )
         response = Brizo._http_client.post(
             purchase_endpoint, data=payload,
@@ -88,12 +89,12 @@ class Brizo(object):
                 logger.warning('consume failed: %s', response.reason)
 
     @staticmethod
-    def prepare_purchase_payload(did, agreement_id, service_index, signature, consumer_address):
+    def prepare_purchase_payload(did, agreement_id, service_definition_id, signature, consumer_address):
         # Prepare a payload to send to `Brizo`
         return json.dumps({
             'did': did,
             'serviceAgreementId': agreement_id,
-            'serviceDefinitionId': service_index,
+            ServiceAgreement.SERVICE_DEFINITION_ID: service_definition_id,
             'signature': signature,
             'consumerAddress': consumer_address
         })

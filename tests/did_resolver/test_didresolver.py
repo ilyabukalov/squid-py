@@ -7,9 +7,7 @@ from web3 import Web3
 
 from squid_py.ddo import DDO
 from squid_py.did import id_to_did
-
-
-from squid_py.did_resolver import (
+from squid_py.did_resolver.did_resolver import (
     DIDResolver,
 )
 from squid_py.exceptions import (
@@ -17,7 +15,7 @@ from squid_py.exceptions import (
     OceanDIDNotFound,
 )
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.models.resolver_value_type import ResolverValueType
+from squid_py.did_resolver.resolver_value_type import ResolverValueType
 
 logger = logging.getLogger()
 

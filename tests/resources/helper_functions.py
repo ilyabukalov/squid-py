@@ -1,17 +1,19 @@
 import os
 import pathlib
+import time
 
 from squid_py import (
     ServiceAgreementTemplate,
     ACCESS_SERVICE_TEMPLATE_ID,
     ServiceDescriptor,
     Ocean,
-)
+    Account)
 from squid_py.config import Config
 from squid_py.ddo.metadata import Metadata
+from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.ocean.brizo import Brizo
-from squid_py.ocean.secret_store import SecretStore
+from squid_py.brizo.brizo import Brizo
+from squid_py.secret_store.secret_store import SecretStore
 from squid_py.service_agreement.utils import get_sla_template_path, register_service_agreement_template
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.mocks.secret_store_mock import SecretStoreClientMock
@@ -77,25 +79,57 @@ def get_consumer_ocean_instance():
     return ocn
 
 
-def get_registered_ddo(ocean_instance):
-    # register an AssetAccess service agreement template
+def get_account_from_config(config, config_account_key, config_account_password_key):
+    address = None
+    if config.has_option('keeper-contracts', config_account_key):
+        address = config.get('keeper-contracts', config_account_key)
+
+    if not address:
+        return None
+
+    password = None
+    address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
+    if (address
+            and address in Keeper.get_instance().accounts
+            and config.has_option('keeper-contracts', config_account_password_key)):
+        password = config.get('keeper-contracts', config_account_password_key)
+
+    return Account(Keeper.get_instance(), address, password)
+
+
+def get_registered_access_service_template(ocean_instance):
+    # register an asset Access service agreement template
     template = ServiceAgreementTemplate.from_json_file(get_sla_template_path())
     template_id = ACCESS_SERVICE_TEMPLATE_ID
     template_owner = ocean_instance.keeper.service_agreement.get_template_owner(template_id)
     if not template_owner:
-        template_id = register_service_agreement_template(
-            ocean_instance.keeper.service_agreement, ocean_instance.keeper.artifacts_path,
+        template = register_service_agreement_template(
+            ocean_instance.keeper.service_agreement,
             ocean_instance.main_account, template,
             ocean_instance.keeper.network_name
         )
 
+    return template
+
+
+def get_registered_ddo(ocean_instance):
+    template = get_registered_access_service_template(ocean_instance)
     config = ocean_instance.config
     purchase_endpoint = Brizo.get_purchase_endpoint(config)
     service_endpoint = Brizo.get_service_endpoint(config)
     ddo = ocean_instance.register_asset(
         Metadata.get_example(), ocean_instance.main_account,
         [ServiceDescriptor.access_service_descriptor(7, purchase_endpoint, service_endpoint, 360,
-                                                     template_id)]
+                                                     template.template_id)]
     )
 
     return ddo
+
+
+def wait_for_event(event, arg_filter, wait_iterations=20):
+    _filter = event.createFilter(fromBlock=0, argument_filters=arg_filter)
+    for check in range(wait_iterations):
+        events = _filter.get_all_entries()
+        if events:
+            return events[0]
+        time.sleep(0.5)

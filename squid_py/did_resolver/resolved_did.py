@@ -1,5 +1,5 @@
 from squid_py.did import id_to_did
-from squid_py.models.resolver_value_type import ResolverValueType
+from squid_py.did_resolver.resolver_value_type import ResolverValueType
 
 
 class ResolvedDID:
