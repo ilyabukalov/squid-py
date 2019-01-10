@@ -131,12 +131,12 @@ def test_query_search(asset1, asset2):
         search_query={"query": {"service.metadata.base.name": s1}}))
     aquarius.publish_asset_ddo(asset1)
 
-    assert len(aquarius.query_search(search_query={"query": {}})) == num_matches
+    assert len(aquarius.query_search(search_query={"query": {}})) == (num_matches + 1)
     s2_matches = len(aquarius.query_search(
         search_query={"query": {"service.metadata.base.name": s2}}))
     aquarius.publish_asset_ddo(asset2)
 
-    assert len(aquarius.query_search(search_query={"query": {}})) == num_matches
+    assert len(aquarius.query_search(search_query={"query": {}})) == (num_matches + 2)
     assert len(aquarius.query_search(
         search_query={"query": {"service.metadata.base.name": s1}})) == (s1_matches + 1)
     assert len(aquarius.query_search(
