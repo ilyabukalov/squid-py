@@ -5,29 +5,30 @@ import logging
 import os
 import os.path
 
-from squid_py.did_resolver.did_resolver import DIDResolver
-from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID
 from squid_py.aquarius.aquarius_provider import AquariusProvider
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.config_provider import ConfigProvider
-from squid_py.keeper.diagnostics import Diagnostics
-from squid_py.ocean.account import Account
 from squid_py.ddo import DDO
 from squid_py.ddo.metadata import Metadata, MetadataBase
 from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
-from squid_py.keeper import Keeper
-from squid_py.log import setup_logging
+from squid_py.did import did_to_id, DID
+from squid_py.did_resolver.did_resolver import DIDResolver
 from squid_py.exceptions import (
     OceanDIDAlreadyExist,
     OceanInvalidMetadata,
     OceanInvalidServiceAgreementSignature,
     OceanServiceAgreementExists,
 )
+from squid_py.keeper import Keeper
+from squid_py.keeper.diagnostics import Diagnostics
 from squid_py.keeper.web3_provider import Web3Provider
+from squid_py.log import setup_logging
+from squid_py.ocean.account import Account
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from squid_py.service_agreement.register_service_agreement import register_service_agreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_factory import ServiceFactory, ServiceDescriptor
+from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID
 from squid_py.service_agreement.service_types import ServiceTypes
 from squid_py.service_agreement.utils import (
     make_public_key_and_authentication,
@@ -37,7 +38,6 @@ from squid_py.utils.utilities import (
     prepare_prefixed_hash,
     get_metadata_url,
 )
-from squid_py.did import did_to_id, DID
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
@@ -100,7 +100,7 @@ class Ocean:
         logger.info('Squid Ocean instance initialized: ')
         logger.info(f'\tOther accounts: {sorted(self.accounts)}')
         logger.info(f'\taquarius: {self.metadata_store.url}')
-        logger.info(f'\tDIDRegistry @ { self.keeper.did_registry.address}')
+        logger.info(f'\tDIDRegistry @ {self.keeper.did_registry.address}')
 
         if self.config.secret_store_url and self.config.parity_url and self.config.parity_address:
             logger.info(f'\tSecretStore: url {self.config.secret_store_url}, '
@@ -132,7 +132,8 @@ class Ocean:
         logger.info(f'Searching asset containing: {text}')
         if aquarius_url is not None:
             aquarius = AquariusProvider.get_aquarius(aquarius_url)
-            return [DDO(dictionary=ddo_dict) for ddo_dict in aquarius.text_search(text, sort, offset, page)]
+            return [DDO(dictionary=ddo_dict) for ddo_dict in
+                    aquarius.text_search(text, sort, offset, page)]
         else:
             return [DDO(dictionary=ddo_dict) for ddo_dict in
                     self.metadata_store.text_search(text, sort, offset, page)]
@@ -154,7 +155,8 @@ class Ocean:
             aquarius = AquariusProvider.get_aquarius(aquarius_url)
             return [DDO(dictionary=ddo_dict) for ddo_dict in aquarius.query_search(query)]
         else:
-            return [DDO(dictionary=ddo_dict) for ddo_dict in self.metadata_store.query_search(query)]
+            return [DDO(dictionary=ddo_dict) for ddo_dict in
+                    self.metadata_store.query_search(query)]
 
     def register_asset(self, metadata, publisher_account, service_descriptors=None):
         """
@@ -187,7 +189,8 @@ class Ocean:
 
         # Add public key and authentication
         publisher_account.unlock()
-        pub_key, auth = make_public_key_and_authentication(did, publisher_account.address, Web3Provider.get_web3())
+        pub_key, auth = make_public_key_and_authentication(did, publisher_account.address,
+                                                           Web3Provider.get_web3())
         ddo.add_public_key(pub_key)
         ddo.add_authentication(auth, PUBLIC_KEY_TYPE_RSA)
 
@@ -197,10 +200,10 @@ class Ocean:
             'contentUrls'], 'contentUrls is required in the metadata base attributes.'
         assert Metadata.validate(metadata), 'metadata seems invalid.'
         logger.debug('Encrypting content urls in the metadata.')
-        content_urls_encrypted = SecretStoreProvider.get_secret_store()\
+        content_urls_encrypted = SecretStoreProvider.get_secret_store() \
             .encrypt_document(
-                did_to_id(did),
-                json.dumps(metadata_copy['base']['contentUrls']),
+            did_to_id(did),
+            json.dumps(metadata_copy['base']['contentUrls']),
         )
 
         # only assign if the encryption worked
@@ -227,7 +230,8 @@ class Ocean:
                 ACCESS_SERVICE_TEMPLATE_ID
             )
         _service_descriptors = service_descriptors + [metadata_service_desc]
-        for service in ServiceFactory.build_services(Web3Provider.get_web3(), self.keeper.artifacts_path, did,
+        for service in ServiceFactory.build_services(Web3Provider.get_web3(),
+                                                     self.keeper.artifacts_path, did,
                                                      _service_descriptors):
             ddo.add_service(service)
 
@@ -373,10 +377,9 @@ class Ocean:
         :return: dict the `executeAgreement` transaction receipt
         """
         assert consumer_address and Web3Provider.get_web3().isChecksumAddress(
-            consumer_address), 'Invalid consumer address "%s"' % consumer_address
-        assert publisher_account.address in self.accounts, 'Unrecognized publisher address %s' \
-                                                           % publisher_account.address
-
+            consumer_address), f'Invalid consumer address {consumer_address}'
+        assert publisher_account.address in self.accounts, \
+            f'Unrecognized publisher address {publisher_account.address}'
         asset_id = did_to_id(did)
         ddo = self.resolve_asset_did(did)
         service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
@@ -548,7 +551,8 @@ class Ocean:
             os.mkdir(asset_folder)
 
         BrizoProvider.get_brizo().consume_service(
-            service_agreement_id, service_url, consumer_account.address, decrypted_content_urls, asset_folder)
+            service_agreement_id, service_url, consumer_account.address, decrypted_content_urls,
+            asset_folder)
 
     def _get_asset_folder_path(self, did, service_definition_id):
         """
@@ -557,7 +561,8 @@ class Ocean:
         :param service_definition_id:
         :return:
         """
-        return os.path.join(self._downloads_path, f'datafile.{did_to_id(did)}.{service_definition_id}')
+        return os.path.join(self._downloads_path,
+                            f'datafile.{did_to_id(did)}.{service_definition_id}')
 
     @staticmethod
     def _log_conditions_data(sa):
