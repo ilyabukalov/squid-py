@@ -7,6 +7,7 @@ import logging
 import pytest
 from web3 import Web3
 
+from squid_py.brizo.brizo import Brizo
 from squid_py.ddo import DDO
 from squid_py.ddo.metadata import Metadata
 from squid_py.did import DID, did_to_id
@@ -16,7 +17,6 @@ from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.modules.v0_1.accessControl import grantAccess
 from squid_py.modules.v0_1.payment import lockPayment, releasePayment
 from squid_py.modules.v0_1.serviceAgreement import fulfillAgreement
-from squid_py.brizo.brizo import Brizo
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
@@ -160,28 +160,22 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     #  - service agreement template must already be registered
     #  - asset ddo already registered
 
-    consumer = consumer_ocean_instance.main_account.address
+    consumer_acc = consumer_ocean_instance.main_account
 
     # point consumer_ocean_instance's brizo mock to the publisher's ocean instance
-    Brizo.set_http_client(BrizoMock(publisher_ocean_instance, publisher_ocean_instance.main_account))
+    Brizo.set_http_client(
+        BrizoMock(publisher_ocean_instance, publisher_ocean_instance.main_account))
     # sign agreement using the registered asset did above
     service = registered_ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     assert ServiceAgreement.SERVICE_DEFINITION_ID in service.as_dictionary()
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
 
-    service_agreement_id, signature = consumer_ocean_instance.purchase_asset_service(
+    service_agreement_id = consumer_ocean_instance.purchase_asset_service(
         registered_ddo.did,
         sa.sa_definition_id,
-        consumer
+        consumer_acc
     )
     assert service_agreement_id, 'agreement id is None.'
-    consumer_ocean_instance.initialize_service_agreement(
-        registered_ddo.did,
-        sa.sa_definition_id,
-        service_agreement_id,
-        signature,
-        consumer
-    )
     print('got new service agreement id:', service_agreement_id)
     filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=service_agreement_id)}
     filter_2 = {'serviceId': Web3.toBytes(hexstr=service_agreement_id)}
@@ -230,7 +224,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
         agreement_id, consumer_acc
     )
     # Must approve token transfer for this purchase
-    consumer_ocn._approve_token_transfer(service_agreement.get_price())
+    consumer_ocn._approve_token_transfer(service_agreement.get_price(), consumer_acc)
 
     # execute the agreement
     pub_ocn = publisher_ocean_instance

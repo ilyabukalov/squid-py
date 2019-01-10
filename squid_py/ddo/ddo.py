@@ -10,7 +10,7 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from web3 import Web3
 
-from squid_py import ServiceTypes
+from squid_py.service_agreement.service_types import ServiceTypes
 from squid_py.ddo.public_key_hex import PublicKeyHex
 from squid_py.did import did_to_id
 from .authentication import Authentication

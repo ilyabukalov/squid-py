@@ -399,7 +399,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
                                           [self.template_id, self.contracts[i],
                                            self.fingerprints[i]]).hex()
 
-        payment_locked = self._wait_for_event(self.payment_conditions.events.PaymentLocked)
+        self._wait_for_event(self.payment_conditions.events.PaymentLocked)
         lock_cond_status = self.service_agreement.contract_concise.getConditionStatus(
             service_agreement_id,
             get_condition_key(1))
@@ -604,8 +604,9 @@ class TestRegisterServiceAgreement(unittest.TestCase):
 
     @classmethod
     def _setup_token(cls):
+        cls.consumer_acc.unlock()
         cls.market.contract_concise.requestTokens(100, transact={'from': cls.consumer})
-
+        cls.consumer_acc.unlock()
         cls.token.contract_concise.approve(
             cls.payment_conditions.address,
             100,
