@@ -1,6 +1,6 @@
 import pytest
 
-from squid_py.aquarius.aquarius_provider import Aquarius
+from squid_py.aquarius.aquarius import Aquarius
 from squid_py.ocean.asset import Asset
 from tests.resources.helper_functions import get_resource_path
 
