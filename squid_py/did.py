@@ -13,8 +13,8 @@ OCEAN_PREFIX = 'did:op:'
 class DID:
     """Class representing an asset DID."""
 
-    @property
-    def did(self):
+    @staticmethod
+    def did():
         """
         Create a did.
 
