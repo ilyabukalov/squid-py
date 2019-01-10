@@ -118,7 +118,7 @@ TEST_SERVICES = [
 
 
 def generate_sample_ddo():
-    did = DID().did
+    did = DID.did()
     assert did
     ddo = DDO(did)
     assert ddo
@@ -141,7 +141,7 @@ def generate_sample_ddo():
 
 
 def test_creating_ddo():
-    did = DID().did
+    did = DID.did()
     assert did
     ddo = DDO(did)
     assert ddo
@@ -188,7 +188,7 @@ def test_creating_ddo():
 
 
 def test_creating_ddo_embedded_public_key():
-    did = DID().did
+    did = DID.did()
     assert did
     ddo = DDO(did)
     assert ddo

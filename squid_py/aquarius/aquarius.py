@@ -73,7 +73,8 @@ class Aquarius:
             parsed_response = json.loads(response)
         except TypeError:
             parsed_response = None
-
+        except ValueError:
+            raise ValueError(response.decode('UTF-8'))
         if parsed_response is None:
             return {}
         return parsed_response
@@ -92,7 +93,8 @@ class Aquarius:
             parsed_response = json.loads(response)
         except TypeError:
             parsed_response = None
-
+        except ValueError:
+            raise ValueError(response.decode('UTF-8'))
         if parsed_response is None:
             return {}
         return parsed_response['metadata']

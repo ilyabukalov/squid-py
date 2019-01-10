@@ -1,78 +1,164 @@
-import json
 import pytest
 
 from squid_py.ddo import DDO
-from squid_py.config import Config
-from squid_py.ocean.ocean import Ocean
+from squid_py.aquarius.aquarius import Aquarius
+from squid_py.did import DID
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import e2e_test
 
+aquarius = Aquarius()
 
-@e2e_test
-def test_aquarius():
-    ocean_provider = Ocean(Config('config_local.ini'))
-    sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
+
+def _get_asset(file_name):
+    sample_ddo_path = get_resource_path('ddo', file_name)
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
-
-    asset1 = DDO(json_filename=sample_ddo_path)
-
-    # #    print(asset1.ddo.as_text())
-    # # Ensure the asset it not already in database
-    # ocean_provider.metadata_store.retire_asset_ddo(asset1.did)
-    #
-    # # Ensure there are no matching assets before publishing
-    # for match in ocean_provider.metadata_store.text_search(text='Office'):
-    #     ocean_provider.metadata_store.retire_asset_ddo(match['id'])
-
-    if asset1.did in ocean_provider.metadata_store.list_assets():
-        ocean_provider.metadata_store.retire_asset_ddo(asset1.did)
-    num_assets = len(ocean_provider.metadata_store.list_assets())
-    num_matches = len(ocean_provider.metadata_store.text_search(text='Office'))
-    ddo_published = ocean_provider.metadata_store.publish_asset_ddo(asset1)
-
-    ddo = ocean_provider.metadata_store.get_asset_ddo(asset1.did)
-
-    assert ddo_published == ddo
-
-    assert len(ocean_provider.metadata_store.text_search(text='Office')) == (num_matches + 1)
-
-    sample_ddo_path2 = get_resource_path('ddo', 'ddo_sample2.json')
-    assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
-    assert len(ocean_provider.metadata_store.list_assets()) == (num_assets + 1)
-    asset2 = DDO(json_filename=sample_ddo_path2)
-
-    ocean_provider.metadata_store.update_asset_ddo(asset2.did, asset2)
-    ddo = ocean_provider.metadata_store.get_asset_ddo(asset2.did)
-    metadata = ocean_provider.metadata_store.get_asset_metadata(asset2.did)
-
-    # basic test to compare authentication records in the DDO
-    ddo = DDO(json_text=json.dumps(ddo))
-    assert ddo.authentications[0].as_text() == asset2.authentications[0].as_text()
-    assert 'base' in metadata
-
-    ocean_provider.metadata_store.retire_asset_ddo(asset1.did)
-    ocean_provider.metadata_store.retire_asset_ddo(asset2.did)
+    return DDO(json_filename=sample_ddo_path)
 
 
-@e2e_test
-def test_error_publishing():
-    ocn = Ocean(Config('config_local.ini'))
+@pytest.fixture
+def asset1():
+    asset = _get_asset('ddo_sample1.json')
+    asset._did = DID.did()
+    return asset
+
+
+@pytest.fixture
+def asset2():
+    asset = _get_asset('ddo_sample2.json')
+    asset._did = DID.did()
+    return asset
+
+
+def test_get_service_endpoint():
+    assert aquarius.get_service_endpoint('did:op:test') == f'{aquarius.url}did:op:test'
+
+
+def test_publish_valid_ddo(asset1):
+    aquarius.publish_asset_ddo(asset1)
+    assert aquarius.get_asset_ddo(asset1.did)
+    aquarius.retire_asset_ddo(asset1.did)
+
+
+def test_publish_invalid_ddo():
     with pytest.raises(AttributeError):
-        ocn.metadata_store.publish_asset_ddo({})
-    with pytest.raises(AttributeError):
-        ocn.metadata_store.publish_asset_ddo({"did":"did:op:3809174ce71dd460faf4941140323ebafdc062f062d3932fe0195c78719a8716"})
+        aquarius.publish_asset_ddo({})
 
-    sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
-    assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
-    asset1 = DDO(json_filename=sample_ddo_path)
-
-    if asset1.did in ocn.metadata_store.list_assets():
-        ocn.metadata_store.retire_asset_ddo(asset1.did)
-
-    ocn.metadata_store.publish_asset_ddo(asset1)
+def test_publish_ddo_already_registered(asset1):
+    aquarius.publish_asset_ddo(asset1)
     with pytest.raises(ValueError):
-        ocn.metadata_store.publish_asset_ddo(asset1)
+        aquarius.publish_asset_ddo(asset1)
+    aquarius.retire_asset_ddo(asset1.did)
+
+
+def test_get_asset_ddo_for_not_registered_did():
+    invalid_did = 'did:op:not_valid'
+    with pytest.raises(ValueError):
+        aquarius.get_asset_ddo(invalid_did)
+
+
+def test_get_asset_metadata(asset1):
+    aquarius.publish_asset_ddo(asset1)
+    metadata_dict = aquarius.get_asset_metadata(asset1.did)
+    assert isinstance(metadata_dict, dict)
+    assert 'base' in metadata_dict
+    assert 'curation' in metadata_dict
+    assert 'additionalInformation' in metadata_dict
+    aquarius.retire_asset_ddo(asset1.did)
+
+
+def test_get_asset_metadata_for_not_registered_did():
+    invalid_did = 'did:op:not_valid'
+    with pytest.raises(ValueError):
+        aquarius.get_asset_metadata(invalid_did)
+
+
+def test_list_assets(asset1):
+    num_assets = len(aquarius.list_assets())
+    aquarius.publish_asset_ddo(asset1)
+    assert len(aquarius.list_assets()) == (num_assets + 1)
+    assert isinstance(aquarius.list_assets(), list)
+    assert isinstance(aquarius.list_assets()[0], str)
+    aquarius.retire_asset_ddo(asset1.did)
+
+
+def test_list_assets_ddo(asset1):
+    num_assets = len(aquarius.list_assets_ddo())
+    aquarius.publish_asset_ddo(asset1)
+    assert len(aquarius.list_assets_ddo()) == (num_assets + 1)
+    assert isinstance(aquarius.list_assets_ddo(), dict)
+    aquarius.retire_asset_ddo(asset1.did)
+
+
+def test_update_ddo(asset1, asset2):
+    aquarius.publish_asset_ddo(asset1)
+    aquarius.update_asset_ddo(asset1.did, asset2)
+    assert aquarius.get_asset_ddo(asset1.did)['id'] == asset2.did
+    aquarius.retire_asset_ddo(asset1.did)
+
+
+def test_update_with_not_valid_ddo(asset1):
     with pytest.raises(Exception):
-        ocn.metadata_store.retire_asset_ddo('did:op:2133')
-    ocn.metadata_store.retire_asset_ddo(asset1.did)
+        aquarius.update_asset_ddo(asset1.did, {})
+
+
+def test_text_search(asset1, asset2):
+    office_matches = len(aquarius.text_search(text='Office'))
+    aquarius.publish_asset_ddo(asset1)
+    assert len(aquarius.text_search(text='Office')) == (office_matches + 1)
+
+    text = 'd75305ebc1617834339e64cdafb7fd542aa657c0f94dac0f4f84068f5f910ca2'
+    id_matches2 = len(aquarius.text_search(text=text))
+    aquarius.publish_asset_ddo(asset2)
+    assert len(aquarius.text_search(text=text)) == (id_matches2 + 1)
+
+    assert len(aquarius.text_search(text='Office')) == (office_matches + 2)
+    aquarius.retire_asset_ddo(asset1.did)
+    aquarius.retire_asset_ddo(asset2.did)
+
+
+def test_text_search_invalid_query():
+    with pytest.raises(Exception):
+        aquarius.text_search(text='', offset='Invalid')
+
+
+def test_query_search(asset1, asset2):
+    num_matches = len(
+        aquarius.query_search(search_query={"query": {}}))
+
+    s1 = "UK Weather information 2011"
+    s2 = "UK Weather information 2012"
+    s1_matches = len(aquarius.query_search(
+        search_query={"query": {"service.metadata.base.name": s1}}))
+    aquarius.publish_asset_ddo(asset1)
+
+    assert len(aquarius.query_search(search_query={"query": {}})) == num_matches
+    s2_matches = len(aquarius.query_search(
+        search_query={"query": {"service.metadata.base.name": s2}}))
+    aquarius.publish_asset_ddo(asset2)
+
+    assert len(aquarius.query_search(search_query={"query": {}})) == num_matches
+    assert len(aquarius.query_search(
+        search_query={"query": {"service.metadata.base.name": s1}})) == (s1_matches + 1)
+    assert len(aquarius.query_search(
+        search_query={"query": {"service.metadata.base.name": s2}})) == (s2_matches + 1)
+    aquarius.retire_asset_ddo(asset1.did)
+    aquarius.retire_asset_ddo(asset2.did)
+
+
+def test_query_search_invalid_query():
+    with pytest.raises(Exception):
+        aquarius.query_search(search_query='')
+
+
+def test_retire_ddo(asset1):
+    n = len(aquarius.list_assets())
+    aquarius.publish_asset_ddo(asset1)
+    assert len(aquarius.list_assets()) == (n + 1)
+    aquarius.retire_asset_ddo(asset1.did)
+    assert len(aquarius.list_assets()) == n
+
+
+def test_retire_not_published_did():
+    with pytest.raises(Exception):
+        aquarius.retire_asset_ddo('did:op:not_registered')

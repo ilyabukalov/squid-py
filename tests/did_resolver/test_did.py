@@ -27,8 +27,8 @@ def test_did():
 
     valid_did = 'did:op:{0}'.format(test_id)
 
-    assert DID().did.startswith(OCEAN_PREFIX)
-    assert len(DID().did) - len(OCEAN_PREFIX) == 64
+    assert DID.did().startswith(OCEAN_PREFIX)
+    assert len(DID.did()) - len(OCEAN_PREFIX) == 64
 
     with pytest.raises(TypeError):
         did_parse(None)

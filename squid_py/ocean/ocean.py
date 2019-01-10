@@ -178,7 +178,7 @@ class Ocean:
         metadata_copy = metadata.copy()
 
         # Create a DDO object
-        did = DID().did
+        did = DID.did()
         logger.debug(f'Generating new did: {did}')
         # Check if it's already registered first!
         if did in self.metadata_store.list_assets():
@@ -271,7 +271,7 @@ class Ocean:
         self.keeper.token.token_approve(self.keeper.payment_conditions.address, amount,
                                         consumer_account)
 
-    def purchase_asset(self, did, service_definition_id, consumer_account):
+    def purchase_asset_service(self, did, service_definition_id, consumer_account):
         """
         Sign service agreement.
 

@@ -150,7 +150,7 @@ def test_resolve_did(publisher_ocean_instance):
     # assert ddo == original_ddo.as_dictionary(), 'Resolved ddo does not match original.'
 
     # Can't resolve unregistered asset
-    unregistered_did = DID().did
+    unregistered_did = DID.did()
     with pytest.raises(OceanDIDNotFound, message='Expected OceanDIDNotFound error.'):
         publisher_ocean_instance.resolve_asset_did(unregistered_did)
 
