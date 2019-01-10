@@ -12,6 +12,7 @@ from squid_py.ddo import (
 )
 from squid_py.did import DID
 from tests.resources.helper_functions import get_resource_path
+from tests.resources.tiers import e2e_test
 
 public_key_store_types = [
     PUBLIC_KEY_STORE_TYPE_PEM,

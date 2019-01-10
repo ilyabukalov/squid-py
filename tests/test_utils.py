@@ -3,6 +3,7 @@ from web3 import Web3
 
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.utils import utilities
+from tests.resources.tiers import e2e_test
 
 
 def test_split_signature():

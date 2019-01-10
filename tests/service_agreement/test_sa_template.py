@@ -3,8 +3,10 @@ from squid_py.keeper import Keeper
 from squid_py.service_agreement.utils import get_sla_template_dict, get_sla_template_path, register_service_agreement_template
 from squid_py.utils.utilities import generate_prefixed_id
 from tests.resources.helper_functions import get_publisher_account
+from tests.resources.tiers import e2e_test
 
 
+@e2e_test
 def test_setup_service_agreement_template(publisher_ocean_instance):
     account = get_publisher_account(ConfigProvider.get_config())
     sa = Keeper.get_instance().service_agreement

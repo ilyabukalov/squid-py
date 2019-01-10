@@ -5,8 +5,10 @@ from squid_py.ddo import DDO
 from squid_py.config import Config
 from squid_py.ocean.ocean import Ocean
 from tests.resources.helper_functions import get_resource_path
+from tests.resources.tiers import e2e_test
 
 
+@e2e_test
 def test_aquarius():
     ocean_provider = Ocean(Config('config_local.ini'))
     sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
@@ -52,6 +54,7 @@ def test_aquarius():
     ocean_provider.metadata_store.retire_asset_ddo(asset2.did)
 
 
+@e2e_test
 def test_error_publishing():
     ocn = Ocean(Config('config_local.ini'))
     with pytest.raises(AttributeError):

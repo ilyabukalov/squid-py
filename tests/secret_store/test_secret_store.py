@@ -4,8 +4,10 @@ import secrets
 
 from squid_py.secret_store.secret_store import SecretStore
 from tests.resources.helper_functions import get_resource_path
+from tests.resources.tiers import e2e_test
 
 
+@e2e_test
 def test_secret_store():
     test_document = get_resource_path('metadata', 'sample_metadata1.json')
     with open(test_document, 'r') as file_handle:
