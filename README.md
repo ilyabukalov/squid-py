@@ -89,7 +89,7 @@ account.request_tokens(10)
 
 # Start the purchase/consume request. This will automatically make a payment from the specified account.
 account = Account(config.parity_address, config.parity_password)
-service_agreement_id = ocean.purchase_asset_service(asset_ddo.did, 0, account)
+service_agreement_id = ocean.purchase_asset(asset_ddo.did, 0, account)
 
 # after a short wait (seconds to minutes) the asset data files should be available in the `downloads.path` defined in config
 # wait a bit to let things happen

@@ -271,37 +271,7 @@ class Ocean:
         self.keeper.token.token_approve(self.keeper.payment_conditions.address, amount,
                                         consumer_account)
 
-    def _get_ddo_and_service_agreement(self, did, service_definition_id):
-        """
-
-        :param did:
-        :param service_definition_id:
-        :return:
-        """
-        ddo = self.resolve_asset_did(did)
-        # Extract all of the params necessary for execute agreement from the ddo
-        service = ddo.find_service_by_id(service_definition_id)
-        if not service:
-            raise ValueError(
-                f'Service with definition id {service_definition_id} is not found in this DDO.')
-        service = service.as_dictionary()
-        sa = ServiceAgreement.from_service_dict(service)
-        service[ServiceAgreement.SERVICE_CONDITIONS] = [cond.as_dictionary() for cond in
-                                                        sa.conditions]
-        return ddo, sa, service
-
-    def get_asset_service(self, did, service_definition_id):
-        """
-
-        :param did:
-        :param service_definition_id:
-        :return:
-        """
-        ddo, service_agreement, service_def = self._get_ddo_and_service_agreement(did,
-                                                                                  service_definition_id)
-        return service_agreement, service_def, ddo
-
-    def purchase_asset_service(self, did, service_definition_id, consumer_account):
+    def purchase_asset(self, did, service_definition_id, consumer_account):
         """
         Sign service agreement.
 
