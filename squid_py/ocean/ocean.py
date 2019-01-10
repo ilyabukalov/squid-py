@@ -271,7 +271,7 @@ class Ocean:
         self.keeper.token.token_approve(self.keeper.payment_conditions.address, amount,
                                         consumer_account)
 
-    def purchase_asset(self, did, service_definition_id, consumer_account):
+    def purchase_asset_service(self, did, service_definition_id, consumer_account):
         """
         Sign service agreement.
 
