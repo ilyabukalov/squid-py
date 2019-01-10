@@ -3,7 +3,6 @@ import pytest
 
 from squid_py.ddo import DDO
 from squid_py.config import Config
-from squid_py.ocean.asset import Asset
 from squid_py.ocean.ocean import Ocean
 from tests.resources.helper_functions import get_resource_path
 
@@ -13,7 +12,7 @@ def test_aquarius():
     sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
-    asset1 = Asset.from_ddo_json_file(sample_ddo_path)
+    asset1 = DDO(json_filename=sample_ddo_path)
 
     # #    print(asset1.ddo.as_text())
     # # Ensure the asset it not already in database
@@ -27,7 +26,7 @@ def test_aquarius():
         ocean_provider.metadata_store.retire_asset_ddo(asset1.did)
     num_assets = len(ocean_provider.metadata_store.list_assets())
     num_matches = len(ocean_provider.metadata_store.text_search(text='Office'))
-    ddo_published = ocean_provider.metadata_store.publish_asset_ddo(asset1.ddo)
+    ddo_published = ocean_provider.metadata_store.publish_asset_ddo(asset1)
 
     ddo = ocean_provider.metadata_store.get_asset_ddo(asset1.did)
 
@@ -38,15 +37,15 @@ def test_aquarius():
     sample_ddo_path2 = get_resource_path('ddo', 'ddo_sample2.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
     assert len(ocean_provider.metadata_store.list_assets()) == (num_assets + 1)
-    asset2 = Asset.from_ddo_json_file(sample_ddo_path2)
+    asset2 = DDO(json_filename=sample_ddo_path2)
 
-    ocean_provider.metadata_store.update_asset_ddo(asset2.did, asset2.ddo)
+    ocean_provider.metadata_store.update_asset_ddo(asset2.did, asset2)
     ddo = ocean_provider.metadata_store.get_asset_ddo(asset2.did)
     metadata = ocean_provider.metadata_store.get_asset_metadata(asset2.did)
 
     # basic test to compare authentication records in the DDO
     ddo = DDO(json_text=json.dumps(ddo))
-    assert ddo.authentications[0].as_text() == asset2.ddo.authentications[0].as_text()
+    assert ddo.authentications[0].as_text() == asset2.authentications[0].as_text()
     assert 'base' in metadata
 
     ocean_provider.metadata_store.retire_asset_ddo(asset1.did)
@@ -63,14 +62,14 @@ def test_error_publishing():
     sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
-    asset1 = Asset.from_ddo_json_file(sample_ddo_path)
+    asset1 = DDO(json_filename=sample_ddo_path)
 
     if asset1.did in ocn.metadata_store.list_assets():
         ocn.metadata_store.retire_asset_ddo(asset1.did)
 
-    ocn.metadata_store.publish_asset_ddo(asset1.ddo)
+    ocn.metadata_store.publish_asset_ddo(asset1)
     with pytest.raises(ValueError):
-        ocn.metadata_store.publish_asset_ddo(asset1.ddo)
+        ocn.metadata_store.publish_asset_ddo(asset1)
     with pytest.raises(Exception):
         ocn.metadata_store.retire_asset_ddo('did:op:2133')
     ocn.metadata_store.retire_asset_ddo(asset1.did)

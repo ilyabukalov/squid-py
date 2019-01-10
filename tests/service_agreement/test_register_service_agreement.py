@@ -6,6 +6,7 @@ from datetime import datetime
 
 from web3 import Web3, HTTPProvider
 
+from squid_py import ConfigProvider
 from squid_py.config import Config
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (
@@ -21,6 +22,7 @@ from squid_py.service_agreement.register_service_agreement import (
 from squid_py.service_agreement.storage import get_service_agreements
 from squid_py.service_agreement.utils import build_condition_key
 from squid_py.utils.utilities import generate_new_id
+from tests.resources.helper_functions import get_consumer_account
 
 CONFIG_PATH = 'config_local.ini'
 NUM_WAIT_ITERATIONS = 20
@@ -30,7 +32,8 @@ class TestRegisterServiceAgreement(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.config = Config(CONFIG_PATH)
+        ConfigProvider.set_config(Config(CONFIG_PATH))
+        cls.config = ConfigProvider.get_config()
         cls.web3 = Web3(HTTPProvider(cls.config.keeper_url))
 
         cls.ocean = Ocean(cls.config)
@@ -41,7 +44,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         cls.access_conditions = cls.ocean.keeper.access_conditions
         cls.service_agreement = cls.ocean.keeper.service_agreement
 
-        cls.consumer_acc = cls.ocean.main_account
+        cls.consumer_acc = get_consumer_account(cls.config)
         cls.consumer = cls.consumer_acc.address
         cls.web3.eth.defaultAccount = cls.consumer
 

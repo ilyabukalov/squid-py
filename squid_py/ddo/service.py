@@ -24,6 +24,10 @@ class Service:
                 if name not in reserved_names:
                     self._values[name] = value
 
+    @property
+    def type(self):
+        return self._type
+
     def get_id(self):
         """Return the service id."""
         return self._id

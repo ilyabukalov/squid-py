@@ -57,10 +57,7 @@ class ServiceAgreement(object):
 
     @classmethod
     def from_ddo(cls, service_definition_id, ddo):
-        service_def = ddo.find_service_by_key_value(
-            ServiceAgreement.SERVICE_DEFINITION_ID,
-            service_definition_id
-        ).as_dictionary()
+        service_def = ddo.find_service_by_id(service_definition_id).as_dictionary()
         if not service_def:
             raise ValueError(
                 f'Service with definition id {service_definition_id} is not found in this DDO.')

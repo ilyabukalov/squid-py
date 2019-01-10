@@ -53,17 +53,19 @@ import time
 
 from squid_py import (
     Ocean,
-    ServiceDescriptor,
-    ACCESS_SERVICE_TEMPLATE_ID,
-    get_service_endpoint,
-    get_purchase_endpoint,
+    ConfigProvider,
+    Config,
+    Metadata,
+    Account
 )
-from squid_py.ddo.metadata import Metadata
 
+ConfigProvider.set_config(Config('config.ini'))
 # Make a new instance of Ocean
-ocean = Ocean('config.ini')  # or Ocean(config_dict)
-# You can set a specific ethereum account to use by using `ocean.set_main_account(address, password)`
-# Ocean picks up address and password by default from the parity.address and parity.password in the config
+ocean = Ocean()
+config = ConfigProvider.get_config()
+# make account instance, assuming the ethereum account and password are set 
+# in the config file `config.ini`
+account = Account(config.parity_address, config.parity_password)
 
 # PUBLISHER
 # Let's start by registering an asset in the Ocean network
@@ -71,32 +73,32 @@ metadata = Metadata.get_example()
 
 # purchase and service endpoints require `brizo.url` is set in the config file
 # or passed to Ocean instance in the config_dict.
-purchase_endpoint = get_purchase_endpoint(ocean.config)
-service_endpoint = get_service_endpoint(ocean.config)
 # define the services to include in the new asset DDO
-service_descriptor = ServiceDescriptor.access_service_descriptor(2, purchase_endpoint, service_endpoint, 900, ACCESS_SERVICE_TEMPLATE_ID)
 
-ddo = ocean.register_asset(metadata, ocean.main_account.address, service_descriptor)
+ddo = ocean.register_asset(metadata, account)
 
 # Now we have an asset registered, we can verify it exists by resolving the did
-_ddo = ocean.resolve_did(ddo.did)
+_ddo = ocean.resolve_asset_did(ddo.did)
 # ddo and _ddo should be identical
 
 # CONSUMER
 # search for assets
-asset = ocean.search_assets_by_text('Ocean protocol')[0]
+asset_ddo = ocean.search_assets_by_text('Ocean protocol')[0]
 # Need some ocean tokens to be able to purchase assets
-ocean.main_account.unlock()
-ocean.keeper.market.request_tokens(10, ocean.main_account.address)
+account.request_tokens(10)
+
 # Start the purchase/consume request. This will automatically make a payment from the specified account.
-service_agreement_id, signature = ocean.sign_service_agreement(asset.did, 0, ocean.main_account.address)
-ocean.initialize_service_agreement(asset.did, 0, service_agreement_id, signature, ocean.main_account.address)
+account = Account(config.parity_address, config.parity_password)
+service_agreement_id = ocean.purchase_asset_service(asset_ddo.did, 0, account)
+
 # after a short wait (seconds to minutes) the asset data files should be available in the `downloads.path` defined in config
 # wait a bit to let things happen
-time.sleep(30)
-# Asset files are saved in a folder named after the asset DID
-if os.path.exists(ocean.get_asset_folder_path(asset.did, 0)):
-    print('asset files downloaded: {}'.format(os.listdir(ocean.get_asset_folder_path(asset.did, 0))))
+time.sleep(20)
+
+# Asset files are saved in a folder named after the asset id
+dataset_dir = os.path.join(ConfigProvider.get_config().downloads_path, f'datafile.{asset_ddo.asset_id}.0')
+if os.path.exists(dataset_dir):
+    print('asset files downloaded: {}'.format(os.listdir(dataset_dir)))
 
 ```
 

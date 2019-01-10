@@ -10,7 +10,7 @@ class AccessConditions(ContractBase):
     def get_instance():
         return AccessConditions('AccessConditions')
 
-    def check_permissions(self, address, asset_did, sender_address):
+    def check_permissions(self, address, asset_did):
         """
         Check permissions contract call.
 
@@ -22,5 +22,4 @@ class AccessConditions(ContractBase):
         :param sender_address: Address that call the function, str
         :return: bool
         """
-        return self.contract_concise.checkPermissions(address, asset_did,
-                                                      call={'from': sender_address})
+        return self.contract_concise.checkPermissions(address, asset_did)

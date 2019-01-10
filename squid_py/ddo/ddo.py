@@ -10,7 +10,9 @@ from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from web3 import Web3
 
+from squid_py import ServiceTypes
 from squid_py.ddo.public_key_hex import PublicKeyHex
+from squid_py.did import did_to_id
 from .authentication import Authentication
 from .constants import KEY_PAIR_MODULUS_BIT, DID_DDO_CONTEXT_URL
 from .public_key_base import PublicKeyBase, PUBLIC_KEY_STORE_TYPE_PEM
@@ -25,27 +27,25 @@ class DDO:
 
     def __init__(self, did='', json_text=None, json_filename=None, created=None, dictionary=None):
         """Clear the DDO data values."""
-        self._did = ''
+        self._did = did
         self._public_keys = []
         self._authentications = []
         self._services = []
         self._proof = None
         self._created = None
 
-        self._did = did
         if created:
             self._created = created
         else:
             self._created = DDO.get_timestamp()
 
-        if json_filename:
+        if not json_text and json_filename:
             with open(json_filename, 'r') as file_handle:
                 json_text = file_handle.read()
 
         if json_text:
             self._read_dict(json.loads(json_text))
-
-        if dictionary:
+        elif dictionary:
             self._read_dict(dictionary)
 
     def add_public_key(self, public_key):
@@ -326,9 +326,21 @@ class DDO:
                 return service
         return None
 
-    def find_service_by_key_value(self, service_key, value):
+    def get_metadata(self):
+        metadata_service = self.find_service_by_type(ServiceTypes.METADATA)
+        return metadata_service.get_values()['metadata']
+
+    def find_service_by_id(self, service_id):
+        service_id_key = 'serviceDefinitionId'
         for s in self._services:
-            if service_key in s.get_values() and s.get_values()[service_key] == value:
+            if service_id_key in s.get_values() and s.get_values()[service_id_key] == service_id:
+                return s
+
+        return None
+
+    def find_service_by_type(self, service_type):
+        for s in self._services:
+            if service_type == s.type:
                 return s
 
         return None
@@ -434,6 +446,11 @@ class DDO:
     def did(self):
         """ Get the DID."""
         return self._did
+
+    @property
+    def asset_id(self):
+        """The asset id part of the DID"""
+        return did_to_id(self._did)
 
     @property
     def public_keys(self):

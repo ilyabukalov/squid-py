@@ -16,7 +16,6 @@ from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.modules.v0_1.accessControl import grantAccess
 from squid_py.modules.v0_1.payment import lockPayment, releasePayment
 from squid_py.modules.v0_1.serviceAgreement import fulfillAgreement
-from squid_py.ocean.asset import Asset
 from squid_py.brizo.brizo import Brizo
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_factory import ServiceDescriptor
@@ -103,17 +102,17 @@ def test_register_asset(publisher_ocean_instance):
     assert publisher.ocean_balance > 0
 
     ##########################################################
-    # Create an Asset with valid metadata
+    # Create an asset DDO with valid metadata
     ##########################################################
-    asset = Asset.from_ddo_json_file(sample_ddo_path)
+    asset = DDO(json_filename=sample_ddo_path)
 
     ######################
 
     # For this test, ensure the asset does not exist in Aquarius
     meta_data_assets = publisher_ocean_instance.metadata_store.list_assets()
-    if asset.ddo.did in meta_data_assets:
-        publisher_ocean_instance.metadata_store.get_asset_ddo(asset.ddo.did)
-        publisher_ocean_instance.metadata_store.retire_asset_ddo(asset.ddo.did)
+    if asset.did in meta_data_assets:
+        publisher_ocean_instance.metadata_store.get_asset_ddo(asset.did)
+        publisher_ocean_instance.metadata_store.retire_asset_ddo(asset.did)
 
     ##########################################################
     # Register using high-level interface
@@ -122,7 +121,7 @@ def test_register_asset(publisher_ocean_instance):
         ServiceDescriptor.access_service_descriptor(asset_price, '/purchaseEndpoint',
                                                     '/serviceEndpoint', 600,
                                                     ('0x%s' % generate_new_id()))]
-    publisher_ocean_instance.register_asset(asset.metadata, publisher, service_descriptors)
+    publisher_ocean_instance.register_asset(asset.get_metadata(), publisher, service_descriptors)
 
 
 def test_resolve_did(publisher_ocean_instance):
@@ -137,7 +136,7 @@ def test_resolve_did(publisher_ocean_instance):
 
     # happy path
     did = original_ddo.did
-    ddo = publisher_ocean_instance.resolve_did(did).as_dictionary()
+    ddo = publisher_ocean_instance.resolve_asset_did(did).as_dictionary()
     original = original_ddo.as_dictionary()
     assert ddo['publicKey'] == original['publicKey']
     assert ddo['authentication'] == original['authentication']
@@ -147,13 +146,13 @@ def test_resolve_did(publisher_ocean_instance):
     # Can't resolve unregistered asset
     unregistered_did = DID().did
     with pytest.raises(OceanDIDNotFound, message='Expected OceanDIDNotFound error.'):
-        publisher_ocean_instance.resolve_did(unregistered_did)
+        publisher_ocean_instance.resolve_asset_did(unregistered_did)
 
     # Raise error on bad did
     invalid_did = "did:op:0123456789"
     with pytest.raises(OceanDIDNotFound,
                        message='Expected a OceanDIDNotFound error when resolving invalid did.'):
-        publisher_ocean_instance.resolve_did(invalid_did)
+        publisher_ocean_instance.resolve_asset_did(invalid_did)
 
 
 def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, registered_ddo):
@@ -164,13 +163,13 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     consumer = consumer_ocean_instance.main_account.address
 
     # point consumer_ocean_instance's brizo mock to the publisher's ocean instance
-    Brizo.set_http_client(BrizoMock(publisher_ocean_instance))
+    Brizo.set_http_client(BrizoMock(publisher_ocean_instance, publisher_ocean_instance.main_account))
     # sign agreement using the registered asset did above
     service = registered_ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     assert ServiceAgreement.SERVICE_DEFINITION_ID in service.as_dictionary()
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
 
-    service_agreement_id, signature = consumer_ocean_instance.sign_service_agreement(
+    service_agreement_id, signature = consumer_ocean_instance.purchase_asset_service(
         registered_ddo.did,
         sa.sa_definition_id,
         consumer
@@ -221,12 +220,9 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     did = registered_ddo.did
 
     agreement_id = ServiceAgreement.create_new_agreement_id()
-    ddo = consumer_ocn.resolve_did(did)
+    ddo = consumer_ocn.resolve_asset_did(did)
     service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
-    service_def = ddo.find_service_by_key_value(
-        ServiceAgreement.SERVICE_DEFINITION_ID,
-        service_definition_id
-    ).as_dictionary()
+    service_def = ddo.find_service_by_id(service_definition_id).as_dictionary()
 
     # sign agreement
     consumer_ocn.main_account.unlock()

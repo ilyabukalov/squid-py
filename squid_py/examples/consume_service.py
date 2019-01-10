@@ -22,29 +22,23 @@ def consume_service():
     path_config = 'config_local.ini'
     ocn = Ocean(Config(path_config))
     acc = get_account_from_config(ocn.config, 'parity.address', 'parity.password')
-    ocn.set_main_account(acc.address, acc.password)
 
     # Register ddo
-    ddo = get_registered_ddo(ocn)
+    ddo = get_registered_ddo(ocn, acc)
 
     # ocn here will be used only to publish the asset. Handling the asset by the publisher
     # will be performed by the Brizo server running locally
 
     cons_ocn = Ocean(Config(path_config))
-    acc = get_account_from_config(ocn.config, 'parity.address1', 'parity.password1')
-    cons_ocn.set_main_account(acc.address, acc.password)
-
-    consumer = cons_ocn.main_account.address
+    consumer_account = get_account_from_config(ocn.config, 'parity.address1', 'parity.password1')
 
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     assert ServiceAgreement.SERVICE_DEFINITION_ID in service.as_dictionary()
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
     # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
-    service_agreement_id, signature = cons_ocn.sign_service_agreement(
-        ddo.did, sa.sa_definition_id, consumer)
-    cons_ocn.initialize_service_agreement(
-        ddo.did, sa.sa_definition_id, service_agreement_id, signature, consumer)
+    service_agreement_id = cons_ocn.purchase_asset_service(
+        ddo.did, sa.sa_definition_id, consumer_account)
     print('got new service agreement id:', service_agreement_id)
     filter1 = {'serviceAgreementId': w3.toBytes(hexstr=service_agreement_id)}
     filter2 = {'serviceId': w3.toBytes(hexstr=service_agreement_id)}
