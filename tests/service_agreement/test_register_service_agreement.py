@@ -22,7 +22,7 @@ from squid_py.service_agreement.register_service_agreement import (
 from squid_py.service_agreement.storage import get_service_agreements
 from squid_py.service_agreement.utils import build_condition_key
 from squid_py.utils.utilities import generate_new_id
-from tests.resources.helper_functions import get_consumer_account
+from tests.resources.helper_functions import get_publisher_account
 
 CONFIG_PATH = 'config_local.ini'
 NUM_WAIT_ITERATIONS = 20
@@ -44,7 +44,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         cls.access_conditions = cls.ocean.keeper.access_conditions
         cls.service_agreement = cls.ocean.keeper.service_agreement
 
-        cls.consumer_acc = get_consumer_account(cls.config)
+        cls.consumer_acc = get_publisher_account(cls.config)
         cls.consumer = cls.consumer_acc.address
         cls.web3.eth.defaultAccount = cls.consumer
 
