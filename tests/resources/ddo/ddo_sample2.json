@@ -48,7 +48,7 @@
       "serviceEndpoint": "http://myaquarius.org/api/v1/provider/assets/metadata/{did}",
       "metadata": {
         "base": {
-          "name": "UK Weather information 2011",
+          "name": "UK Weather information 2012",
           "type": "dataset",
           "description": "Weather information of UK including temperature and humidity",
           "size": "3.1gb",
