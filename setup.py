@@ -40,6 +40,7 @@ test_requirements = [
     'mccabe',
     'pylint',
     'pytest',
+    'pytest-watch',
     'tox',
 ]
 
