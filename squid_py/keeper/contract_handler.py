@@ -74,7 +74,8 @@ class ContractHandler(object):
                     break
 
         if not os.path.exists(path):
-            raise FileNotFoundError('Keeper contract {} file not found: {}'.format(contract_name, path))
+            raise FileNotFoundError(
+                'Keeper contract {} file not found: {}'.format(contract_name, path))
 
         with open(path) as f:
             contract = json.loads(f.read())

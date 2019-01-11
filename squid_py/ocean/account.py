@@ -2,6 +2,7 @@
 import logging
 from collections import namedtuple
 
+from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 
 Balance = namedtuple('Balance', ('eth', 'ocn'))
@@ -12,14 +13,14 @@ logger = logging.getLogger('account')
 class Account:
     """Class representing an account."""
 
-    def __init__(self, keeper, address, password=None):
+    def __init__(self, address, password=None):
         """
         Hold account address, and update balances of Ether and Ocean token.
 
-        :param keeper: The keeper instance
         :param address: The address of this account
+        :param password: account's password. This is necessary for unlocking account before doing
+            a transaction.
         """
-        self.keeper = keeper
         self.address = address
         self.password = password
 
@@ -53,7 +54,7 @@ class Account:
         """
         self.unlock()
         logger.info(f'Requesting {amount} tokens.')
-        return self.keeper.market.request_tokens(amount, self.address)
+        return Keeper.get_instance().market.request_tokens(amount, self.address)
 
     @property
     def balance(self):
@@ -80,4 +81,4 @@ class Account:
 
         :return: Ocean token balance, int
         """
-        return self.keeper.token.get_token_balance(self.address)
+        return Keeper.get_instance().token.get_token_balance(self.address)

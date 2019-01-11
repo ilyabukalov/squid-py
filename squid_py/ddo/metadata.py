@@ -78,10 +78,12 @@ class MetadataBase(object):
         ],
         'links': [
             {
-                "sample1": "http://data.ceda.ac.uk/badc/ukcp09/data/gridded-land-obs/gridded-land-obs-daily/",
+                "sample1": "http://data.ceda.ac.uk/badc/ukcp09/data/gridded-land-obs/gridded-land"
+                           "-obs-daily/",
             },
             {
-                "sample2": "http://data.ceda.ac.uk/badc/ukcp09/data/gridded-land-obs/gridded-land-obs-averages-25km/",
+                "sample2": "http://data.ceda.ac.uk/badc/ukcp09/data/gridded-land-obs/gridded-land"
+                           "-obs-averages-25km/",
             },
             {
                 "fieldsDescription": "http://data.ceda.ac.uk/badc/ukcp09/",

@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class EventListener(object):
-    def __init__(self, contract_name, event_name, from_block='latest', to_block='latest', filters=None):
+    def __init__(self, contract_name, event_name, from_block='latest', to_block='latest',
+                 filters=None):
         contract = ContractHandler.get(contract_name)
         self.event = getattr(contract.events, event_name)
         self.filters = filters if filters else {}

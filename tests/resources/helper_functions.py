@@ -7,7 +7,9 @@ from squid_py import (
     ACCESS_SERVICE_TEMPLATE_ID,
     ServiceDescriptor,
     Ocean,
-    Account)
+    Account,
+    ConfigProvider
+)
 from squid_py.config import Config
 from squid_py.ddo.metadata import Metadata
 from squid_py.keeper import Keeper
@@ -31,12 +33,12 @@ def get_resource_path(dir_name, file_name):
         return pathlib.Path(os.path.join(os.path.sep, *base, file_name))
 
 
-def init_ocn_tokens(ocn, amount=100):
-    ocn.main_account.request_tokens(amount)
+def init_ocn_tokens(ocn, account, amount=100):
+    account.request_tokens(amount)
     ocn.keeper.token.token_approve(
         ocn.keeper.payment_conditions.address,
         amount,
-        ocn.main_account
+        account
     )
 
 
@@ -45,37 +47,32 @@ def make_ocean_instance(secret_store_client, account_index):
     os.environ['CONFIG_FILE'] = path_config
     SecretStore.set_client(secret_store_client)
     ocn = Ocean(Config(path_config))
-    Brizo.set_http_client(BrizoMock(ocn))
-    ocn.set_main_account(list(ocn.accounts)[account_index], '')
+    account = list(ocn.accounts)[account_index]
+    Brizo.set_http_client(BrizoMock(ocn, account))
     return ocn
+
+
+def get_publisher_account(config):
+    return get_account_from_config(config, 'parity.address', 'parity.password')
+
+
+def get_consumer_account(config):
+    return get_account_from_config(config, 'parity.address1', 'parity.password1')
 
 
 def get_publisher_ocean_instance():
     ocn = make_ocean_instance(SecretStoreClientMock, PUBLISHER_INDEX)
-    address = None
-    if ocn.config.has_option('keeper-contracts', 'parity.address'):
-        address = ocn.config.get('keeper-contracts', 'parity.address')
-    address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
-    if address and address in ocn.accounts:
-        password = ocn.config.get('keeper-contracts', 'parity.password') \
-            if ocn.config.has_option('keeper-contracts', 'parity.password') else None
-        ocn.set_main_account(address, password)
-    init_ocn_tokens(ocn)
+    account = get_publisher_account(ConfigProvider.get_config())
+    init_ocn_tokens(ocn, account)
+    ocn.main_account = account
     return ocn
 
 
 def get_consumer_ocean_instance():
     ocn = make_ocean_instance(SecretStoreClientMock, CONSUMER_INDEX)
-    address = None
-    if ocn.config.has_option('keeper-contracts', 'parity.address1'):
-        address = ocn.config.get('keeper-contracts', 'parity.address1')
-
-    address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
-    if address and address in ocn.accounts:
-        password = ocn.config.get('keeper-contracts', 'parity.password1') \
-            if ocn.config.has_option('keeper-contracts', 'parity.password1') else None
-        ocn.set_main_account(address, password)
-    init_ocn_tokens(ocn)
+    account = get_consumer_account(ConfigProvider.get_config())
+    init_ocn_tokens(ocn, account)
+    ocn.main_account = account
     return ocn
 
 
@@ -94,10 +91,10 @@ def get_account_from_config(config, config_account_key, config_account_password_
             and config.has_option('keeper-contracts', config_account_password_key)):
         password = config.get('keeper-contracts', config_account_password_key)
 
-    return Account(Keeper.get_instance(), address, password)
+    return Account(address, password)
 
 
-def get_registered_access_service_template(ocean_instance):
+def get_registered_access_service_template(ocean_instance, account):
     # register an asset Access service agreement template
     template = ServiceAgreementTemplate.from_json_file(get_sla_template_path())
     template_id = ACCESS_SERVICE_TEMPLATE_ID
@@ -105,20 +102,20 @@ def get_registered_access_service_template(ocean_instance):
     if not template_owner:
         template = register_service_agreement_template(
             ocean_instance.keeper.service_agreement,
-            ocean_instance.main_account, template,
+            account, template,
             ocean_instance.keeper.network_name
         )
 
     return template
 
 
-def get_registered_ddo(ocean_instance):
-    template = get_registered_access_service_template(ocean_instance)
+def get_registered_ddo(ocean_instance, account):
+    template = get_registered_access_service_template(ocean_instance, account)
     config = ocean_instance.config
     purchase_endpoint = Brizo.get_purchase_endpoint(config)
     service_endpoint = Brizo.get_service_endpoint(config)
     ddo = ocean_instance.register_asset(
-        Metadata.get_example(), ocean_instance.main_account,
+        Metadata.get_example(), account,
         [ServiceDescriptor.access_service_descriptor(7, purchase_endpoint, service_endpoint, 360,
                                                      template.template_id)]
     )

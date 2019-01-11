@@ -30,7 +30,8 @@ def execute_pending_service_agreements(storage_path, account, actor_type,
         fetches their service definitions, and subscribes to service agreement events.
     """
     # service_agreement_id, did, service_definition_id, price, content_urls, start_time, status
-    for service_agreement_id, did, service_definition_id, price, content_urls, start_time, _ in get_service_agreements(
+    for service_agreement_id, did, service_definition_id, price, content_urls, start_time, \
+        _ in get_service_agreements(
             storage_path):
         ddo = did_resolver_fn(did)
         for service_definition in ddo['service']:

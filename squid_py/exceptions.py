@@ -42,12 +42,8 @@ class OceanInvalidTransaction(Exception):
 
 
 class OceanInitializeServiceAgreementError(Exception):
-    """
-    Error on invoking purchase endpoint
-    """
+    """Error on invoking purchase endpoint"""
 
 
 class OceanServiceConsumeError(Exception):
-    """
-    Error invoking a consume endpoint
-    """
+    """ Error invoking a consume endpoint"""

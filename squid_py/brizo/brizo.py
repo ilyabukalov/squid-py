@@ -1,11 +1,11 @@
 import json
-import os
 import logging
+import os
 
 import requests
 
-from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.exceptions import OceanInitializeServiceAgreementError
+from squid_py.service_agreement.service_agreement import ServiceAgreement
 
 logger = logging.getLogger(__name__)
 
@@ -28,7 +28,8 @@ class Brizo(object):
         Brizo._http_client = http_client
 
     @staticmethod
-    def initialize_service_agreement(did, agreement_id, service_definition_id, signature, account_address,
+    def initialize_service_agreement(did, agreement_id, service_definition_id, signature,
+                                     account_address,
                                      purchase_endpoint):
         """
         Send a request to the service provider (purchase_endpoint) to initialize the service
@@ -51,19 +52,15 @@ class Brizo(object):
         )
         if response and hasattr(response, 'status_code'):
             if response.status_code != 201:
-                msg = (
-                    'Initialize service agreement failed at the purchaseEndpoint {}, ' 
-                    'reason {}, status {}'
-                    .format(purchase_endpoint, response.text, response.status_code)
-                )
+                msg = (f'Initialize service agreement failed at the purchaseEndpoint '
+                       f'{purchase_endpoint}, reason {response.text}, status {response.status_code}'
+                       )
                 logger.error(msg)
                 raise OceanInitializeServiceAgreementError(msg)
 
             logger.debug(
-                'Service agreement initialized successfully, service agreement id %s,'
-                ' purchaseEndpoint %s',
-                agreement_id, purchase_endpoint)
-
+                f'Service agreement initialized successfully, service agreement id {agreement_id},'
+                f' purchaseEndpoint {purchase_endpoint}')
             return True
 
     @staticmethod
@@ -73,23 +70,23 @@ class Brizo(object):
             if url.startswith('"') or url.startswith("'"):
                 url = url[1:-1]
 
-            consume_url = (
-                    '%s?url=%s&serviceAgreementId=%s&consumerAddress=%s' %
-                    (service_endpoint, url, service_agreement_id, account_address)
-            )
-            logger.info('invoke consume endpoint with this url: %s', consume_url)
+            consume_url = (f'{service_endpoint}?url={url}&serviceAgreementId='
+                           f'{service_agreement_id}&consumerAddress={account_address}'
+                           )
+            logger.info(f'invoke consume endpoint with this url: {consume_url}')
             response = Brizo._http_client.get(consume_url)
             if response.status_code == 200:
                 download_url = response.url.split('?')[0]
                 file_name = os.path.basename(download_url)
                 with open(os.path.join(destination_folder, file_name), 'wb') as f:
                     f.write(response.content)
-                    logger.info('Saved downloaded file in "%s"', f.name)
+                    logger.info(f'Saved downloaded file in {f.name}')
             else:
-                logger.warning('consume failed: %s', response.reason)
+                logger.warning(f'consume failed: {response.reason}')
 
     @staticmethod
-    def prepare_purchase_payload(did, agreement_id, service_definition_id, signature, consumer_address):
+    def prepare_purchase_payload(did, agreement_id, service_definition_id, signature,
+                                 consumer_address):
         # Prepare a payload to send to `Brizo`
         return json.dumps({
             'did': did,

@@ -1,11 +1,11 @@
 import os
 import time
-import unittest
 import uuid
 from datetime import datetime
 
-from web3 import Web3, HTTPProvider
+from web3 import HTTPProvider, Web3
 
+from squid_py import ConfigProvider
 from squid_py.config import Config
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (
@@ -21,16 +21,20 @@ from squid_py.service_agreement.register_service_agreement import (
 from squid_py.service_agreement.storage import get_service_agreements
 from squid_py.service_agreement.utils import build_condition_key
 from squid_py.utils.utilities import generate_new_id
+from tests.resources.helper_functions import get_publisher_account
+from tests.resources.tiers import e2e_test
 
 CONFIG_PATH = 'config_local.ini'
 NUM_WAIT_ITERATIONS = 20
 
 
-class TestRegisterServiceAgreement(unittest.TestCase):
+@e2e_test
+class TestRegisterServiceAgreement:
 
     @classmethod
-    def setUpClass(cls):
-        cls.config = Config(CONFIG_PATH)
+    def setup_method(cls):
+        ConfigProvider.set_config(Config(CONFIG_PATH))
+        cls.config = ConfigProvider.get_config()
         cls.web3 = Web3(HTTPProvider(cls.config.keeper_url))
 
         cls.ocean = Ocean(cls.config)
@@ -41,7 +45,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         cls.access_conditions = cls.ocean.keeper.access_conditions
         cls.service_agreement = cls.ocean.keeper.service_agreement
 
-        cls.consumer_acc = cls.ocean.main_account
+        cls.consumer_acc = get_publisher_account(cls.config)
         cls.consumer = cls.consumer_acc.address
         cls.web3.eth.defaultAccount = cls.consumer
 
@@ -53,9 +57,10 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         cls.content_url = '/content/url'
         cls.start_time = int(datetime.now().timestamp())
 
-    def tearDown(self):
-        if os.path.exists(self.storage_path):
-            os.remove(self.storage_path)
+    @classmethod
+    def teardown_method(cls):
+        if os.path.exists(cls.storage_path):
+            os.remove(cls.storage_path)
 
     def _consume_dummy(self, *args):
         pass
@@ -396,7 +401,7 @@ class TestRegisterServiceAgreement(unittest.TestCase):
                                           [self.template_id, self.contracts[i],
                                            self.fingerprints[i]]).hex()
 
-        payment_locked = self._wait_for_event(self.payment_conditions.events.PaymentLocked)
+        self._wait_for_event(self.payment_conditions.events.PaymentLocked)
         lock_cond_status = self.service_agreement.contract_concise.getConditionStatus(
             service_agreement_id,
             get_condition_key(1))
@@ -407,7 +412,10 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         release_cond_status = self.service_agreement.contract_concise.getConditionStatus(
             service_agreement_id,
             get_condition_key(2))
-        assert grant_access_cond_status == 0 and release_cond_status == 0, 'grantAccess and/or releasePayment is fulfilled but not expected to.'
+        assert grant_access_cond_status == 0 and release_cond_status == 0, 'grantAccess and/or ' \
+                                                                           'releasePayment is ' \
+                                                                           'fulfilled but not ' \
+                                                                           'expected to.'
 
         payment_refund = self._wait_for_event(self.payment_conditions.events.PaymentRefund)
         if not payment_refund:
@@ -601,8 +609,9 @@ class TestRegisterServiceAgreement(unittest.TestCase):
 
     @classmethod
     def _setup_token(cls):
+        cls.consumer_acc.unlock()
         cls.market.contract_concise.requestTokens(100, transact={'from': cls.consumer})
-
+        cls.consumer_acc.unlock()
         cls.token.contract_concise.approve(
             cls.payment_conditions.address,
             100,

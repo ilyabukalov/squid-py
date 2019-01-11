@@ -10,9 +10,7 @@ logger = logging.getLogger('aquarius')
 
 
 class Aquarius:
-    """
-    Aquarius wrapper to call different endpoint of aquarius component.
-    """
+    """Aquarius wrapper to call different endpoint of aquarius component."""
 
     def __init__(self, aquarius_url=None):
         """
@@ -157,7 +155,8 @@ class Aquarius:
         Currently implemented are the MongoDB and Elastic Search drivers.
 
         For a detailed guide on how to search, see the MongoDB driver documentation:
-        mongodb driverCurrently implemented in: https://docs.mongodb.com/manual/reference/operator/query/text/
+        mongodb driverCurrently implemented in:
+        https://docs.mongodb.com/manual/reference/operator/query/text/
 
         And the Elastic Search documentation:
         https://www.elastic.co/guide/en/elasticsearch/guide/current/full-text-search.html

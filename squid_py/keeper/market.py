@@ -3,8 +3,8 @@ import logging
 
 from web3 import Web3
 
-from squid_py.exceptions import OceanDIDNotFound, OceanInvalidTransaction
 from squid_py.config import DEFAULT_GAS_LIMIT
+from squid_py.exceptions import OceanDIDNotFound, OceanInvalidTransaction
 from squid_py.keeper.contract_base import ContractBase
 
 

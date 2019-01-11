@@ -16,10 +16,12 @@ from squid_py.exceptions import (
 )
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.did_resolver.resolver_value_type import ResolverValueType
+from tests.resources.tiers import e2e_test
 
 logger = logging.getLogger()
 
 
+@e2e_test
 def test_did_registry_register(publisher_ocean_instance):
     ocean = publisher_ocean_instance
 
@@ -65,6 +67,7 @@ def test_did_registry_register(publisher_ocean_instance):
         did_registry.register(did_test, url=value_test, account=register_account, key=42)
 
 
+@e2e_test
 def test_did_resolver_library(publisher_ocean_instance):
     ocean = publisher_ocean_instance
     register_account = ocean.main_account

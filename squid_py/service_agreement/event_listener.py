@@ -5,7 +5,7 @@ from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.service_agreement import ServiceAgreement
 from squid_py.keeper.utils import get_event_def_from_abi
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition, Event
+from squid_py.service_agreement.service_agreement_condition import Event, ServiceAgreementCondition
 from squid_py.service_agreement.storage import update_service_agreement_status
 from squid_py.utils import watch_event
 
@@ -63,7 +63,7 @@ def watch_service_agreement_events(storage_path, account,
                 if cond_instance.timeout_flags[i] == 1:
                     # dependency has a timeout
                     assert cond_dep_name in name_to_cond, f'dependency name {cond_dep_name}' \
-                                                          f' not found in conditions'
+                        f' not found in conditions'
                     cond_to_dependants_timeouts[cond_dep_name] = [
                         (cond_instance.name, cond_instance.timeout)]
 
@@ -77,7 +77,8 @@ def watch_service_agreement_events(storage_path, account,
             timeout_event = timeout_events[0] if timeout_events else None
             if not timeout_event:
                 raise AssertionError(
-                    f'Expected a timeout event in this condition {cond_instance.name} because another'
+                    f'Expected a timeout event in this condition {cond_instance.name} because '
+                    f'another'
                     f'condition {_dependent_cond_timeout[0]} depends on this condition timing out.')
 
         for event in cond_instance.events:
@@ -97,7 +98,7 @@ def watch_service_agreement_events(storage_path, account,
         timeout_fn = None
         if timeout_event and timeout:
             assert MIN_TIMEOUT < timeout < MAX_TIMEOUT, f'TIMEOUT value not within allowed ' \
-                                                        f'range {MIN_TIMEOUT}-{MAX_TIMEOUT}.'
+                f'range {MIN_TIMEOUT}-{MAX_TIMEOUT}.'
             timeout_fn = get_event_handler_function(timeout_event)
 
         def _get_callback(func_to_call):

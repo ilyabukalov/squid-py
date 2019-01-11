@@ -2,12 +2,10 @@ import json
 import os
 
 from squid_py.ddo.authentication import Authentication
-from squid_py.ddo.public_key_hex import PublicKeyHex, PUBLIC_KEY_TYPE_HEX, AUTHENTICATION_TYPE_HEX
+from squid_py.ddo.public_key_hex import AUTHENTICATION_TYPE_HEX, PUBLIC_KEY_TYPE_HEX, PublicKeyHex
 from squid_py.keeper.contract_handler import ContractHandler
-from squid_py.keeper.utils import (
-    get_fingerprint_by_name,
-    hexstr_to_bytes,
-    generate_multi_value_hash)
+from squid_py.keeper.utils import (generate_multi_value_hash, get_fingerprint_by_name,
+                                   hexstr_to_bytes)
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
@@ -35,7 +33,7 @@ def get_sla_template_dict(path):
 
 def build_condition_key(contract_address, fingerprint, template_id):
     assert isinstance(fingerprint, bytes), f'Expecting `fingerprint` of type bytes, ' \
-                                           f'got {type(fingerprint)}'
+        f'got {type(fingerprint)}'
     return generate_multi_value_hash(
         ['bytes32', 'address', 'bytes4'],
         [template_id, contract_address, fingerprint]
