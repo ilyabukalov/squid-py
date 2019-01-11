@@ -16,7 +16,8 @@ class Web3Provider(object):
         """
         if Web3Provider._web3 is None:
             config = ConfigProvider.get_config()
-            provider = config.web3_provider if config.web3_provider else HTTPProvider(config.keeper_url)
+            provider = config.web3_provider if config.web3_provider else HTTPProvider(
+                config.keeper_url)
             Web3Provider._web3 = Web3(provider)
             # Reset attributes to avoid lint issue about no attribute
             Web3Provider._web3.eth = getattr(Web3Provider._web3, 'eth')

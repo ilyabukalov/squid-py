@@ -16,7 +16,8 @@ def record_service_agreement(storage_path, service_agreement_id, did, service_de
         )
         cursor.execute(
             'INSERT OR REPLACE INTO service_agreements VALUES (?,?,?,?,?,?,?)',
-            [service_agreement_id, did, service_definition_id, price, content_urls, start_time, status],
+            [service_agreement_id, did, service_definition_id, price, content_urls, start_time,
+             status],
         )
         conn.commit()
     finally:

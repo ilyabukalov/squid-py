@@ -4,17 +4,16 @@ import logging
 from eth_abi import decode_single
 from web3 import Web3
 
+from squid_py.did import did_to_id_bytes
+from squid_py.did_resolver.resolved_did import ResolvedDID
+from squid_py.did_resolver.resolver_value_type import ResolverValueType
 from squid_py.exceptions import (
     OceanDIDCircularReference,
     OceanDIDNotFound,
     OceanDIDUnknownValueType
 )
-from squid_py.did import did_to_id_bytes
-from squid_py.did_resolver.resolved_did import ResolvedDID
-from squid_py.did_resolver.resolver_value_type import ResolverValueType
 
 DIDREGISTRY_EVENT_NAME = 'DIDAttributeRegistered'
-
 
 logger = logging.getLogger('keeper')
 
@@ -63,7 +62,8 @@ class DIDResolver:
         # resolve a DID to a URL or DDO
         data = self.get_did(did_bytes)
         while data and (max_hop_count == 0 or resolved.hop_count < max_hop_count):
-            if data['value_type'] == ResolverValueType.URL or data['value_type'] == ResolverValueType.DDO:
+            if data['value_type'] == ResolverValueType.URL or data[
+                'value_type'] == ResolverValueType.DDO:
                 logger.debug('found did {0} -> {1}'.format(Web3.toHex(did_bytes), data['value']))
                 if data['value']:
                     try:

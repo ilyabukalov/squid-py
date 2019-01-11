@@ -3,7 +3,7 @@
 
 """
 
-from .public_key_base import PublicKeyBase, PUBLIC_KEY_STORE_TYPE_HEX
+from .public_key_base import PUBLIC_KEY_STORE_TYPE_HEX, PublicKeyBase
 
 AUTHENTICATION_TYPE_HEX = 'HexVerificationKey'
 PUBLIC_KEY_TYPE_HEX = 'PublicKeyHex'

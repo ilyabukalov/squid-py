@@ -3,20 +3,20 @@ import datetime
 import json
 import logging
 import re
-from base64 import b64encode, b64decode
+from base64 import b64decode, b64encode
 
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import RSA
 from Crypto.Signature import PKCS1_v1_5
 from web3 import Web3
 
-from squid_py.service_agreement.service_types import ServiceTypes
 from squid_py.ddo.public_key_hex import PublicKeyHex
 from squid_py.did import did_to_id
+from squid_py.service_agreement.service_types import ServiceTypes
 from .authentication import Authentication
-from .constants import KEY_PAIR_MODULUS_BIT, DID_DDO_CONTEXT_URL
-from .public_key_base import PublicKeyBase, PUBLIC_KEY_STORE_TYPE_PEM
-from .public_key_rsa import PublicKeyRSA, AUTHENTICATION_TYPE_RSA, PUBLIC_KEY_TYPE_RSA
+from .constants import DID_DDO_CONTEXT_URL, KEY_PAIR_MODULUS_BIT
+from .public_key_base import PUBLIC_KEY_STORE_TYPE_PEM, PublicKeyBase
+from .public_key_rsa import AUTHENTICATION_TYPE_RSA, PUBLIC_KEY_TYPE_RSA, PublicKeyRSA
 from .service import Service
 
 logger = logging.getLogger('ddo')
@@ -416,7 +416,8 @@ class DDO:
         return self._created
 
     def create_new(self, did):
-        """Method to copy a DDO and assign a new did to all of the keys to an empty/non DID assigned DDO.
+        """Method to copy a DDO and assign a new did to all of the keys to an empty/non DID
+        assigned DDO.
         we assume that this ddo has been created as empty ( no did )"""
 
         if self.is_did_assigend():

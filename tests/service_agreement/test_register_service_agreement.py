@@ -1,10 +1,9 @@
 import os
 import time
-import unittest
 import uuid
 from datetime import datetime
 
-from web3 import Web3, HTTPProvider
+from web3 import HTTPProvider, Web3
 
 from squid_py import ConfigProvider
 from squid_py.config import Config
@@ -30,10 +29,10 @@ NUM_WAIT_ITERATIONS = 20
 
 
 @e2e_test
-class TestRegisterServiceAgreement(unittest.TestCase):
+class TestRegisterServiceAgreement:
 
     @classmethod
-    def setUpClass(cls):
+    def setup_method(cls):
         ConfigProvider.set_config(Config(CONFIG_PATH))
         cls.config = ConfigProvider.get_config()
         cls.web3 = Web3(HTTPProvider(cls.config.keeper_url))
@@ -58,9 +57,10 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         cls.content_url = '/content/url'
         cls.start_time = int(datetime.now().timestamp())
 
-    def tearDown(self):
-        if os.path.exists(self.storage_path):
-            os.remove(self.storage_path)
+    @classmethod
+    def teardown_method(cls):
+        if os.path.exists(cls.storage_path):
+            os.remove(cls.storage_path)
 
     def _consume_dummy(self, *args):
         pass
@@ -412,7 +412,10 @@ class TestRegisterServiceAgreement(unittest.TestCase):
         release_cond_status = self.service_agreement.contract_concise.getConditionStatus(
             service_agreement_id,
             get_condition_key(2))
-        assert grant_access_cond_status == 0 and release_cond_status == 0, 'grantAccess and/or releasePayment is fulfilled but not expected to.'
+        assert grant_access_cond_status == 0 and release_cond_status == 0, 'grantAccess and/or ' \
+                                                                           'releasePayment is ' \
+                                                                           'fulfilled but not ' \
+                                                                           'expected to.'
 
         payment_refund = self._wait_for_event(self.payment_conditions.events.PaymentRefund)
         if not payment_refund:

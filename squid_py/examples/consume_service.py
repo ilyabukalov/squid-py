@@ -1,14 +1,14 @@
-
-from squid_py import Ocean, ServiceTypes, ServiceAgreement
+from squid_py import Ocean, ServiceAgreement, ServiceTypes
 from squid_py.config import Config
-from tests.resources.helper_functions import get_account_from_config, get_registered_ddo
 from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.web3_provider import Web3Provider
+from tests.resources.helper_functions import get_account_from_config, get_registered_ddo
 
 
 def _log_event(event_name):
     def _process_event(event):
         print(f'Received event {event_name}: {event}')
+
     return _process_event
 
 

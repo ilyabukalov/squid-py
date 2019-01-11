@@ -11,7 +11,7 @@ from squid_py.config_provider import ConfigProvider
 from squid_py.ddo import DDO
 from squid_py.ddo.metadata import Metadata, MetadataBase
 from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
-from squid_py.did import did_to_id, DID
+from squid_py.did import DID, did_to_id
 from squid_py.did_resolver.did_resolver import DIDResolver
 from squid_py.exceptions import (
     OceanDIDAlreadyExist,
@@ -27,17 +27,11 @@ from squid_py.ocean.account import Account
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from squid_py.service_agreement.register_service_agreement import register_service_agreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
-from squid_py.service_agreement.service_factory import ServiceFactory, ServiceDescriptor
-from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID
-from squid_py.service_agreement.service_types import ServiceTypes
-from squid_py.service_agreement.utils import (
-    make_public_key_and_authentication,
-    get_conditions_data_from_keeper_contracts,
-)
-from squid_py.utils.utilities import (
-    prepare_prefixed_hash,
-    get_metadata_url,
-)
+from squid_py.service_agreement.service_factory import ServiceDescriptor, ServiceFactory
+from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID, ServiceTypes
+from squid_py.service_agreement.utils import (get_conditions_data_from_keeper_contracts,
+                                              make_public_key_and_authentication)
+from squid_py.utils.utilities import (get_metadata_url, prepare_prefixed_hash)
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
@@ -126,7 +120,8 @@ class Ocean:
         :param sort: Dictionary to choose order base in some value
         :param offset: Number of elements shows by page
         :param page: Page number
-        :param aquarius_url: Url of the aquarius where you want to search. If there is not provided take the default
+        :param aquarius_url: Url of the aquarius where you want to search. If there is not
+        provided take the default
         :return: List of assets that match with the query
         """
         logger.info(f'Searching asset containing: {text}')
@@ -145,8 +140,10 @@ class Ocean:
         :param query: dict with query parameters
             (e.g.) {"offset": 100, "page": 0, "sort": {"value": 1},
                     query: {"service:{$elemMatch:{"metadata": {$exists : true}}}}}
-                    Here, OceanDB instance of mongodb can leverage power of mongo queries in 'query' attribute.
-                    For more info - https://docs.mongodb.com/manual/reference/method/db.collection.find
+                    Here, OceanDB instance of mongodb can leverage power of mongo queries in
+                    'query' attribute.
+                    For more info -
+                    https://docs.mongodb.com/manual/reference/method/db.collection.find
         :return: List of assets that match with the query.
         """
         aquarius_url = self.config.aquarius_url
@@ -160,7 +157,8 @@ class Ocean:
 
     def register_asset(self, metadata, publisher_account, service_descriptors=None):
         """
-        Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (Aquarius).
+        Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (
+        Aquarius).
 
         :param metadata: dict conforming to the Metadata accepted by Ocean Protocol.
         :param publisher_account: Account of the publisher registering this asset
@@ -279,13 +277,17 @@ class Ocean:
         by `service_definition_id` in the ddo and send the signed agreement to the purchase endpoint
         associated with this service.
 
-        :param did: str starting with the prefix `did:op:` and followed by the asset id which is a hex str
-        :param service_definition_id: str the service definition id identifying a specific service in the DDO (DID document)
-        :param consumer_account: ethereum address of consumer signing the agreement and initiating a purchase/access transaction
+        :param did: str starting with the prefix `did:op:` and followed by the asset id which is
+        a hex str
+        :param service_definition_id: str the service definition id identifying a specific
+        service in the DDO (DID document)
+        :param consumer_account: ethereum address of consumer signing the agreement and
+        initiating a purchase/access transaction
         :return: tuple(agreement_id, signature) the service agreement id (can be used to query
             the keeper-contracts for the status of the service agreement) and signed agreement hash
         """
-        assert consumer_account.address in self.accounts, f'Unrecognized consumer address consumer_account'
+        assert consumer_account.address in self.accounts, f'Unrecognized consumer address ' \
+            f'consumer_account'
 
         agreement_id = ServiceAgreement.create_new_agreement_id()
         ddo = self.resolve_asset_did(did)

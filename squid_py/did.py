@@ -6,7 +6,6 @@ import uuid
 from eth_utils import remove_0x_prefix
 from web3 import Web3
 
-
 OCEAN_PREFIX = 'did:op:'
 
 

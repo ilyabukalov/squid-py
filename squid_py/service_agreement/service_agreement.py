@@ -4,7 +4,8 @@ from squid_py.keeper.utils import generate_multi_value_hash
 from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
 from squid_py.service_agreement.service_agreement_contract import ServiceAgreementContract
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
-from squid_py.service_agreement.utils import get_conditions_with_updated_keys, get_conditions_data_from_keeper_contracts
+from squid_py.service_agreement.utils import (get_conditions_data_from_keeper_contracts,
+                                              get_conditions_with_updated_keys)
 from squid_py.utils import generate_prefixed_id
 
 
@@ -107,13 +108,15 @@ class ServiceAgreement(object):
     def get_signed_agreement_hash(self, service_agreement_id, consumer_account):
         """Return the consumer-signed service agreement hash and the raw hash.
 
-        :param service_agreement_id: hex str -- a new service agreement id for this service transaction
+        :param service_agreement_id: hex str -- a new service agreement id for this service
+        transaction
         :param consumer_account: Account instance -- account of consumer to sign the message
 
         :return: signed_msg_hash, msg_hash
         """
         agreement_hash = self.get_service_agreement_hash(service_agreement_id)
-        # We cannot use `web3.eth.account.signHash()` here because it requires privateKey which is not available.
+        # We cannot use `web3.eth.account.signHash()` here because it requires privateKey which
+        # is not available.
         return consumer_account.sign_hash(agreement_hash), agreement_hash.hex()
 
     def update_conditions_keys(self, web3, contract_path):

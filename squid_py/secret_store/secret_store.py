@@ -13,7 +13,8 @@ class SecretStore(object):
     def __init__(self):
         config = ConfigProvider.get_config()
         self._secret_store_client = SecretStore._client_class(
-            config.secret_store_url, config.parity_url, config.parity_address, config.parity_password
+            config.secret_store_url, config.parity_url, config.parity_address,
+            config.parity_password
         )
 
     @staticmethod
@@ -52,4 +53,5 @@ class SecretStore(object):
             None -- if decryption failed
             str -- the original content that was encrypted previously
         """
-        return self._secret_store_client.decrypt_document(remove_0x_prefix(document_id), encrypted_content)
+        return self._secret_store_client.decrypt_document(remove_0x_prefix(document_id),
+                                                          encrypted_content)

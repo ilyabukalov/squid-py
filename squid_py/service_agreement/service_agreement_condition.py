@@ -1,4 +1,4 @@
-from eth_utils import remove_0x_prefix, add_0x_prefix
+from eth_utils import add_0x_prefix, remove_0x_prefix
 from web3 import Web3
 
 
@@ -101,7 +101,9 @@ class ServiceAgreementCondition(object):
         assert len(self.dependencies) == len(self.timeout_flags)
         if self.dependencies:
             assert sum(
-                self.timeout_flags) == 0 or self.timeout > 0, 'timeout must be set when any dependency is set to rely on a timeout.'
+                self.timeout_flags) == 0 or self.timeout > 0, 'timeout must be set when any ' \
+                                                              'dependency is set to rely on a ' \
+                                                              'timeout.'
 
         self.parameters = [Parameter(p) for p in condition_json['parameters']]
         self.events = [Event(e) for e in condition_json['events']]

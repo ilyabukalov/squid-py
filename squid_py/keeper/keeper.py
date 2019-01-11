@@ -8,9 +8,9 @@ import os
 from squid_py.config_provider import ConfigProvider
 from squid_py.keeper.conditions.access_conditions import AccessConditions
 from squid_py.keeper.conditions.payment_conditions import PaymentConditions
-from squid_py.keeper.service_agreement import ServiceAgreement
 from squid_py.keeper.didregistry import DIDRegistry
 from squid_py.keeper.market import Market
+from squid_py.keeper.service_agreement import ServiceAgreement
 from squid_py.keeper.token import Token
 from squid_py.keeper.web3_provider import Web3Provider
 

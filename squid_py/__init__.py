@@ -1,39 +1,21 @@
 __author__ = """OceanProtocol"""
 __version__ = '0.2.19'
 
-from .ddo import (
-    PublicKeyRSA,
-    PublicKeyHex,
-    PublicKeyBase,
-    Authentication,
-    Metadata,
-    Service,
-    DDO
-)
-from .exceptions import (
-    OceanInvalidContractAddress, OceanDIDNotFound, OceanDIDAlreadyExist, OceanDIDCircularReference,
-    OceanDIDUnknownValueType, OceanInvalidMetadata, OceanInvalidServiceAgreementSignature,
-    OceanKeeperContractsNotFound, OceanServiceAgreementExists,
-)
-from .ocean import (
-    Ocean,
-    Account,
-    OceanBase,
-)
-from .service_agreement import (
-    ServiceTypes,
-    ServiceDescriptor,
-    ServiceFactory,
-    ServiceAgreement,
-    ServiceAgreementTemplate,
-    ACCESS_SERVICE_TEMPLATE_ID,
-)
-from .config_provider import (
-    ConfigProvider,
+from .brizo import (
+    Brizo
 )
 from .config import (
     Config
 )
-from .brizo import (
-    Brizo
+from .config_provider import (
+    ConfigProvider,
 )
+from .ddo import (Authentication, DDO, Metadata, PublicKeyBase, PublicKeyHex, PublicKeyRSA, Service)
+from .exceptions import (OceanDIDAlreadyExist, OceanDIDCircularReference, OceanDIDNotFound,
+                         OceanDIDUnknownValueType, OceanInvalidContractAddress,
+                         OceanInvalidMetadata, OceanInvalidServiceAgreementSignature,
+                         OceanKeeperContractsNotFound, OceanServiceAgreementExists)
+from .ocean import (Account, Ocean, OceanBase)
+from .service_agreement import (ACCESS_SERVICE_TEMPLATE_ID, ServiceAgreement,
+                                ServiceAgreementTemplate, ServiceDescriptor, ServiceFactory,
+                                ServiceTypes)

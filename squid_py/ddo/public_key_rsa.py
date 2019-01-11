@@ -3,7 +3,7 @@
 
 """
 
-from .public_key_base import PublicKeyBase, PUBLIC_KEY_STORE_TYPE_PEM, PUBLIC_KEY_STORE_TYPE_BASE64
+from .public_key_base import PUBLIC_KEY_STORE_TYPE_BASE64, PUBLIC_KEY_STORE_TYPE_PEM, PublicKeyBase
 
 AUTHENTICATION_TYPE_RSA = 'RsaVerificationKey2018'
 PUBLIC_KEY_TYPE_RSA = 'RsaSignatureAuthentication2018'

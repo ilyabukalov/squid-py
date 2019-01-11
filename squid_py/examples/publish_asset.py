@@ -1,10 +1,11 @@
 import logging
 
-from squid_py import Ocean, Metadata, ServiceDescriptor
+from squid_py import Metadata, Ocean, ServiceDescriptor
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.config import Config
 from squid_py.config_provider import ConfigProvider
-from tests.resources.helper_functions import get_registered_access_service_template, get_account_from_config
+from tests.resources.helper_functions import (get_account_from_config,
+                                              get_registered_access_service_template)
 
 
 def publish_asset():

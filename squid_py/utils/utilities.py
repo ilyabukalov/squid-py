@@ -55,7 +55,8 @@ def get_public_key_from_address(web3, address):
     prefixed_hash = prepare_prefixed_hash(_hash)
     pub_key = KeyAPI.PublicKey.recover_from_msg_hash(prefixed_hash,
                                                      KeyAPI.Signature(vrs=signature_vrs))
-    assert pub_key.to_checksum_address() == address, 'recovered address does not match signing address.'
+    assert pub_key.to_checksum_address() == address, 'recovered address does not match signing ' \
+                                                     'address.'
     return pub_key
 
 
@@ -120,7 +121,7 @@ def split_signature(web3, signature):
     :return:
     """
     assert len(signature) == 65, f'invalid signature, ' \
-                                 f'expecting bytes of length 65, got {len(signature)}'
+        f'expecting bytes of length 65, got {len(signature)}'
     v = web3.toInt(signature[-1])
     r = to_32byte_hex(web3, int.from_bytes(signature[:32], 'big'))
     s = to_32byte_hex(web3, int.from_bytes(signature[32:64], 'big'))

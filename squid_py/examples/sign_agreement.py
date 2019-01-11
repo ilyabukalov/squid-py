@@ -1,6 +1,6 @@
 import logging
 
-from squid_py import Ocean, ServiceTypes, ServiceAgreement
+from squid_py import Ocean, ServiceAgreement, ServiceTypes
 from squid_py.config import Config
 from tests.resources.helper_functions import get_account_from_config, get_registered_ddo
 
