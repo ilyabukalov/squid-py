@@ -229,7 +229,7 @@ def test_creating_did_using_ddo():
 def test_load_ddo_json():
     # TODO: Fix
     sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
-    assert sample_ddo_path.exists(), f'{sample_ddo_path} does not exist!''
+    assert sample_ddo_path.exists(), f'{sample_ddo_path} does not exist!'
     with open(sample_ddo_path) as f:
         sample_ddo_json_dict = json.load(f)
 
