@@ -8,8 +8,10 @@ from squid_py.config_provider import ConfigProvider
 from tests.resources.helper_functions import get_registered_ddo, get_consumer_ocean_instance, \
     get_publisher_ocean_instance, get_consumer_account
 from tests.resources.mocks.secret_store_mock import SecretStoreClientMock
+from tests.resources.tiers import should_run_test
 
-ConfigProvider.set_config(Config('config_local.ini'))
+if should_run_test('e2e'):
+    ConfigProvider.set_config(Config('config_local.ini'))
 
 
 @pytest.fixture
