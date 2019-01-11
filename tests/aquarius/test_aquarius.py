@@ -4,9 +4,10 @@ from squid_py.ddo import DDO
 from squid_py.aquarius.aquarius import Aquarius
 from squid_py.did import DID
 from tests.resources.helper_functions import get_resource_path
-from tests.resources.tiers import e2e_test
+from tests.resources.tiers import e2e_test, should_run_test
 
-aquarius = Aquarius()
+if should_run_test('e2e'):
+    aquarius = Aquarius()
 
 
 def _get_asset(file_name):
