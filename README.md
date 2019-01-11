@@ -182,10 +182,16 @@ In addition to the configuration file, you may use the following environment var
 
     The artifacts contain the addresses of all the deployed contracts and their ABI definitions required to interact with them.
 
-1. Run the unit tests
+1. Run the automated tests
 
     ```
-    python3 setup.py test
+    TIER=<tier> python3 setup.py test # where <tier> is unit, integration or e2e, depending on how much of the tests you want to run (e2e runs everything)
+    ```
+
+1. Run tests automatically as you change code while doing TDD
+
+    ```
+    TIER=<tier> ptw
     ```
 
 #### Code style
