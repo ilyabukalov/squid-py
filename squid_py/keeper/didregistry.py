@@ -16,6 +16,7 @@ class DIDRegistry(ContractBase):
 
     @staticmethod
     def get_instance():
+        """Returns a ContractBase instance of the DIDRegistry contract."""
         return DIDRegistry('DIDRegistry')
 
     def register(self, did_source, url=None, ddo=None, did=None, key=None, account=None):

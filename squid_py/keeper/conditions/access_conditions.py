@@ -8,6 +8,7 @@ class AccessConditions(ContractBase):
 
     @staticmethod
     def get_instance():
+        """Returns a ContractBase instance of the AccessConditions contract."""
         return AccessConditions('AccessConditions')
 
     def check_permissions(self, address, asset_did):

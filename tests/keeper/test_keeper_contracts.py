@@ -1,51 +1,32 @@
 """
-    Test Keeper Contracts
+    Test Keeper class.
 
     This tests basic contract loading and one call to the smart contract to prove
     that the contact can be loaded and used
 
 """
-import os
-import secrets
-
-from squid_py.config import Config
-from squid_py.ocean.ocean import Ocean
+from squid_py.keeper import Keeper
 from tests.resources.tiers import e2e_test
 
 
-def get_ocean_instance():
-    path_config = 'config_local.ini'
-    os.environ['CONFIG_FILE'] = path_config
-    ocean = Ocean(Config(os.environ['CONFIG_FILE']))
-    return ocean
+@e2e_test
+def test_keeper_instance():
+    keeper = Keeper()
+    assert keeper
+    assert isinstance(keeper.get_instance(), Keeper)
 
 
 @e2e_test
-def test_didregistry_contract():
-    ocean = get_ocean_instance()
-    assert ocean
-
-    assert ocean.keeper.did_registry
-    test_id = secrets.token_hex(32)
-    # contract call does not work with docker
-    assert ocean.keeper.did_registry.get_update_at(test_id) == 0
-
-
-@e2e_test
-def test_market_contract():
-    ocean = get_ocean_instance()
-    assert ocean
-
-    assert ocean.keeper.market
-    test_id = secrets.token_hex(32)
-    assert ocean.keeper.market.verify_order_payment(test_id)
-
-
-@e2e_test
-def test_token_contract():
-    ocean = get_ocean_instance()
-    assert ocean
-
-    token_account = list(ocean.accounts)[len(list(ocean.accounts)) - 1]
-    assert ocean.keeper.token
-    assert ocean.keeper.token.get_token_balance(token_account) == 0
+def test_keeper_networks():
+    keeper = Keeper()
+    assert isinstance(keeper.get_network_id(), int)
+    assert keeper.get_network_name(1) == Keeper._network_name_map.get(1)
+    assert keeper.get_network_name(2) == Keeper._network_name_map.get(2)
+    assert keeper.get_network_name(3) == Keeper._network_name_map.get(3)
+    assert keeper.get_network_name(4) == Keeper._network_name_map.get(4)
+    assert keeper.get_network_name(42) == Keeper._network_name_map.get(42)
+    assert keeper.get_network_name(77) == Keeper._network_name_map.get(77)
+    assert keeper.get_network_name(99) == Keeper._network_name_map.get(99)
+    assert keeper.get_network_name(8995) == Keeper._network_name_map.get(8995)
+    assert keeper.get_network_name(8996) == Keeper._network_name_map.get(8996)
+    assert keeper.get_network_name(0) == 'development'

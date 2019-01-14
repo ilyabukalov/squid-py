@@ -51,7 +51,7 @@ class Keeper(object):
         if Keeper._instance is None:
             Keeper._instance = Keeper()
 
-            Keeper.network_name = Keeper.get_network_name()
+            Keeper.network_name = Keeper.get_network_name(Keeper.get_network_id())
             Keeper.artifacts_path = ConfigProvider.get_config().keeper_path
             Keeper.accounts = Web3Provider.get_web3().eth.accounts
 
@@ -66,9 +66,10 @@ class Keeper(object):
         return Keeper._instance
 
     @staticmethod
-    def get_network_name():
+    def get_network_name(network_id):
         """
         Return the keeper network name based on the current ethereum network id.
+        Return `development` for every network id that is not mapped.
 
         :return: Network name, str
         """
@@ -77,9 +78,13 @@ class Keeper(object):
                 os.environ.get('KEEPER_NETWORK_NAME')))
             return os.environ.get('KEEPER_NETWORK_NAME')
 
-        web3 = Web3Provider.get_web3()
-        return Keeper._network_name_map.get(int(web3.version.network), Keeper.DEFAULT_NETWORK_NAME)
+        return Keeper._network_name_map.get(network_id, Keeper.DEFAULT_NETWORK_NAME)
 
     @staticmethod
     def get_network_id():
+        """
+        Return the ethereum network id calling the `web3.version.network` method.
+
+        :return: Network id, int
+        """
         return int(Web3Provider.get_web3().version.network)
