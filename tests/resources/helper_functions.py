@@ -30,8 +30,8 @@ def get_resource_path(dir_name, file_name):
 
 def init_ocn_tokens(ocn, account, amount=100):
     account.request_tokens(amount)
-    ocn.keeper.token.token_approve(
-        ocn.keeper.payment_conditions.address,
+    ocn._keeper.token.token_approve(
+        ocn._keeper.payment_conditions.address,
         amount,
         account
     )
@@ -42,7 +42,7 @@ def make_ocean_instance(secret_store_client, account_index):
     os.environ['CONFIG_FILE'] = path_config
     SecretStore.set_client(secret_store_client)
     ocn = Ocean(Config(path_config))
-    account = list(ocn.accounts)[account_index]
+    account = list(ocn.get_accounts())[account_index]
     Brizo.set_http_client(BrizoMock(ocn, account))
     return ocn
 
@@ -93,12 +93,12 @@ def get_registered_access_service_template(ocean_instance, account):
     # register an asset Access service agreement template
     template = ServiceAgreementTemplate.from_json_file(get_sla_template_path())
     template_id = ACCESS_SERVICE_TEMPLATE_ID
-    template_owner = ocean_instance.keeper.service_agreement.get_template_owner(template_id)
+    template_owner = ocean_instance._keeper.service_agreement.get_template_owner(template_id)
     if not template_owner:
         template = register_service_agreement_template(
-            ocean_instance.keeper.service_agreement,
+            ocean_instance._keeper.service_agreement,
             account, template,
-            ocean_instance.keeper.network_name
+            ocean_instance._keeper.network_name
         )
 
     return template

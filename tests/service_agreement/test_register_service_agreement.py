@@ -38,12 +38,12 @@ class TestRegisterServiceAgreement:
         cls.web3 = Web3(HTTPProvider(cls.config.keeper_url))
 
         cls.ocean = Ocean(cls.config)
-        cls.keeper = cls.ocean.keeper
-        cls.market = cls.ocean.keeper.market
-        cls.token = cls.ocean.keeper.token
-        cls.payment_conditions = cls.ocean.keeper.payment_conditions
-        cls.access_conditions = cls.ocean.keeper.access_conditions
-        cls.service_agreement = cls.ocean.keeper.service_agreement
+        cls.keeper = cls.ocean._keeper
+        cls.market = cls.ocean._keeper.market
+        cls.token = cls.ocean._keeper.token
+        cls.payment_conditions = cls.ocean._keeper.payment_conditions
+        cls.access_conditions = cls.ocean._keeper.access_conditions
+        cls.service_agreement = cls.ocean._keeper.service_agreement
 
         cls.consumer_acc = get_publisher_account(cls.config)
         cls.consumer = cls.consumer_acc.address
