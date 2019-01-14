@@ -122,11 +122,7 @@ def test_register_asset(publisher_ocean_instance):
     ##########################################################
     # Register using high-level interface
     ##########################################################
-    service_descriptors = [
-        ServiceDescriptor.access_service_descriptor(asset_price, '/purchaseEndpoint',
-                                                    '/serviceEndpoint', 600,
-                                                    ('0x%s' % generate_new_id()))]
-    publisher_ocean_instance.register_asset(asset.get_metadata(), publisher, service_descriptors)
+    publisher_ocean_instance.register_asset(asset.get_metadata(), publisher)
 
 
 @e2e_test
@@ -134,11 +130,7 @@ def test_resolve_did(publisher_ocean_instance):
     # prep ddo
     metadata = Metadata.get_example()
     publisher = publisher_ocean_instance.main_account
-    original_ddo = publisher_ocean_instance.register_asset(
-        metadata, publisher,
-        [ServiceDescriptor.access_service_descriptor(7, '/dummy/url', '/service/endpoint', 3,
-                                                     ('0x%s' % generate_new_id()))]
-    )
+    original_ddo = publisher_ocean_instance.register_asset(metadata, publisher)
 
     # happy path
     did = original_ddo.did

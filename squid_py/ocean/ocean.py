@@ -155,16 +155,13 @@ class Ocean:
             return [DDO(dictionary=ddo_dict) for ddo_dict in
                     self.metadata_store.query_search(query)]
 
-    def register_asset(self, metadata, publisher_account, service_descriptors=None):
+    def register_asset(self, metadata, publisher_account):
         """
         Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (
         Aquarius).
 
         :param metadata: dict conforming to the Metadata accepted by Ocean Protocol.
         :param publisher_account: Account of the publisher registering this asset
-        :param service_descriptors: list of ServiceDescriptor tuples of length 2.
-            The first item must be one of ServiceTypes and the second
-            item is a dict of parameters and values required by the service
         :return: DDO instance
         """
         assert isinstance(metadata, dict), f'Expected metadata of type dict, got {type(metadata)}'
@@ -218,16 +215,15 @@ class Ocean:
                                                                               ddo_service_endpoint)
 
         # Add all services to ddo
-        if not service_descriptors:
-            brizo = BrizoProvider.get_brizo()
-            service_descriptors = ServiceDescriptor.access_service_descriptor(
-                metadata[MetadataBase.KEY]['price'],
-                brizo.get_purchase_endpoint(),
-                brizo.get_service_endpoint(),
-                3600,
-                ACCESS_SERVICE_TEMPLATE_ID
-            )
-        _service_descriptors = service_descriptors + [metadata_service_desc]
+        brizo = BrizoProvider.get_brizo()
+        service_descriptors = ServiceDescriptor.access_service_descriptor(
+            metadata[MetadataBase.KEY]['price'],
+            brizo.get_purchase_endpoint(self.config),
+            brizo.get_service_endpoint(self.config),
+            3600,
+            ACCESS_SERVICE_TEMPLATE_ID
+        )
+        _service_descriptors = [service_descriptors] + [metadata_service_desc]
         for service in ServiceFactory.build_services(Web3Provider.get_web3(),
                                                      self.keeper.artifacts_path, did,
                                                      _service_descriptors):
