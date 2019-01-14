@@ -37,7 +37,7 @@ class Diagnostics:
         # try to find contract with this network name
         contract_name = 'ServiceAgreement'
         network_id = Keeper.get_network_id()
-        network_name = Keeper.get_network_name()
+        network_name = Keeper.get_network_name(network_id)
         logger.info(f'Using keeper contracts from network {network_name}, '
                     f'network id is {network_id}')
         logger.info(f'Looking for keeper contracts ending with ".{network_name}.json", '

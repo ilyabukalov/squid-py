@@ -61,7 +61,7 @@ class ContractHandler(object):
         :return: dict -- the smart contract's definition from the json abi file
         """
         keeper = Keeper.get_instance()
-        network_name = keeper.get_network_name().lower()
+        network_name = keeper.get_network_name(keeper.get_network_id()).lower()
 
         file_name = '{}.{}.json'.format(contract_name, network_name)
         path = os.path.join(keeper.artifacts_path, file_name)
