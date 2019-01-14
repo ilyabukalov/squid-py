@@ -105,8 +105,7 @@ def get_registered_access_service_template(ocean_instance, account):
 
 
 def get_registered_ddo(ocean_instance, account):
-    ddo = ocean_instance.register_asset(
-        Metadata.get_example(), account)
+    ddo = ocean_instance.register_asset(Metadata.get_example(), account)
     return ddo
 
 
