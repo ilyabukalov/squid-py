@@ -13,6 +13,7 @@ class Market(ContractBase):
 
     @staticmethod
     def get_instance():
+        """Returns a ContractBase instance of the OceanMarket contract."""
         return Market('OceanMarket')
 
     def check_asset(self, asset_id):
@@ -26,10 +27,20 @@ class Market(ContractBase):
         return self.contract_concise.checkAsset(asset_id_bytes)
 
     def verify_order_payment(self, order_id):
+        """Verify the payment of consumer is received by OceanMarket
+
+        :param order_id: Order id, str
+        :return: bool
+        """
         return self.contract_concise.verifyPaymentReceived(order_id)
 
     def get_asset_price(self, asset_id):
-        """Return the price of an asset already registered."""
+        """
+        Return the price of an asset already registered.
+
+        :param asset_id: Asset id, str
+        :return: Price, int
+        """
         asset_id_bytes = Web3.toBytes(hexstr=asset_id)
         try:
             return self.contract_concise.getAssetPrice(asset_id_bytes)
@@ -50,7 +61,7 @@ class Market(ContractBase):
             receipt = self.contract_concise.requestTokens(amount, transact={'from': address})
             logging.debug(f'{address} requests {amount} tokens, returning receipt')
             return receipt
-        except OceanInvalidTransaction:
+        except ValueError:
             raise OceanInvalidTransaction(f'Transaction on chain requesting {amount} tokens'
                                           f' to {address} failed.')
 
@@ -59,9 +70,9 @@ class Market(ContractBase):
         Register an asset on chain.
         Calls the OceanMarket.register function.
 
-        :param asset:
-        :param price:
-        :param publisher_address:
+        :param asset: Asset, DDO
+        :param price: Price, int
+        :param publisher_address: Publisher address, str
         """
         asset_id_bytes = Web3.toBytes(hexstr=asset.asset_id)
         assert asset_id_bytes

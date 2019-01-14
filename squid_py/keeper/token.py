@@ -9,6 +9,7 @@ class Token(ContractBase):
 
     @staticmethod
     def get_instance():
+        """Returns a ContractBase instance of the OceanToken contract."""
         return Token('OceanToken')
 
     def get_token_balance(self, account_address):
@@ -33,9 +34,9 @@ class Token(ContractBase):
         """
         Approve the passed address to spend the specified amount of tokens.
 
-        :param spender_address:
-        :param price:
-        :param from_account:
+        :param spender_address: Account address, str
+        :param price: Price, int
+        :param from_account: Account address, str
         :return:
         """
         if not Web3Provider.get_web3().isChecksumAddress(spender_address):

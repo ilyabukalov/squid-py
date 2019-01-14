@@ -1,7 +1,4 @@
-"""
-    Test ocean class
-
-"""
+"""Test ocean class."""
 import logging
 
 import pytest
@@ -21,8 +18,8 @@ from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
 from squid_py.service_agreement.utils import build_condition_key
-from squid_py.utils.utilities import generate_new_id, prepare_prefixed_hash
-from tests.resources.helper_functions import get_resource_path, wait_for_event
+from squid_py.utils.utilities import generate_new_id
+from tests.resources.helper_functions import get_resource_path, verify_signature, wait_for_event
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.tiers import e2e_test
 
@@ -296,7 +293,10 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
             agreement_id,
             service_agreement.conditions_keys[
                 2])
-        assert grant_access_cond_status == 0 and release_cond_status == 0, 'grantAccess and/or releasePayment is fulfilled but not expected to.'
+        assert grant_access_cond_status == 0 and release_cond_status == 0, 'grantAccess and/or ' \
+                                                                           'releasePayment is ' \
+                                                                           'fulfilled but not ' \
+                                                                           'expected to.'
 
     # Grant access
     grantAccess(web3, keeper.artifacts_path, publisher_acc, agreement_id, service_def)
@@ -346,38 +346,30 @@ def test_agreement_hash(publisher_ocean_instance):
     )
     print('agreement hash: ', agreement_hash.hex())
     print('expected hash: ', "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb")
-    assert agreement_hash.hex() == "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb", 'hash does not match.'
+    assert agreement_hash.hex() == \
+           "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb", 'hash does not ' \
+                                                                                 'match.'
 
 
 @e2e_test
 def test_verify_signature(consumer_ocean_instance):
     """
-    squid-py currently uses `web3.eth.sign()` to sign the service agreement hash. This signing method
+    squid-py currently uses `web3.eth.sign()` to sign the service agreement hash. This signing
+    method
     uses ethereum `eth_sign` on the ethereum client which automatically prepends the
     message with text defined in EIP-191 as version 'E': `b'\\x19Ethereum Signed Message:\\n'`
     concatenated with the number of bytes in the message.
 
-    It is more convenient to sign a message using `web3.eth.sign()` because it only requires the account address
+    It is more convenient to sign a message using `web3.eth.sign()` because it only requires the
+    account address
     whereas `web3.eth.account.signHash()` requires a private_key to sign the message.
     `web3.eth.account.signHash()` also does not prepend anything to the message before signing.
-    Messages signed via Metamask in pleuston use the latter method and current fail to verify in squid-py/brizo.
-    The signature verification fails because recoverHash is being used on a prepended message but the signature
+    Messages signed via Metamask in pleuston use the latter method and current fail to verify in
+    squid-py/brizo.
+    The signature verification fails because recoverHash is being used on a prepended message but
+    the signature
     created by `web3.eth.account.signHash()` does not add a prefix before signing.
-
     """
-    w3 = Web3Provider.get_web3()
-
-    def verify_signature(_address, _agreement_hash, _signature, expected_match):
-        prefixed_hash = prepare_prefixed_hash(_agreement_hash)
-        recovered_address0 = w3.eth.account.recoverHash(prefixed_hash, signature=_signature)
-        recovered_address1 = w3.eth.account.recoverHash(_agreement_hash, signature=_signature)
-        print('original address: ', _address)
-        print('w3.eth.account.recoverHash(prefixed_hash, signature=signature)  => ',
-              recovered_address0)
-        print('w3.eth.account.recoverHash(agreement_hash, signature=signature) => ',
-              recovered_address1)
-        assert _address == (recovered_address0, recovered_address1)[expected_match], \
-            'Could not verify signature using address {}'.format(_address)
 
     # Signature created from Metamask (same as using `web3.eth.account.signHash()`)
     address = '0x8248039e67801Ac0B9d0e38201E963194abdb540'

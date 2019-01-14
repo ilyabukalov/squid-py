@@ -2,24 +2,19 @@ import os
 import pathlib
 import time
 
-from squid_py import (
-    ServiceAgreementTemplate,
-    ACCESS_SERVICE_TEMPLATE_ID,
-    ServiceDescriptor,
-    Ocean,
-    Account,
-    ConfigProvider
-)
+from squid_py import (ACCESS_SERVICE_TEMPLATE_ID, Account, ConfigProvider, Ocean,
+                      ServiceAgreementTemplate, ServiceDescriptor)
+from squid_py.brizo.brizo import Brizo
 from squid_py.config import Config
 from squid_py.ddo.metadata import Metadata
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.brizo.brizo import Brizo
 from squid_py.secret_store.secret_store import SecretStore
-from squid_py.service_agreement.utils import get_sla_template_path, register_service_agreement_template
+from squid_py.service_agreement.utils import (get_sla_template_path,
+                                              register_service_agreement_template)
+from squid_py.utils.utilities import prepare_prefixed_hash
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.mocks.secret_store_mock import SecretStoreClientMock
-
 
 PUBLISHER_INDEX = 1
 CONSUMER_INDEX = 0
@@ -122,3 +117,17 @@ def wait_for_event(event, arg_filter, wait_iterations=20):
         if events:
             return events[0]
         time.sleep(0.5)
+
+
+def verify_signature(_address, _agreement_hash, _signature, expected_match):
+    w3 = Web3Provider.get_web3()
+    prefixed_hash = prepare_prefixed_hash(_agreement_hash)
+    recovered_address0 = w3.eth.account.recoverHash(prefixed_hash, signature=_signature)
+    recovered_address1 = w3.eth.account.recoverHash(_agreement_hash, signature=_signature)
+    print('original address: ', _address)
+    print('w3.eth.account.recoverHash(prefixed_hash, signature=signature)  => ',
+          recovered_address0)
+    print('w3.eth.account.recoverHash(agreement_hash, signature=signature) => ',
+          recovered_address1)
+    assert _address == (recovered_address0, recovered_address1)[expected_match], \
+        'Could not verify signature using address {}'.format(_address)

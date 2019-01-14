@@ -1,5 +1,4 @@
-"""
-"""
+"""Test Assets"""
 
 import logging
 
