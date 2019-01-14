@@ -2,16 +2,18 @@ import logging
 
 from squid_py import Metadata, Ocean, ServiceDescriptor
 from squid_py.brizo.brizo_provider import BrizoProvider
-from squid_py.config import Config
 from squid_py.config_provider import ConfigProvider
-from tests.resources.helper_functions import (get_account_from_config,
-                                              get_registered_access_service_template)
+from squid_py.examples.example_config import ExampleConfig
+from tests.resources.helper_functions import (
+    get_account_from_config,
+    get_registered_access_service_template
+)
 
 
-def publish_asset():
+def register_asset():
     # make ocean instance
-    path_config = 'config_local.ini'
-    ocn = Ocean(Config(path_config))
+    ConfigProvider.set_config(ExampleConfig.get_config())
+    ocn = Ocean()
     account = get_account_from_config(ocn.config, 'parity.address', 'parity.password')
     template = get_registered_access_service_template(ocn, account)
     config = ConfigProvider.get_config()
@@ -26,3 +28,9 @@ def publish_asset():
     )
 
     logging.info(f'Registered asset: did={ddo.did}, ddo-services={ddo.services}')
+    resolved_ddo = ocn.resolve_asset_did(ddo.did)
+    logging.info(f'resolved asset ddo: did={resolved_ddo.did}, ddo={resolved_ddo.as_text()}')
+
+
+if __name__ == '__main__':
+    register_asset()

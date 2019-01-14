@@ -220,13 +220,13 @@ class Ocean:
         # Add all services to ddo
         if not service_descriptors:
             brizo = BrizoProvider.get_brizo()
-            service_descriptors = ServiceDescriptor.access_service_descriptor(
+            service_descriptors = [ServiceDescriptor.access_service_descriptor(
                 metadata[MetadataBase.KEY]['price'],
-                brizo.get_purchase_endpoint(),
-                brizo.get_service_endpoint(),
+                brizo.get_purchase_endpoint(self.config),
+                brizo.get_service_endpoint(self.config),
                 3600,
                 ACCESS_SERVICE_TEMPLATE_ID
-            )
+            )]
         _service_descriptors = service_descriptors + [metadata_service_desc]
         for service in ServiceFactory.build_services(Web3Provider.get_web3(),
                                                      self.keeper.artifacts_path, did,
@@ -306,6 +306,7 @@ class Ocean:
 
         service_def = ddo.find_service_by_id(service_definition_id).as_dictionary()
         # Must approve token transfer for this purchase
+        logger.debug(f'approving token transfer: {service_agreement.get_price()}')
         self._approve_token_transfer(service_agreement.get_price(), consumer_account)
         # subscribe to events related to this service_agreement_id before sending the request.
         logger.debug(f'Registering service agreement with id: {agreement_id}')
