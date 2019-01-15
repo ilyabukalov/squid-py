@@ -1,12 +1,11 @@
 import logging
 
-from squid_py import Metadata, Ocean, ServiceDescriptor
-from squid_py.brizo.brizo_provider import BrizoProvider
+
+from squid_py import Metadata, Ocean
 from squid_py.config_provider import ConfigProvider
 from squid_py.examples.example_config import ExampleConfig
 from tests.resources.helper_functions import (
     get_account_from_config,
-    get_registered_access_service_template
 )
 
 
@@ -15,17 +14,7 @@ def register_asset():
     ConfigProvider.set_config(ExampleConfig.get_config())
     ocn = Ocean()
     account = get_account_from_config(ocn.config, 'parity.address', 'parity.password')
-    template = get_registered_access_service_template(ocn, account)
-    config = ConfigProvider.get_config()
-    brizo = BrizoProvider.get_brizo()
-    purchase_endpoint = brizo.get_purchase_endpoint(config)
-    service_endpoint = brizo.get_service_endpoint(config)
-    service_timeout = 600  # seconds (10 minutes)
-    ddo = ocn.register_asset(
-        Metadata.get_example(), account,
-        [ServiceDescriptor.access_service_descriptor(
-            20, purchase_endpoint, service_endpoint, service_timeout, template.template_id)]
-    )
+    ddo = ocn.register_asset(Metadata.get_example(), account)
 
     logging.info(f'Registered asset: did={ddo.did}, ddo-services={ddo.services}')
     resolved_ddo = ocn.resolve_asset_did(ddo.did)

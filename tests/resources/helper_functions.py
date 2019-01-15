@@ -105,16 +105,8 @@ def get_registered_access_service_template(ocean_instance, account):
 
 
 def get_registered_ddo(ocean_instance, account):
-    template = get_registered_access_service_template(ocean_instance, account)
-    config = ConfigProvider.get_config()
-    purchase_endpoint = Brizo.get_purchase_endpoint(config)
-    service_endpoint = Brizo.get_service_endpoint(config)
-    ddo = ocean_instance.register_asset(
-        Metadata.get_example(), account,
-        [ServiceDescriptor.access_service_descriptor(7, purchase_endpoint, service_endpoint, 360,
-                                                     template.template_id)]
-    )
-
+    get_registered_access_service_template(ocean_instance, account)
+    ddo = ocean_instance.register_asset(Metadata.get_example(), account)
     return ddo
 
 
