@@ -5,6 +5,7 @@ import logging
 import os
 import os.path
 
+from squid_py.aquarius.aquarius import Aquarius
 from squid_py.aquarius.aquarius_provider import AquariusProvider
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.config_provider import ConfigProvider
@@ -126,7 +127,7 @@ class Ocean:
         """
         logger.info(f'Searching asset containing: {text}')
         if aquarius_url is not None:
-            aquarius = AquariusProvider.get_aquarius(aquarius_url)
+            aquarius = Aquarius(aquarius_url)
             return [DDO(dictionary=ddo_dict) for ddo_dict in
                     aquarius.text_search(text, sort, offset, page)]
         else:
@@ -149,7 +150,7 @@ class Ocean:
         aquarius_url = self.config.aquarius_url
         logger.info(f'Searching asset query: {query}')
         if aquarius_url is not None:
-            aquarius = AquariusProvider.get_aquarius(aquarius_url)
+            aquarius = Aquarius(aquarius_url)
             return [DDO(dictionary=ddo_dict) for ddo_dict in aquarius.query_search(query)]
         else:
             return [DDO(dictionary=ddo_dict) for ddo_dict in
@@ -471,7 +472,7 @@ class Ocean:
         if resolver.is_ddo:
             return self.did_resolver.resolve(did).ddo
         elif resolver.is_url:
-            aquarius = AquariusProvider.get_aquarius(resolver.url)
+            aquarius = Aquarius(resolver.url)
             return DDO(json_text=json.dumps(aquarius.get_asset_ddo(did)))
         else:
             return None
