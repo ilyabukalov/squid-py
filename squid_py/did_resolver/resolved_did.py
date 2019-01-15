@@ -3,9 +3,7 @@ from squid_py.did_resolver.resolver_value_type import ResolverValueType
 
 
 class ResolvedDID:
-    """
-    Class that handles the resolved DID information
-    """
+    """Class that handles the resolved DID information"""
 
     def __init__(self):
         """init the object with an empty set of hops"""

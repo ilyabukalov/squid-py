@@ -26,7 +26,6 @@ def test_did_registry_register(publisher_ocean_instance):
     ocean = publisher_ocean_instance
 
     register_account = ocean.main_account
-    # owner_address = register_account.address
     did_registry = ocean.keeper.did_registry
     did_id = secrets.token_hex(32)
     did_test = 'did:op:' + did_id
@@ -36,28 +35,16 @@ def test_did_registry_register(publisher_ocean_instance):
     # register DID-> URL
     did_registry.register(did_test, url=value_test, key=key_test, account=register_account)
 
-    # register DID-> DDO Object
-    ddo = DDO(did_test)
-    ddo.add_signature()
-    ddo.add_service('metadata-test', value_test)
 
-    did_registry.register(did_test, ddo=ddo, key=key_test, account=register_account)
-
-    # register DID-> DDO json
-    did_registry.register(did_test, ddo=ddo.as_text(), account=register_account)
-
-    # register DID-> DID string
-    did_id_new = secrets.token_hex(32)
-    did_test_new = 'did:op:' + did_id_new
-    did_registry.register(did_test, did=did_test_new, account=register_account)
-
-    # register DID-> DID bytes
-    did_registry.register(did_test, did=Web3.toBytes(hexstr=did_id_new), account=register_account)
-
-    # test circular ref
-    with pytest.raises(OceanDIDCircularReference):
-        did_registry.register(did_test, did=did_test, account=register_account)
-
+@e2e_test
+def test_did_registry_no_accout_provided(publisher_ocean_instance):
+    ocean = publisher_ocean_instance
+    register_account = ocean.main_account
+    did_registry = ocean.keeper.did_registry
+    did_id = secrets.token_hex(32)
+    did_test = 'did:op:' + did_id
+    key_test = Web3.sha3(text='provider')
+    value_test = 'http://localhost:5000'
     # No account provided
     with pytest.raises(ValueError):
         did_registry.register(did_test, url=value_test)
