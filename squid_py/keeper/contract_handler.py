@@ -24,15 +24,15 @@ class ContractHandler(object):
 
     @staticmethod
     def get(name):
-        return ContractHandler._contracts.get(name) or ContractHandler._load(name)
+        return (ContractHandler._contracts.get(name) or ContractHandler._load(name))[0]
 
     @staticmethod
     def get_concise_contract(name):
-        return ConciseContract(ContractHandler.get(name))
+        return (ContractHandler._contracts.get(name) or ContractHandler._load(name))[1]
 
     @staticmethod
     def set(name, contract):
-        ContractHandler._contracts[name] = contract
+        ContractHandler._contracts[name] = (contract, ConciseContract(contract))
 
     @staticmethod
     def has(name):
@@ -50,7 +50,7 @@ class ContractHandler(object):
         address = Web3Provider.get_web3().toChecksumAddress(contract_definition['address'])
         abi = contract_definition['abi']
         contract = Web3Provider.get_web3().eth.contract(address=address, abi=abi)
-        ContractHandler._contracts[contract_name] = contract
+        ContractHandler._contracts[contract_name] = (contract, ConciseContract(contract))
         return ContractHandler._contracts[contract_name]
 
     @staticmethod
@@ -78,5 +78,5 @@ class ContractHandler(object):
                 'Keeper contract {} file not found: {}'.format(contract_name, path))
 
         with open(path) as f:
-            contract = json.loads(f.read())
-            return contract
+            contract_dict = json.loads(f.read())
+            return contract_dict
