@@ -1,5 +1,5 @@
 __author__ = """OceanProtocol"""
-__version__ = '0.2.19'
+__version__ = '0.2.21'
 
 from .brizo import (
     Brizo
