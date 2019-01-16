@@ -11,7 +11,7 @@ from .config_provider import (
     ConfigProvider,
 )
 from .ddo import (Authentication, DDO, Metadata, PublicKeyBase, PublicKeyHex, PublicKeyRSA, Service)
-from .exceptions import (OceanDIDAlreadyExist, OceanDIDCircularReference, OceanDIDNotFound,
+from .exceptions import (OceanDIDAlreadyExist, OceanDIDNotFound,
                          OceanDIDUnknownValueType, OceanInvalidContractAddress,
                          OceanInvalidMetadata, OceanInvalidServiceAgreementSignature,
                          OceanKeeperContractsNotFound, OceanServiceAgreementExists)

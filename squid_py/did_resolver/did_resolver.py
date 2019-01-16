@@ -8,7 +8,6 @@ from squid_py.did import did_to_id_bytes
 from squid_py.did_resolver.resolved_did import ResolvedDID
 from squid_py.did_resolver.resolver_value_type import ResolverValueType
 from squid_py.exceptions import (
-    OceanDIDCircularReference,
     OceanDIDNotFound,
     OceanDIDUnknownValueType
 )
@@ -35,7 +34,7 @@ class DIDResolver:
         if not self._event_signature:
             raise ValueError(f'Cannot find Event {DIDREGISTRY_EVENT_NAME} signature.')
 
-    def resolve(self, did, max_hop_count=0):
+    def resolve(self, did):
         """
         Resolve a DID to an URL/DDO or later an internal/external DID.
 
@@ -57,15 +56,13 @@ class DIDResolver:
 
         resolved = ResolvedDID()
         result = None
-        did_visited = {}
-
         # resolve a DID to a URL or DDO
         data = self.get_did(did_bytes)
-        while data and (max_hop_count == 0 or resolved.hop_count < max_hop_count):
+        while data:
             if data['value_type'] == ResolverValueType.URL:
-                logger.debug('found did {0} -> {1}'.format(Web3.toHex(did_bytes), data['value']))
                 if data['value']:
                     try:
+                        logger.debug(f'found did {Web3.toHex(did_bytes)} -> {data["value"]}')
                         result = data['value'].decode('utf8')
                     except Exception:
                         raise TypeError(f'Invalid string URL data type for a DID value at'
@@ -74,17 +71,7 @@ class DIDResolver:
                 break
             else:
                 raise OceanDIDUnknownValueType(f'Unknown value type {data["value_type"]}')
-
-            data = None
-            if did_bytes:
-                if did_bytes not in did_visited:
-                    did_visited[did_bytes] = True
-                else:
-                    raise OceanDIDCircularReference(
-                        f'circular reference found at did {Web3.toHex(did_bytes)}')
-                data = self.get_did(did_bytes)
-
-        if resolved.hop_count > 0:
+        if resolved.is_url:
             return resolved
         return None
 

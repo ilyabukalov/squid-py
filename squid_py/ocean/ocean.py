@@ -469,12 +469,11 @@ class Ocean:
         :return: DDO
         """
         resolver = self.did_resolver.resolve(did)
-        if resolver.is_ddo:
-            return self.did_resolver.resolve(did).ddo
-        elif resolver.is_url:
+        if resolver.is_url:
             aquarius = Aquarius(resolver.url)
             return DDO(json_text=json.dumps(aquarius.get_asset_ddo(did)))
         else:
+            logger.info(f'Asset not found with did: {did} ')
             return None
 
     def consume_service(self, service_agreement_id, did, service_definition_id, consumer_account):
