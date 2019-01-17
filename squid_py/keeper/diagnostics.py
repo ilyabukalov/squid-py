@@ -58,7 +58,7 @@ class Diagnostics:
             )
 
         keeper = Keeper.get_instance()
-        contracts = [keeper.market, keeper.token, keeper.did_registry,
+        contracts = [keeper.dispenser, keeper.token, keeper.did_registry,
                      keeper.service_agreement, keeper.payment_conditions, keeper.access_conditions]
         addresses = '\n'.join([f'\t{c.name}: {c.address}' for c in contracts])
         logging.info('Finished loading keeper contracts:\n'

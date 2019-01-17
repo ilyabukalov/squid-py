@@ -54,7 +54,7 @@ class Account:
         """
         self.unlock()
         logger.info(f'Requesting {amount} tokens.')
-        return Keeper.get_instance().market.request_tokens(amount, self.address)
+        return Keeper.get_instance().dispenser.request_tokens(amount, self.address)
 
     @property
     def balance(self):

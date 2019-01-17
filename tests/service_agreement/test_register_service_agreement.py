@@ -39,7 +39,7 @@ class TestRegisterServiceAgreement:
 
         cls.ocean = Ocean(cls.config)
         cls.keeper = cls.ocean.keeper
-        cls.market = cls.ocean.keeper.market
+        cls.dispenser = cls.ocean.keeper.dispenser
         cls.token = cls.ocean.keeper.token
         cls.payment_conditions = cls.ocean.keeper.payment_conditions
         cls.access_conditions = cls.ocean.keeper.access_conditions
@@ -610,7 +610,7 @@ class TestRegisterServiceAgreement:
     @classmethod
     def _setup_token(cls):
         cls.consumer_acc.unlock()
-        cls.market.contract_concise.requestTokens(100, transact={'from': cls.consumer})
+        cls.dispenser.contract_concise.requestTokens(100, transact={'from': cls.consumer})
         cls.consumer_acc.unlock()
         cls.token.contract_concise.approve(
             cls.payment_conditions.address,

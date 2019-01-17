@@ -9,7 +9,7 @@ from squid_py.config_provider import ConfigProvider
 from squid_py.keeper.conditions.access_conditions import AccessConditions
 from squid_py.keeper.conditions.payment_conditions import PaymentConditions
 from squid_py.keeper.didregistry import DIDRegistry
-from squid_py.keeper.market import Market
+from squid_py.keeper.dispenser import Dispenser
 from squid_py.keeper.service_execution_agreement import ServiceExecutionAgreement
 from squid_py.keeper.token import Token
 from squid_py.keeper.web3_provider import Web3Provider
@@ -37,7 +37,7 @@ class Keeper(object):
     _instance = None
     artifacts_path = None
     accounts = []
-    market = None
+    dispenser = None
     auth = None
     token = None
     did_registry = None
@@ -56,7 +56,7 @@ class Keeper(object):
             Keeper.accounts = Web3Provider.get_web3().eth.accounts
 
             # The contract objects
-            Keeper.market = Market.get_instance()
+            Keeper.dispenser = Dispenser.get_instance()
             Keeper.token = Token.get_instance()
             Keeper.did_registry = DIDRegistry.get_instance()
             Keeper.service_agreement = ServiceExecutionAgreement.get_instance()

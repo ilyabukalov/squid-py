@@ -34,14 +34,13 @@ def grantAccess(web3, contract_path, account, service_agreement_id, service_defi
 
     name_to_parameter = {param['name']: param for param in
                          access_condition_definition['parameters']}
-    asset_id = name_to_parameter['assetId']['value']
     document_key_id = name_to_parameter['documentKeyId']['value']
     transact = {'from': account.address, 'gas': DEFAULT_GAS_LIMIT}
     logger.info(f'About to do grantAccess: account {account.address}, saId {service_agreement_id}, '
-                f'assetId {asset_id}, documentKeyId {document_key_id}')
+                f'documentKeyId {document_key_id}')
     try:
         account.unlock()
-        tx_hash = access_conditions.grantAccess(service_agreement_id, asset_id, document_key_id,
+        tx_hash = access_conditions.grantAccess(service_agreement_id, document_key_id,
                                                 transact=transact)
         process_tx_receipt(web3, tx_hash, contract.events.AccessGranted, 'AccessGranted')
     except Exception as e:
