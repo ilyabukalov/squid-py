@@ -65,6 +65,5 @@ def test_buy_asset(publisher_ocean_instance, consumer_ocean_instance, registered
 
     assert event, 'No event received for ServiceAgreement Fulfilled.'
     assert w3.toHex(event.args['serviceAgreementId']) == service_agreement_id
-    assert event.args['owner'] == acc.address
     assert len(
         os.listdir(consumer_ocean_instance.config.downloads_path)) == downloads_path_elements + 1
