@@ -5,7 +5,6 @@ from web3 import HTTPProvider, Web3
 
 from squid_py.config import Config
 from squid_py.config_provider import ConfigProvider
-from squid_py.service_agreement.register_service_agreement import register_service_agreement
 from tests.resources.helper_functions import (get_consumer_account, get_consumer_ocean_instance,
                                               get_publisher_ocean_instance, get_registered_ddo)
 from tests.resources.mocks.secret_store_mock import SecretStoreClientMock

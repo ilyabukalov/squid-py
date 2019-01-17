@@ -3,7 +3,7 @@ import pathlib
 import time
 
 from squid_py import (ACCESS_SERVICE_TEMPLATE_ID, Account, ConfigProvider, Ocean,
-                      ServiceAgreementTemplate, ServiceDescriptor)
+                      ServiceAgreementTemplate)
 from squid_py.brizo.brizo import Brizo
 from squid_py.config import Config
 from squid_py.ddo.metadata import Metadata

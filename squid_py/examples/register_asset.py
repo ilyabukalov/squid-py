@@ -1,6 +1,5 @@
 import logging
 
-
 from squid_py import Metadata, Ocean
 from squid_py.config_provider import ConfigProvider
 from squid_py.examples.example_config import ExampleConfig
