@@ -139,61 +139,21 @@ def test_did_resolver_library(publisher_ocean_instance):
     assert did_resolved
     assert did_resolved.is_url
     assert did_resolved.url == value_test
-    # assert did_resolved.hop_count == chain_length
     assert did_resolved.key == key_test
     assert did_resolved.value_type == value_type
     assert did_resolved.owner == owner_address
     assert did_resolved.block_number == receipt['blockNumber']
 
-    # test circular chain
-
-    # get the did at the end of the chain
-    did_id_bytes = Web3.toBytes(hexstr=ids[len(ids) - 1])
-    # make the next DID at the end of the chain to point to the first DID
-    next_did_id = Web3.toHex(hexstr=ids[0])
-    register_account.unlock()
-    logger.debug('set end chain {0} -> {1}'.format(Web3.toHex(did_id_bytes), next_did_id))
-    register_did = did_registry.register_attribute(did_id_bytes, ResolverValueType.DID, key_test, next_did_id, owner_address)
-    did_registry.get_tx_receipt(register_did)
-
-
+@e2e_test
 def test_did_not_found(publisher_ocean_instance):
     ocean = publisher_ocean_instance
-    register_account = ocean.main_account
-    owner_address = register_account.address
-    did_registry = ocean.keeper.did_registry
-    key_test = Web3.sha3(text='provider')
-    value_test = 'http://localhost:5000'
     did_resolver = DIDResolver(Web3Provider.get_web3(), ocean.keeper.did_registry)
-
-    # test DID not found
     did_id = secrets.token_hex(32)
     did_id_bytes = Web3.toBytes(hexstr=did_id)
     with pytest.raises(OceanDIDNotFound):
         did_resolver.resolve(did_id_bytes)
 
-    # test value type error on a linked DID
-    register_account.unlock()
-    register_did = did_registry.register_attribute(
-        did_id_bytes, ResolverValueType.DID, key_test, value_test, owner_address)
-
-    did_registry.get_tx_receipt(register_did)
-
-    # resolve to get the error
-    with pytest.raises(Exception):
-        did_resolver.resolve(did_id_bytes)
-
-    # test value type error on a linked DID_REF
-    register_account.unlock()
-    register_did = did_registry.register_attribute(
-        did_id_bytes, ResolverValueType.DID_REF, key_test, value_test, owner_address)
-    did_registry.get_tx_receipt(register_did)
-
-    # resolve to get the error
-    with pytest.raises(Exception):
-        did_resolver.resolve(did_id_bytes)
-
-
+@e2e_test
 def test_get_did(publisher_ocean_instance):
     ocean = publisher_ocean_instance
     register_account = ocean.main_account
@@ -205,7 +165,7 @@ def test_get_did(publisher_ocean_instance):
     did_id = did_to_id(did)
     did_resolver.get_did(Web3.toBytes(hexstr=did_id))
 
-
+@e2e_test
 def test_get_did_not_valid(publisher_ocean_instance):
     ocean = publisher_ocean_instance
     did_resolver = DIDResolver(Web3Provider.get_web3(), ocean.keeper.did_registry)

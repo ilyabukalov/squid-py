@@ -12,7 +12,7 @@ from squid_py.exceptions import (
     OceanDIDUnknownValueType
 )
 
-DIDREGISTRY_EVENT_NAME = 'DIDAttributeRegistered'
+DID_REGISTRY_EVENT_NAME = 'DIDAttributeRegistered'
 
 logger = logging.getLogger('keeper')
 
@@ -30,9 +30,9 @@ class DIDResolver:
         if not self._did_registry:
             raise ValueError('No DIDRegistry contract object provided')
 
-        self._event_signature = self._did_registry.get_event_signature(DIDREGISTRY_EVENT_NAME)
+        self._event_signature = self._did_registry.get_event_signature(DID_REGISTRY_EVENT_NAME)
         if not self._event_signature:
-            raise ValueError(f'Cannot find Event {DIDREGISTRY_EVENT_NAME} signature.')
+            raise ValueError(f'Cannot find Event {DID_REGISTRY_EVENT_NAME} signature.')
 
     def resolve(self, did):
         """
@@ -108,6 +108,6 @@ class DIDResolver:
                 'key': Web3.toBytes(topics[3]),
             }
         else:
-            logger.warning(f'Could not find {DIDREGISTRY_EVENT_NAME} event logs for '
+            logger.warning(f'Could not find {DID_REGISTRY_EVENT_NAME} event logs for '
                            f'did {did} at blockNumber {block_number}')
         return result

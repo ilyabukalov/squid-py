@@ -285,7 +285,7 @@ class Ocean:
             the keeper-contracts for the status of the service agreement) and signed agreement hash
         """
         assert consumer_account.address in self.accounts, f'Unrecognized consumer address ' \
-            f'consumer_account'
+                                                          f'consumer_account'
 
         agreement_id = ServiceAgreement.create_new_agreement_id()
         ddo = self.resolve_asset_did(did)
