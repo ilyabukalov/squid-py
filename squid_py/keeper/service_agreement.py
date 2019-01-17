@@ -13,6 +13,7 @@ class ServiceAgreement(ContractBase):
 
     @staticmethod
     def get_instance():
+        """Returns a ContractBase instance of the ServiceAgreement contract."""
         return ServiceAgreement('ServiceAgreement')
 
     def setup_agreement_template(self, template_id, contracts_addresses, fingerprints,

@@ -1,15 +1,12 @@
 """Keeper module to call keeper-contracts."""
 
-import re
 from urllib.parse import urlparse
 
 from web3 import Web3
 
 from squid_py.did import did_to_id_bytes
-from squid_py.ddo import DDO
-from squid_py.exceptions import OceanDIDCircularReference
+from squid_py.did_resolver.resolver_value_type import ResolverValueType
 from squid_py.keeper.contract_base import ContractBase
-from squid_py.models.resolver_value_type import ResolverValueType
 
 
 class DIDRegistry(ContractBase):
@@ -17,22 +14,21 @@ class DIDRegistry(ContractBase):
 
     @staticmethod
     def get_instance():
+        """Returns a ContractBase instance of the DIDRegistry contract."""
         return DIDRegistry('DIDRegistry')
 
-    def register(self, did_source, url=None, ddo=None, did=None, key=None, account=None):
+    def register(self, did_source, url=None, key=None, account=None):
         """
         Register or update a DID on the block chain using the DIDRegistry smart contract.
 
         :param did_source: DID to register/update, can be a 32 byte or hexstring
         :param url: URL of the resolved DID
-        :param ddo: DDO string or DDO object to resolve too
-        :param did: DID to resolve too, can be a 32 byte value or 64 hex string
         :param key: Optional 32 byte key ( 64 char hex )
         :param account: instance of Account to use to register/update the DID
         :return: Receipt
         """
 
-        value_type = ResolverValueType.DID
+        value_type = ResolverValueType.URL
         value = None
 
         did_source_id = did_to_id_bytes(did_source)
@@ -41,30 +37,9 @@ class DIDRegistry(ContractBase):
             raise ValueError(f'{did_source} must be a valid DID to register')
 
         if url:
-            value_type = ResolverValueType.URL
             value = url
             if not urlparse(url):
                 raise ValueError(f'Invalid URL {url} to register for DID {did_source}')
-
-        if ddo:
-            value_type = ResolverValueType.DDO
-            if isinstance(ddo, DDO):
-                value = ddo.as_text()
-            elif isinstance(ddo, str):
-                value = ddo
-            else:
-                raise ValueError(f'Invalid DDO {ddo} to register for DID {did_source}')
-
-        if did:
-            value_type = ResolverValueType.DID
-            id_bytes = did_to_id_bytes(did)
-            if not id_bytes:
-                raise ValueError(f'Invalid DID {did}')
-
-            if did_source_id == id_bytes:
-                raise OceanDIDCircularReference('Cannot have the same DID that points to itself')
-
-            value = re.sub('^0x', '', Web3.toHex(id_bytes))
 
         if isinstance(key, str):
             key = Web3.sha3(text=key)
@@ -104,3 +79,12 @@ class DIDRegistry(ContractBase):
     def get_update_at(self, did):
         """Return the block number the last did was updated on the block chain."""
         return self.contract_concise.getUpdateAt(did)
+
+    def get_owner(self, did):
+        """
+        Return the owner of the did.
+
+        :param did: Asset did, did
+        :return:
+        """
+        return self.contract_concise.getOwner(did)

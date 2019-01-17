@@ -1,9 +1,11 @@
 import importlib
 
+from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.service_agreement import ServiceAgreement
 from squid_py.keeper.utils import get_event_def_from_abi
-from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition, Event
+from squid_py.keeper.web3_provider import Web3Provider
+from squid_py.service_agreement.service_agreement_condition import Event, ServiceAgreementCondition
 from squid_py.service_agreement.storage import update_service_agreement_status
 from squid_py.utils import watch_event
 
@@ -19,7 +21,7 @@ def get_event_handler_function(event):
     return getattr(module, fn_name)
 
 
-def watch_service_agreement_events(web3, contract_path, storage_path, account, did,
+def watch_service_agreement_events(storage_path, account,
                                    service_agreement_id, service_definition, actor_type,
                                    start_time, consume_callback=None, num_confirmations=12):
     """ Subscribes to the events defined in the given service definition, targeted
@@ -29,10 +31,13 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
     """
 
     # subscribe cleanup
-    def _cleanup(event):
+    def _cleanup(_):
         update_service_agreement_status(storage_path, service_agreement_id, 'fulfilled')
 
-    watch_service_agreement_fulfilled(web3, contract_path, service_agreement_id, service_definition,
+    web3 = Web3Provider.get_web3()
+    contract_path = Keeper.get_instance().artifacts_path
+
+    watch_service_agreement_fulfilled(service_agreement_id, service_definition,
                                       _cleanup, start_time, num_confirmations=num_confirmations)
 
     # collect service agreement and condition events
@@ -72,7 +77,8 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
             timeout_event = timeout_events[0] if timeout_events else None
             if not timeout_event:
                 raise AssertionError(
-                    f'Expected a timeout event in this condition {cond_instance.name} because another'
+                    f'Expected a timeout event in this condition {cond_instance.name} because '
+                    f'another'
                     f'condition {_dependent_cond_timeout[0]} depends on this condition timing out.')
 
         for event in cond_instance.events:
@@ -126,7 +132,7 @@ def watch_service_agreement_events(web3, contract_path, storage_path, account, d
         )
 
 
-def watch_service_agreement_fulfilled(web3, contract_path, service_agreement_id, service_definition,
+def watch_service_agreement_fulfilled(service_agreement_id, service_definition,
                                       callback, start_time, num_confirmations=12):
     """ Subscribes to the service agreement fulfilled event, filtering by the given
         service agreement ID.
@@ -134,7 +140,10 @@ def watch_service_agreement_fulfilled(web3, contract_path, service_agreement_id,
     contract_name = service_definition['serviceAgreementContract']['contractName']
     contract = ContractHandler.get(contract_name)
 
-    filters = {ServiceAgreement.SERVICE_AGREEMENT_ID: web3.toBytes(hexstr=service_agreement_id)}
+    filters = {
+        ServiceAgreement.SERVICE_AGREEMENT_ID:
+            Web3Provider.get_web3().toBytes(hexstr=service_agreement_id)
+    }
     watch_event(
         contract,
         'AgreementFulfilled',

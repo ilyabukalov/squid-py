@@ -14,27 +14,36 @@ logger = logging.getLogger('keeper')
 class ContractBase(object):
     """Base class for all contract objects."""
 
-    def __init__(self, contract_name):
+    def __init__(self, contract_name, dependencies={}):
 
         self.name = contract_name
 
-        from squid_py.keeper.contract_handler import ContractHandler
-        contract = ContractHandler.get(contract_name)
-        self.contract_concise = ContractHandler.get_concise_contract(contract_name)
-        self.contract = contract
+        if 'ContractHandler' not in dependencies:
+            from squid_py.keeper.contract_handler import ContractHandler
+            dependencies['ContractHandler'] = ContractHandler
+        self.contract_concise = dependencies['ContractHandler'].get_concise_contract(contract_name)
+        self.contract = dependencies['ContractHandler'].get(contract_name)
 
         logger.debug(f'Loaded {self}')
 
     @property
+    def _contract_concise(self):
+        return self.contract_concise
+
+    @property
+    def _contract(self):
+        return self.contract
+
+    @property
     def address(self):
         """Return the ethereum address of the solidity contract deployed
-        in current keeper network
+        in current keeper network.
         """
-        return self.contract.address
+        return self._contract.address
 
     @property
     def events(self):
-        """Expose the underlying contract's events
+        """Expose the underlying contract's events.
 
         :return:
         """

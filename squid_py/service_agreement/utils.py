@@ -2,12 +2,10 @@ import json
 import os
 
 from squid_py.ddo.authentication import Authentication
-from squid_py.ddo.public_key_hex import PublicKeyHex, PUBLIC_KEY_TYPE_HEX, AUTHENTICATION_TYPE_HEX
+from squid_py.ddo.public_key_hex import AUTHENTICATION_TYPE_HEX, PUBLIC_KEY_TYPE_HEX, PublicKeyHex
 from squid_py.keeper.contract_handler import ContractHandler
-from squid_py.keeper.utils import (
-    get_fingerprint_by_name,
-    hexstr_to_bytes,
-    generate_multi_value_hash)
+from squid_py.keeper.utils import (generate_multi_value_hash, get_fingerprint_by_name,
+                                   hexstr_to_bytes)
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
 from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
@@ -76,7 +74,7 @@ def get_conditions_data_from_keeper_contracts(conditions, template_id):
     return contract_addresses, fingerprints, fulfillment_indices, conditions_keys
 
 
-def register_service_agreement_template(service_agreement_contract, contract_path, owner_account,
+def register_service_agreement_template(service_agreement_contract, owner_account,
                                         sla_template_instance=None, sla_template_path=None):
     if sla_template_instance is None:
         if sla_template_path is None:
@@ -103,7 +101,7 @@ def register_service_agreement_template(service_agreement_contract, contract_pat
         fulfillment_indices, sla_template_instance.service_agreement_contract.fulfillment_operator,
         owner_account
     )
-    return sla_template_instance.template_id
+    return sla_template_instance
 
 
 def get_conditions_with_updated_keys(web3, contract_path, conditions, template_id):

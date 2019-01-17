@@ -161,7 +161,13 @@ class Config(configparser.ConfigParser):
         return self.get(self._section_name, NAME_PARITY_PASSWORD)
 
     @property
+    def downloads_path(self):
+        """Path for the downloads of assets."""
+        return self.get('resources', 'downloads.path')
+
+    @property
     def web3_provider(self):
+        """Web3 provider"""
         return self._web3_provider
 
     @web3_provider.setter

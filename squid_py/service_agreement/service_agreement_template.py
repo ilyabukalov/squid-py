@@ -39,23 +39,28 @@ class ServiceAgreementTemplate(object):
     @property
     def conditions_dependencies(self):
         """
-        Build a list of dependencies to represent how each condition in this service agreement template depend on other conditions.
-        Each value in the dependencies list is an integer that compresses the dependency and timeout flag corresponding to each
+        Build a list of dependencies to represent how each condition in this service agreement
+        template depend on other conditions.
+        Each value in the dependencies list is an integer that compresses the dependency and
+        timeout flag corresponding to each
         condition in the list of all conditions.
         Each condition is assigned 2 bits:
         - first/right bit denotes dependency: 1 is a dependency, 0 not a dependency
-        - second/left bit denotes timeout flag: 1 means dependency relies on timeout of parent condition, 0 no timeout necessary
+        - second/left bit denotes timeout flag: 1 means dependency relies on timeout of parent
+        condition, 0 no timeout necessary
 
         Note that timeout flag must not be set to 1 if the dependency is 0.
 
-        This compressed format is necessary to avoid limitations of the `solidity` language which is used to implement the EVM smart
+        This compressed format is necessary to avoid limitations of the `solidity` language which
+        is used to implement the EVM smart
         contracts.
         :return: list of integers
         """
         compressed_dependencies = []
         for i, cond in enumerate(self.conditions):
             assert len(cond.dependencies) == len(
-                cond.timeout_flags), 'Invalid dependencies and timeout_flags, they are required to have the same length.'
+                cond.timeout_flags), 'Invalid dependencies and timeout_flags, they are required ' \
+                                     'to have the same length.'
             dep = []
             tout_flags = []
             for j in range(len(self.conditions)):
@@ -103,7 +108,9 @@ class ServiceAgreementTemplate(object):
             "type": "OceanProtocolServiceAgreementTemplate",
             "id": "0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d",
             "name": "dataAssetAccessServiceAgreement",
-            "description": "This service agreement defines the flow for accessing a data asset on the ocean network. Any file or bundle of files can be access using this service agreement",
+            "description": "This service agreement defines the flow for accessing a data asset on "
+                           "the ocean network. Any file or bundle of files can be access using "
+                           "this service agreement",
             "creator": "",
             "serviceAgreementContract": {
                 "contractName": "ServiceAgreement",

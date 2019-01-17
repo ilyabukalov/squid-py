@@ -1,3 +1,4 @@
+"""Utilities class"""
 import logging
 import time
 import uuid
@@ -55,7 +56,8 @@ def get_public_key_from_address(web3, address):
     prefixed_hash = prepare_prefixed_hash(_hash)
     pub_key = KeyAPI.PublicKey.recover_from_msg_hash(prefixed_hash,
                                                      KeyAPI.Signature(vrs=signature_vrs))
-    assert pub_key.to_checksum_address() == address, 'recovered address does not match signing address.'
+    assert pub_key.to_checksum_address() == address, 'recovered address does not match signing ' \
+                                                     'address.'
     return pub_key
 
 

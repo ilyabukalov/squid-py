@@ -12,4 +12,5 @@ class PaymentConditions(ContractBase):
 
     @staticmethod
     def get_instance():
+        """Returns a ContractBase instance of the PaymentConditions contract."""
         return PaymentConditions('PaymentConditions')
