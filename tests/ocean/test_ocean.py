@@ -176,7 +176,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=service_agreement_id)}
     filter_2 = {'serviceId': Web3.toBytes(hexstr=service_agreement_id)}
     executed = wait_for_event(
-        consumer_ocean_instance.keeper.service_agreement.events.ExecuteAgreement, filter1)
+        consumer_ocean_instance.keeper.service_agreement.events.AgreementInitialized, filter1)
     assert executed
     locked = wait_for_event(consumer_ocean_instance.keeper.payment_conditions.events.PaymentLocked,
                             filter_2)
@@ -241,8 +241,8 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=agreement_id)}
     filter_2 = {'serviceId': Web3.toBytes(hexstr=agreement_id)}
 
-    # WAIT FOR ####### ExecuteAgreement Event
-    executed = wait_for_event(pub_ocn.keeper.service_agreement.events.ExecuteAgreement, filter1)
+    # WAIT FOR ####### AgreementInitialized Event
+    executed = wait_for_event(pub_ocn.keeper.service_agreement.events.AgreementInitialized, filter1)
     assert executed, ''
     cons = keeper.service_agreement.get_service_agreement_consumer(agreement_id)
     pub = keeper.service_agreement.get_service_agreement_publisher(agreement_id)

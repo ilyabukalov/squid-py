@@ -10,7 +10,7 @@ from squid_py.keeper.conditions.access_conditions import AccessConditions
 from squid_py.keeper.conditions.payment_conditions import PaymentConditions
 from squid_py.keeper.didregistry import DIDRegistry
 from squid_py.keeper.market import Market
-from squid_py.keeper.service_agreement import ServiceAgreement
+from squid_py.keeper.service_execution_agreement import ServiceExecutionAgreement
 from squid_py.keeper.token import Token
 from squid_py.keeper.web3_provider import Web3Provider
 
@@ -59,7 +59,7 @@ class Keeper(object):
             Keeper.market = Market.get_instance()
             Keeper.token = Token.get_instance()
             Keeper.did_registry = DIDRegistry.get_instance()
-            Keeper.service_agreement = ServiceAgreement.get_instance()
+            Keeper.service_agreement = ServiceExecutionAgreement.get_instance()
             Keeper.payment_conditions = PaymentConditions.get_instance()
             Keeper.access_conditions = AccessConditions.get_instance()
 

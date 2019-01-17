@@ -1,25 +1,22 @@
 """
-    Keeper module to transact/call `ServiceAgreement` keeper contract methods.
+    Keeper module to transact/call `ServiceExecutionAgreement` keeper contract methods.
 """
-
-from web3 import Web3
 
 from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper.contract_base import ContractBase
 
 
-class ServiceAgreement(ContractBase):
+class ServiceExecutionAgreement(ContractBase):
     SERVICE_AGREEMENT_ID = 'serviceAgreementId'
 
     @staticmethod
     def get_instance():
-        """Returns a ContractBase instance of the ServiceAgreement contract."""
-        return ServiceAgreement('ServiceAgreement')
+        """Returns a ContractBase instance of the ServiceExecutionAgreement contract."""
+        return ServiceExecutionAgreement('ServiceExecutionAgreement')
 
     def setup_agreement_template(self, template_id, contracts_addresses, fingerprints,
-                                 dependencies_bits,
-                                 service_description, fulfillment_indices, fulfillment_operator,
-                                 owner_account):
+                                 dependencies_bits, fulfillment_indices,
+                                 fulfillment_operator, owner_account):
         """
         Wrapper around the `setupAgreementTemplate` solidity function
         Deploy a service agreement template that can be used in executing service agreements
@@ -30,7 +27,6 @@ class ServiceAgreement(ContractBase):
         :param fingerprints: list of bytes arrays -- each fingerprint is the function selector
         :param dependencies_bits:  list of int -- each int represents the dependencies and the
             timeout flags of a condition
-        :param service_description: hex str -- hash of service description
         :param fulfillment_indices: list of int -- the indices of the fulfillment/terminal
             conditions
         :param fulfillment_operator: int -- the logical operator used to determine the agreement
@@ -40,8 +36,6 @@ class ServiceAgreement(ContractBase):
         :return: dict -- transaction receipt
         """
 
-        assert isinstance(service_description,
-                          str) and service_description.strip() != '', 'bad service description.'
         assert contracts_addresses and isinstance(contracts_addresses, list), \
             f'contracts arg: expected list, got {type(contracts_addresses)}'
         assert fingerprints and isinstance(fingerprints, list), \
@@ -59,15 +53,13 @@ class ServiceAgreement(ContractBase):
         assert isinstance(fulfillment_operator, int) and fulfillment_operator >= 0, ''
 
         owner_account.unlock()
-        service_bytes = Web3.toHex(Web3.sha3(text=service_description))
-        tx_hash = self.contract_concise.setupAgreementTemplate(
-            template_id,
-            contracts_addresses,
-            fingerprints,
-            dependencies_bits,
-            service_bytes,
-            fulfillment_indices,
-            fulfillment_operator,
+        tx_hash = self.contract_concise.setupTemplate(
+            template_id,           # bytes32 templateId
+            contracts_addresses,   # address[] contracts
+            fingerprints,          # bytes4[] fingerprints
+            dependencies_bits,     # uint256[] dependenciesBits
+            fulfillment_indices,   # uint8[] fulfillmentIndices
+            fulfillment_operator,  # uint8 fulfillmentOperator
             transact={'from': owner_account.address, 'gas': DEFAULT_GAS_LIMIT}
         )
         return self.get_tx_receipt(tx_hash)
@@ -76,7 +68,7 @@ class ServiceAgreement(ContractBase):
                                   service_agreement_id,
                                   did_id, publisher_account):
         """
-        Wrapper around the `executeAgreement` solidity function.
+        Wrapper around the `initializeAgreement` solidity function.
         Start/initialize a service agreement on the blockchain. This is really the entry point for
         buying asset services (Access, Compute, etc.)
 
@@ -94,8 +86,14 @@ class ServiceAgreement(ContractBase):
         assert len(hashes) == len(timeouts), ''
 
         publisher_account.unlock()
-        tx_hash = self.contract_concise.executeAgreement(
-            template_id, signature, consumer, hashes, timeouts, service_agreement_id, did_id,
+        tx_hash = self.contract_concise.initializeAgreement(
+            template_id,           # bytes32 templateId,
+            signature,             # bytes signature,
+            consumer,              # address consumer,
+            hashes,                # bytes32[] valueHashes,
+            timeouts,              # uint256[] timeoutValues,
+            service_agreement_id,  # bytes32 agreementId,
+            did_id,                # bytes32 did
             transact={'from': publisher_account.address, 'gas': DEFAULT_GAS_LIMIT}
         )
         return self.get_tx_receipt(tx_hash)
@@ -117,17 +115,17 @@ class ServiceAgreement(ContractBase):
     def get_template_id(self, service_agreement_id):
         return self.contract_concise.getTemplateId(service_agreement_id)
 
-    def get_agreement_status(self, service_agreement_id):
-        return self.contract_concise.getAgreementStatus(service_agreement_id)
+    def is_agreement_existing(self, service_agreement_id):
+        return self.contract_concise.isAgreementExisting(service_agreement_id)
 
     def get_service_agreement_publisher(self, service_agreement_id):
         return self.contract_concise.getAgreementPublisher(service_agreement_id)
 
     def get_service_agreement_consumer(self, service_agreement_id):
-        return self.contract_concise.getServiceAgreementConsumer(service_agreement_id)
+        return self.contract_concise.getAgreementConsumer(service_agreement_id)
 
-    def get_condition_by_fingerprint(self, service_agreement_id, contract_address,
-                                     function_fingerprint):
-        return self.contract_concise.getConditionByFingerprint(service_agreement_id,
+    def generate_condition_key_for_id(self, service_agreement_id, contract_address,
+                                      function_fingerprint):
+        return self.contract_concise.generateConditionKeyForId(service_agreement_id,
                                                                contract_address,
                                                                function_fingerprint)

@@ -47,8 +47,8 @@ def buy_asset():
     filter1 = {'serviceAgreementId': w3.toBytes(hexstr=service_agreement_id)}
     filter2 = {'serviceId': w3.toBytes(hexstr=service_agreement_id)}
 
-    EventListener('ServiceAgreement', 'ExecuteAgreement', filters=filter1).listen_once(
-        _log_event('ExecuteAgreement'),
+    EventListener('ServiceAgreement', 'AgreementInitialized', filters=filter1).listen_once(
+        _log_event('AgreementInitialized'),
         10,
         blocking=True
     )
@@ -57,7 +57,7 @@ def buy_asset():
         10,
         blocking=True
     )
-    event = EventListener('ServiceAgreement', 'AgreementFulfilled', filters=filter1).listen_once(
+    event = EventListener('ServiceExecutionAgreement', 'AgreementFulfilled', filters=filter1).listen_once(
         _log_event('AgreementFulfilled'),
         10,
         blocking=True

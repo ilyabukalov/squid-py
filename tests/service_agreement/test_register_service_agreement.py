@@ -106,7 +106,7 @@ class TestRegisterServiceAgreement:
             'serviceAgreementContract': {
                 'contractName': 'ServiceAgreement',
                 'events': [{
-                    'name': 'ExecuteAgreement',
+                    'name': 'AgreementInitialized',
                     'actorType': 'consumer',
                     'handler': {
                         'moduleName': 'payment',
@@ -602,7 +602,7 @@ class TestRegisterServiceAgreement:
             did,
         ]
         self.consumer_acc.unlock()
-        self.service_agreement.contract_concise.executeAgreement(
+        self.service_agreement.contract_concise.initializeAgreement(
             *execute_args,
             transact={'from': self.consumer}
         )

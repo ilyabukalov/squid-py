@@ -9,7 +9,7 @@
     "fulfillmentOperator": 1,
     "events": [
       {
-        "name": "ExecuteAgreement",
+        "name": "AgreementInitialized",
         "actorType": "consumer",
         "handler": {
           "moduleName": "payment",
