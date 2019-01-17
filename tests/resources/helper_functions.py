@@ -5,8 +5,8 @@ import time
 from squid_py import (ACCESS_SERVICE_TEMPLATE_ID, Account, ConfigProvider, Ocean,
                       ServiceAgreementTemplate)
 from squid_py.brizo.brizo import Brizo
-from squid_py.config import Config
 from squid_py.ddo.metadata import Metadata
+from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.secret_store.secret_store import SecretStore
@@ -38,11 +38,10 @@ def init_ocn_tokens(ocn, account, amount=100):
 
 
 def make_ocean_instance(secret_store_client, account_index):
-    path_config = 'config_local.ini'
-    os.environ['CONFIG_FILE'] = path_config
     SecretStore.set_client(secret_store_client)
-    ocn = Ocean(Config(path_config))
-    account = list(ocn.accounts)[account_index]
+    ocn = Ocean(ExampleConfig.get_config())
+    account = list(ocn.accounts.values())[account_index]
+    # We can remove the BrizoMock if we assuming that the asset is in Azure.
     Brizo.set_http_client(BrizoMock(ocn, account))
     return ocn
 

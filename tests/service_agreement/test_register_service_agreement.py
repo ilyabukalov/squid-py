@@ -23,8 +23,9 @@ from squid_py.service_agreement.utils import build_condition_key
 from squid_py.utils.utilities import generate_new_id
 from tests.resources.helper_functions import get_publisher_account
 from tests.resources.tiers import e2e_test
+from squid_py.examples.example_config import ExampleConfig
 
-CONFIG_PATH = 'config_local.ini'
+
 NUM_WAIT_ITERATIONS = 20
 
 
@@ -33,7 +34,7 @@ class TestRegisterServiceAgreement:
 
     @classmethod
     def setup_method(cls):
-        ConfigProvider.set_config(Config(CONFIG_PATH))
+        ConfigProvider.set_config(ExampleConfig.get_config())
         cls.config = ConfigProvider.get_config()
         cls.web3 = Web3(HTTPProvider(cls.config.keeper_url))
 
