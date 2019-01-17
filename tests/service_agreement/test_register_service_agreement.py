@@ -6,7 +6,7 @@ from datetime import datetime
 from web3 import HTTPProvider, Web3
 
 from squid_py import ConfigProvider
-from squid_py.config import Config
+from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (
     get_fingerprint_by_name,
@@ -23,8 +23,6 @@ from squid_py.service_agreement.utils import build_condition_key
 from squid_py.utils.utilities import generate_new_id
 from tests.resources.helper_functions import get_publisher_account
 from tests.resources.tiers import e2e_test
-from squid_py.examples.example_config import ExampleConfig
-
 
 NUM_WAIT_ITERATIONS = 20
 
