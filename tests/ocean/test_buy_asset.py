@@ -15,13 +15,9 @@ def _log_event(event_name):
     return _process_event
 
 
-def test_buy_asset(publisher_ocean_instance, consumer_ocean_instance, registered_ddo):
+def test_buy_asset(consumer_ocean_instance, registered_ddo):
     ConfigProvider.set_config(ExampleConfig.get_config())
     w3 = Web3Provider.get_web3()
-
-    # make ocean instance
-    ocn = publisher_ocean_instance
-    acc = get_account_from_config(ocn.config, 'parity.address', 'parity.password')
 
     # Register ddo
     ddo = registered_ddo
@@ -30,7 +26,8 @@ def test_buy_asset(publisher_ocean_instance, consumer_ocean_instance, registered
     # will be performed by the Brizo server running locally
 
     cons_ocn = consumer_ocean_instance
-    consumer_account = get_account_from_config(ocn.config, 'parity.address1', 'parity.password1')
+    consumer_account = get_account_from_config(cons_ocn.config, 'parity.address1',
+                                               'parity.password1')
 
     downloads_path_elements = len(
         os.listdir(consumer_ocean_instance.config.downloads_path)) if os.path.exists(
