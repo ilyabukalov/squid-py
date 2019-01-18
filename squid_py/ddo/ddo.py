@@ -125,7 +125,6 @@ class DDO:
 
         :param service_type: Service
         :param service_endpoint: Service endpoint, str
-        :param service_definition_id: Service id, str
         :param values: Python dict with serviceDefinitionId, templateId, serviceAgreementContract,
         list of conditions and purchase endpoint.
         :return:
