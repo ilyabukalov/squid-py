@@ -63,7 +63,7 @@ def watch_service_agreement_events(storage_path, account,
                 if cond_instance.timeout_flags[i] == 1:
                     # dependency has a timeout
                     assert cond_dep_name in name_to_cond, f'dependency name {cond_dep_name}' \
-                        f' not found in conditions'
+                                                          f' not found in conditions'
                     cond_to_dependants_timeouts[cond_dep_name] = [
                         (cond_instance.name, cond_instance.timeout)]
 
@@ -98,7 +98,7 @@ def watch_service_agreement_events(storage_path, account,
         timeout_fn = None
         if timeout_event and timeout:
             assert MIN_TIMEOUT < timeout < MAX_TIMEOUT, f'TIMEOUT value not within allowed ' \
-                f'range {MIN_TIMEOUT}-{MAX_TIMEOUT}.'
+                                                        f'range {MIN_TIMEOUT}-{MAX_TIMEOUT}.'
             timeout_fn = get_event_handler_function(timeout_event)
 
         def _get_callback(func_to_call):

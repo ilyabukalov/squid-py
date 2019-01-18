@@ -1,18 +1,15 @@
-import os
-
 import pytest
 from web3 import HTTPProvider, Web3
 
-from squid_py.config import Config
 from squid_py.config_provider import ConfigProvider
-from squid_py.service_agreement.register_service_agreement import register_service_agreement
+from squid_py.examples.example_config import ExampleConfig
 from tests.resources.helper_functions import (get_consumer_account, get_consumer_ocean_instance,
                                               get_publisher_ocean_instance, get_registered_ddo)
 from tests.resources.mocks.secret_store_mock import SecretStoreClientMock
 from tests.resources.tiers import should_run_test
 
 if should_run_test('e2e'):
-    ConfigProvider.set_config(Config('config_local.ini'))
+    ConfigProvider.set_config(ExampleConfig.get_config())
 
 
 @pytest.fixture
@@ -32,15 +29,11 @@ def consumer_ocean_instance():
 
 @pytest.fixture
 def registered_ddo():
-    path_config = 'config_local.ini'
-    os.environ['CONFIG_FILE'] = path_config
-    config = Config(path_config)
+    config = ExampleConfig.get_config()
     return get_registered_ddo(get_publisher_ocean_instance(), get_consumer_account(config))
 
 
 @pytest.fixture
 def web3_instance():
-    path_config = 'config_local.ini'
-    os.environ['CONFIG_FILE'] = path_config
-    config = Config(path_config)
+    config = ExampleConfig.get_config()
     return Web3(HTTPProvider(config.keeper_url))

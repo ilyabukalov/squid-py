@@ -15,10 +15,8 @@ from squid_py.modules.v0_1.accessControl import grantAccess
 from squid_py.modules.v0_1.payment import lockPayment, releasePayment
 from squid_py.modules.v0_1.serviceAgreement import fulfillAgreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
-from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
 from squid_py.service_agreement.utils import build_condition_key
-from squid_py.utils.utilities import generate_new_id
 from tests.resources.helper_functions import get_resource_path, verify_signature, wait_for_event
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.tiers import e2e_test
@@ -140,13 +138,12 @@ def test_resolve_did(publisher_ocean_instance):
 
     # Can't resolve unregistered asset
     unregistered_did = DID.did()
-    with pytest.raises(OceanDIDNotFound, message='Expected OceanDIDNotFound error.'):
+    with pytest.raises(OceanDIDNotFound):
         publisher_ocean_instance.resolve_asset_did(unregistered_did)
 
     # Raise error on bad did
     invalid_did = "did:op:0123456789"
-    with pytest.raises(OceanDIDNotFound,
-                       message='Expected a OceanDIDNotFound error when resolving invalid did.'):
+    with pytest.raises(OceanDIDNotFound):
         publisher_ocean_instance.resolve_asset_did(invalid_did)
 
 

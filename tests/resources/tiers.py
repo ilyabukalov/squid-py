@@ -1,5 +1,7 @@
 import os
+
 import pytest
+
 
 def unit_test(test):
     """
@@ -7,7 +9,8 @@ def unit_test(test):
     Unit tests should live next to the file there testing with a *_test.py suffix, e.g. `foo_test.py` next to `foo.py`.
     """
 
-    return test # Always run all unit tests for now
+    return test  # Always run all unit tests for now
+
 
 def integration_test(test):
     """
@@ -15,7 +18,9 @@ def integration_test(test):
     Integration tests should live in the `squid_py/test/integration` folder and `squid_py/<package>/test` folders of individual sub-packages.
     """
 
-    return pytest.mark.skip(reason='Integration tests not enabled')(test) if not should_run_test('integration') else test
+    return pytest.mark.skip(reason='Integration tests not enabled')(test) if not should_run_test(
+        'integration') else test
+
 
 def e2e_test(test):
     """
@@ -23,7 +28,8 @@ def e2e_test(test):
     End-to-end tests should live in the `squid_py/test/e2e` and `squid_py/examples` folders.
     """
 
-    return pytest.mark.skip(reason='End to end tests not enabled')(test) if not should_run_test('e2e') else test
+    return pytest.mark.skip(reason='End to end tests not enabled')(test) if not should_run_test(
+        'e2e') else test
 
 
 def should_run_test(test_tier, active_tier=None):

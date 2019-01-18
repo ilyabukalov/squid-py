@@ -33,7 +33,7 @@ def get_sla_template_dict(path):
 
 def build_condition_key(contract_address, fingerprint, template_id):
     assert isinstance(fingerprint, bytes), f'Expecting `fingerprint` of type bytes, ' \
-        f'got {type(fingerprint)}'
+                                           f'got {type(fingerprint)}'
     return generate_multi_value_hash(
         ['bytes32', 'address', 'bytes4'],
         [template_id, contract_address, fingerprint]
