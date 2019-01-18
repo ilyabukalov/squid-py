@@ -262,8 +262,8 @@ class Ocean:
         if self.keeper.token.get_token_balance(consumer_account.address) < amount:
             raise ValueError(
                 f'Account {consumer_account.address} does not have sufficient tokens '
-                f'to approve for transfer.')
-
+                f'to approve for transfer. Your balance is {consumer_account.ocean_balance} '
+                f'and you are requesting a transfer of {amount}')
         self.keeper.token.token_approve(self.keeper.payment_conditions.address, amount,
                                         consumer_account)
 
