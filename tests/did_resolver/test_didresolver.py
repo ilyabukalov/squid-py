@@ -4,15 +4,15 @@ import secrets
 import pytest
 from web3 import Web3
 
+from squid_py.did import DID, did_to_id
 from squid_py.did_resolver.did_resolver import (
     DIDResolver,
 )
+from squid_py.did_resolver.resolver_value_type import ResolverValueType
 from squid_py.exceptions import (
     OceanDIDNotFound,
 )
-from squid_py.did import DID, did_to_id
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.did_resolver.resolver_value_type import ResolverValueType
 from tests.resources.tiers import e2e_test
 
 logger = logging.getLogger()
@@ -144,6 +144,7 @@ def test_did_resolver_library(publisher_ocean_instance):
     assert did_resolved.owner == owner_address
     assert did_resolved.block_number == receipt['blockNumber']
 
+
 @e2e_test
 def test_did_not_found(publisher_ocean_instance):
     ocean = publisher_ocean_instance
@@ -152,6 +153,7 @@ def test_did_not_found(publisher_ocean_instance):
     did_id_bytes = Web3.toBytes(hexstr=did_id)
     with pytest.raises(OceanDIDNotFound):
         did_resolver.resolve(did_id_bytes)
+
 
 @e2e_test
 def test_get_did(publisher_ocean_instance):
@@ -164,6 +166,7 @@ def test_get_did(publisher_ocean_instance):
     did_registry.register(did, url=value_test, account=register_account)
     did_id = did_to_id(did)
     did_resolver.get_did(Web3.toBytes(hexstr=did_id))
+
 
 @e2e_test
 def test_get_did_not_valid(publisher_ocean_instance):
