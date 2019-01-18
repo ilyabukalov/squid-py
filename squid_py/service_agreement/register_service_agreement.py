@@ -34,10 +34,17 @@ def execute_pending_service_agreements(storage_path, account, actor_type,
          price, content_urls, start_time, _) in get_service_agreements(storage_path):
 
         ddo = did_resolver_fn(did)
-        for service_definition in ddo['service']:
-            if service_definition['type'] != 'Access':
+        for service in ddo.services:
+            if service.type != 'Access':
                 continue
 
-            watch_service_agreement_events(ddo.did, storage_path, account,
-                                           service_agreement_id, service_definition, actor_type,
-                                           start_time, num_confirmations=num_confirmations)
+            watch_service_agreement_events(
+                ddo.did,
+                storage_path,
+                account,
+                service_agreement_id,
+                service.as_dictionary(),
+                actor_type,
+                start_time,
+                num_confirmations=num_confirmations
+            )
