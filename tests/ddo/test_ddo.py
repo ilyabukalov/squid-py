@@ -14,7 +14,7 @@ public_key_store_types = [
     PUBLIC_KEY_STORE_TYPE_HEX,
     PUBLIC_KEY_STORE_TYPE_BASE64,
     PUBLIC_KEY_STORE_TYPE_BASE85,
-    ]
+]
 
 TEST_SERVICE_TYPE = 'ocean-meta-storage'
 TEST_SERVICE_URL = 'http://localhost:8005'
@@ -74,19 +74,19 @@ TEST_SERVICES = [
     {
         "type": "CredentialRepositoryService",
         "serviceEndpoint": "https://repository.example.com/service/8377464"
-        },
+    },
     {
         "type": "XdiService",
         "serviceEndpoint": "https://xdi.example.com/8377464"
-        },
+    },
     {
         "type": "HubService",
         "serviceEndpoint": "https://hub.example.com/.identity/did:op:0123456789abcdef/"
-        },
+    },
     {
         "type": "MessagingService",
         "serviceEndpoint": "https://example.com/messages/8377464"
-        },
+    },
     {
         "type": "SocialWebInboxService",
         "serviceEndpoint": "https://social.example.com/83hfh37dj",
@@ -95,24 +95,24 @@ TEST_SERVICES = [
             "spamCost": {
                 "amount": "0.50",
                 "currency": "USD"
-                }
             }
-        },
+        }
+    },
     {
         "type": "BopsService",
         "serviceEndpoint": "https://bops.example.com/enterprise/"
-        },
+    },
     {
         "type": "Consume",
         "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/consume?pubKey=${"
                            "pubKey}&serviceId={serviceId}&url={url}"
-        },
+    },
     {
         "type": "Compute",
         "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/compute?pubKey=${"
                            "pubKey}&serviceId={serviceId}&algo={algo}&container={container}"
-        },
-    ]
+    },
+]
 
 
 def generate_sample_ddo():
