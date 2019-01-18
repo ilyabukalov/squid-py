@@ -17,7 +17,7 @@ def register_service_agreement(storage_path, account, service_agreement_id,
     record_service_agreement(storage_path, service_agreement_id, did, service_definition_id, price,
                              content_urls, start_time)
     watch_service_agreement_events(
-        storage_path, account,
+        did, storage_path, account,
         service_agreement_id, service_definition, actor_type,
         start_time, consume_callback,
         num_confirmations
@@ -30,14 +30,14 @@ def execute_pending_service_agreements(storage_path, account, actor_type,
         fetches their service definitions, and subscribes to service agreement events.
     """
     # service_agreement_id, did, service_definition_id, price, content_urls, start_time, status
-    for service_agreement_id, did, service_definition_id, price, content_urls, start_time, \
-        _ in get_service_agreements(
-        storage_path):
+    for (service_agreement_id, did, service_definition_id,
+         price, content_urls, start_time, _) in get_service_agreements(storage_path):
+
         ddo = did_resolver_fn(did)
         for service_definition in ddo['service']:
             if service_definition['type'] != 'Access':
                 continue
 
-            watch_service_agreement_events(storage_path, account,
+            watch_service_agreement_events(ddo.did, storage_path, account,
                                            service_agreement_id, service_definition, actor_type,
                                            start_time, num_confirmations=num_confirmations)
