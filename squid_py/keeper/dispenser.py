@@ -9,11 +9,11 @@ from squid_py.keeper.contract_base import ContractBase
 
 
 class Dispenser(ContractBase):
-    """Class representing the OceanMarket contract."""
+    """Class representing the Dispenser contract."""
 
     @staticmethod
     def get_instance():
-        """Returns a ContractBase instance of the OceanMarket contract."""
+        """Returns a ContractBase instance of the Dispenser contract."""
         return Dispenser('Dispenser')
 
     def request_tokens(self, amount, address):

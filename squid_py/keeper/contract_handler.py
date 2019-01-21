@@ -24,18 +24,42 @@ class ContractHandler(object):
 
     @staticmethod
     def get(name):
+        """
+        Return the Contract instance for a given name.
+
+        :param name: Contract name, str
+        :return: Contract instance
+        """
         return (ContractHandler._contracts.get(name) or ContractHandler._load(name))[0]
 
     @staticmethod
     def get_concise_contract(name):
+        """
+        Return the Concise Contract instance for a given name.
+
+        :param name: Contract name, str
+        :return: Concise Contract instance
+        """
         return (ContractHandler._contracts.get(name) or ContractHandler._load(name))[1]
 
     @staticmethod
     def set(name, contract):
+        """
+        Set a Contract instance for a contract name.
+
+        :param name: Contract name, str
+        :param contract: Contract instance
+        """
         ContractHandler._contracts[name] = (contract, ConciseContract(contract))
 
     @staticmethod
     def has(name):
+        """
+        Check if a contract is the ContractHandler contracts.
+
+        :param name: Contract name, str
+        :return: True if the contract is there, bool
+        """
         return name in ContractHandler._contracts
 
     @staticmethod
@@ -56,9 +80,10 @@ class ContractHandler(object):
     @staticmethod
     def get_contract_dict_by_name(contract_name):
         """
+        Retrieve the Contract instance for a given contract name.
 
-        :param contract_name:
-        :return: dict -- the smart contract's definition from the json abi file
+        :param contract_name: str
+        :return: the smart contract's definition from the json abi file, dict
         """
         keeper = Keeper.get_instance()
         network_name = keeper.get_network_name(keeper.get_network_id()).lower()
