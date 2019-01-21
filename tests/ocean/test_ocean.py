@@ -272,7 +272,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     assert pay_has_dependencies is False
 
     # Lock payment
-    lockPayment(web3, keeper.artifacts_path, consumer_acc, agreement_id, service_def)
+    lockPayment(consumer_acc, agreement_id, service_def)
     # WAIT FOR ####### PaymentLocked event
     locked = wait_for_event(keeper.payment_conditions.events.PaymentLocked, filter_2)
     # assert locked, ''
@@ -296,17 +296,17 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
                                                                            'expected to.'
 
     # Grant access
-    grantAccess(web3, keeper.artifacts_path, publisher_acc, agreement_id, service_def)
+    grantAccess(publisher_acc, agreement_id, service_def)
     # WAIT FOR ####### AccessGranted event
     granted = wait_for_event(keeper.access_conditions.events.AccessGranted, filter_2)
     assert granted, ''
     # Release payment
-    releasePayment(web3, keeper.artifacts_path, publisher_acc, agreement_id, service_def)
+    releasePayment(publisher_acc, agreement_id, service_def)
     # WAIT FOR ####### PaymentReleased event
     released = wait_for_event(keeper.payment_conditions.events.PaymentReleased, filter_2)
     assert released, ''
     # Fulfill agreement
-    fulfillAgreement(web3, keeper.artifacts_path, publisher_acc, agreement_id, service_def)
+    fulfillAgreement(publisher_acc, agreement_id, service_def)
     # Wait for ####### AgreementFulfilled event (verify agreement was fulfilled)
     fulfilled = wait_for_event(keeper.service_agreement.events.AgreementFulfilled, filter1)
     assert fulfilled, ''

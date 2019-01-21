@@ -119,13 +119,12 @@ class DDO:
         logger.debug('Adding signature to the ddo object.')
         return private_key_pem
 
-    def add_service(self, service_type, service_endpoint=None, service_id=None, values=None):
+    def add_service(self, service_type, service_endpoint=None, values=None):
         """
         Add a service to the list of services on the DDO.
 
         :param service_type: Service
         :param service_endpoint: Service endpoint, str
-        :param service_id: Service id, str
         :param values: Python dict with serviceDefinitionId, templateId, serviceAgreementContract,
         list of conditions and purchase endpoint.
         :return:
@@ -133,11 +132,8 @@ class DDO:
         if isinstance(service_type, Service):
             service = service_type
         else:
-            if service_id is None:
-                service_id = self._did
-            service = Service(service_id, service_endpoint, service_type, values)
-        logger.debug(f'Adding service {service_id} with service type {service_type} '
-                     f'with did {self._did}')
+            service = Service(service_endpoint, service_type, values)
+        logger.debug(f'Adding service with service type {service_type} with did {self._did}')
         self._services.append(service)
 
     def as_text(self, is_proof=True, is_pretty=False):
@@ -317,11 +313,9 @@ class DDO:
                 return authentication
         return None
 
-    def get_service(self, service_type=None, service_id=None):
+    def get_service(self, service_type=None):
         """Return a service using."""
         for service in self._services:
-            if service.get_id() == service_id and service_id:
-                return service
             if service.get_type() == service_type and service_type:
                 return service
         return None
@@ -432,7 +426,6 @@ class DDO:
             ddo.add_authentication(authentication)
 
         for service in self._services:
-            service.assign_did(did)
             ddo.add_service(service)
 
         if self.is_proof_defined():
@@ -544,10 +537,6 @@ class DDO:
     @staticmethod
     def create_service_from_json(values):
         """Create a service object from a JSON string."""
-        # id is the did, no big deal if missing
-        if not 'id' in values:
-            logger.error('Service definition in DDO document is missing the "id" key/value.')
-            raise IndexError
         if not 'serviceEndpoint' in values:
             logger.error(
                 'Service definition in DDO document is missing the "serviceEndpoint" key/value.')
@@ -555,7 +544,7 @@ class DDO:
         if not 'type' in values:
             logger.error('Service definition in DDO document is missing the "type" key/value.')
             raise IndexError
-        service = Service(values.get('id', ''), values['serviceEndpoint'], values['type'], values)
+        service = Service(values['serviceEndpoint'], values['type'], values)
         return service
 
     @staticmethod

@@ -5,7 +5,7 @@ from datetime import datetime
 
 from web3 import HTTPProvider, Web3
 
-from squid_py import ConfigProvider
+from squid_py import ConfigProvider, DDO
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (
@@ -101,6 +101,8 @@ class TestRegisterServiceAgreement:
 
         sa_def = {
             'type': 'Access',
+            'serviceEndpoint': 'brizo/consume',
+            'purchaseEndpoint': 'brizo/initialize',
             'templateId': self.template_id,
             'serviceAgreementContract': {
                 'contractName': 'ServiceAgreement',
@@ -450,11 +452,15 @@ class TestRegisterServiceAgreement:
                                  self.start_time)
 
         def _did_resolver_fn(did):
-            return {
-                'service': [
-                    self.get_simple_service_agreement_definition(did, price),
-                ]
-            }
+            return DDO(
+                did=did,
+                dictionary={
+                    'id': did,
+                    'service': [
+                        self.get_simple_service_agreement_definition(did, price),
+                    ]
+                }
+            )
 
         execute_pending_service_agreements(
             self.storage_path,

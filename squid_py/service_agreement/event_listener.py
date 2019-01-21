@@ -21,7 +21,7 @@ def get_event_handler_function(event):
     return getattr(module, fn_name)
 
 
-def watch_service_agreement_events(storage_path, account,
+def watch_service_agreement_events(did, storage_path, account,
                                    service_agreement_id, service_definition, actor_type,
                                    start_time, consume_callback=None, num_confirmations=12):
     """ Subscribes to the events defined in the given service definition, targeted
@@ -33,9 +33,6 @@ def watch_service_agreement_events(storage_path, account,
     # subscribe cleanup
     def _cleanup(_):
         update_service_agreement_status(storage_path, service_agreement_id, 'fulfilled')
-
-    web3 = Web3Provider.get_web3()
-    contract_path = Keeper.get_instance().artifacts_path
 
     watch_service_agreement_fulfilled(service_agreement_id, service_definition,
                                       _cleanup, start_time, num_confirmations=num_confirmations)
@@ -104,8 +101,8 @@ def watch_service_agreement_events(storage_path, account,
         def _get_callback(func_to_call):
             def _callback(payload):
                 func_to_call(
-                    web3, contract_path, account, service_agreement_id,
-                    service_definition, consume_callback, payload
+                    account, service_agreement_id,
+                    service_definition, consume_callback, did, payload
                 )
 
             return _callback
@@ -116,7 +113,9 @@ def watch_service_agreement_events(storage_path, account,
         assert service_id_arg_name in ('serviceId', ServiceExecutionAgreement.SERVICE_AGREEMENT_ID), \
             f'unknown event first arg, expected serviceAgreementId, got {service_id_arg_name}'
 
-        _filters = {service_id_arg_name: web3.toBytes(hexstr=service_agreement_id)}
+        _filters = {
+            service_id_arg_name: Web3Provider.get_web3().toBytes(hexstr=service_agreement_id)
+        }
 
         watch_event(
             contract,
