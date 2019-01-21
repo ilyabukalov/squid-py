@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import logging
 
 from squid_py import Metadata, Ocean
