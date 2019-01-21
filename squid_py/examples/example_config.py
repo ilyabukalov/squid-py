@@ -3,7 +3,7 @@ import logging
 import os
 
 class ExampleConfig:
-    if 'TEST_NILE' in os.environ:
+    if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
         environment = 'TEST_NILE'
         config_dict = {
             "keeper-contracts": {
