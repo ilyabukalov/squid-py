@@ -49,9 +49,15 @@ runtest ./squid_py/examples/ search_assets.py
 runtest ./squid_py/examples/ sign_agreement.py
 runtest ./squid_py/examples/ buy_asset.py
 
+SQUID_VERSION=$(pip freeze | grep squid)
+
 
 
 echo "\n********* SUMMARY OF $total TESTS ***************************"
+
+echo -e "\n"
+echo "     Squid version:"
+echo "     "$SQUID_VERSION
 
 echo -e "\n"
 if [ $TEST_NILE -eq 1 ]; then
