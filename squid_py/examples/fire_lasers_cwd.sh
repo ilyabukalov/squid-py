@@ -18,7 +18,6 @@ Set the environment variable export TEST_NILE=0 for testing vs. local Spree netw
 Default (no environment variable) is Spree"
 
 
-
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 NC='\033[0m' # No Color
@@ -66,8 +65,6 @@ runtest ./squid_py/examples/ sign_agreement.py
 runtest ./squid_py/examples/ buy_asset.py
 
 SQUID_VERSION=$(pip freeze | grep squid)
-
-
 
 echo "\n********* SUMMARY OF $total TESTS ***************************"
 
