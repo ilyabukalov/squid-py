@@ -6,7 +6,7 @@ from squid_py.modules.v0_1.utils import process_tx_receipt
 logger = logging.getLogger('service_agreement')
 
 
-def fulfillAgreement(web3, contract_path, account, service_agreement_id,
+def fulfillAgreement(account, service_agreement_id,
                      service_definition, *args, **kwargs):
     """ Checks if serviceAgreement has been fulfilled and if not calls
         ServiceAgreement.fulfillAgreement smart contract function.
@@ -24,13 +24,13 @@ def fulfillAgreement(web3, contract_path, account, service_agreement_id,
         tx_hash = service_agreement_concise.fulfillAgreement(service_agreement_id,
                                                              transact={'from': account.address})
         process_tx_receipt(
-            web3, tx_hash, service_agreement.events.AgreementFulfilled, 'AgreementFulfilled')
+            tx_hash, service_agreement.events.AgreementFulfilled, 'AgreementFulfilled')
     except Exception as e:
         logger.error(f'Error when calling fulfillAgreement function: {e}')
         raise e
 
 
-def terminateAgreement(web3, contract_path, account, service_agreement_id,
+def terminateAgreement(account, service_agreement_id,
                        service_definition, *args, **kwargs):
-    fulfillAgreement(web3, contract_path, account, service_agreement_id, service_definition, *args,
+    fulfillAgreement(account, service_agreement_id, service_definition, *args,
                      **kwargs)
