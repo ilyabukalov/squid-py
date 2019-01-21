@@ -7,6 +7,8 @@ from squid_py.keeper.contract_base import ContractBase
 
 
 class ServiceExecutionAgreement(ContractBase):
+    """Class representing the ServiceExecutionAgreement contract."""
+
     SERVICE_AGREEMENT_ID = 'serviceAgreementId'
 
     @staticmethod
@@ -22,18 +24,16 @@ class ServiceExecutionAgreement(ContractBase):
         Deploy a service agreement template that can be used in executing service agreements
         for asset data access and compute services.
 
-        :param template_id: hex str -- id of this service agreement template
+        :param template_id: id of this service agreement template, hex str
         :param contracts_addresses: list of hex str
-        :param fingerprints: list of bytes arrays -- each fingerprint is the function selector
-        :param dependencies_bits:  list of int -- each int represents the dependencies and the
-            timeout flags of a condition
-        :param fulfillment_indices: list of int -- the indices of the fulfillment/terminal
-            conditions
-        :param fulfillment_operator: int -- the logical operator used to determine the agreement
-            fulfillment based on the conditions matching the `fulfillment_indices`
-        :param owner_account: hex str -- ethereum address of account publishing this agreement
-            template
-        :return: dict -- transaction receipt
+        :param fingerprints: each fingerprint is the function selector, list of bytes arrays
+        :param dependencies_bits: each int represents the dependencies and the
+            timeout flags of a condition, list of int
+        :param fulfillment_indices: the indices of the fulfillment/terminal conditions,  list of int
+        :param fulfillment_operator: the logical operator used to determine the agreement
+            fulfillment based on the conditions matching the `fulfillment_indices`, int
+        :param owner_account: ethereum account publishing this agreement template, Account instance
+        :return: transaction receipt, dict
         """
 
         assert contracts_addresses and isinstance(contracts_addresses, list), \
@@ -54,11 +54,11 @@ class ServiceExecutionAgreement(ContractBase):
 
         owner_account.unlock()
         tx_hash = self.contract_concise.setupTemplate(
-            template_id,           # bytes32 templateId
-            contracts_addresses,   # address[] contracts
-            fingerprints,          # bytes4[] fingerprints
-            dependencies_bits,     # uint256[] dependenciesBits
-            fulfillment_indices,   # uint8[] fulfillmentIndices
+            template_id,  # bytes32 templateId
+            contracts_addresses,  # address[] contracts
+            fingerprints,  # bytes4[] fingerprints
+            dependencies_bits,  # uint256[] dependenciesBits
+            fulfillment_indices,  # uint8[] fulfillmentIndices
             fulfillment_operator,  # uint8 fulfillmentOperator
             transact={'from': owner_account.address, 'gas': DEFAULT_GAS_LIMIT}
         )
@@ -72,60 +72,113 @@ class ServiceExecutionAgreement(ContractBase):
         Start/initialize a service agreement on the blockchain. This is really the entry point for
         buying asset services (Access, Compute, etc.)
 
-        :param template_id: hex str -- id of the service agreement template that defines the
-            agreement conditions and dependencies
-        :param signature: hex str -- the signed agreement hash. Signed by the `consumer`
-        :param consumer: hex str -- consumer's ethereum address
-        :param hashes: list of hex str -- each value is the hash of a condition's parameters values
-        :param timeouts: list of int -- timeout value of each condition
-        :param service_agreement_id: hex str
-        :param did_id: hex str -- the asset id portion of did
-        :param publisher_account: Account instance -- account of the publisher of this asset
-        :return: dict -- transaction receipt
+        :param template_id: id of the service agreement template that defines the agreement
+                conditions and dependencies, hex str
+        :param signature: the signed agreement hash. Signed by the `consumer`, hex str
+        :param consumer: consumer's ethereum address, hex str
+        :param hashes: each value is the hash of a condition's parameters values, list of hex str
+        :param timeouts: timeout value of each condition, list of int
+        :param service_agreement_id: id of this service execution agreement, hex str
+        :param did_id: the asset id portion of did, hex str
+        :param publisher_account: account of the publisher of this asset, Account instance
+        :return: transaction receipt, dict
         """
         assert len(hashes) == len(timeouts), ''
 
         publisher_account.unlock()
         tx_hash = self.contract_concise.initializeAgreement(
-            template_id,           # bytes32 templateId,
-            signature,             # bytes signature,
-            consumer,              # address consumer,
-            hashes,                # bytes32[] valueHashes,
-            timeouts,              # uint256[] timeoutValues,
+            template_id,  # bytes32 templateId,
+            signature,  # bytes signature,
+            consumer,  # address consumer,
+            hashes,  # bytes32[] valueHashes,
+            timeouts,  # uint256[] timeoutValues,
             service_agreement_id,  # bytes32 agreementId,
-            did_id,                # bytes32 did
+            did_id,  # bytes32 did
             transact={'from': publisher_account.address, 'gas': DEFAULT_GAS_LIMIT}
         )
         return self.get_tx_receipt(tx_hash)
 
     def fulfill_agreement(self, service_agreement_id, from_account):
+        """
+        Called in case of there are no pending fulfilments.
+
+        :param service_agreement_id: id of this service execution agreement, hex str
+        :param from_account: Ethereum address of account calling the function, hex str
+        :return: true if all the conditions are fulfilled according to the fulfillment criteria
+        otherwise returns false, bool
+        """
         from_account.unlock()
         return self.contract_concise.fulfillAgreement(service_agreement_id)
 
     def revoke_agreement_template(self, template_id, owner_account):
+        """
+        Revokes the template agreement, so the template will not be used in the future.
+
+        :param template_id: id of this service execution agreement template, hex str
+        :param owner_account: ethereum account revoking this agreement template, Account instance
+        :return: True if the service execution agreement template was revoked, bool
+        """
         owner_account.unlock()
         return self.contract_concise.revokeAgreementTemplate(template_id)
 
-    def get_template_status(self, sa_template_id):
-        return self.contract_concise.getTemplateStatus(sa_template_id)
+    def get_template_status(self, template_id):
+        return self.contract_concise.getTemplateStatus(template_id)
 
-    def get_template_owner(self, sa_template_id):
-        return self.contract_concise.getTemplateOwner(sa_template_id)
+    def get_template_owner(self, template_id):
+        """
+        Returns service execution agreement template owner.
+
+        :param template_id: id of this service execution agreement template, hex str
+        :return: template owner address, hex str
+        """
+        return self.contract_concise.getTemplateOwner(template_id)
 
     def get_template_id(self, service_agreement_id):
+        """
+        Returns template Id using agreement ID.
+
+        :param service_agreement_id: id of this service execution agreement, hex str
+        :return: service execution template ID, hex str
+        """
         return self.contract_concise.getTemplateId(service_agreement_id)
 
     def is_agreement_existing(self, service_agreement_id):
+        """
+        Checks if service execution agreement instance exists or not.
+
+        :param service_agreement_id: id of this service execution agreement, hex str
+        :return: True if the service execution agreement exists, bool
+        """
         return self.contract_concise.isAgreementExisting(service_agreement_id)
 
     def get_service_agreement_publisher(self, service_agreement_id):
+        """
+        Retrieves the service execution agreement publisher address.
+
+        :param service_agreement_id: id of this service execution agreement, hex str
+        :return: Publisher ethereum address, hex str
+        """
         return self.contract_concise.getAgreementPublisher(service_agreement_id)
 
     def get_service_agreement_consumer(self, service_agreement_id):
+        """
+        Retrieves the service execution agreement consumer address.
+
+        :param service_agreement_id: id of this service execution agreement, hex str
+        :return: Consumer ethereum address, hex str
+        """
         return self.contract_concise.getAgreementConsumer(service_agreement_id)
 
     def generate_condition_key_for_id(self, service_agreement_id, contract_address,
                                       function_fingerprint):
+        """
+        Utility function that is in charge to generate condition key.
+
+        :param service_agreement_id: id of this service execution agreement, hex str
+        :param contract_address: Contract address, hex str
+        :param function_fingerprint: each fingerprint is the function selector, list of bytes arrays
+        :return: Condition Key, hex str
+        """
         return self.contract_concise.generateConditionKeyForId(service_agreement_id,
                                                                contract_address,
                                                                function_fingerprint)
