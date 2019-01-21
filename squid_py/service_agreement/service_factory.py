@@ -46,7 +46,7 @@ class ServiceFactory(object):
             service_descriptor) == 2, 'Unknown service descriptor format.'
         service_type, kwargs = service_descriptor
         if service_type == ServiceTypes.METADATA:
-            return ServiceFactory.build_metadata_service(did, kwargs['metadata'],
+            return ServiceFactory.build_metadata_service(kwargs['metadata'],
                                                          kwargs['serviceEndpoint'])
 
         elif service_type == ServiceTypes.ASSET_ACCESS:
@@ -65,8 +65,8 @@ class ServiceFactory(object):
         raise ValueError(f'Unknown service type {service_type}')
 
     @staticmethod
-    def build_metadata_service(did, metadata, service_endpoint):
-        return Service(did, service_endpoint, ServiceTypes.METADATA, values={'metadata': metadata})
+    def build_metadata_service(metadata, service_endpoint):
+        return Service(service_endpoint, ServiceTypes.METADATA, values={'metadata': metadata})
 
     @staticmethod
     def build_access_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint,
@@ -102,7 +102,7 @@ class ServiceFactory(object):
             'purchaseEndpoint': purchase_endpoint
         }
 
-        return Service(did, service_endpoint, ServiceTypes.ASSET_ACCESS, values=other_values)
+        return Service(service_endpoint, ServiceTypes.ASSET_ACCESS, values=other_values)
 
     @staticmethod
     def build_compute_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint,

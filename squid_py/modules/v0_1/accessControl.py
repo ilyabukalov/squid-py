@@ -12,7 +12,7 @@ from squid_py.service_agreement.service_agreement_template import ServiceAgreeme
 logger = logging.getLogger('service_agreement')
 
 
-def grantAccess(web3, contract_path, account, service_agreement_id, service_definition,
+def grantAccess(account, service_agreement_id, service_definition,
                 *args, **kwargs):
     """ Checks if grantAccess condition has been fulfilled and if not calls
         AccessConditions.grantAccess smart contract function.
@@ -43,17 +43,17 @@ def grantAccess(web3, contract_path, account, service_agreement_id, service_defi
         account.unlock()
         tx_hash = access_conditions.grantAccess(service_agreement_id, asset_id, document_key_id,
                                                 transact=transact)
-        process_tx_receipt(web3, tx_hash, contract.events.AccessGranted, 'AccessGranted')
+        process_tx_receipt(tx_hash, contract.events.AccessGranted, 'AccessGranted')
     except Exception as e:
         logger.error(f'Error when calling grantAccess condition function: {e}')
         raise e
 
 
-def consumeAsset(web3, contract_path, account, service_agreement_id, service_definition,
-                 consume_callback, *args, **kwargs):
+def consumeAsset(account, service_agreement_id, service_definition,
+                 consume_callback, did, *args, **kwargs):
     if consume_callback:
         consume_callback(
-            service_agreement_id, service_definition.get('id'),
+            service_agreement_id, did,
             service_definition.get(ServiceAgreement.SERVICE_DEFINITION_ID), account
         )
         logger.info('Done consuming asset.')
