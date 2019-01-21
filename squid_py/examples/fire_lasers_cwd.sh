@@ -6,16 +6,16 @@
 # Set the environment variable export TEST_NILE=0 for testing vs. local Spree network
 # Default (no environment variable) is Spreej
 
-usage="$(basename) [-h] -- testing
-
-where:
-    -h  show this help text
-
-Run this in the root of the squid-py repo
-(to get paths of ./artifacts and the scripts themselves)
-Set the environment variable export TEST_NILE=1 for testing vs. deployed Nile
-Set the environment variable export TEST_NILE=0 for testing vs. local Spree network
-Default (no environment variable) is Spree"
+#usage="$(basename) [-h] -- testing
+#
+#where:
+#    -h  show this help text
+#
+#Run this in the root of the squid-py repo
+#(to get paths of ./artifacts and the scripts themselves)
+#Set the environment variable export TEST_NILE=1 for testing vs. deployed Nile
+#Set the environment variable export TEST_NILE=0 for testing vs. local Spree network
+#Default (no environment variable) is Spree"
 
 
 RED='\033[0;31m'
@@ -43,13 +43,11 @@ runtest() {
         MESSAGE="Success, (exit code "$exit_status")"
         passes=$((passes + 1))
         total=$((total + 1))
-#        summarystring="${GREEN} $summarystring    \xE2\x9C\x94   $SCRIPT_NAME  \n"
         summarystring="$summarystring${GREEN}     ✔ $SCRIPT_NAME  \n"
     else
         MESSAGE="Fail, (exit code "$exit_status")"
         fails=$((fails + 1))
         total=$((total + 1))
-#        summarystring="${RED} $summarystring    \xE2\x9D\x8C   $SCRIPT_NAME    \n"
         summarystring="$summarystring${RED}     ✗ $SCRIPT_NAME    \n"
     fi
 
