@@ -14,6 +14,9 @@ def _log_event(event_name):
 
     return _process_event
 
+import os
+if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1': ASYNC_DELAY = 5 # seconds
+else: ASYNC_DELAY = 1  # seconds
 
 def buy_asset():
     """
@@ -43,14 +46,12 @@ def buy_asset():
     # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
     consumer_account.request_tokens(100)
 
-    logging.info("SLEEPING 5 zzzz...".format())
-    sleep(5)
+    sleep(ASYNC_DELAY)
 
     service_agreement_id = cons_ocn.purchase_asset_service(
         ddo.did, sa.sa_definition_id, consumer_account)
 
-    logging.info("SLEEPING 5 zzzz...".format())
-    sleep(5)
+    sleep(ASYNC_DELAY)
 
     filter1 = {'serviceAgreementId': w3.toBytes(hexstr=service_agreement_id)}
     filter2 = {'serviceId': w3.toBytes(hexstr=service_agreement_id)}

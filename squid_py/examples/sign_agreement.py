@@ -6,6 +6,10 @@ from tests.resources.helper_functions import get_account_from_config, get_regist
 
 from time import sleep
 
+import os
+if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1': ASYNC_DELAY = 5 # seconds
+else: ASYNC_DELAY = 1  # seconds
+
 def sign_service_agreement():
     ConfigProvider.set_config(ExampleConfig.get_config())
     # make ocean instance and register an asset
@@ -19,13 +23,11 @@ def sign_service_agreement():
     if not acc.unlock():
         logging.warning(f'Unlock of consumer account failed {acc.address}')
 
-    logging.info("SLEEPING 5 zzzz...".format())
-    sleep(5)
+    sleep(ASYNC_DELAY)
 
     agreement_hash = service_agreement.get_service_agreement_hash(agreement_id)
 
-    logging.info("SLEEPING 5 zzzz...".format())
-    sleep(5)
+    sleep(ASYNC_DELAY)
 
     signature = acc.sign_hash(agreement_hash)
 

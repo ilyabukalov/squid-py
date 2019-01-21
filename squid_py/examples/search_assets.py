@@ -6,6 +6,10 @@ from tests.resources.helper_functions import get_account_from_config
 
 from time import sleep
 
+import os
+if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1': ASYNC_DELAY = 5 # seconds
+else: ASYNC_DELAY = 1  # seconds
+
 def search_assets():
     ConfigProvider.set_config(ExampleConfig.get_config())
     ocn = Ocean()
@@ -14,8 +18,7 @@ def search_assets():
         Metadata.get_example(), account,
     )
 
-    logging.info("SLEEPING 5 zzzz...".format())
-    sleep(5)
+    sleep(ASYNC_DELAY)
 
     logging.info(f'Registered asset: did={ddo.did}, ddo={ddo.as_text()}')
     resolved_ddo = ocn.resolve_asset_did(ddo.did)
