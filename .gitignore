@@ -112,4 +112,5 @@ squid_py.db
 consume-downloads
 .log
 start_ocean.log
-
+errors.log.*
+info.log.*
