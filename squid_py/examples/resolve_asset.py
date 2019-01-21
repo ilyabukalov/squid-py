@@ -4,6 +4,7 @@ from squid_py import Ocean, ConfigProvider, Metadata
 from squid_py.examples.example_config import ExampleConfig
 from tests.resources.helper_functions import get_account_from_config
 
+from time import sleep
 
 def resolve_asset():
     ConfigProvider.set_config(ExampleConfig.get_config())
@@ -13,6 +14,9 @@ def resolve_asset():
     ddo = ocn.register_asset(
         Metadata.get_example(), account,
     )
+
+    logging.info("SLEEPING 5 zzzz...".format())
+    sleep(5)
 
     logging.info(f'Registered asset: did={ddo.did}, ddo={ddo.as_text()}')
     resolved_ddo = ocn.resolve_asset_did(ddo.did)

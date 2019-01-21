@@ -8,6 +8,7 @@ from tests.resources.helper_functions import (
     get_account_from_config,
 )
 
+from time import sleep
 
 def register_asset():
     # make ocean instance
@@ -15,6 +16,9 @@ def register_asset():
     ocn = Ocean()
     account = get_account_from_config(ocn.config, 'parity.address', 'parity.password')
     ddo = ocn.register_asset(Metadata.get_example(), account)
+
+    logging.info("SLEEPING 5 zzzz...".format())
+    sleep(5)
 
     logging.info(f'Registered asset: did={ddo.did}, ddo-services={ddo.services}')
     resolved_ddo = ocn.resolve_asset_did(ddo.did)

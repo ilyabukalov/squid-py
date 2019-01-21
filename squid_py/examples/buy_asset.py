@@ -6,6 +6,7 @@ from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import get_account_from_config, get_registered_ddo
 
+from time import sleep
 
 def _log_event(event_name):
     def _process_event(event):
@@ -41,8 +42,15 @@ def buy_asset():
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
     # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
     consumer_account.request_tokens(100)
+
+    logging.info("SLEEPING 5 zzzz...".format())
+    sleep(5)
+
     service_agreement_id = cons_ocn.purchase_asset_service(
         ddo.did, sa.sa_definition_id, consumer_account)
+
+    logging.info("SLEEPING 5 zzzz...".format())
+    sleep(5)
 
     filter1 = {'serviceAgreementId': w3.toBytes(hexstr=service_agreement_id)}
     filter2 = {'serviceId': w3.toBytes(hexstr=service_agreement_id)}
