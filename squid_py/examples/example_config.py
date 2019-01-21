@@ -1,8 +1,10 @@
 from squid_py import Config
+import logging
 import os
 
 class ExampleConfig:
     if 'TEST_NILE' in os.environ:
+        environment = 'TEST_NILE'
         config_dict = {
             "keeper-contracts": {
                 "keeper.url": "https://nile.dev-ocean.com",
@@ -22,6 +24,7 @@ class ExampleConfig:
             }
         }
     else:
+        environment = 'TEST_LOCAL_SPREE'
         config_dict = {
             "keeper-contracts": {
                 "keeper.url": "http://localhost:8545",
@@ -43,4 +46,5 @@ class ExampleConfig:
 
     @staticmethod
     def get_config():
+        logging.info("Configuration loaded for environment '{}'".format(ExampleConfig.environment))
         return Config(options_dict=ExampleConfig.config_dict)
