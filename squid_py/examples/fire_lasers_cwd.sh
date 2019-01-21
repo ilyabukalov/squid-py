@@ -1,7 +1,23 @@
 #!/bin/bash
 
-#PYTHON="/usr/bin/python"
-#python ./squid_py/examples/register_asset.py
+# Run this in the root of the squid-py repo
+# (to get paths of ./artifacts and the scripts themselves)
+# Set the environment variable export TEST_NILE=1 for testing vs. deployed Nile
+# Set the environment variable export TEST_NILE=0 for testing vs. local Spree network
+# Default (no environment variable) is Spreej
+
+usage="$(basename) [-h] -- testing
+
+where:
+    -h  show this help text
+
+Run this in the root of the squid-py repo
+(to get paths of ./artifacts and the scripts themselves)
+Set the environment variable export TEST_NILE=1 for testing vs. deployed Nile
+Set the environment variable export TEST_NILE=0 for testing vs. local Spree network
+Default (no environment variable) is Spree"
+
+
 
 RED='\033[0;31m'
 GREEN='\033[0;32m'
