@@ -27,9 +27,9 @@ class Dispenser(ContractBase):
         :return: Tx receipt
         """
         try:
-            receipt = self.contract_concise.requestTokens(amount, transact={'from': address})
+            receipt = self.contract_concise.requestTokens(amount, transact={'from': address, 'gas': DEFAULT_GAS_LIMIT})
             logging.debug(f'{address} requests {amount} tokens, returning receipt')
             return receipt
-        except ValueError:
+        except ValueError as err:
             raise OceanInvalidTransaction(f'Transaction on chain requesting {amount} tokens'
-                                          f' to {address} failed.')
+                                          f' to {address} failed with error: {err}')

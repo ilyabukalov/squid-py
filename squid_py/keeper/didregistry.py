@@ -1,12 +1,17 @@
 """Keeper module to call keeper-contracts."""
-
+import logging
 from urllib.parse import urlparse
 
+from eth_abi import decode_single
 from web3 import Web3
 
+from squid_py import OceanDIDNotFound
 from squid_py.did import did_to_id_bytes
+from squid_py.did_resolver.did_resolver import DID_REGISTRY_EVENT_NAME
 from squid_py.did_resolver.resolver_value_type import ResolverValueType
 from squid_py.keeper.contract_base import ContractBase
+
+logger = logging.getLogger(__name__)
 
 
 class DIDRegistry(ContractBase):
@@ -88,3 +93,38 @@ class DIDRegistry(ContractBase):
         :return:
         """
         return self.contract_concise.getOwner(did)
+
+    def get_registered_attribute(self, did_bytes):
+        result = None
+        did = Web3.toHex(did_bytes)
+        block_number = self.get_update_at(did_bytes)
+        logger.debug(f'got blockNumber {block_number} for did {did}')
+        if block_number == 0:
+            raise OceanDIDNotFound(
+                f'DID "{did}" is not found on-chain in the current did registry. '
+                f'Please ensure assets are registered in the correct keeper contracts. '
+                f'The keeper-contracts DIDRegistry address is {self.address}')
+
+        event = getattr(self.events, DID_REGISTRY_EVENT_NAME)
+        block_filter = event().createFilter(
+            fromBlock=block_number, toBlock=block_number, argument_filters={'did': did_bytes}
+        )
+        log_items = block_filter.get_all_entries()
+        if log_items:
+            log_item = log_items[-1]
+            value, value_type, block_number = decode_single(
+                '(string,uint8,uint256)', Web3.toBytes(hexstr=log_item['data']))
+            topics = log_item['topics']
+            logger.debug(f'topics {topics}')
+            result = {
+                'value_type': value_type,
+                'value': value,
+                'block_number': block_number,
+                'did_bytes': Web3.toBytes(topics[1]),
+                'owner': Web3.toChecksumAddress(topics[2][-20:]),
+                'key': Web3.toBytes(topics[3]),
+            }
+        else:
+            logger.warning(f'Could not find {DID_REGISTRY_EVENT_NAME} event logs for '
+                           f'did {did} at blockNumber {block_number}')
+        return result

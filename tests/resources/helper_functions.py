@@ -57,16 +57,22 @@ def get_consumer_account(config):
 def get_publisher_ocean_instance():
     ocn = make_ocean_instance(SecretStoreClientMock, PUBLISHER_INDEX)
     account = get_publisher_account(ConfigProvider.get_config())
-    init_ocn_tokens(ocn, account)
-    ocn.main_account = account
+    if account.address in ocn.accounts:
+        ocn.main_account = account
+    else:
+        ocn.main_account = Account(list(ocn.accounts)[0])
+    init_ocn_tokens(ocn, ocn.main_account)
     return ocn
 
 
 def get_consumer_ocean_instance():
     ocn = make_ocean_instance(SecretStoreClientMock, CONSUMER_INDEX)
     account = get_consumer_account(ConfigProvider.get_config())
-    init_ocn_tokens(ocn, account)
-    ocn.main_account = account
+    if account.address in ocn.accounts:
+        ocn.main_account = account
+    else:
+        ocn.main_account = Account(list(ocn.accounts)[1])
+    init_ocn_tokens(ocn, ocn.main_account)
     return ocn
 
 
