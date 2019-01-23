@@ -7,7 +7,6 @@ from squid_py.keeper.utils import get_event_def_from_abi
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.service_agreement.service_agreement_condition import Event, ServiceAgreementCondition
 from squid_py.service_agreement.storage import update_service_agreement_status
-from squid_py.utils import watch_event
 
 MIN_TIMEOUT = 2  # seconds
 MAX_TIMEOUT = 60 * 60 * 24 * 7  # 7 days expressed in seconds
@@ -23,7 +22,7 @@ def get_event_handler_function(event):
 
 def watch_service_agreement_events(did, storage_path, account,
                                    service_agreement_id, service_definition, actor_type,
-                                   start_time, consume_callback=None, num_confirmations=12):
+                                   start_time, consume_callback=None):
     """ Subscribes to the events defined in the given service definition, targeted
         for the given actor type. Filters events by the given service agreement ID.
 
@@ -35,7 +34,7 @@ def watch_service_agreement_events(did, storage_path, account,
         update_service_agreement_status(storage_path, service_agreement_id, 'fulfilled')
 
     watch_service_agreement_fulfilled(service_agreement_id, service_definition,
-                                      _cleanup, start_time, num_confirmations=num_confirmations)
+                                      _cleanup, )
 
     # collect service agreement and condition events
     events = []
@@ -92,11 +91,9 @@ def watch_service_agreement_events(did, storage_path, account,
 
         # event of type service_agreement_condition.Event
         fn = get_event_handler_function(event)
-        timeout_fn = None
         if timeout_event and timeout:
             assert MIN_TIMEOUT < timeout < MAX_TIMEOUT, f'TIMEOUT value not within allowed ' \
                                                         f'range {MIN_TIMEOUT}-{MAX_TIMEOUT}.'
-            timeout_fn = get_event_handler_function(timeout_event)
 
         def _get_callback(func_to_call):
             def _callback(payload):
@@ -118,42 +115,18 @@ def watch_service_agreement_events(did, storage_path, account,
         _filters = {
             service_id_arg_name: Web3Provider.get_web3().toBytes(hexstr=service_agreement_id)
         }
-
-        watch_event(
-            contract,
-            event.name,
-            _get_callback(fn),
-            interval=0.5,
-            start_time=start_time,
-            timeout=timeout,
-            timeout_callback=_get_callback(timeout_fn) if timeout_fn else None,
-            from_block='latest',
-            filters=_filters,
-            num_confirmations=num_confirmations,
-        )
+        EventListener(contract_name, event.name, filters=_filters)\
+            .listen_once(_get_callback(fn), timeout, start_time)
 
 
 def watch_service_agreement_fulfilled(service_agreement_id, service_definition,
-                                      callback, start_time, num_confirmations=12):
+                                      callback):
     """ Subscribes to the service agreement fulfilled event, filtering by the given
         service agreement ID.
     """
     contract_name = service_definition['serviceAgreementContract']['contractName']
-    contract = ContractHandler.get(contract_name)
-
     filters = {
         ServiceExecutionAgreement.SERVICE_AGREEMENT_ID:
             Web3Provider.get_web3().toBytes(hexstr=service_agreement_id)
     }
-    EventListener(contract_name, 'AgreementFulfilled', filters=filters)\
-        .listen_once(callback)
-    watch_event(
-        contract,
-        'AgreementFulfilled',
-        callback,
-        interval=0.5,
-        start_time=start_time,
-        from_block='latest',
-        filters=filters,
-        num_confirmations=num_confirmations,
-    )
+    EventListener(contract_name, 'AgreementFulfilled', filters=filters).listen_once(callback)

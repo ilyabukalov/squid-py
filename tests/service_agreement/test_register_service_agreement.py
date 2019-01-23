@@ -64,8 +64,7 @@ class TestRegisterServiceAgreement:
     def _consume_dummy(self, *args):
         pass
 
-    def _register_agreement(self, agreement_id, did, service_definition, actor_type='consumer',
-                            num_confirmations=3):
+    def _register_agreement(self, agreement_id, did, service_definition, actor_type='consumer'):
         register_service_agreement(
             self.storage_path,
             self.consumer_acc,
@@ -77,7 +76,6 @@ class TestRegisterServiceAgreement:
             self.price,
             self.content_url,
             consume_callback=self._consume_dummy,
-            num_confirmations=num_confirmations,
             start_time=self.start_time
         )
 
@@ -318,8 +316,7 @@ class TestRegisterServiceAgreement:
         self._register_agreement(
             service_agreement_id,
             did,
-            self.get_simple_service_agreement_definition(did, price),
-            num_confirmations=1,
+            self.get_simple_service_agreement_definition(did, price)
         )
 
         self._execute_service_agreement(service_agreement_id, did, price)
@@ -334,16 +331,14 @@ class TestRegisterServiceAgreement:
         self._register_agreement(
             service_agreement_id,
             did,
-            self.get_simple_service_agreement_definition(did, price),
-            num_confirmations=0,
+            self.get_simple_service_agreement_definition(did, price)
         )
 
         self._register_agreement(
             service_agreement_id,
             did,
             self.get_simple_service_agreement_definition(did, price),
-            'publisher',
-            num_confirmations=0,
+            'publisher'
         )
 
         self._execute_service_agreement(service_agreement_id, did, price)
@@ -384,15 +379,13 @@ class TestRegisterServiceAgreement:
             service_agreement_id,
             did,
             self.get_simple_service_agreement_definition(did, price, include_refund=True),
-            num_confirmations=0,
         )
 
         self._register_agreement(
             service_agreement_id,
             did,
             self.get_simple_service_agreement_definition(did, price, include_refund=True),
-            'publisher',
-            num_confirmations=0,
+            'publisher'
         )
 
         self._execute_service_agreement(service_agreement_id, did, price)
@@ -466,8 +459,7 @@ class TestRegisterServiceAgreement:
             self.storage_path,
             self.consumer_acc,
             'consumer',
-            _did_resolver_fn,
-            num_confirmations=0,
+            _did_resolver_fn
         )
 
         self._execute_service_agreement(service_agreement_id, did, price)
