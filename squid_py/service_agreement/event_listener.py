@@ -1,6 +1,7 @@
 import importlib
 
 from squid_py.keeper.contract_handler import ContractHandler
+from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.service_execution_agreement import ServiceExecutionAgreement
 from squid_py.keeper.utils import get_event_def_from_abi
 from squid_py.keeper.web3_provider import Web3Provider
@@ -144,6 +145,8 @@ def watch_service_agreement_fulfilled(service_agreement_id, service_definition,
         ServiceExecutionAgreement.SERVICE_AGREEMENT_ID:
             Web3Provider.get_web3().toBytes(hexstr=service_agreement_id)
     }
+    EventListener(contract_name, 'AgreementFulfilled', filters=filters)\
+        .listen_once(callback)
     watch_event(
         contract,
         'AgreementFulfilled',
