@@ -105,7 +105,7 @@ class TestRegisterServiceAgreement:
             'purchaseEndpoint': 'brizo/initialize',
             'templateId': self.template_id,
             'serviceAgreementContract': {
-                'contractName': 'ServiceAgreement',
+                'contractName': 'ServiceExecutionAgreement',
                 'events': [{
                     'name': 'AgreementInitialized',
                     'actorType': 'consumer',
@@ -298,7 +298,7 @@ class TestRegisterServiceAgreement:
             did,
             {
                 'serviceAgreementContract': {
-                    'contractName': 'ServiceAgreement',
+                    'contractName': 'ServiceExecutionAgreement',
                     'events': []
                 },
                 'conditions': []

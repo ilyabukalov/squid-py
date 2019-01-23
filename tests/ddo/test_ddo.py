@@ -105,12 +105,12 @@ TEST_SERVICES = [
     {
         "type": "Consume",
         "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/consume?pubKey=${"
-                           "pubKey}&serviceId={serviceId}&url={url}"
+                           "pubKey}&agreementId={agreementId}&url={url}"
     },
     {
         "type": "Compute",
         "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/compute?pubKey=${"
-                           "pubKey}&serviceId={serviceId}&algo={algo}&container={container}"
+                           "pubKey}&agreementId={agreementId}&algo={algo}&container={container}"
     },
 ]
 

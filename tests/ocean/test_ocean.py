@@ -84,7 +84,6 @@ def test_token_request(publisher_ocean_instance, consumer_ocean_instance):
 @e2e_test
 def test_register_asset(publisher_ocean_instance):
     logging.debug("".format())
-    asset_price = 100
     sample_ddo_path = get_resource_path('ddo', 'ddo_sample2.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
@@ -96,7 +95,6 @@ def test_register_asset(publisher_ocean_instance):
     # ensure Ocean token balance
     if publisher.ocean_balance == 0:
         rcpt = publisher.request_tokens(200)
-        Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
 
     # You will need some token to make this transfer!
     assert publisher.ocean_balance > 0
@@ -170,19 +168,18 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     )
     assert service_agreement_id, 'agreement id is None.'
     print('got new service agreement id:', service_agreement_id)
-    filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=service_agreement_id)}
-    filter_2 = {'serviceId': Web3.toBytes(hexstr=service_agreement_id)}
+    filter1 = {'agreementId': Web3.toBytes(hexstr=service_agreement_id)}
     executed = wait_for_event(
         consumer_ocean_instance.keeper.service_agreement.events.AgreementInitialized, filter1)
     assert executed
     locked = wait_for_event(consumer_ocean_instance.keeper.payment_conditions.events.PaymentLocked,
-                            filter_2)
+                            filter1)
     assert locked
     granted = wait_for_event(consumer_ocean_instance.keeper.access_conditions.events.AccessGranted,
-                             filter_2)
+                             filter1)
     assert granted
     released = wait_for_event(
-        consumer_ocean_instance.keeper.payment_conditions.events.PaymentReleased, filter_2)
+        consumer_ocean_instance.keeper.payment_conditions.events.PaymentReleased, filter1)
     assert released
     fulfilled = wait_for_event(
         consumer_ocean_instance.keeper.service_agreement.events.AgreementFulfilled, filter1)
@@ -235,11 +232,10 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
         pub_ocn.main_account
     )
 
-    filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=agreement_id)}
-    filter_2 = {'serviceId': Web3.toBytes(hexstr=agreement_id)}
+    _filter = {'agreementId': Web3.toBytes(hexstr=agreement_id)}
 
     # WAIT FOR ####### AgreementInitialized Event
-    executed = wait_for_event(pub_ocn.keeper.service_agreement.events.AgreementInitialized, filter1)
+    executed = wait_for_event(pub_ocn.keeper.service_agreement.events.AgreementInitialized, _filter)
     assert executed, ''
     cons = keeper.service_agreement.get_service_agreement_consumer(agreement_id)
     pub = keeper.service_agreement.get_service_agreement_publisher(agreement_id)
@@ -274,7 +270,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     # Lock payment
     lockPayment(consumer_acc, agreement_id, service_def)
     # WAIT FOR ####### PaymentLocked event
-    locked = wait_for_event(keeper.payment_conditions.events.PaymentLocked, filter_2)
+    locked = wait_for_event(keeper.payment_conditions.events.PaymentLocked, _filter)
     # assert locked, ''
     if not locked:
         lock_cond_status = keeper.service_agreement.contract_concise.getConditionStatus(
@@ -298,17 +294,17 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     # Grant access
     grantAccess(publisher_acc, agreement_id, service_def)
     # WAIT FOR ####### AccessGranted event
-    granted = wait_for_event(keeper.access_conditions.events.AccessGranted, filter_2)
+    granted = wait_for_event(keeper.access_conditions.events.AccessGranted, _filter)
     assert granted, ''
     # Release payment
     releasePayment(publisher_acc, agreement_id, service_def)
     # WAIT FOR ####### PaymentReleased event
-    released = wait_for_event(keeper.payment_conditions.events.PaymentReleased, filter_2)
+    released = wait_for_event(keeper.payment_conditions.events.PaymentReleased, _filter)
     assert released, ''
     # Fulfill agreement
     fulfillAgreement(publisher_acc, agreement_id, service_def)
     # Wait for ####### AgreementFulfilled event (verify agreement was fulfilled)
-    fulfilled = wait_for_event(keeper.service_agreement.events.AgreementFulfilled, filter1)
+    fulfilled = wait_for_event(keeper.service_agreement.events.AgreementFulfilled, _filter)
     assert fulfilled, ''
     print('All good.')
     # Repeat execute test but with a refund payment (i.e. don't grant access)

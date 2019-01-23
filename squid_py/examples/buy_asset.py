@@ -44,20 +44,19 @@ def buy_asset():
     service_agreement_id = cons_ocn.purchase_asset_service(
         ddo.did, sa.sa_definition_id, consumer_account)
 
-    filter1 = {'serviceAgreementId': w3.toBytes(hexstr=service_agreement_id)}
-    filter2 = {'serviceId': w3.toBytes(hexstr=service_agreement_id)}
+    _filter = {'agreementId': w3.toBytes(hexstr=service_agreement_id)}
 
-    EventListener('ServiceAgreement', 'AgreementInitialized', filters=filter1).listen_once(
+    EventListener('ServiceExecutionAgreement', 'AgreementInitialized', filters=_filter).listen_once(
         _log_event('AgreementInitialized'),
         10,
         blocking=True
     )
-    EventListener('AccessConditions', 'AccessGranted', filters=filter2).listen_once(
+    EventListener('AccessConditions', 'AccessGranted', filters=_filter).listen_once(
         _log_event('AccessGranted'),
         10,
         blocking=True
     )
-    event = EventListener('ServiceExecutionAgreement', 'AgreementFulfilled', filters=filter1).listen_once(
+    event = EventListener('ServiceExecutionAgreement', 'AgreementFulfilled', filters=_filter).listen_once(
         _log_event('AgreementFulfilled'),
         10,
         blocking=True

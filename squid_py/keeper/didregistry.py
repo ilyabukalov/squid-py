@@ -5,7 +5,7 @@ from urllib.parse import urlparse
 from eth_abi import decode_single
 from web3 import Web3
 
-from squid_py import OceanDIDNotFound
+from squid_py.exceptions import OceanDIDNotFound
 from squid_py.did import did_to_id_bytes
 from squid_py.did_resolver.did_resolver import DID_REGISTRY_EVENT_NAME
 from squid_py.did_resolver.resolver_value_type import ResolverValueType

@@ -1,6 +1,5 @@
 import importlib
 
-from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.service_execution_agreement import ServiceExecutionAgreement
 from squid_py.keeper.utils import get_event_def_from_abi
@@ -110,8 +109,10 @@ def watch_service_agreement_events(did, storage_path, account,
         contract = ContractHandler.get(contract_name)
         event_abi_dict = get_event_def_from_abi(contract.abi, event.name)
         service_id_arg_name = event_abi_dict['inputs'][0]['name']
-        assert service_id_arg_name in ('serviceId', ServiceExecutionAgreement.SERVICE_AGREEMENT_ID), \
-            f'unknown event first arg, expected serviceAgreementId, got {service_id_arg_name}'
+        assert service_id_arg_name == ServiceExecutionAgreement.SERVICE_AGREEMENT_ID, \
+            f'unknown event first arg, ' \
+            f'expected {ServiceExecutionAgreement.SERVICE_AGREEMENT_ID}, ' \
+            f'got {service_id_arg_name}'
 
         _filters = {
             service_id_arg_name: Web3Provider.get_web3().toBytes(hexstr=service_agreement_id)

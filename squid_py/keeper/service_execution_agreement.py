@@ -9,7 +9,7 @@ from squid_py.keeper.contract_base import ContractBase
 class ServiceExecutionAgreement(ContractBase):
     """Class representing the ServiceExecutionAgreement contract."""
 
-    SERVICE_AGREEMENT_ID = 'serviceAgreementId'
+    SERVICE_AGREEMENT_ID = 'agreementId'
 
     @staticmethod
     def get_instance():
