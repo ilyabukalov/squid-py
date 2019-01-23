@@ -83,7 +83,7 @@ class ContractHandler(object):
         for name in os.listdir(_base_path):
             if name.lower() == contract_file_name.lower():
                 contract_file_name = name
-                return os.path.join(keeper.artifacts_path, contract_file_name)
+                return os.path.join(Keeper.get_instance().artifacts_path, contract_file_name)
         return None
 
     @staticmethod

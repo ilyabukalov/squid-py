@@ -58,27 +58,21 @@ def test_token_request(publisher_ocean_instance, consumer_ocean_instance):
     # Get the current accounts, assign 2
 
     # Start balances for comparison
-    aquarius_start_eth = pub_ocn.main_account.ether_balance
-    aquarius_start_ocean = pub_ocn.main_account.ocean_balance
+    start_eth = pub_ocn.main_account.ether_balance
+    start_ocean = pub_ocn.main_account.ocean_balance
 
     # Make requests, assert success on request
-    rcpt = pub_ocn.main_account.request_tokens(amount)
-    Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
-    rcpt = cons_ocn.main_account.request_tokens(amount)
-    Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
+    pub_ocn.main_account.request_tokens(amount)
+    cons_ocn.main_account.request_tokens(amount)
 
     # Update and print balances
     # Ocean.accounts is a dict address: account
     for address in pub_ocn.accounts:
         print(pub_ocn.accounts[address])
-    aquarius_current_eth = pub_ocn.main_account.ether_balance
-    aquarius_current_ocean = pub_ocn.main_account.ocean_balance
 
     # Confirm balance changes
-    assert pub_ocn.main_account.balance.eth == aquarius_current_eth
-    assert pub_ocn.main_account.balance.ocn == aquarius_current_ocean
-    # assert aquarius_current_eth < aquarius_start_eth
-    # assert aquarius_current_ocean == aquarius_start_ocean + amount
+    assert pub_ocn.main_account.ether_balance == start_eth + amount
+    assert pub_ocn.main_account.ocean_balance == start_ocean + amount
 
 
 @e2e_test
