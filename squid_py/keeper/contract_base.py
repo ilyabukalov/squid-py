@@ -68,20 +68,5 @@ class ContractBase(object):
         Web3Provider.get_web3().eth.waitForTransactionReceipt(tx_hash)
         return Web3Provider.get_web3().eth.getTransactionReceipt(tx_hash)
 
-    def get_event_signature(self, name):
-        """
-        Return the event signature from a named event.
-
-        :param name:
-        :return:
-        """
-        signature = None
-        for item in self.contract.abi:
-            if item.get('type') == 'event' and item.get('name') == name:
-                signature = item['signature']
-                break
-
-        return signature
-
     def __str__(self):
         return f'{self.name} at {self.address}'

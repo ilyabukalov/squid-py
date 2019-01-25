@@ -3,10 +3,10 @@ import pathlib
 import time
 
 from squid_py import (ACCESS_SERVICE_TEMPLATE_ID, Account, ConfigProvider, Ocean,
-                      ServiceAgreementTemplate, ServiceDescriptor)
+                      ServiceAgreementTemplate)
 from squid_py.brizo.brizo import Brizo
-from squid_py.config import Config
 from squid_py.ddo.metadata import Metadata
+from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.secret_store.secret_store import SecretStore
@@ -38,11 +38,10 @@ def init_ocn_tokens(ocn, account, amount=100):
 
 
 def make_ocean_instance(secret_store_client, account_index):
-    path_config = 'config_local.ini'
-    os.environ['CONFIG_FILE'] = path_config
     SecretStore.set_client(secret_store_client)
-    ocn = Ocean(Config(path_config))
+    ocn = Ocean(ExampleConfig.get_config())
     account = list(ocn.get_accounts())[account_index]
+    # We can remove the BrizoMock if we assuming that the asset is in Azure.
     Brizo.set_http_client(BrizoMock(ocn, account))
     return ocn
 
@@ -58,16 +57,22 @@ def get_consumer_account(config):
 def get_publisher_ocean_instance():
     ocn = make_ocean_instance(SecretStoreClientMock, PUBLISHER_INDEX)
     account = get_publisher_account(ConfigProvider.get_config())
-    init_ocn_tokens(ocn, account)
-    ocn.main_account = account
+    if account.address in ocn.accounts:
+        ocn.main_account = account
+    else:
+        ocn.main_account = Account(list(ocn.accounts)[0])
+    init_ocn_tokens(ocn, ocn.main_account)
     return ocn
 
 
 def get_consumer_ocean_instance():
     ocn = make_ocean_instance(SecretStoreClientMock, CONSUMER_INDEX)
     account = get_consumer_account(ConfigProvider.get_config())
-    init_ocn_tokens(ocn, account)
-    ocn.main_account = account
+    if account.address in ocn.accounts:
+        ocn.main_account = account
+    else:
+        ocn.main_account = Account(list(ocn.accounts)[1])
+    init_ocn_tokens(ocn, ocn.main_account)
     return ocn
 
 
@@ -105,16 +110,8 @@ def get_registered_access_service_template(ocean_instance, account):
 
 
 def get_registered_ddo(ocean_instance, account):
-    template = get_registered_access_service_template(ocean_instance, account)
-    config = ocean_instance.config
-    purchase_endpoint = Brizo.get_purchase_endpoint(config)
-    service_endpoint = Brizo.get_service_endpoint(config)
-    ddo = ocean_instance.register_asset(
-        Metadata.get_example(), account,
-        [ServiceDescriptor.access_service_descriptor(7, purchase_endpoint, service_endpoint, 360,
-                                                     template.template_id)]
-    )
-
+    get_registered_access_service_template(ocean_instance, account)
+    ddo = ocean_instance.register_asset(Metadata.get_example(), account)
     return ddo
 
 

@@ -34,7 +34,7 @@
   "service": [
     {
       "type": "Access",
-      "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/consume?pubKey=${pubKey}&serviceId={serviceId}&url={url}",
+      "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/consume?pubKey=${pubKey}&agreementId={agreementId}&url={url}",
       "serviceDefinitionId": "...",
       "templateId": "...",
       "conditions": [
@@ -199,7 +199,7 @@
     },
     {
       "type": "Compute",
-      "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/compute?pubKey=${pubKey}&serviceId={serviceId}&algo={algo}&container={container}"
+      "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/compute?pubKey=${pubKey}&agreementId={agreementId}&algo={algo}&container={container}"
     },
     {
       "type": "Metadata",

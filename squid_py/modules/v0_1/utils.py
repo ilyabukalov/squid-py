@@ -12,7 +12,8 @@ from squid_py.service_agreement.utils import build_condition_key
 logger = logging.getLogger('keeper-utils')
 
 
-def process_tx_receipt(web3, tx_hash, event, event_name):
+def process_tx_receipt(tx_hash, event, event_name):
+    web3 = Web3Provider.get_web3()
     web3.eth.waitForTransactionReceipt(tx_hash)
     receipt = web3.eth.getTransactionReceipt(tx_hash)
     event = event().processReceipt(receipt)

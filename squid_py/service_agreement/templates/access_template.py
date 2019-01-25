@@ -6,9 +6,9 @@ Event = namedtuple('Event', ('name', 'actorType', 'handler'))
 
 
 class AccessServiceTemplate:
-    path = 'ServiceAgreement.executeAgreement'
+    path = 'ServiceAgreement.initializeAgreement'
     fulfillment_operator = 1
-    events = Event('ExecuteAgreement', 'consumer', {'handler': ()})
+    events = Event('AgreementInitialized', 'consumer', {'handler': ()})
     conditions = [
         Condition('lockPayment', 'PaymentConditions.lockPayment', [], [],
                   [Event('PaymentLocked', ['publisher'], {})]),

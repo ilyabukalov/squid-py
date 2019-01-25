@@ -15,10 +15,8 @@ from squid_py.modules.v0_1.accessControl import grantAccess
 from squid_py.modules.v0_1.payment import lockPayment, releasePayment
 from squid_py.modules.v0_1.serviceAgreement import fulfillAgreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
-from squid_py.service_agreement.service_factory import ServiceDescriptor
 from squid_py.service_agreement.service_types import ServiceTypes
 from squid_py.service_agreement.utils import build_condition_key
-from squid_py.utils.utilities import generate_new_id
 from tests.resources.helper_functions import get_resource_path, verify_signature, wait_for_event
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.tiers import e2e_test
@@ -52,41 +50,32 @@ def test_accounts(publisher_ocean_instance):
 
 
 @e2e_test
-def test_token_request(publisher_ocean_instance, consumer_ocean_instance):
+def test_token_request(publisher_ocean_instance):
     amount = 2000
 
     pub_ocn = publisher_ocean_instance
-    cons_ocn = consumer_ocean_instance
     # Get the current accounts, assign 2
 
     # Start balances for comparison
-    aquarius_start_eth = pub_ocn.main_account.ether_balance
-    aquarius_start_ocean = pub_ocn.main_account.ocean_balance
+    start_eth = pub_ocn.main_account.ether_balance
+    start_ocean = pub_ocn.main_account.ocean_balance
 
     # Make requests, assert success on request
-    rcpt = pub_ocn.main_account.request_tokens(amount)
-    Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
-    rcpt = cons_ocn.main_account.request_tokens(amount)
-    Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
+    pub_ocn.main_account.request_tokens(amount)
 
     # Update and print balances
     # Ocean.accounts is a dict address: account
     for address in pub_ocn.accounts:
         print(pub_ocn.accounts[address])
-    aquarius_current_eth = pub_ocn.main_account.ether_balance
-    aquarius_current_ocean = pub_ocn.main_account.ocean_balance
 
     # Confirm balance changes
-    assert pub_ocn.main_account.balance.eth == aquarius_current_eth
-    assert pub_ocn.main_account.balance.ocn == aquarius_current_ocean
-    # assert aquarius_current_eth < aquarius_start_eth
-    # assert aquarius_current_ocean == aquarius_start_ocean + amount
+    # assert pub_ocn.main_account.ether_balance == start_eth + amount
+    assert pub_ocn.main_account.ocean_balance == start_ocean + amount
 
 
 @e2e_test
 def test_register_asset(publisher_ocean_instance):
     logging.debug("".format())
-    asset_price = 100
     sample_ddo_path = get_resource_path('ddo', 'ddo_sample2.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
@@ -98,7 +87,6 @@ def test_register_asset(publisher_ocean_instance):
     # ensure Ocean token balance
     if publisher.ocean_balance == 0:
         rcpt = publisher.request_tokens(200)
-        Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
 
     # You will need some token to make this transfer!
     assert publisher.ocean_balance > 0
@@ -119,11 +107,7 @@ def test_register_asset(publisher_ocean_instance):
     ##########################################################
     # Register using high-level interface
     ##########################################################
-    service_descriptors = [
-        ServiceDescriptor.access_service_descriptor(asset_price, '/purchaseEndpoint',
-                                                    '/serviceEndpoint', 600,
-                                                    ('0x%s' % generate_new_id()))]
-    publisher_ocean_instance.register_asset(asset.get_metadata(), publisher, service_descriptors)
+    publisher_ocean_instance.register_asset(asset.get_metadata(), publisher)
 
 
 @e2e_test
@@ -131,11 +115,7 @@ def test_resolve_did(publisher_ocean_instance):
     # prep ddo
     metadata = Metadata.get_example()
     publisher = publisher_ocean_instance.main_account
-    original_ddo = publisher_ocean_instance.register_asset(
-        metadata, publisher,
-        [ServiceDescriptor.access_service_descriptor(7, '/dummy/url', '/service/endpoint', 3,
-                                                     ('0x%s' % generate_new_id()))]
-    )
+    original_ddo = publisher_ocean_instance.register_asset(metadata, publisher)
 
     # happy path
     did = original_ddo.did
@@ -148,13 +128,12 @@ def test_resolve_did(publisher_ocean_instance):
 
     # Can't resolve unregistered asset
     unregistered_did = DID.did()
-    with pytest.raises(OceanDIDNotFound, message='Expected OceanDIDNotFound error.'):
+    with pytest.raises(OceanDIDNotFound):
         publisher_ocean_instance.resolve_asset_did(unregistered_did)
 
     # Raise error on bad did
     invalid_did = "did:op:0123456789"
-    with pytest.raises(OceanDIDNotFound,
-                       message='Expected a OceanDIDNotFound error when resolving invalid did.'):
+    with pytest.raises(OceanDIDNotFound):
         publisher_ocean_instance.resolve_asset_did(invalid_did)
 
 
@@ -181,19 +160,18 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     )
     assert service_agreement_id, 'agreement id is None.'
     print('got new service agreement id:', service_agreement_id)
-    filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=service_agreement_id)}
-    filter_2 = {'serviceId': Web3.toBytes(hexstr=service_agreement_id)}
+    filter1 = {'agreementId': Web3.toBytes(hexstr=service_agreement_id)}
     executed = wait_for_event(
-        consumer_ocean_instance.keeper.service_agreement.events.ExecuteAgreement, filter1)
+        consumer_ocean_instance.keeper.service_agreement.events.AgreementInitialized, filter1)
     assert executed
     locked = wait_for_event(consumer_ocean_instance.keeper.payment_conditions.events.PaymentLocked,
-                            filter_2)
+                            filter1)
     assert locked
     granted = wait_for_event(consumer_ocean_instance.keeper.access_conditions.events.AccessGranted,
-                             filter_2)
+                             filter1)
     assert granted
     released = wait_for_event(
-        consumer_ocean_instance.keeper.payment_conditions.events.PaymentReleased, filter_2)
+        consumer_ocean_instance.keeper.payment_conditions.events.PaymentReleased, filter1)
     assert released
     fulfilled = wait_for_event(
         consumer_ocean_instance.keeper.service_agreement.events.AgreementFulfilled, filter1)
@@ -246,11 +224,10 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
         pub_ocn.main_account
     )
 
-    filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=agreement_id)}
-    filter_2 = {'serviceId': Web3.toBytes(hexstr=agreement_id)}
+    _filter = {'agreementId': Web3.toBytes(hexstr=agreement_id)}
 
-    # WAIT FOR ####### ExecuteAgreement Event
-    executed = wait_for_event(pub_ocn.keeper.service_agreement.events.ExecuteAgreement, filter1)
+    # WAIT FOR ####### AgreementInitialized Event
+    executed = wait_for_event(pub_ocn.keeper.service_agreement.events.AgreementInitialized, _filter)
     assert executed, ''
     cons = keeper.service_agreement.get_service_agreement_consumer(agreement_id)
     pub = keeper.service_agreement.get_service_agreement_publisher(agreement_id)
@@ -283,9 +260,9 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     assert pay_has_dependencies is False
 
     # Lock payment
-    lockPayment(web3, keeper.artifacts_path, consumer_acc, agreement_id, service_def)
+    lockPayment(consumer_acc, agreement_id, service_def)
     # WAIT FOR ####### PaymentLocked event
-    locked = wait_for_event(keeper.payment_conditions.events.PaymentLocked, filter_2)
+    locked = wait_for_event(keeper.payment_conditions.events.PaymentLocked, _filter)
     # assert locked, ''
     if not locked:
         lock_cond_status = keeper.service_agreement.contract_concise.getConditionStatus(
@@ -307,19 +284,19 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
                                                                            'expected to.'
 
     # Grant access
-    grantAccess(web3, keeper.artifacts_path, publisher_acc, agreement_id, service_def)
+    grantAccess(publisher_acc, agreement_id, service_def)
     # WAIT FOR ####### AccessGranted event
-    granted = wait_for_event(keeper.access_conditions.events.AccessGranted, filter_2)
+    granted = wait_for_event(keeper.access_conditions.events.AccessGranted, _filter)
     assert granted, ''
     # Release payment
-    releasePayment(web3, keeper.artifacts_path, publisher_acc, agreement_id, service_def)
+    releasePayment(publisher_acc, agreement_id, service_def)
     # WAIT FOR ####### PaymentReleased event
-    released = wait_for_event(keeper.payment_conditions.events.PaymentReleased, filter_2)
+    released = wait_for_event(keeper.payment_conditions.events.PaymentReleased, _filter)
     assert released, ''
     # Fulfill agreement
-    fulfillAgreement(web3, keeper.artifacts_path, publisher_acc, agreement_id, service_def)
+    fulfillAgreement(publisher_acc, agreement_id, service_def)
     # Wait for ####### AgreementFulfilled event (verify agreement was fulfilled)
-    fulfilled = wait_for_event(keeper.service_agreement.events.AgreementFulfilled, filter1)
+    fulfilled = wait_for_event(keeper.service_agreement.events.AgreementFulfilled, _filter)
     assert fulfilled, ''
     print('All good.')
     # Repeat execute test but with a refund payment (i.e. don't grant access)

@@ -33,7 +33,7 @@ def get_sla_template_dict(path):
 
 def build_condition_key(contract_address, fingerprint, template_id):
     assert isinstance(fingerprint, bytes), f'Expecting `fingerprint` of type bytes, ' \
-        f'got {type(fingerprint)}'
+                                           f'got {type(fingerprint)}'
     return generate_multi_value_hash(
         ['bytes32', 'address', 'bytes4'],
         [template_id, contract_address, fingerprint]
@@ -97,7 +97,6 @@ def register_service_agreement_template(service_agreement_contract, owner_accoun
     service_agreement_contract.setup_agreement_template(
         sla_template_instance.template_id,
         contract_addresses, fingerprints, sla_template_instance.conditions_dependencies,
-        sla_template_instance.description,
         fulfillment_indices, sla_template_instance.service_agreement_contract.fulfillment_operator,
         owner_account
     )

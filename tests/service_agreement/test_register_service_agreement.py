@@ -5,8 +5,8 @@ from datetime import datetime
 
 from web3 import HTTPProvider, Web3
 
-from squid_py import ConfigProvider
-from squid_py.config import Config
+from squid_py import ConfigProvider, DDO
+from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (
     get_fingerprint_by_name,
@@ -24,7 +24,6 @@ from squid_py.utils.utilities import generate_new_id
 from tests.resources.helper_functions import get_publisher_account
 from tests.resources.tiers import e2e_test
 
-CONFIG_PATH = 'config_local.ini'
 NUM_WAIT_ITERATIONS = 20
 
 
@@ -33,17 +32,17 @@ class TestRegisterServiceAgreement:
 
     @classmethod
     def setup_method(cls):
-        ConfigProvider.set_config(Config(CONFIG_PATH))
+        ConfigProvider.set_config(ExampleConfig.get_config())
         cls.config = ConfigProvider.get_config()
         cls.web3 = Web3(HTTPProvider(cls.config.keeper_url))
 
         cls.ocean = Ocean(cls.config)
-        cls.keeper = cls.ocean._keeper
-        cls.market = cls.ocean._keeper.market
-        cls.token = cls.ocean._keeper.token
-        cls.payment_conditions = cls.ocean._keeper.payment_conditions
-        cls.access_conditions = cls.ocean._keeper.access_conditions
-        cls.service_agreement = cls.ocean._keeper.service_agreement
+        cls.keeper = cls.ocean.keeper
+        cls.dispenser = cls.ocean.keeper.dispenser
+        cls.token = cls.ocean.keeper.token
+        cls.payment_conditions = cls.ocean.keeper.payment_conditions
+        cls.access_conditions = cls.ocean.keeper.access_conditions
+        cls.service_agreement = cls.ocean.keeper.service_agreement
 
         cls.consumer_acc = get_publisher_account(cls.config)
         cls.consumer = cls.consumer_acc.address
@@ -65,8 +64,7 @@ class TestRegisterServiceAgreement:
     def _consume_dummy(self, *args):
         pass
 
-    def _register_agreement(self, agreement_id, did, service_definition, actor_type='consumer',
-                            num_confirmations=3):
+    def _register_agreement(self, agreement_id, did, service_definition, actor_type='consumer'):
         register_service_agreement(
             self.storage_path,
             self.consumer_acc,
@@ -78,7 +76,6 @@ class TestRegisterServiceAgreement:
             self.price,
             self.content_url,
             consume_callback=self._consume_dummy,
-            num_confirmations=num_confirmations,
             start_time=self.start_time
         )
 
@@ -102,11 +99,13 @@ class TestRegisterServiceAgreement:
 
         sa_def = {
             'type': 'Access',
+            'serviceEndpoint': 'brizo/consume',
+            'purchaseEndpoint': 'brizo/initialize',
             'templateId': self.template_id,
             'serviceAgreementContract': {
-                'contractName': 'ServiceAgreement',
+                'contractName': 'ServiceExecutionAgreement',
                 'events': [{
-                    'name': 'ExecuteAgreement',
+                    'name': 'AgreementInitialized',
                     'actorType': 'consumer',
                     'handler': {
                         'moduleName': 'payment',
@@ -297,7 +296,7 @@ class TestRegisterServiceAgreement:
             did,
             {
                 'serviceAgreementContract': {
-                    'contractName': 'ServiceAgreement',
+                    'contractName': 'ServiceExecutionAgreement',
                     'events': []
                 },
                 'conditions': []
@@ -317,8 +316,7 @@ class TestRegisterServiceAgreement:
         self._register_agreement(
             service_agreement_id,
             did,
-            self.get_simple_service_agreement_definition(did, price),
-            num_confirmations=1,
+            self.get_simple_service_agreement_definition(did, price)
         )
 
         self._execute_service_agreement(service_agreement_id, did, price)
@@ -333,16 +331,14 @@ class TestRegisterServiceAgreement:
         self._register_agreement(
             service_agreement_id,
             did,
-            self.get_simple_service_agreement_definition(did, price),
-            num_confirmations=0,
+            self.get_simple_service_agreement_definition(did, price)
         )
 
         self._register_agreement(
             service_agreement_id,
             did,
             self.get_simple_service_agreement_definition(did, price),
-            'publisher',
-            num_confirmations=0,
+            'publisher'
         )
 
         self._execute_service_agreement(service_agreement_id, did, price)
@@ -383,15 +379,13 @@ class TestRegisterServiceAgreement:
             service_agreement_id,
             did,
             self.get_simple_service_agreement_definition(did, price, include_refund=True),
-            num_confirmations=0,
         )
 
         self._register_agreement(
             service_agreement_id,
             did,
             self.get_simple_service_agreement_definition(did, price, include_refund=True),
-            'publisher',
-            num_confirmations=0,
+            'publisher'
         )
 
         self._execute_service_agreement(service_agreement_id, did, price)
@@ -451,18 +445,21 @@ class TestRegisterServiceAgreement:
                                  self.start_time)
 
         def _did_resolver_fn(did):
-            return {
-                'service': [
-                    self.get_simple_service_agreement_definition(did, price),
-                ]
-            }
+            return DDO(
+                did=did,
+                dictionary={
+                    'id': did,
+                    'service': [
+                        self.get_simple_service_agreement_definition(did, price),
+                    ]
+                }
+            )
 
         execute_pending_service_agreements(
             self.storage_path,
             self.consumer_acc,
             'consumer',
-            _did_resolver_fn,
-            num_confirmations=0,
+            _did_resolver_fn
         )
 
         self._execute_service_agreement(service_agreement_id, did, price)
@@ -602,7 +599,7 @@ class TestRegisterServiceAgreement:
             did,
         ]
         self.consumer_acc.unlock()
-        self.service_agreement.contract_concise.executeAgreement(
+        self.service_agreement.contract_concise.initializeAgreement(
             *execute_args,
             transact={'from': self.consumer}
         )
@@ -610,7 +607,7 @@ class TestRegisterServiceAgreement:
     @classmethod
     def _setup_token(cls):
         cls.consumer_acc.unlock()
-        cls.market.contract_concise.requestTokens(100, transact={'from': cls.consumer})
+        cls.dispenser.contract_concise.requestTokens(100, transact={'from': cls.consumer})
         cls.consumer_acc.unlock()
         cls.token.contract_concise.approve(
             cls.payment_conditions.address,

@@ -5,6 +5,7 @@ import logging
 import os
 import os.path
 
+from squid_py.aquarius.aquarius import Aquarius
 from squid_py.aquarius.aquarius_provider import AquariusProvider
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.config_provider import ConfigProvider
@@ -152,9 +153,6 @@ class Ocean:
 
         :param metadata: dict conforming to the Metadata accepted by Ocean Protocol.
         :param publisher_account: Account of the publisher registering this asset
-        :param service_descriptors: list of ServiceDescriptor tuples of length 2.
-            The first item must be one of ServiceTypes and the second
-            item is a dict of parameters and values required by the service
         :return: DDO instance
         """
         return self.assets.register(*args, **kwargs)
@@ -189,9 +187,9 @@ class Ocean:
 
     def execute_service_agreement(self, *args, **kwargs):
         """
-        Execute the service agreement on-chain using keeper's ServiceAgreement contract.
+        Execute the service agreement on-chain using keeper's ServiceExecutionAgreement contract.
 
-        The on-chain executeAgreement method requires the following arguments:
+        The on-chain initializeAgreement method requires the following arguments:
         templateId, signature, consumer, hashes, timeouts, serviceAgreementId, did.
         `agreement_message_hash` is necessary to verify the signature.
         The consumer `signature` includes the conditions timeouts and parameters values which
@@ -206,7 +204,7 @@ class Ocean:
          conditions and their parameters values and other details of the agreement.
         :param consumer_address: ethereum account address of consumer
         :param publisher_account: ethereum account address of publisher
-        :return: dict the `executeAgreement` transaction receipt
+        :return: dict the `initializeAgreement` transaction receipt
         """
         return self.sea.execute_service_agreement(*args, **kwargs)
 
