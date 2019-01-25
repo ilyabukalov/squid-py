@@ -1,4 +1,5 @@
 import logging
+from time import sleep
 
 from squid_py import Ocean, ServiceAgreement, ServiceTypes, ConfigProvider
 from squid_py.examples.example_config import ExampleConfig
@@ -6,7 +7,6 @@ from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import get_account_from_config, get_registered_ddo
 
-from time import sleep
 
 def _log_event(event_name):
     def _process_event(event):
@@ -14,9 +14,14 @@ def _log_event(event_name):
 
     return _process_event
 
+
 import os
-if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1': ASYNC_DELAY = 5 # seconds
-else: ASYNC_DELAY = 1  # seconds
+
+if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
+    ASYNC_DELAY = 5  # seconds
+else:
+    ASYNC_DELAY = 1  # seconds
+
 
 def buy_asset():
     """
@@ -71,6 +76,7 @@ def buy_asset():
         10,
         blocking=True
     )
+
 
     assert event, 'No event received for ServiceAgreement Fulfilled.'
     logging.info('Success buying asset.')

@@ -76,8 +76,7 @@ class Brizo(object):
             logger.info(f'invoke consume endpoint with this url: {consume_url}')
             response = Brizo._http_client.get(consume_url)
             if response.status_code == 200:
-                download_url = response.url.split('?')[0]
-                file_name = os.path.basename(download_url)
+                file_name = os.path.basename(url)
                 with open(os.path.join(destination_folder, file_name), 'wb') as f:
                     f.write(response.content)
                     logger.info(f'Saved downloaded file in {f.name}')
