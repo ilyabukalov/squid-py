@@ -35,8 +35,8 @@ class Dispenser(ContractBase):
 
             if receipt.status == 0:
                 logging.warning(f'request tokens failed: Tx-receipt={receipt}')
+                logging.warning(f'request tokens failed: account {address}')
 
-            logging.warning(f'request tokens failed: account {address}, {receipt}')
             # check for emitted events:
             rfe = self.events.RequestFrequencyExceeded().createFilter(
                 fromBlock='latest', toBlock='latest', argument_filters={'requester': address}

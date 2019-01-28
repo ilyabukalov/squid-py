@@ -51,7 +51,7 @@ def test_accounts(publisher_ocean_instance):
 
 @e2e_test
 def test_token_request(publisher_ocean_instance):
-    receiver_account = list(publisher_ocean_instance.accounts.values())[1]
+    receiver_account = publisher_ocean_instance.main_account
     # Starting balance for comparison
     start_ocean = receiver_account.ocean_balance
 
