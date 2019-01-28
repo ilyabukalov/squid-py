@@ -51,26 +51,19 @@ def test_accounts(publisher_ocean_instance):
 
 @e2e_test
 def test_token_request(publisher_ocean_instance):
-    amount = 2000
-
-    pub_ocn = publisher_ocean_instance
-    # Get the current accounts, assign 2
-
-    # Start balances for comparison
-    start_eth = pub_ocn.main_account.ether_balance
-    start_ocean = pub_ocn.main_account.ocean_balance
+    receiver_account = list(publisher_ocean_instance.accounts.values())[1]
+    # Starting balance for comparison
+    start_ocean = receiver_account.ocean_balance
 
     # Make requests, assert success on request
-    pub_ocn.main_account.request_tokens(amount)
+    receiver_account.request_tokens(2000)
+    # Should be no change, 2000 exceeds the max of 1000
+    assert receiver_account.ocean_balance == start_ocean
 
-    # Update and print balances
-    # Ocean.accounts is a dict address: account
-    for address in pub_ocn.accounts:
-        print(pub_ocn.accounts[address])
-
+    amount = 500
+    receiver_account.request_tokens(amount)
     # Confirm balance changes
-    # assert pub_ocn.main_account.ether_balance == start_eth + amount
-    assert pub_ocn.main_account.ocean_balance == start_ocean + amount
+    assert receiver_account.ocean_balance == start_ocean + amount
 
 
 @e2e_test
