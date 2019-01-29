@@ -67,6 +67,7 @@ class Brizo(object):
     def consume_service(service_agreement_id, service_endpoint, account_address, urls,
                         destination_folder):
         for url in urls:
+            url = url['url']
             if url.startswith('"') or url.startswith("'"):
                 url = url[1:-1]
 

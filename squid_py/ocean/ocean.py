@@ -32,7 +32,7 @@ from squid_py.service_agreement.service_factory import ServiceDescriptor, Servic
 from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID, ServiceTypes
 from squid_py.service_agreement.utils import (get_conditions_data_from_keeper_contracts,
                                               make_public_key_and_authentication)
-from squid_py.utils.utilities import (get_metadata_url, prepare_prefixed_hash)
+from squid_py.utils.utilities import (get_metadata_files, prepare_prefixed_hash)
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
@@ -199,16 +199,16 @@ class Ocean:
             'files'], 'files is required in the metadata base attributes.'
         assert Metadata.validate(metadata), 'metadata seems invalid.'
         logger.debug('Encrypting content urls in the metadata.')
-        content_urls_encrypted = SecretStoreProvider.get_secret_store() \
+        files_encrypted = SecretStoreProvider.get_secret_store() \
             .encrypt_document(
             did_to_id(did),
             json.dumps(metadata_copy['base']['files']),
         )
 
         # only assign if the encryption worked
-        if content_urls_encrypted:
+        if files_encrypted:
             logger.debug('Content urls encrypted successfully.')
-            metadata_copy['base']['files'] = [content_urls_encrypted]
+            metadata_copy['base']['files'] = [files_encrypted]
         else:
             raise AssertionError('Encrypting the files failed. Make sure the secret store is'
                                  ' setup properly in your config file.')
@@ -319,7 +319,7 @@ class Ocean:
                                    'consumer',
                                    service_definition_id,
                                    service_agreement.get_price(),
-                                   get_metadata_url(ddo),
+                                   get_metadata_files(ddo),
                                    self.consume_service, 0)
 
         BrizoProvider.get_brizo().initialize_service_agreement(
@@ -365,7 +365,7 @@ class Ocean:
 
         service_def = ddo.find_service_by_id(service_definition_id).as_dictionary()
 
-        content_urls = get_metadata_url(ddo)
+        files = get_metadata_files(ddo)
         # Raise error if agreement is already executed
         if self.keeper.service_agreement.get_service_agreement_consumer(
                 service_agreement_id) is not None:
@@ -387,7 +387,7 @@ class Ocean:
                                    publisher_account,
                                    service_agreement_id, did, service_def, 'publisher',
                                    service_definition_id,
-                                   service_agreement.get_price(), content_urls, None, 0)
+                                   service_agreement.get_price(), files, None, 0)
 
         receipt = self.keeper.service_agreement.execute_service_agreement(
             service_agreement.template_id,
@@ -499,8 +499,8 @@ class Ocean:
         ddo = self.resolve_asset_did(did)
 
         metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
-        content_urls = metadata_service.get_values()['metadata']['base']['files']
-        content_urls = content_urls if isinstance(content_urls, str) else content_urls[0]
+        files = metadata_service.get_values()['metadata']['base']['files']
+        files = files if isinstance(files, str) else files[0]
         sa = ServiceAgreement.from_ddo(service_definition_id, ddo)
         service_url = sa.service_endpoint
         if not service_url:
@@ -511,7 +511,7 @@ class Ocean:
 
         # decrypt the files
         decrypted_content_urls = json.loads(
-            SecretStoreProvider.get_secret_store().decrypt_document(did_to_id(did), content_urls)
+            SecretStoreProvider.get_secret_store().decrypt_document(did_to_id(did), files)
         )
         if isinstance(decrypted_content_urls, str):
             decrypted_content_urls = [decrypted_content_urls]

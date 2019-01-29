@@ -6,7 +6,7 @@ from .storage import get_service_agreements, record_service_agreement
 
 def register_service_agreement(storage_path, account, service_agreement_id,
                                did, service_definition, actor_type, service_definition_id, price,
-                               content_urls, consume_callback=None, num_confirmations=12,
+                               files, consume_callback=None, num_confirmations=12,
                                start_time=None):
     """ Registers the given service agreement in the local storage.
         Subscribes to the service agreement events.
@@ -15,7 +15,7 @@ def register_service_agreement(storage_path, account, service_agreement_id,
         start_time = int(datetime.now().timestamp())
 
     record_service_agreement(storage_path, service_agreement_id, did, service_definition_id, price,
-                             content_urls, start_time)
+                             files, start_time)
     watch_service_agreement_events(
         did, storage_path, account,
         service_agreement_id, service_definition, actor_type,
@@ -29,9 +29,9 @@ def execute_pending_service_agreements(storage_path, account, actor_type,
     """ Iterates over pending service agreements recorded in the local storage,
         fetches their service definitions, and subscribes to service agreement events.
     """
-    # service_agreement_id, did, service_definition_id, price, content_urls, start_time, status
+    # service_agreement_id, did, service_definition_id, price, files, start_time, status
     for (service_agreement_id, did, service_definition_id,
-         price, content_urls, start_time, _) in get_service_agreements(storage_path):
+         price, files, start_time, _) in get_service_agreements(storage_path):
 
         ddo = did_resolver_fn(did)
         for service in ddo.services:
