@@ -30,18 +30,6 @@ def process_tx_receipt(tx_hash, event, event_name):
 
 def is_condition_fulfilled(template_id, service_agreement_id,
                            service_agreement_contract, condition_address, condition_abi, fn_name):
-    print('call get cond status: ', service_agreement_id,
-          condition_address,
-          template_id,
-          hexstr_to_bytes(Web3Provider.get_web3(),
-                          get_fingerprint_by_name(condition_abi, fn_name)),
-          build_condition_key(
-              condition_address,
-              hexstr_to_bytes(Web3Provider.get_web3(),
-                              get_fingerprint_by_name(condition_abi, fn_name)),
-              template_id
-          )
-          )
     status = service_agreement_contract.getConditionStatus(
         service_agreement_id,
         build_condition_key(
