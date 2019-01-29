@@ -97,7 +97,6 @@ def register_service_agreement_template(service_agreement_contract, owner_accoun
     service_agreement_contract.setup_agreement_template(
         sla_template_instance.template_id,
         contract_addresses, fingerprints, sla_template_instance.conditions_dependencies,
-        sla_template_instance.description,
         fulfillment_indices, sla_template_instance.service_agreement_contract.fulfillment_operator,
         owner_account
     )

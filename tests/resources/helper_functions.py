@@ -51,26 +51,38 @@ def make_ocean_instance(secret_store_client, account_index):
 
 
 def get_publisher_account(config):
-    return get_account_from_config(config, 'parity.address', 'parity.password')
+    acc = get_account_from_config(config, 'parity.address', 'parity.password')
+    if acc is None:
+        acc = Account(Keeper.get_instance().accounts[0])
+    return acc
 
 
 def get_consumer_account(config):
-    return get_account_from_config(config, 'parity.address1', 'parity.password1')
+    acc = get_account_from_config(config, 'parity.address1', 'parity.password1')
+    if acc is None:
+        acc = Account(Keeper.get_instance().accounts[1])
+    return acc
 
 
 def get_publisher_ocean_instance():
     ocn = make_ocean_instance(SecretStoreClientMock, PUBLISHER_INDEX)
     account = get_publisher_account(ConfigProvider.get_config())
-    init_ocn_tokens(ocn, account)
-    ocn.main_account = account
+    if account.address in ocn.accounts:
+        ocn.main_account = account
+    else:
+        ocn.main_account = Account(list(ocn.accounts)[0])
+    init_ocn_tokens(ocn, ocn.main_account)
     return ocn
 
 
 def get_consumer_ocean_instance():
     ocn = make_ocean_instance(SecretStoreClientMock, CONSUMER_INDEX)
     account = get_consumer_account(ConfigProvider.get_config())
-    init_ocn_tokens(ocn, account)
-    ocn.main_account = account
+    if account.address in ocn.accounts:
+        ocn.main_account = account
+    else:
+        ocn.main_account = Account(list(ocn.accounts)[1])
+    init_ocn_tokens(ocn, ocn.main_account)
     return ocn
 
 
@@ -78,15 +90,13 @@ def get_account_from_config(config, config_account_key, config_account_password_
     address = None
     if config.has_option('keeper-contracts', config_account_key):
         address = config.get('keeper-contracts', config_account_key)
+        address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
 
-    if not address:
+    if not (address and address in Keeper.get_instance().accounts):
         return None
 
     password = None
-    address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
-    if (address
-            and address in Keeper.get_instance().accounts
-            and config.has_option('keeper-contracts', config_account_password_key)):
+    if address and config.has_option('keeper-contracts', config_account_password_key):
         password = config.get('keeper-contracts', config_account_password_key)
 
     return Account(address, password)

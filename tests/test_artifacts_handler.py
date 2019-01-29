@@ -16,8 +16,8 @@ def init_ocean(web3, account=None):
     ContractHandler.set('DIDRegistry', deploy_contract(web3, account, 'DIDRegistry'))
     ContractHandler.set('OceanMarket',
                         deploy_contract(web3, account, 'OceanMarket', token_contract.address))
-    service_agreement_contract = deploy_contract(web3, account, 'ServiceAgreement')
-    ContractHandler.set('ServiceAgreement', service_agreement_contract)
+    service_agreement_contract = deploy_contract(web3, account, 'ServiceExecutionAgreement')
+    ContractHandler.set('ServiceExecutionAgreement', service_agreement_contract)
     ContractHandler.set('PaymentConditions', deploy_contract(web3, account, 'PaymentConditions',
                                                              service_agreement_contract.address,
                                                              token_contract.address))

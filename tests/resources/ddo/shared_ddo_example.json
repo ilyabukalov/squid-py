@@ -6,7 +6,7 @@
       "publicKey": "did:op:0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865#keys-1"
     }
   ],
-  "id": "did:op:0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865",
+  "id": "did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865",
   "publicKey": [
     {
       "id": "did:op:0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865#keys-1",
@@ -17,18 +17,18 @@
   ],
   "service": [
     {
-      "id": "did:op:0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865",
+      "id": "did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865",
       "type": "Access",
       "purchaseEndpoint": "http://localhost:8030/api/v1/brizo/services/access/purchase?",
-      "serviceEndpoint": "http://localhost:8030/api/v1/brizo/services/consume?pubKey=0x00bd138abd70e2f00903268f3db08f2d25677c9e&serviceId=0xeb4bb084942044a3857a5d107b48563a1ab56608c79342319697710336484fca&url=0",
+      "serviceEndpoint": "http://localhost:8030/api/v1/brizo/services/consume?pubKey=0x00bd138abd70e2f00903268f3db08f2d25677c9e&agreementId=0xeb4bb084942044a3857a5d107b48563a1ab56608c79342319697710336484fca&url=0",
       "serviceDefinitionId": "0",
       "templateId": "0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d",
       "serviceAgreementContract": {
-        "contractName": "ServiceAgreement",
+        "contractName": "ServiceExecutionAgreement",
         "fulfillmentOperator": 1,
         "events": [
           {
-            "name": "ExecuteAgreement",
+            "name": "AgreementInitialized",
             "actorType": "consumer",
             "handler": {
               "moduleName": "payment",
@@ -50,7 +50,7 @@
             {
               "name": "assetId",
               "type": "bytes32",
-              "value": "0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
+              "value": "cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
             },
             {
               "name": "price",
@@ -84,14 +84,9 @@
           "conditionKey": "0x5c0b248ab89b89638a6ef7020afbe7390c90c1debebfb93f06577a221e455655",
           "parameters": [
             {
-              "name": "assetId",
-              "type": "bytes32",
-              "value": "0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
-            },
-            {
               "name": "documentKeyId",
               "type": "bytes32",
-              "value": "0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
+              "value": "cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
             }
           ],
           "events": [
@@ -129,7 +124,7 @@
             {
               "name": "assetId",
               "type": "bytes32",
-              "value": "0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
+              "value": "cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
             },
             {
               "name": "price",
@@ -172,7 +167,7 @@
             {
               "name": "assetId",
               "type": "bytes32",
-              "value": "0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
+              "value": "cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
             },
             {
               "name": "price",
@@ -212,14 +207,14 @@
       ]
     },
     {
-      "id": "did:op:0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865",
+      "id": "did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865",
       "type": "Compute",
-      "serviceEndpoint": "http://localhost:8030/api/v1/brizo/services/compute?pubKey=0x4a5560C0b244c6304d0132C68f6657687CD294F9&serviceId=0xeb4bb084942044a3857a5d107b48563a1ab56608c79342319697710336484fca&algo=xxx&container=xxx\""
+      "serviceEndpoint": "http://localhost:8030/api/v1/brizo/services/compute?pubKey=0x4a5560C0b244c6304d0132C68f6657687CD294F9&agreementId=0xeb4bb084942044a3857a5d107b48563a1ab56608c79342319697710336484fca&algo=xxx&container=xxx\""
     },
     {
-      "id": "did:op:0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865",
+      "id": "did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865",
       "type": "Metadata",
-      "serviceEndpoint": "http://localhost:5000/api/v1/provider/assets/metadata/did:op:0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865",
+      "serviceEndpoint": "http://localhost:5000/api/v1/provider/assets/metadata/did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865",
       "serviceDefinitionId": "1",
       "metadata": {
         "additionalInformation": {

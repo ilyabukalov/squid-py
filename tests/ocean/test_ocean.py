@@ -50,41 +50,25 @@ def test_accounts(publisher_ocean_instance):
 
 
 @e2e_test
-def test_token_request(publisher_ocean_instance, consumer_ocean_instance):
-    amount = 2000
-
-    pub_ocn = publisher_ocean_instance
-    cons_ocn = consumer_ocean_instance
-    # Get the current accounts, assign 2
-
-    # Start balances for comparison
-    aquarius_start_eth = pub_ocn.main_account.ether_balance
-    aquarius_start_ocean = pub_ocn.main_account.ocean_balance
+def test_token_request(publisher_ocean_instance):
+    receiver_account = publisher_ocean_instance.main_account
+    # Starting balance for comparison
+    start_ocean = receiver_account.ocean_balance
 
     # Make requests, assert success on request
-    rcpt = pub_ocn.main_account.request_tokens(amount)
-    Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
-    rcpt = cons_ocn.main_account.request_tokens(amount)
-    Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
+    receiver_account.request_tokens(2000)
+    # Should be no change, 2000 exceeds the max of 1000
+    assert receiver_account.ocean_balance == start_ocean
 
-    # Update and print balances
-    # Ocean.accounts is a dict address: account
-    for address in pub_ocn.accounts:
-        print(pub_ocn.accounts[address])
-    aquarius_current_eth = pub_ocn.main_account.ether_balance
-    aquarius_current_ocean = pub_ocn.main_account.ocean_balance
-
+    amount = 500
+    receiver_account.request_tokens(amount)
     # Confirm balance changes
-    assert pub_ocn.main_account.balance.eth == aquarius_current_eth
-    assert pub_ocn.main_account.balance.ocn == aquarius_current_ocean
-    # assert aquarius_current_eth < aquarius_start_eth
-    # assert aquarius_current_ocean == aquarius_start_ocean + amount
+    assert receiver_account.ocean_balance == start_ocean + amount
 
 
 @e2e_test
 def test_register_asset(publisher_ocean_instance):
     logging.debug("".format())
-    asset_price = 100
     sample_ddo_path = get_resource_path('ddo', 'ddo_sample2.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
@@ -95,8 +79,7 @@ def test_register_asset(publisher_ocean_instance):
 
     # ensure Ocean token balance
     if publisher.ocean_balance == 0:
-        rcpt = publisher.request_tokens(200)
-        Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
+        publisher.request_tokens(200)
 
     # You will need some token to make this transfer!
     assert publisher.ocean_balance > 0
@@ -170,19 +153,18 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     )
     assert service_agreement_id, 'agreement id is None.'
     print('got new service agreement id:', service_agreement_id)
-    filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=service_agreement_id)}
-    filter_2 = {'serviceId': Web3.toBytes(hexstr=service_agreement_id)}
+    filter1 = {'agreementId': Web3.toBytes(hexstr=service_agreement_id)}
     executed = wait_for_event(
-        consumer_ocean_instance.keeper.service_agreement.events.ExecuteAgreement, filter1)
+        consumer_ocean_instance.keeper.service_agreement.events.AgreementInitialized, filter1)
     assert executed
     locked = wait_for_event(consumer_ocean_instance.keeper.payment_conditions.events.PaymentLocked,
-                            filter_2)
+                            filter1)
     assert locked
     granted = wait_for_event(consumer_ocean_instance.keeper.access_conditions.events.AccessGranted,
-                             filter_2)
+                             filter1)
     assert granted
     released = wait_for_event(
-        consumer_ocean_instance.keeper.payment_conditions.events.PaymentReleased, filter_2)
+        consumer_ocean_instance.keeper.payment_conditions.events.PaymentReleased, filter1)
     assert released
     fulfilled = wait_for_event(
         consumer_ocean_instance.keeper.service_agreement.events.AgreementFulfilled, filter1)
@@ -235,11 +217,10 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
         pub_ocn.main_account
     )
 
-    filter1 = {'serviceAgreementId': Web3.toBytes(hexstr=agreement_id)}
-    filter_2 = {'serviceId': Web3.toBytes(hexstr=agreement_id)}
+    _filter = {'agreementId': Web3.toBytes(hexstr=agreement_id)}
 
-    # WAIT FOR ####### ExecuteAgreement Event
-    executed = wait_for_event(pub_ocn.keeper.service_agreement.events.ExecuteAgreement, filter1)
+    # WAIT FOR ####### AgreementInitialized Event
+    executed = wait_for_event(pub_ocn.keeper.service_agreement.events.AgreementInitialized, _filter)
     assert executed, ''
     cons = keeper.service_agreement.get_service_agreement_consumer(agreement_id)
     pub = keeper.service_agreement.get_service_agreement_publisher(agreement_id)
@@ -252,15 +233,15 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     sa_contract = keeper.service_agreement.contract_concise
     pay_cont_address = keeper.payment_conditions.address
 
-    terminated = sa_contract.isAgreementTerminated(agreement_id)
-    assert terminated is False
+    fulfilled = sa_contract.isAgreementFulfilled(agreement_id)
+    assert fulfilled is False
     template_id = web3.toHex(sa_contract.getTemplateId(agreement_id))
     assert template_id == service_agreement.template_id
 
     k = build_condition_key(pay_cont_address, web3.toBytes(hexstr=fn_fingerprint),
                             service_agreement.template_id)
     cond_key = web3.toHex(
-        sa_contract.getConditionByFingerprint(agreement_id, pay_cont_address, fn_fingerprint))
+        sa_contract.generateConditionKeyForId(agreement_id, pay_cont_address, fn_fingerprint))
     assert k == cond_key, 'problem with condition keys: %s vs %s' % (k, cond_key)
     assert cond_key == service_agreement.conditions_keys[0]
 
@@ -274,7 +255,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     # Lock payment
     lockPayment(consumer_acc, agreement_id, service_def)
     # WAIT FOR ####### PaymentLocked event
-    locked = wait_for_event(keeper.payment_conditions.events.PaymentLocked, filter_2)
+    locked = wait_for_event(keeper.payment_conditions.events.PaymentLocked, _filter)
     # assert locked, ''
     if not locked:
         lock_cond_status = keeper.service_agreement.contract_concise.getConditionStatus(
@@ -298,17 +279,17 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     # Grant access
     grantAccess(publisher_acc, agreement_id, service_def)
     # WAIT FOR ####### AccessGranted event
-    granted = wait_for_event(keeper.access_conditions.events.AccessGranted, filter_2)
+    granted = wait_for_event(keeper.access_conditions.events.AccessGranted, _filter)
     assert granted, ''
     # Release payment
     releasePayment(publisher_acc, agreement_id, service_def)
     # WAIT FOR ####### PaymentReleased event
-    released = wait_for_event(keeper.payment_conditions.events.PaymentReleased, filter_2)
+    released = wait_for_event(keeper.payment_conditions.events.PaymentReleased, _filter)
     assert released, ''
     # Fulfill agreement
     fulfillAgreement(publisher_acc, agreement_id, service_def)
     # Wait for ####### AgreementFulfilled event (verify agreement was fulfilled)
-    fulfilled = wait_for_event(keeper.service_agreement.events.AgreementFulfilled, filter1)
+    fulfilled = wait_for_event(keeper.service_agreement.events.AgreementFulfilled, _filter)
     assert fulfilled, ''
     print('All good.')
     # Repeat execute test but with a refund payment (i.e. don't grant access)
@@ -320,11 +301,10 @@ def test_agreement_hash(publisher_ocean_instance):
     This test verifies generating agreement hash using fixed inputs and ddo example.
     This will make it easier to compare the hash generated from different languages.
     """
-    did = "did:op:0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
+    did = "did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
     # user_address = "0x00bd138abd70e2f00903268f3db08f2d25677c9e"
     template_id = "0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d"
     service_agreement_id = '0xf136d6fadecb48fdb2fc1fb420f5a5d1c32d22d9424e47ab9461556e058fefaa'
-    print('sid: ', service_agreement_id)
     ddo_file_name = 'shared_ddo_example.json'
 
     file_path = get_resource_path('ddo', ddo_file_name)
@@ -342,10 +322,9 @@ def test_agreement_hash(publisher_ocean_instance):
         sa.conditions_params_value_hashes, sa.conditions_timeouts, service_agreement_id
     )
     print('agreement hash: ', agreement_hash.hex())
-    print('expected hash: ', "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb")
-    assert agreement_hash.hex() == \
-           "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb", 'hash does not ' \
-                                                                                 'match.'
+    expected = '0xda310c77710ebd55d20c2982904d95f05f96768c9b83a610083214a1fe831614'
+    print('expected hash: ', expected)
+    assert agreement_hash.hex() == expected, 'hash does not match.'
 
 
 @e2e_test

@@ -4,16 +4,12 @@ from squid_py.config_provider import ConfigProvider
 
 
 class Web3Provider(object):
+    """Provides the Web3 instance."""
     _web3 = None
 
     @staticmethod
     def get_web3():
-        """Return the web3 instance to interact with the ethereum client.
-
-
-
-        :return:
-        """
+        """Return the web3 instance to interact with the ethereum client."""
         if Web3Provider._web3 is None:
             config = ConfigProvider.get_config()
             provider = config.web3_provider if config.web3_provider else HTTPProvider(

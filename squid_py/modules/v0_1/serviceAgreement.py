@@ -15,7 +15,6 @@ def fulfillAgreement(account, service_agreement_id,
     service_agreement = ContractHandler.get(contract_name)
     service_agreement_address = service_agreement.address
     service_agreement_concise = ContractHandler.get_concise_contract(contract_name)
-
     logger.info(f'About to do fulfillAgreement: account {account.address}, '
                 f'saId {service_agreement_id}, '
                 f'ServiceAgreement address {service_agreement_address}')
