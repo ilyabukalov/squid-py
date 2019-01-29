@@ -41,6 +41,10 @@ def make_ocean_instance(secret_store_client, account_index):
     SecretStore.set_client(secret_store_client)
     ocn = Ocean(ExampleConfig.get_config())
     account = list(ocn.accounts.values())[account_index]
+    if account_index == 0:
+        account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password')
+    else:
+        account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password1')
     # We can remove the BrizoMock if we assuming that the asset is in Azure.
     Brizo.set_http_client(BrizoMock(ocn, account))
     return ocn
