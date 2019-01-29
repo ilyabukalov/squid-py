@@ -81,18 +81,20 @@ class MetadataBase(object):
         'price': 23,
         'files': [
             {
+                "url": "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.pdf",
+                "checksum": "efb2c764274b745f5fc37f97c6b0e761",
+                "contentLength": "4535431",
+                "resourceId": "access-log2018-02-13-15-17-29-18386C502CAEA932"
+            },
+            {
                 "url": "s3://ocean-test-osmosis-data-plugin-dataseeding-1537375953/data.txt",
                 "checksum": "efb2c764274b745f5fc37f97c6b0e761",
                 "contentLength": "4535431",
                 "resourceId": "access-log2018-02-13-15-17-29-18386C502CAEA932"
             },
             {
-                "url": "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.pdf",
-                "checksum": "efb2c764274b745f5fc37f97c6b0e761",
-                "contentLength": "4535431",
-                "resourceId": "access-log2018-02-13-15-17-29-18386C502CAEA932"
-            }
-
+                "url": "http://www3.cs.stonybrook.edu/~algorith/implement/graphbase/distrib/cweb3.4e.tar.gz"
+            },
         ],
         'links': [
             {
