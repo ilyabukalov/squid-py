@@ -1,8 +1,6 @@
 import os
 
-import requests
-
-from squid_py import ServiceAgreement, ServiceTypes, ConfigProvider, Brizo
+from squid_py import ServiceAgreement, ServiceTypes, ConfigProvider
 from squid_py.ddo.ddo import DDO
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper.event_listener import EventListener
@@ -30,7 +28,7 @@ def test_buy_asset(consumer_ocean_instance, registered_ddo):
     cons_ocn = consumer_ocean_instance
     # restore the http client because we want the actual Brizo server to do the work
     # not the BrizoMock.
-    Brizo.set_http_client(requests)
+    # Brizo.set_http_client(requests)
     consumer_account = get_account_from_config(cons_ocn.config, 'parity.address1',
                                                'parity.password1')
 
