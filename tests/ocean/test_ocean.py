@@ -79,7 +79,7 @@ def test_register_asset(publisher_ocean_instance):
 
     # ensure Ocean token balance
     if publisher.ocean_balance == 0:
-        rcpt = publisher.request_tokens(200)
+        publisher.request_tokens(200)
 
     # You will need some token to make this transfer!
     assert publisher.ocean_balance > 0
@@ -233,15 +233,15 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     sa_contract = keeper.service_agreement.contract_concise
     pay_cont_address = keeper.payment_conditions.address
 
-    terminated = sa_contract.isAgreementTerminated(agreement_id)
-    assert terminated is False
+    fulfilled = sa_contract.isAgreementFulfilled(agreement_id)
+    assert fulfilled is False
     template_id = web3.toHex(sa_contract.getTemplateId(agreement_id))
     assert template_id == service_agreement.template_id
 
     k = build_condition_key(pay_cont_address, web3.toBytes(hexstr=fn_fingerprint),
                             service_agreement.template_id)
     cond_key = web3.toHex(
-        sa_contract.getConditionByFingerprint(agreement_id, pay_cont_address, fn_fingerprint))
+        sa_contract.generateConditionKeyForId(agreement_id, pay_cont_address, fn_fingerprint))
     assert k == cond_key, 'problem with condition keys: %s vs %s' % (k, cond_key)
     assert cond_key == service_agreement.conditions_keys[0]
 
@@ -301,11 +301,10 @@ def test_agreement_hash(publisher_ocean_instance):
     This test verifies generating agreement hash using fixed inputs and ddo example.
     This will make it easier to compare the hash generated from different languages.
     """
-    did = "did:op:0xcb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
+    did = "did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
     # user_address = "0x00bd138abd70e2f00903268f3db08f2d25677c9e"
     template_id = "0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d"
     service_agreement_id = '0xf136d6fadecb48fdb2fc1fb420f5a5d1c32d22d9424e47ab9461556e058fefaa'
-    print('sid: ', service_agreement_id)
     ddo_file_name = 'shared_ddo_example.json'
 
     file_path = get_resource_path('ddo', ddo_file_name)
@@ -323,10 +322,9 @@ def test_agreement_hash(publisher_ocean_instance):
         sa.conditions_params_value_hashes, sa.conditions_timeouts, service_agreement_id
     )
     print('agreement hash: ', agreement_hash.hex())
-    print('expected hash: ', "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb")
-    assert agreement_hash.hex() == \
-           "0x66652d0f8f8ec464e67aa6981c17fa1b1644e57d9cfd39b6f1b58ad1b71d61bb", 'hash does not ' \
-                                                                                 'match.'
+    expected = '0xda310c77710ebd55d20c2982904d95f05f96768c9b83a610083214a1fe831614'
+    print('expected hash: ', expected)
+    assert agreement_hash.hex() == expected, 'hash does not match.'
 
 
 @e2e_test

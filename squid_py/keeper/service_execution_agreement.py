@@ -20,7 +20,7 @@ class ServiceExecutionAgreement(ContractBase):
                                  dependencies_bits, fulfillment_indices,
                                  fulfillment_operator, owner_account):
         """
-        Wrapper around the `setupAgreementTemplate` solidity function
+        Wrapper around the `setupTemplate` solidity function
         Deploy a service agreement template that can be used in executing service agreements
         for asset data access and compute services.
 

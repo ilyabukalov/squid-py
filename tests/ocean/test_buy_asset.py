@@ -1,6 +1,8 @@
 import os
 
-from squid_py import ServiceAgreement, ServiceTypes, ConfigProvider
+import requests
+
+from squid_py import ServiceAgreement, ServiceTypes, ConfigProvider, Brizo
 from squid_py.ddo.ddo import DDO
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper.event_listener import EventListener
@@ -26,6 +28,9 @@ def test_buy_asset(consumer_ocean_instance, registered_ddo):
     # will be performed by the Brizo server running locally
 
     cons_ocn = consumer_ocean_instance
+    # restore the http client because we want the actual Brizo server to do the work
+    # not the BrizoMock.
+    Brizo.set_http_client(requests)
     consumer_account = get_account_from_config(cons_ocn.config, 'parity.address1',
                                                'parity.password1')
 
@@ -45,21 +50,21 @@ def test_buy_asset(consumer_ocean_instance, registered_ddo):
 
     EventListener('ServiceExecutionAgreement', 'AgreementInitialized', filters=_filter).listen_once(
         _log_event('AgreementInitialized'),
-        10,
+        20,
         blocking=True
     )
     EventListener('AccessConditions', 'AccessGranted', filters=_filter).listen_once(
         _log_event('AccessGranted'),
-        10,
+        20,
         blocking=True
     )
     event = EventListener('ServiceExecutionAgreement', 'AgreementFulfilled', filters=_filter).listen_once(
         _log_event('AgreementFulfilled'),
-        10,
+        20,
         blocking=True
     )
 
     assert event, 'No event received for ServiceAgreement Fulfilled.'
-    assert w3.toHex(event.args['serviceAgreementId']) == service_agreement_id
+    assert w3.toHex(event.args['agreementId']) == service_agreement_id
     assert len(
         os.listdir(consumer_ocean_instance.config.downloads_path)) == downloads_path_elements + 1

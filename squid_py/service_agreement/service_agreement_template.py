@@ -162,11 +162,6 @@ class ServiceAgreementTemplate(object):
                     "index": 1,
                     "parameters": [
                         {
-                            "name": "assetId",
-                            "type": "bytes32",
-                            "value": ""
-                        },
-                        {
                             "name": "documentKeyId",
                             "type": "bytes32",
                             "value": ""

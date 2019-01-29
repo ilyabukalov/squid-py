@@ -2,6 +2,7 @@
 
 import json
 import os
+from json import JSONDecodeError
 
 from squid_py.keeper.web3_provider import Web3Provider
 
@@ -21,7 +22,7 @@ def get_contract_abi_by_address(contract_path, address):
             with open(os.path.join(dirname, entry)) as f:
                 try:
                     definition = json.loads(f.read())
-                except Exception:
+                except (JSONDecodeError, TypeError):
                     continue
 
                 if address != definition['address'].lower():
@@ -44,6 +45,14 @@ def get_event_def_from_abi(abi, event_name):
     raise ValueError(f'event {event_name} not found in the given ABI')
 
 
+def compute_function_fingerprint(function_abi):
+    web3 = Web3Provider.get_web3()
+    function_args = [_input['type'] for _input in function_abi['inputs']]
+    args_str = ','.join(function_args)
+    signature = web3.sha3(text=f'{function_abi["name"]}({args_str})').hex()[:10]
+    return signature
+
+
 def get_fingerprint_by_name(abi, name):
     """
 
@@ -53,7 +62,11 @@ def get_fingerprint_by_name(abi, name):
     """
     for item in abi:
         if item.get('name') == name:
-            return item['signature']
+            fingerprint = item.get('signature')
+            if not fingerprint:
+                fingerprint = compute_function_fingerprint(item)
+
+            return fingerprint
 
     raise ValueError(f'{name} not found in the given ABI')
 
