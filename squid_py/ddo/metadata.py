@@ -1,4 +1,5 @@
 class AdditionalInfoMeta(object):
+    """Attributes that can enhance the discoverability of a resource"""
     KEY = 'additionalInformation'
     VALUES_KEYS = (
         "updateFrequency",
@@ -21,6 +22,7 @@ class AdditionalInfoMeta(object):
 
 
 class CurationMeta(object):
+    """To normalize the different possible rating attributes after a curation process."""
     KEY = 'curation'
     VALUES_KEYS = (
         "rating", "numVotes", "schema"
@@ -34,6 +36,7 @@ class CurationMeta(object):
 
 
 class MetadataBase(object):
+    """The base attributes are recommended to be included in the Asset Metadata."""
     KEY = 'base'
     VALUES_KEYS = {
         'name',
@@ -52,10 +55,12 @@ class MetadataBase(object):
         'inLanguage',
         'tags',
         'price',
-        "links",
-        'contentUrls'
+        'links',
+        'files',
+        'categories'
     }
-    REQUIRED_VALUES_KEYS = {'name', 'type', 'description', 'contentUrls', 'contentType'}
+    REQUIRED_VALUES_KEYS = {'name', 'dateCreated', 'author', 'license', 'contentType', 'price',
+                            'files'}
 
     EXAMPLE = {
         'name': "Ocean protocol white paper",
@@ -71,10 +76,16 @@ class MetadataBase(object):
         'contentType': "text/csv",
         'workExample': "Text PDF",
         'inLanguage': "en",
+        'categories': ["white-papers"],
         'tags': "data exchange sharing curation bonding curve",
         'price': 23,
-        'contentUrls': [
-            "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.pdf"
+        'files': [
+            {
+                "url": "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.pdf",
+                "checksum": "efb2c764274b745f5fc37f97c6b0e761",
+                "contentLength": "4535431",
+                "resourceId": "access-log2018-02-13-15-17-29-18386C502CAEA932"
+            }
         ],
         'links': [
             {
@@ -94,6 +105,8 @@ class MetadataBase(object):
 
 
 class Metadata(object):
+    """Every Asset (dataset, algorithm, etc.) in the Ocean Network has an associated Decentralized
+    Identifier (DID) and DID document / DID Descriptor Object (DDO)."""
     REQUIRED_SECTIONS = {MetadataBase.KEY, }
     MAIN_SECTIONS = {
         MetadataBase.KEY: MetadataBase,
@@ -103,6 +116,11 @@ class Metadata(object):
 
     @staticmethod
     def validate(metadata):
+        """Validator of the metadata composition
+
+        :param metadata: Metadata
+        :return: bool
+        """
         # validate required sections and their sub items
         for section_key in Metadata.REQUIRED_SECTIONS:
             if section_key not in metadata or not metadata[section_key] or not isinstance(
@@ -119,6 +137,7 @@ class Metadata(object):
 
     @staticmethod
     def get_example():
+        """Retrieve an example of the metadata"""
         example = dict()
         for section_key, section in Metadata.MAIN_SECTIONS.items():
             example[section_key] = section.EXAMPLE.copy()

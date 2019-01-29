@@ -24,9 +24,9 @@ def get_metadata_url(ddo):
     :return: Url, str
     """
     metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
-    url = metadata_service.get_values()['metadata']['base']['contentUrls']
+    files = metadata_service.get_values()['metadata']['base']['files']
     # TODO: Review this implementation, because it looks that it is not retrieving all the urls.
-    return url if isinstance(url, str) else url[0]
+    return files if isinstance(files, str) else files[0]
 
 
 def prepare_prefixed_hash(msg_hash):

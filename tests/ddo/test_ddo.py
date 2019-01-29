@@ -34,8 +34,13 @@ TEST_METADATA = """
      "compression": "zip",
      "contentType": "text/csv",
      "workExample": "423432fsd,51.509865,-0.118092,2011-01-01T10:55:11+00:00,7.2,68",
-     "contentUrls": [
-       "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.zip"
+     "files": [
+       {
+         "url": "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.pdf",
+         "checksum": "efb2c764274b745f5fc37f97c6b0e761",
+         "contentLength": "4535431",
+         "resourceId": "access-log2018-02-13-15-17-29-18386C502CAEA932"
+       }
      ],
      "links": [
        { "name": "Sample of Asset Data", "type": "sample", "url": "https://foo.com/sample.csv" },

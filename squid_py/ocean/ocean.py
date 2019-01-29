@@ -190,24 +190,27 @@ class Ocean:
         ddo.add_public_key(pub_key)
         ddo.add_authentication(auth, PUBLIC_KEY_TYPE_RSA)
 
+        priv_key = ddo.add_signature()
+        ddo.add_proof(1, priv_key)
+
         # Setup metadata service
-        # First replace `contentUrls` with encrypted `contentUrls`
+        # First replace `files` with encrypted `files`
         assert metadata_copy['base'][
-            'contentUrls'], 'contentUrls is required in the metadata base attributes.'
+            'files'], 'files is required in the metadata base attributes.'
         assert Metadata.validate(metadata), 'metadata seems invalid.'
         logger.debug('Encrypting content urls in the metadata.')
         content_urls_encrypted = SecretStoreProvider.get_secret_store() \
             .encrypt_document(
             did_to_id(did),
-            json.dumps(metadata_copy['base']['contentUrls']),
+            json.dumps(metadata_copy['base']['files']),
         )
 
         # only assign if the encryption worked
         if content_urls_encrypted:
             logger.debug('Content urls encrypted successfully.')
-            metadata_copy['base']['contentUrls'] = [content_urls_encrypted]
+            metadata_copy['base']['files'] = [content_urls_encrypted]
         else:
-            raise AssertionError('Encrypting the contentUrls failed. Make sure the secret store is'
+            raise AssertionError('Encrypting the files failed. Make sure the secret store is'
                                  ' setup properly in your config file.')
 
         # DDO url and `Metadata` service
@@ -482,7 +485,7 @@ class Ocean:
 
         Using the service endpoint defined in the ddo's service pointed to by service_definition_id.
         Consumer's permissions is checked implicitly by the secret-store during decryption
-        of the contentUrls.
+        of the files.
         The service endpoint is expected to also verify the consumer's permissions to consume this
         asset.
         This method downloads and saves the asset datafiles to disk.
@@ -496,7 +499,7 @@ class Ocean:
         ddo = self.resolve_asset_did(did)
 
         metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
-        content_urls = metadata_service.get_values()['metadata']['base']['contentUrls']
+        content_urls = metadata_service.get_values()['metadata']['base']['files']
         content_urls = content_urls if isinstance(content_urls, str) else content_urls[0]
         sa = ServiceAgreement.from_ddo(service_definition_id, ddo)
         service_url = sa.service_endpoint
@@ -506,13 +509,13 @@ class Ocean:
             raise AssertionError(
                 'Consume asset failed, service definition is missing the "serviceEndpoint".')
 
-        # decrypt the contentUrls
+        # decrypt the files
         decrypted_content_urls = json.loads(
             SecretStoreProvider.get_secret_store().decrypt_document(did_to_id(did), content_urls)
         )
         if isinstance(decrypted_content_urls, str):
             decrypted_content_urls = [decrypted_content_urls]
-        logger.debug(f'got decrypted contentUrls: {decrypted_content_urls}')
+        logger.debug(f'got decrypted files: {decrypted_content_urls}')
 
         asset_folder = self._get_asset_folder_path(did, service_definition_id)
         if not os.path.exists(self._downloads_path):
