@@ -84,11 +84,6 @@
           "functionName": "grantAccess",
           "parameters": [
             {
-              "name": "assetId",
-              "type": "string",
-              "value": ""
-            },
-            {
               "name": "documentKeyId",
               "type": "bytes32",
               "value": ""

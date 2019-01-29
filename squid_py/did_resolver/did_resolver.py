@@ -59,10 +59,10 @@ class DIDResolver:
                 if data['value']:
                     try:
                         logger.debug(f'found did {Web3.toHex(did_bytes)} -> {data["value"]}')
-                        result = data['value'].decode('utf8')
-                    except Exception:
+                        result = data['value']
+                    except Exception as err:
                         raise TypeError(f'Invalid string URL data type for a DID value at'
-                                        f' {Web3.toHex(did_bytes)}')
+                                        f' {Web3.toHex(did_bytes)}: {err}')
                 resolved.add_data(data, result)
                 break
             else:

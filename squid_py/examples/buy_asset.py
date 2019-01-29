@@ -1,4 +1,6 @@
 import logging
+import os
+import time
 
 from squid_py import Ocean, ServiceAgreement, ServiceTypes, ConfigProvider
 from squid_py.examples.example_config import ExampleConfig
@@ -12,6 +14,12 @@ def _log_event(event_name):
         print(f'Received event {event_name}: {event}')
 
     return _process_event
+
+
+if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
+    ASYNC_DELAY = 5  # seconds
+else:
+    ASYNC_DELAY = 1  # seconds
 
 
 def buy_asset():
@@ -41,6 +49,9 @@ def buy_asset():
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
     # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
     consumer_account.request_tokens(100)
+
+    time.sleep(ASYNC_DELAY)
+
     service_agreement_id = cons_ocn.purchase_asset_service(
         ddo.did, sa.sa_definition_id, consumer_account)
 

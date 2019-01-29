@@ -70,6 +70,7 @@ class EventListener(object):
                 logger.error(f'Got error grabbing keeper events: {str(err)}')
 
             time.sleep(0.1)
-            if timeout and timeout > (int(datetime.now().timestamp()) - start_time):
+            elapsed = int(datetime.now().timestamp()) - start_time
+            if timeout and elapsed > timeout:
                 callback(None)
                 break

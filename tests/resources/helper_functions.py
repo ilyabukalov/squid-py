@@ -40,18 +40,28 @@ def init_ocn_tokens(ocn, account, amount=100):
 def make_ocean_instance(secret_store_client, account_index):
     SecretStore.set_client(secret_store_client)
     ocn = Ocean(ExampleConfig.get_config())
-    account = list(ocn.get_accounts())[account_index]
+    account = list(ocn.accounts.values())[account_index]
+    if account_index == 0:
+        account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password')
+    else:
+        account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password1')
     # We can remove the BrizoMock if we assuming that the asset is in Azure.
     Brizo.set_http_client(BrizoMock(ocn, account))
     return ocn
 
 
 def get_publisher_account(config):
-    return get_account_from_config(config, 'parity.address', 'parity.password')
+    acc = get_account_from_config(config, 'parity.address', 'parity.password')
+    if acc is None:
+        acc = Account(Keeper.get_instance().accounts[0])
+    return acc
 
 
 def get_consumer_account(config):
-    return get_account_from_config(config, 'parity.address1', 'parity.password1')
+    acc = get_account_from_config(config, 'parity.address1', 'parity.password1')
+    if acc is None:
+        acc = Account(Keeper.get_instance().accounts[1])
+    return acc
 
 
 def get_publisher_ocean_instance():
@@ -80,15 +90,13 @@ def get_account_from_config(config, config_account_key, config_account_password_
     address = None
     if config.has_option('keeper-contracts', config_account_key):
         address = config.get('keeper-contracts', config_account_key)
+        address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
 
-    if not address:
+    if not (address and address in Keeper.get_instance().accounts):
         return None
 
     password = None
-    address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
-    if (address
-            and address in Keeper.get_instance().accounts
-            and config.has_option('keeper-contracts', config_account_password_key)):
+    if address and config.has_option('keeper-contracts', config_account_password_key):
         password = config.get('keeper-contracts', config_account_password_key)
 
     return Account(address, password)

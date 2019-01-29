@@ -2,7 +2,6 @@
 import logging
 from urllib.parse import urlparse
 
-from eth_abi import decode_single
 from web3 import Web3
 
 from squid_py.exceptions import OceanDIDNotFound
@@ -95,6 +94,28 @@ class DIDRegistry(ContractBase):
         return self.contract_concise.getOwner(did)
 
     def get_registered_attribute(self, did_bytes):
+        """
+
+        Example of event logs from event_filter.get_all_entries():
+        [AttributeDict(
+            {'args': AttributeDict(
+                {'did': b'\x02n\xfc\xfb\xfdNM\xe9\xb8\xe0\xba\xc2\xb2\xc7\xbeg\xc9/\x95\xc3\x16\
+                           x98G^\xb9\xe1\xf0T\xce\x83\xcf\xab',
+                 'owner': '0xAd12CFbff2Cb3E558303334e7e6f0d25D5791fc2',
+                 'key': b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
+                          \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
+                 'value': 'http://localhost:5000',
+                 'valueType': 2,
+                 'updatedAt': 1947}),
+             'event': 'DIDAttributeRegistered',
+             'logIndex': 0,
+             'transactionIndex': 1,
+             'transactionHash': HexBytes('0xea9ca5748d54766fb43fe9660dd04b2e3bb29a0fbe18414457cca3dd488d359d'),
+             'address': '0x86DF95937ec3761588e6DEbAB6E3508e271cC4dc',
+             'blockHash': HexBytes('0xbbbe1046b737f33b2076cb0bb5ba85a840c836cf1ffe88891afd71193d677ba2'),
+             'blockNumber': 1947})]
+
+        """
         result = None
         did = Web3.toHex(did_bytes)
         block_number = self.get_update_at(did_bytes)
@@ -111,18 +132,17 @@ class DIDRegistry(ContractBase):
         )
         log_items = block_filter.get_all_entries()
         if log_items:
-            log_item = log_items[-1]
-            value, value_type, block_number = decode_single(
-                '(string,uint8,uint256)', Web3.toBytes(hexstr=log_item['data']))
-            topics = log_item['topics']
-            logger.debug(f'topics {topics}')
+            log_item = log_items[-1].args
+            value = log_item.value
+            value_type = log_item.valueType
+            block_number = log_item.updatedAt
             result = {
                 'value_type': value_type,
                 'value': value,
                 'block_number': block_number,
-                'did_bytes': Web3.toBytes(topics[1]),
-                'owner': Web3.toChecksumAddress(topics[2][-20:]),
-                'key': Web3.toBytes(topics[3]),
+                'did_bytes': log_item.did,
+                'owner': Web3.toChecksumAddress(log_item.owner),
+                'key': Web3.toBytes(log_item.key)
             }
         else:
             logger.warning(f'Could not find {DID_REGISTRY_EVENT_NAME} event logs for '
