@@ -75,7 +75,7 @@ def buy_asset():
         10,
         blocking=True
     )
-    sleep(5)
+    sleep(10)
     assert event, 'No event received for ServiceAgreement Fulfilled.'
     logging.info('Success buying asset.')
 
