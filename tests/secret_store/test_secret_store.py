@@ -9,7 +9,7 @@ from tests.resources.tiers import e2e_test
 
 @e2e_test
 def test_secret_store():
-    test_document = get_resource_path('metadata', 'sample_metadata1.json')
+    test_document = get_resource_path('ddo', 'ddo_sample1.json')
     with open(test_document, 'r') as file_handle:
         metadata = json.load(file_handle)
     metadata_json = json.dumps(metadata)

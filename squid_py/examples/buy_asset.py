@@ -2,7 +2,7 @@ import logging
 import os
 import time
 
-from squid_py import Ocean, ServiceAgreement, ServiceTypes, ConfigProvider
+from squid_py import ConfigProvider, Ocean, ServiceAgreement, ServiceTypes
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.web3_provider import Web3Provider
@@ -72,6 +72,7 @@ def buy_asset():
         10,
         blocking=True
     )
+    time.sleep(10)
 
     assert event, 'No event received for ServiceAgreement Fulfilled.'
     logging.info('Success buying asset.')

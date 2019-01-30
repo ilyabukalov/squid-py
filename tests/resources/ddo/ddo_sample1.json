@@ -31,6 +31,12 @@
       "publicKey": "did:op:3597a39818d598e5d60b83eabe29e337d37d9ed5af218b4af5e94df9f7d9783a#keys-2"
     }
   ],
+  "proof": {
+    "type": "UUIDSignature",
+    "created": "2016-02-08T16:02:20Z",
+    "creator": "did:example:8uQhQMGzWxR8vw5P3UWH1ja",
+    "signatureValue": "QNB13Y7Q9...1tzjn4w=="
+  },
   "service": [
     {
       "type": "OpenIdConnectVersion1.0Service",
@@ -90,8 +96,13 @@
           "compression": "zip",
           "contentType": "text/csv",
           "workExample": "423432fsd,51.509865,-0.118092,2011-01-01T10:55:11+00:00,7.2,68",
-          "contentUrls": [
-            "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.zip"
+          "files": [
+            {
+              "url": "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.pdf",
+              "checksum": "efb2c764274b745f5fc37f97c6b0e761",
+              "contentLength": "4535431",
+              "resourceId": "access-log2018-02-13-15-17-29-18386C502CAEA932"
+            }
           ],
           "links": [
             {

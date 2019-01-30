@@ -16,17 +16,16 @@ from squid_py.service_agreement.service_types import ServiceTypes
 Signature = namedtuple('Signature', ('v', 'r', 's'))
 
 
-def get_metadata_url(ddo):
+def get_metadata_files(ddo):
     """
-    Return the url save in the metadata in the contentUrls section.
+    Return the content save in the metadata in the files section.
 
     :param ddo: DDO
     :return: Url, str
     """
     metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
-    url = metadata_service.get_values()['metadata']['base']['contentUrls']
-    # TODO: Review this implementation, because it looks that it is not retrieving all the urls.
-    return url if isinstance(url, str) else url[0]
+    files = metadata_service.get_values()['metadata']['base']['files']
+    return files[0]
 
 
 def prepare_prefixed_hash(msg_hash):
