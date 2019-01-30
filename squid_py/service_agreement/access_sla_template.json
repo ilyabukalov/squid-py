@@ -5,11 +5,11 @@
   "description": "This service agreement defines the flow for accessing a data asset on the ocean network. Any file or bundle of files can be access using this service agreement",
   "creator": "",
   "serviceAgreementContract": {
-    "contractName": "ServiceAgreement",
+    "contractName": "ServiceExecutionAgreement",
     "fulfillmentOperator": 1,
     "events": [
       {
-        "name": "ExecuteAgreement",
+        "name": "AgreementInitialized",
         "actorType": "consumer",
         "handler": {
           "moduleName": "payment",
@@ -61,11 +61,6 @@
       "functionName": "grantAccess",
       "index": 1,
       "parameters": [
-        {
-          "name": "assetId",
-          "type": "bytes32",
-          "value": ""
-        },
         {
           "name": "documentKeyId",
           "type": "bytes32",

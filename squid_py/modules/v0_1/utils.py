@@ -17,11 +17,15 @@ def process_tx_receipt(tx_hash, event, event_name):
     web3.eth.waitForTransactionReceipt(tx_hash)
     receipt = web3.eth.getTransactionReceipt(tx_hash)
     event = event().processReceipt(receipt)
+    logger.error(f'Success: got {event_name} event after fulfilling condition. {receipt}, ::: {event}')
     if event:
         logger.info(f'Success: got {event_name} event after fulfilling condition.')
     else:
         logger.debug(f'Something is not right, cannot find the {event_name} event after calling the'
                      f' fulfillment condition. This is the transaction receipt {receipt}')
+
+    if receipt and receipt.status == 0:
+        logger.warning(f'Transaction failed: tx_hash {tx_hash}, tx event {event_name}, receipt {receipt}')
 
 
 def is_condition_fulfilled(template_id, service_agreement_id,

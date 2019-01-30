@@ -35,7 +35,7 @@ class Diagnostics:
                            f'This enables the user to override the method of how the network name '
                            f'is inferred from network id.')
         # try to find contract with this network name
-        contract_name = 'ServiceAgreement'
+        contract_name = 'ServiceExecutionAgreement'
         network_id = Keeper.get_network_id()
         network_name = Keeper.get_network_name(network_id)
         logger.info(f'Using keeper contracts from network {network_name}, '
@@ -58,7 +58,7 @@ class Diagnostics:
             )
 
         keeper = Keeper.get_instance()
-        contracts = [keeper.market, keeper.token, keeper.did_registry,
+        contracts = [keeper.dispenser, keeper.token, keeper.did_registry,
                      keeper.service_agreement, keeper.payment_conditions, keeper.access_conditions]
         addresses = '\n'.join([f'\t{c.name}: {c.address}' for c in contracts])
         logging.info('Finished loading keeper contracts:\n'

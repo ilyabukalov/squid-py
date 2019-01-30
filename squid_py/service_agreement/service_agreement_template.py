@@ -11,7 +11,6 @@ class ServiceAgreementTemplate(object):
     def __init__(self, template_json=None):
         self.template_id = ''
         self.name = ''
-        self.description = ''
         self.creator = ''
         self.conditions = []
         self.service_agreement_contract = None
@@ -84,7 +83,6 @@ class ServiceAgreementTemplate(object):
         assert template_json['type'] == self.DOCUMENT_TYPE, ''
         self.template_id = template_json['id']
         self.name = template_json['name']
-        self.description = template_json['description']
         self.creator = template_json['creator']
         self.conditions = [ServiceAgreementCondition(cond_json) for cond_json in
                            template_json['conditions']]
@@ -96,7 +94,6 @@ class ServiceAgreementTemplate(object):
             'type': self.DOCUMENT_TYPE,
             'id': self.template_id,
             'name': self.name,
-            'description': self.description,
             'creator': self.creator,
             'serviceAgreementContract': self.service_agreement_contract.as_dictionary(),
             'conditions': [cond.as_dictionary() for cond in self.conditions],
@@ -108,16 +105,13 @@ class ServiceAgreementTemplate(object):
             "type": "OceanProtocolServiceAgreementTemplate",
             "id": "0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d",
             "name": "dataAssetAccessServiceAgreement",
-            "description": "This service agreement defines the flow for accessing a data asset on "
-                           "the ocean network. Any file or bundle of files can be access using "
-                           "this service agreement",
             "creator": "",
             "serviceAgreementContract": {
-                "contractName": "ServiceAgreement",
+                "contractName": "ServiceExecutionAgreement",
                 "fulfillmentOperator": 1,
                 "events": [
                     {
-                        "name": "ExecuteAgreement",
+                        "name": "AgreementInitialized",
                         "actorType": "consumer",
                         "handler": {
                             "moduleName": "payment",
@@ -167,11 +161,6 @@ class ServiceAgreementTemplate(object):
                     "functionName": "grantAccess",
                     "index": 1,
                     "parameters": [
-                        {
-                            "name": "assetId",
-                            "type": "bytes32",
-                            "value": ""
-                        },
                         {
                             "name": "documentKeyId",
                             "type": "bytes32",

@@ -1,6 +1,6 @@
 import logging
 import os
-from time import sleep
+import time
 
 from squid_py import ConfigProvider, Ocean, ServiceAgreement, ServiceTypes
 from squid_py.examples.example_config import ExampleConfig
@@ -50,32 +50,30 @@ def buy_asset():
     # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
     consumer_account.request_tokens(100)
 
-    sleep(ASYNC_DELAY)
+    time.sleep(ASYNC_DELAY)
 
     service_agreement_id = cons_ocn.purchase_asset_service(
         ddo.did, sa.sa_definition_id, consumer_account)
 
-    sleep(ASYNC_DELAY)
+    _filter = {'agreementId': w3.toBytes(hexstr=service_agreement_id)}
 
-    filter1 = {'serviceAgreementId': w3.toBytes(hexstr=service_agreement_id)}
-    filter2 = {'serviceId': w3.toBytes(hexstr=service_agreement_id)}
-
-    EventListener('ServiceAgreement', 'ExecuteAgreement', filters=filter1).listen_once(
-        _log_event('ExecuteAgreement'),
+    EventListener('ServiceExecutionAgreement', 'AgreementInitialized', filters=_filter).listen_once(
+        _log_event('AgreementInitialized'),
         10,
         blocking=True
     )
-    EventListener('AccessConditions', 'AccessGranted', filters=filter2).listen_once(
+    EventListener('AccessConditions', 'AccessGranted', filters=_filter).listen_once(
         _log_event('AccessGranted'),
         10,
         blocking=True
     )
-    event = EventListener('ServiceAgreement', 'AgreementFulfilled', filters=filter1).listen_once(
+    event = EventListener('ServiceExecutionAgreement', 'AgreementFulfilled', filters=_filter).listen_once(
         _log_event('AgreementFulfilled'),
         10,
         blocking=True
     )
-    sleep(10)
+    time.sleep(10)
+
     assert event, 'No event received for ServiceAgreement Fulfilled.'
     logging.info('Success buying asset.')
 

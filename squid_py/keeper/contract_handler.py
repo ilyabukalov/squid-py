@@ -16,26 +16,50 @@ class ContractHandler(object):
 
     Retrieval of deployed keeper contracts must use this `ContractHandler`.
     Example:
-        contract = ContractHandler.get('ServiceAgreement')
-        concise_contract = ContractHandler.get_concise_contract('ServiceAgreement')
+        contract = ContractHandler.get('ServiceExecutionAgreement')
+        concise_contract = ContractHandler.get_concise_contract('ServiceExecutionAgreement')
 
     """
     _contracts = dict()
 
     @staticmethod
     def get(name):
+        """
+        Return the Contract instance for a given name.
+
+        :param name: Contract name, str
+        :return: Contract instance
+        """
         return (ContractHandler._contracts.get(name) or ContractHandler._load(name))[0]
 
     @staticmethod
     def get_concise_contract(name):
+        """
+        Return the Concise Contract instance for a given name.
+
+        :param name: Contract name, str
+        :return: Concise Contract instance
+        """
         return (ContractHandler._contracts.get(name) or ContractHandler._load(name))[1]
 
     @staticmethod
     def set(name, contract):
+        """
+        Set a Contract instance for a contract name.
+
+        :param name: Contract name, str
+        :param contract: Contract instance
+        """
         ContractHandler._contracts[name] = (contract, ConciseContract(contract))
 
     @staticmethod
     def has(name):
+        """
+        Check if a contract is the ContractHandler contracts.
+
+        :param name: Contract name, str
+        :return: True if the contract is there, bool
+        """
         return name in ContractHandler._contracts
 
     @staticmethod
@@ -54,28 +78,44 @@ class ContractHandler(object):
         return ContractHandler._contracts[contract_name]
 
     @staticmethod
+    def _get_contract_file_path(_base_path, _contract_name, _network_name):
+        contract_file_name = '{}.{}.json'.format(_contract_name, _network_name)
+        for name in os.listdir(_base_path):
+            if name.lower() == contract_file_name.lower():
+                contract_file_name = name
+                return os.path.join(Keeper.get_instance().artifacts_path, contract_file_name)
+        return None
+
+    @staticmethod
     def get_contract_dict_by_name(contract_name):
         """
+        Retrieve the Contract instance for a given contract name.
 
-        :param contract_name:
-        :return: dict -- the smart contract's definition from the json abi file
+        :param contract_name: str
+        :return: the smart contract's definition from the json abi file, dict
         """
+
         keeper = Keeper.get_instance()
         network_name = keeper.get_network_name(keeper.get_network_id()).lower()
 
-        file_name = '{}.{}.json'.format(contract_name, network_name)
-        path = os.path.join(keeper.artifacts_path, file_name)
-        if not os.path.exists(path):
-            file_name = '{}.{}.json'.format(contract_name, network_name.lower())
-            for name in os.listdir(keeper.artifacts_path):
-                if name.lower() == file_name.lower():
-                    file_name = name
-                    path = os.path.join(keeper.artifacts_path, file_name)
-                    break
+        # file_name = '{}.{}.json'.format(contract_name, network_name)
+        # path = os.path.join(keeper.artifacts_path, file_name)
+        path = ContractHandler._get_contract_file_path(
+            keeper.artifacts_path, contract_name, network_name)
+        if not (path and os.path.exists(path)):
+            path = ContractHandler._get_contract_file_path(
+                keeper.artifacts_path, contract_name, network_name.lower())
 
-        if not os.path.exists(path):
+        if not (path and os.path.exists(path)):
+            path = ContractHandler._get_contract_file_path(
+                keeper.artifacts_path, contract_name, Keeper.DEFAULT_NETWORK_NAME)
+
+        if not (path and os.path.exists(path)):
             raise FileNotFoundError(
-                'Keeper contract {} file not found: {}'.format(contract_name, path))
+                f'Keeper contract {contract_name} file '
+                f'not found in {keeper.artifacts_path} '
+                f'using network name {network_name}'
+            )
 
         with open(path) as f:
             contract_dict = json.loads(f.read())

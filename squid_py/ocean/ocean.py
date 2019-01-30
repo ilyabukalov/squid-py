@@ -331,9 +331,9 @@ class Ocean:
     def execute_service_agreement(self, did, service_definition_id, service_agreement_id,
                                   service_agreement_signature, consumer_address, publisher_account):
         """
-        Execute the service agreement on-chain using keeper's ServiceAgreement contract.
+        Execute the service agreement on-chain using keeper's ServiceExecutionAgreement contract.
 
-        The on-chain executeAgreement method requires the following arguments:
+        The on-chain initializeAgreement method requires the following arguments:
         templateId, signature, consumer, hashes, timeouts, serviceAgreementId, did.
         `agreement_message_hash` is necessary to verify the signature.
         The consumer `signature` includes the conditions timeouts and parameters values which
@@ -348,7 +348,7 @@ class Ocean:
          conditions and their parameters values and other details of the agreement.
         :param consumer_address: ethereum account address of consumer
         :param publisher_account: ethereum account address of publisher
-        :return: dict the `executeAgreement` transaction receipt
+        :return: dict the `initializeAgreement` transaction receipt
         """
         assert consumer_address and Web3Provider.get_web3().isChecksumAddress(
             consumer_address), f'Invalid consumer address {consumer_address}'
@@ -367,10 +367,9 @@ class Ocean:
 
         files = get_metadata_files(ddo)
         # Raise error if agreement is already executed
-        if self.keeper.service_agreement.get_service_agreement_consumer(
-                service_agreement_id) is not None:
+        if self.keeper.service_agreement.is_agreement_existing(service_agreement_id):
             raise OceanServiceAgreementExists(
-                f'Service agreement {service_agreement_id} is already executed.')
+                f'Service agreement {service_agreement_id} is already initialized.')
 
         if not self._verify_service_agreement_signature(
                 did, service_agreement_id, service_definition_id,
@@ -399,7 +398,18 @@ class Ocean:
             asset_id,
             publisher_account
         )
-        logger.info(f'Service agreement {service_agreement_id} executed successfully.')
+        logger.info(f'Service agreement {service_agreement_id} initialized..')
+
+        logger.debug(f'initializeAgreement receipt {receipt}')
+        if not receipt or not hasattr(receipt, 'status'):
+            return False
+
+        if receipt.status == 0:
+            return False
+
+        logger.debug(f'Success initializing service agreement {service_agreement_id}, '
+                     f'got status {receipt.status}')
+
         return receipt
 
     def is_access_granted(self, service_agreement_id, did, consumer_address):
