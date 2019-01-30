@@ -24,8 +24,8 @@ def get_metadata_files(ddo):
     :return: Url, str
     """
     metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
-    files = metadata_service.get_values()['metadata']['base']['files']
-    return files[0]
+    files = metadata_service.get_values()['metadata']['base']['encryptedFiles']
+    return files
 
 
 def prepare_prefixed_hash(msg_hash):
