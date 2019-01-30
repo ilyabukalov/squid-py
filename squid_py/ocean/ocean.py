@@ -1,41 +1,23 @@
 """Ocean module."""
 
-import json
 import logging
 import os
 import os.path
 
-from squid_py.aquarius.aquarius import Aquarius
+from deprecated import deprecated
+
 from squid_py.aquarius.aquarius_provider import AquariusProvider
-from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.config_provider import ConfigProvider
-from squid_py.ddo import DDO
-from squid_py.ddo.metadata import Metadata, MetadataBase
-from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
-from squid_py.did import DID, did_to_id
+from squid_py.did import did_to_id
 from squid_py.did_resolver.did_resolver import DIDResolver
-from squid_py.exceptions import (
-    OceanDIDAlreadyExist,
-    OceanInvalidMetadata,
-    OceanInvalidServiceAgreementSignature,
-    OceanServiceAgreementExists,
-)
 from squid_py.keeper import Keeper
 from squid_py.keeper.diagnostics import Diagnostics
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.log import setup_logging
-from squid_py.ocean.account import Account
-from squid_py.ocean.ocean_sea import OceanSea
-from squid_py.secret_store.secret_store_provider import SecretStoreProvider
-from squid_py.service_agreement.register_service_agreement import register_service_agreement
-from squid_py.service_agreement.service_agreement import ServiceAgreement
-from squid_py.service_agreement.service_factory import ServiceDescriptor, ServiceFactory
-from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID, ServiceTypes
-from squid_py.service_agreement.utils import (get_conditions_data_from_keeper_contracts,
-                                              make_public_key_and_authentication)
-from squid_py.utils.utilities import (get_metadata_url, prepare_prefixed_hash)
-from .ocean_accounts import OceanAccounts
-from .ocean_assets import OceanAssets
+from squid_py.agreements.agreements import OceanAgreements
+from squid_py.service_agreement.utils import (get_conditions_data_from_keeper_contracts)
+from squid_py.accounts.accounts import OceanAccounts
+from squid_py.assets.assets import OceanAssets
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
@@ -81,17 +63,20 @@ class Ocean:
         # Add the Metadata store to the interface
         self._metadata_store = AquariusProvider.get_aquarius()
 
-        downloads_path = os.path.join(os.getcwd(), 'downloads')
-        if self.config.has_option('resources', 'downloads.path'):
-            downloads_path = self.config.get('resources', 'downloads.path') or downloads_path
-        self._downloads_path = downloads_path
-
         # Collect the accounts
         self.accounts = OceanAccounts(self)
         self._accounts = self.get_accounts()
         assert self._accounts
 
         self._did_resolver = DIDResolver(Web3Provider.get_web3(), self._keeper.did_registry)
+
+        self.assets = OceanAssets(self)
+        self.agreements = OceanAgreements(self)
+
+        if self.config.secret_store_url and self.config.parity_url and self.config.parity_address:
+            logger.info(f'\tSecretStore: url {self.config.secret_store_url}, '
+                        f'parity-client {self.config.parity_url}, '
+                        f'account {self.config.parity_address}')
 
         # Verify keeper contracts
         Diagnostics.verify_contracts()
@@ -101,22 +86,16 @@ class Ocean:
         logger.info(f'\taquarius: {self._metadata_store.url}')
         logger.info(f'\tDIDRegistry @ {self._keeper.did_registry.address}')
 
-        self.assets = OceanAssets(self)
-        self.sea = OceanSea(self)
-
-        if self.config.secret_store_url and self.config.parity_url and self.config.parity_address:
-            logger.info(f'\tSecretStore: url {self.config.secret_store_url}, '
-                        f'parity-client {self.config.parity_url}, '
-                        f'account {self.config.parity_address}')
-
+    @deprecated("Use ocean.accounts.list")
     def get_accounts(self):
         """
         Returns all available accounts loaded via a wallet, or by Web3.
 
-        :return: dict of account-address: Account instance
+        :return: list of Account instances
         """
         return self.accounts.list()
 
+    @deprecated("Use ocean.assets.search")
     def search_assets_by_text(self, *args, **kwargs):
         """
         Search an asset in oceanDB using aquarius.
@@ -129,8 +108,9 @@ class Ocean:
         provided take the default
         :return: List of assets that match with the query
         """
-        return self.assets.search_by_text(*args, **kwargs)
+        return self.assets.search(*args, **kwargs)
 
+    @deprecated("Use ocean.assets.query")
     def search_assets(self, *args, **kwargs):
         """
         Search an asset in oceanDB using search query.
@@ -144,8 +124,9 @@ class Ocean:
                     https://docs.mongodb.com/manual/reference/method/db.collection.find
         :return: List of assets that match with the query.
         """
-        return self.assets.search_by_query(*args, **kwargs)
+        return self.assets.query(*args, **kwargs)
 
+    @deprecated("Use ocean.assets.create")
     def register_asset(self, *args, **kwargs):
         """
         Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (
@@ -155,17 +136,9 @@ class Ocean:
         :param publisher_account: Account of the publisher registering this asset
         :return: DDO instance
         """
-        return self.assets.register(*args, **kwargs)
+        return self.assets.create(*args, **kwargs)
 
-    def _approve_token_transfer(self, amount, consumer_account):
-        if self._keeper.token.get_token_balance(consumer_account.address) < amount:
-            raise ValueError(
-                f'Account {consumer_account.address} does not have sufficient tokens '
-                f'to approve for transfer.')
-
-        self._keeper.token.token_approve(self._keeper.payment_conditions.address, amount,
-                                        consumer_account)
-
+    @deprecated("Use ocean.assets.order")
     def purchase_asset_service(self, *args, **kwargs):
         """
         Sign service agreement.
@@ -183,8 +156,9 @@ class Ocean:
         :return: tuple(agreement_id, signature) the service agreement id (can be used to query
             the keeper-contracts for the status of the service agreement) and signed agreement hash
         """
-        return self.sea.purchase_asset_service(*args, **kwargs)
+        return self.assets.order(*args, **kwargs)
 
+    @deprecated("Use ")
     def execute_service_agreement(self, *args, **kwargs):
         """
         Execute the service agreement on-chain using keeper's ServiceExecutionAgreement contract.
@@ -206,8 +180,9 @@ class Ocean:
         :param publisher_account: ethereum account address of publisher
         :return: dict the `initializeAgreement` transaction receipt
         """
-        return self.sea.execute_service_agreement(*args, **kwargs)
+        return self.agreements.create(*args, **kwargs)
 
+    @deprecated("Use ")
     def is_access_granted(self, *args, **kwargs):
         """
         Check permission for the agreement.
@@ -220,8 +195,9 @@ class Ocean:
         :param consumer_address: Account address, str
         :return: bool True if user has permission
         """
-        return self.sea.is_access_granted(*args, **kwargs)
+        return self.agreements.is_access_granted(*args, **kwargs)
 
+    @deprecated("Use ocean.assets.resolve")
     def resolve_asset_did(self, did):
         """
         When you pass a did retrieve the ddo associated.
@@ -229,8 +205,9 @@ class Ocean:
         :param did: DID, str
         :return: DDO
         """
-        return self.assets.resolve_did(did)
+        return self.assets.resolve(did)
 
+    @deprecated("Use ocean.assets.consume")
     def consume_service(self, *args, **kwargs):
         """
         Consume the asset data.
@@ -248,25 +225,4 @@ class Ocean:
         :param consumer_account: Account address, str
         :return: None
         """
-        return self.sea.consume_service(*args, **kwargs)
-
-    def _get_asset_folder_path(self, did, service_definition_id):
-        """
-
-        :param did:
-        :param service_definition_id:
-        :return:
-        """
-        return os.path.join(self._downloads_path,
-                            f'datafile.{did_to_id(did)}.{service_definition_id}')
-
-    @staticmethod
-    def _log_conditions_data(sa):
-        # conditions_data = (contract_addresses, fingerprints, fulfillment_indices, conditions_keys)
-        conditions_data = get_conditions_data_from_keeper_contracts(
-            sa.conditions, sa.template_id
-        )
-        logger.debug(f'conditions keys: {sa.conditions_keys}')
-        logger.debug(f'conditions contracts: {conditions_data[0]}')
-        logger.debug(f'conditions fingerprints: {[fn.hex() for fn in conditions_data[1]]}')
-        logger.debug(f'template id: {sa.template_id}')
+        return self.assets.consume(*args, **kwargs)

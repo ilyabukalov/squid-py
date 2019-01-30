@@ -146,7 +146,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     assert ServiceAgreement.SERVICE_DEFINITION_ID in service.as_dictionary()
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
 
-    service_agreement_id = consumer_ocean_instance.purchase_asset_service(
+    service_agreement_id = consumer_ocean_instance.assets.order(
         registered_ddo.did,
         sa.sa_definition_id,
         consumer_acc

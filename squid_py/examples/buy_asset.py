@@ -52,7 +52,7 @@ def buy_asset():
 
     time.sleep(ASYNC_DELAY)
 
-    service_agreement_id = cons_ocn.purchase_asset_service(
+    service_agreement_id = cons_ocn.assets.order(
         ddo.did, sa.sa_definition_id, consumer_account)
 
     _filter = {'agreementId': w3.toBytes(hexstr=service_agreement_id)}

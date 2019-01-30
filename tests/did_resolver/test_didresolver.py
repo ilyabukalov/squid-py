@@ -30,7 +30,7 @@ def test_did_registry_register(publisher_ocean_instance):
     value_test = 'http://localhost:5000'
 
     # register DID-> URL
-    assert did_registry.register(did_test, url=value_test, key=key_test, account=register_account)
+    assert did_registry.create(did_test, url=value_test, key=key_test, account=register_account)
 
 
 @e2e_test
@@ -43,11 +43,11 @@ def test_did_registry_no_accout_provided(publisher_ocean_instance):
     value_test = 'http://localhost:5000'
     # No account provided
     with pytest.raises(ValueError):
-        did_registry.register(did_test, url=value_test)
+        did_registry.create(did_test, url=value_test)
 
     # Invalide key field provided
     with pytest.raises(ValueError):
-        did_registry.register(did_test, url=value_test, account=register_account, key=42)
+        did_registry.create(did_test, url=value_test, account=register_account, key=42)
 
 
 @e2e_test
@@ -68,7 +68,7 @@ def test_did_resolver_library(publisher_ocean_instance):
     # resolve URL from a direct DID ID value
     did_id_bytes = Web3.toBytes(hexstr=did_id)
 
-    did_registry.register(did_test, url=value_test, account=register_account)
+    did_registry.create(did_test, url=value_test, account=register_account)
 
     did_resolved = did_resolver.resolve(did_test)
     assert did_resolved
@@ -163,7 +163,7 @@ def test_get_did(publisher_ocean_instance):
     did = DID.did()
     value_test = 'http://localhost:5000'
     did_resolver = DIDResolver(Web3Provider.get_web3(), ocean.keeper.did_registry)
-    did_registry.register(did, url=value_test, account=register_account)
+    did_registry.create(did, url=value_test, account=register_account)
     did_id = did_to_id(did)
     did_resolver.get_did(Web3.toBytes(hexstr=did_id))
 

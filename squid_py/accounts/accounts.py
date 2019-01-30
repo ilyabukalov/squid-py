@@ -1,4 +1,4 @@
-from squid_py.ocean.account import Account
+from squid_py.accounts.account import Account
 
 
 class OceanAccounts:
