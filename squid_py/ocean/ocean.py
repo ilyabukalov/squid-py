@@ -208,7 +208,8 @@ class Ocean:
         # only assign if the encryption worked
         if files_encrypted:
             logger.debug('Content urls encrypted successfully.')
-            metadata_copy['base']['files'] = [files_encrypted]
+            del metadata_copy['base']['files']
+            metadata_copy['base']['encryptedFiles'] = files_encrypted
         else:
             raise AssertionError('Encrypting the files failed. Make sure the secret store is'
                                  ' setup properly in your config file.')
@@ -509,7 +510,7 @@ class Ocean:
         ddo = self.resolve_asset_did(did)
 
         metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
-        files = metadata_service.get_values()['metadata']['base']['files']
+        files = metadata_service.get_values()['metadata']['base']['encryptedFiles']
         files = files if isinstance(files, str) else files[0]
         sa = ServiceAgreement.from_ddo(service_definition_id, ddo)
         service_url = sa.service_endpoint
