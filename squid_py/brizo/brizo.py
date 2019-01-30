@@ -64,10 +64,20 @@ class Brizo(object):
             return True
 
     @staticmethod
-    def consume_service(service_agreement_id, service_endpoint, account_address, urls,
+    def consume_service(service_agreement_id, service_endpoint, account_address, files,
                         destination_folder):
-        for url in urls:
-            url = url['url']
+        """
+        Call the brizo endpoint to get access to the different files that form the asset.
+
+        :param service_agreement_id: Service Agreement Id, str
+        :param service_endpoint: Url to consume, str
+        :param account_address: ethereum address of the consumer signing this agreement, hex-str
+        :param files: List containing the files to be consumed, list
+        :param destination_folder: Path, str
+        :return:
+        """
+        for file in files:
+            url = file['url']
             if url.startswith('"') or url.startswith("'"):
                 url = url[1:-1]
 
@@ -85,12 +95,22 @@ class Brizo(object):
                 logger.warning(f'consume failed: {response.reason}')
 
     @staticmethod
-    def prepare_purchase_payload(did, agreement_id, service_definition_id, signature,
+    def prepare_purchase_payload(did, service_agreement_id, service_definition_id, signature,
                                  consumer_address):
-        # Prepare a payload to send to `Brizo`
+        """Prepare a payload to send to `Brizo`.
+
+        :param did: DID, str
+        :param service_agreement_id: Service Agreement Id, str
+        :param service_definition_id: str the service definition id identifying a specific
+        service in the DDO (DID document)
+        :param signature: the signed agreement message hash which includes
+         conditions and their parameters values and other details of the agreement, str
+        :param consumer_address: ethereum address of the consumer signing this agreement, hex-str
+        :return:
+        """
         return json.dumps({
             'did': did,
-            'serviceAgreementId': agreement_id,
+            'serviceAgreementId': service_agreement_id,
             ServiceAgreement.SERVICE_DEFINITION_ID: service_definition_id,
             'signature': signature,
             'consumerAddress': consumer_address
