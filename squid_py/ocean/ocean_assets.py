@@ -2,8 +2,8 @@ import os
 import json
 import logging
 
-from squid_py import ServiceAgreement
-from squid_py.aquarius.aquarius_provider import AquariusProvider
+from squid_py.aquarius.exceptions import AquariusGenericError
+from squid_py.assets.asset_consumer import AssetConsumer
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.ddo import DDO
 from squid_py.ddo.metadata import Metadata, MetadataBase
@@ -25,17 +25,20 @@ logger = logging.getLogger('ocean')
 
 
 class OceanAssets:
-    def __init__(self, keeper, aquarius, did_resolver, agreements, config):
+    def __init__(self, keeper, did_resolver, agreements, config):
         self._keeper = keeper
-        self._aquarius = aquarius
         self._did_resolver = did_resolver
         self._agreements = agreements
         self._config = config
+        self._aquarius_url = config.aquarius_url
 
         downloads_path = os.path.join(os.getcwd(), 'downloads')
         if self._config.has_option('resources', 'downloads.path'):
             downloads_path = self._config.get('resources', 'downloads.path') or downloads_path
         self._downloads_path = downloads_path
+
+    def _get_aquarius(self, url):
+        return AquariusProvider.get_aquarius(url or self._aquarius_url)
 
     def create(self, metadata, publisher_account, service_descriptors=None):
         """
@@ -61,7 +64,7 @@ class OceanAssets:
         did = DID.did()
         logger.debug(f'Generating new did: {did}')
         # Check if it's already registered first!
-        if did in self._aquarius.list_assets():
+        if did in self._get_aquarius().list_assets():
             raise OceanDIDAlreadyExist(
                 f'Asset id {did} is already registered to another asset.')
 
@@ -95,7 +98,7 @@ class OceanAssets:
                                  ' setup properly in your config file.')
 
         # DDO url and `Metadata` service
-        ddo_service_endpoint = self._aquarius.get_service_endpoint(did)
+        ddo_service_endpoint = self._get_aquarius().get_service_endpoint(did)
         metadata_service_desc = ServiceDescriptor.metadata_service_descriptor(metadata_copy,
                                                                               ddo_service_endpoint)
 
@@ -122,7 +125,7 @@ class OceanAssets:
         response = None
         try:
             # publish the new ddo in ocean-db/Aquarius
-            response = self._aquarius.publish_asset_ddo(ddo)
+            response = self._get_aquarius().publish_asset_ddo(ddo)
             logger.debug('Asset/ddo published successfully in aquarius.')
         except ValueError as ve:
             raise ValueError(f'Invalid value to publish in the metadata: {str(ve)}')
@@ -142,21 +145,24 @@ class OceanAssets:
         logger.info(f'DDO with DID {did} successfully registered on chain.')
         return ddo
 
+    def retire(self, did):
+        try:
+            ddo = self.resolve(did)
+            metadata_service = ddo.find_service_by_type(ServiceTypes.METADATA)
+            self._get_aquarius(metadata_service.get_endpoint()).retire_asset_ddo(did)
+            return True
+        except AquariusGenericError as err:
+            logger.error(err)
+            return False
+
     def resolve(self, did):
         """
         When you pass a did retrieve the ddo associated.
 
         :param did: DID, str
-        :return: DDO
+        :return: DDO instance
         """
-        resolver = self._did_resolver.resolve(did)
-        if resolver.is_ddo:
-            return self._did_resolver.resolve(did).ddo
-        elif resolver.is_url:
-            aquarius = AquariusProvider.get_aquarius(resolver.url)
-            return DDO(json_text=json.dumps(aquarius.get_asset_ddo(did)))
-        else:
-            return None
+        return self._did_resolver.resolve(did)
 
     def search(self, text, sort=None, offset=100, page=0, aquarius_url=None):
         """
@@ -171,13 +177,8 @@ class OceanAssets:
         :return: List of assets that match with the query
         """
         logger.info(f'Searching asset containing: {text}')
-        if aquarius_url is not None:
-            aquarius = AquariusProvider.get_aquarius(aquarius_url)
-            return [DDO(dictionary=ddo_dict) for ddo_dict in
-                    aquarius.text_search(text, sort, offset, page)]
-        else:
-            return [DDO(dictionary=ddo_dict) for ddo_dict in
-                    self._aquarius.text_search(text, sort, offset, page)]
+        return [DDO(dictionary=ddo_dict) for ddo_dict in
+                self._get_aquarius(aquarius_url).text_search(text, sort, offset, page)]
 
     def query(self, query, aquarius_url=None):
         """
@@ -195,12 +196,8 @@ class OceanAssets:
         :return: List of assets that match with the query.
         """
         logger.info(f'Searching asset query: {query}')
-        if aquarius_url is not None:
-            aquarius = AquariusProvider.get_aquarius(aquarius_url)
-            return [DDO(dictionary=ddo_dict) for ddo_dict in aquarius.query_search(query)]
-        else:
-            return [DDO(dictionary=ddo_dict) for ddo_dict in
-                    self._aquarius.query_search(query)]
+        aquarius = self._get_aquarius(aquarius_url)
+        return [DDO(dictionary=ddo_dict) for ddo_dict in aquarius.query_search(query)]
 
     def order(self, did, service_definition_id, consumer_account):
         """
@@ -227,7 +224,14 @@ class OceanAssets:
         )
         self._agreements.send(did, agreement_id, service_definition_id, signature, consumer_account)
 
-    def consume(self, service_agreement_id, did, service_definition_id, consumer_account):
+    def consume(
+        self,
+        service_agreement_id,
+        did,
+        service_definition_id,
+        consumer_account,
+        destination
+    ):
         """
         Consume the asset data.
 
@@ -242,45 +246,14 @@ class OceanAssets:
         :param did: DID, str
         :param service_definition_id: int
         :param consumer_account: Account address, str
+        :param destination: str path
         :return: None
         """
         ddo = self.resolve(did)
-
-        metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
-        content_urls = metadata_service.get_values()['metadata']['base']['contentUrls']
-        content_urls = content_urls if isinstance(content_urls, str) else content_urls[0]
-        sa = ServiceAgreement.from_ddo(service_definition_id, ddo)
-        service_url = sa.service_endpoint
-        if not service_url:
-            logger.error(
-                'Consume asset failed, service definition is missing the "serviceEndpoint".')
-            raise AssertionError(
-                'Consume asset failed, service definition is missing the "serviceEndpoint".')
-
-        # decrypt the contentUrls
-        decrypted_content_urls = json.loads(
-            SecretStoreProvider.get_secret_store().decrypt_document(did_to_id(did), content_urls)
+        return AssetConsumer.download(
+            service_agreement_id,
+            service_definition_id,
+            ddo,
+            consumer_account,
+            destination
         )
-        if isinstance(decrypted_content_urls, str):
-            decrypted_content_urls = [decrypted_content_urls]
-        logger.debug(f'got decrypted contentUrls: {decrypted_content_urls}')
-
-        asset_folder = self._get_asset_folder_path(did, service_definition_id)
-        if not os.path.exists(self._downloads_path):
-            os.mkdir(self._downloads_path)
-        if not os.path.exists(asset_folder):
-            os.mkdir(asset_folder)
-
-        BrizoProvider.get_brizo().consume_service(
-            service_agreement_id, service_url, consumer_account.address, decrypted_content_urls,
-            asset_folder)
-
-    def _get_asset_folder_path(self, did, service_definition_id):
-        """
-
-        :param did:
-        :param service_definition_id:
-        :return:
-        """
-        return os.path.join(self._downloads_path,
-                            f'datafile.{did_to_id(did)}.{service_definition_id}')

@@ -4,7 +4,8 @@ import logging
 
 import requests
 
-from squid_py.config_provider import ConfigProvider
+from squid_py import DDO
+from squid_py.aquarius.exceptions import AquariusGenericError
 
 logger = logging.getLogger('aquarius')
 
@@ -12,15 +13,12 @@ logger = logging.getLogger('aquarius')
 class Aquarius:
     """Aquarius wrapper to call different endpoint of aquarius component."""
 
-    def __init__(self, aquarius_url=None):
+    def __init__(self, aquarius_url):
         """
         The Metadata class is a wrapper on the Metadata Store, which has exposed a REST API.
 
         :param aquarius_url: Url of the aquarius instance.
         """
-        if aquarius_url is None:
-            aquarius_url = ConfigProvider.get_config().aquarius_url
-
         # :HACK:
         if '/api/v1/aquarius/assets' in aquarius_url:
             aquarius_url = aquarius_url[:aquarius_url.find('/api/v1/aquarius/assets')]
@@ -35,7 +33,7 @@ class Aquarius:
     @property
     def url(self):
         """Base URL of the aquarius instance."""
-        return f'{self._base_url}/ddo/'
+        return f'{self._base_url}/ddo'
 
     def get_service_endpoint(self, did):
         """
@@ -44,7 +42,7 @@ class Aquarius:
         :param did: Asset DID string
         :return: Return the url of the the ddo location
         """
-        return f'{self._base_url}/ddo/{did}'
+        return f'{self.url}/{did}'
 
     def list_assets(self):
         """
@@ -64,7 +62,7 @@ class Aquarius:
         :param did: Asset DID string
         :return: DDO instance
         """
-        response = requests.get(f'{self._base_url}/ddo/{did}').content
+        response = requests.get(f'{self.url}/{did}').content
         if not response:
             return {}
         try:
@@ -75,7 +73,7 @@ class Aquarius:
             raise ValueError(response.decode('UTF-8'))
         if parsed_response is None:
             return {}
-        return parsed_response
+        return DDO(dictionary=parsed_response)
 
     def get_asset_metadata(self, did):
         """
@@ -103,7 +101,7 @@ class Aquarius:
 
         :return: List of DDO instance
         """
-        return json.loads(requests.get(f'{self._base_url}/ddo').content)
+        return json.loads(requests.get(self.url).content)
 
     def publish_asset_ddo(self, ddo):
         """
@@ -114,7 +112,7 @@ class Aquarius:
         """
         try:
             asset_did = ddo.did
-            response = requests.post(f'{self._base_url}/ddo', data=ddo.as_text(),
+            response = requests.post(self.url, data=ddo.as_text(),
                                      headers=self._headers)
         except AttributeError:
             raise AttributeError('DDO invalid. Review that all the required parameters are filled.')
@@ -139,7 +137,7 @@ class Aquarius:
         :param ddo: DDO instance
         :return: API response (depends on implementation)
         """
-        response = requests.put(f'{self._base_url}/ddo/{did}', data=ddo.as_text(),
+        response = requests.put(f'{self.url}/{did}', data=ddo.as_text(),
                                 headers=self._headers)
         if response.status_code == 200 or response.status_code == 201:
             return json.loads(response.content)
@@ -170,7 +168,7 @@ class Aquarius:
         """
         payload = {"text": text, "sort": sort, "offset": offset, "page": page}
         response = requests.get(
-            f'{self._base_url}/ddo/query',
+            f'{self.url}/query',
             params=payload,
             headers=self._headers
         )
@@ -195,7 +193,7 @@ class Aquarius:
         :return: List of DDO instance
         """
         response = requests.post(
-            f'{self._base_url}/ddo/query',
+            f'{self.url}/query',
             data=json.dumps(search_query),
             headers=self._headers
         )
@@ -211,12 +209,12 @@ class Aquarius:
         :param did: Asset DID string
         :return: API response (depends on implementation)
         """
-        response = requests.delete(f'{self._base_url}/ddo/{did}', headers=self._headers)
+        response = requests.delete(f'{self.url}/{did}', headers=self._headers)
         if response.status_code == 200:
             logging.debug(f'Removed asset DID: {did} from metadata store')
             return response
-        else:
-            raise Exception(f'Unable to remove DID: {response}')
+
+        raise AquariusGenericError(f'Unable to remove DID: {response}')
 
     @staticmethod
     def _parse_search_response(response):

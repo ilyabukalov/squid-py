@@ -1,9 +1,7 @@
-import logging
-
 from eth_utils import remove_0x_prefix
 from secret_store_client.client import Client
 
-logger = logging.getLogger(__name__)
+from squid_py.config_provider import ConfigProvider
 
 
 class SecretStore(object):
@@ -12,12 +10,8 @@ class SecretStore(object):
     """
     _client_class = Client
 
-    def __init__(self, config):
-        if config.secret_store_url and config.parity_url and config.parity_address:
-            logger.info(f'\tSecretStore: url {config.secret_store_url}, '
-                        f'parity-client {config.parity_url}, '
-                        f'account {config.parity_address}')
-
+    def __init__(self):
+        config = ConfigProvider.get_config()
         self._secret_store_client = SecretStore._client_class(
             config.secret_store_url, config.parity_url, config.parity_address,
             config.parity_password

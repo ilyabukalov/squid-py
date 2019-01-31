@@ -1,23 +1,22 @@
 """Ocean module."""
 
 import logging
-import os
-import os.path
 
 from deprecated import deprecated
 
-from squid_py.aquarius.aquarius_provider import AquariusProvider
+from squid_py.assets.asset_consumer import AssetConsumer
 from squid_py.config_provider import ConfigProvider
-from squid_py.did import did_to_id
 from squid_py.did_resolver.did_resolver import DIDResolver
 from squid_py.keeper import Keeper
 from squid_py.keeper.diagnostics import Diagnostics
-from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.log import setup_logging
-from squid_py.agreements.agreements import OceanAgreements
-from squid_py.service_agreement.utils import (get_conditions_data_from_keeper_contracts)
-from squid_py.accounts.accounts import OceanAccounts
-from squid_py.assets.assets import OceanAssets
+from squid_py.ocean.ocean_agreements import OceanAgreements
+from squid_py.ocean.ocean_accounts import OceanAccounts
+from squid_py.ocean.ocean_assets import OceanAssets
+from squid_py.ocean.ocean_services import OceanServices
+from squid_py.ocean.ocean_templates import OceanTemplates
+from squid_py.ocean.ocean_tokens import OceanTokens
+from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
@@ -55,36 +54,47 @@ class Ocean:
         if config:
             ConfigProvider.set_config(config)
 
-        self.config = ConfigProvider.get_config()
-
-        # With the interface loaded, the Keeper node is connected with all contracts
+        self._config = ConfigProvider.get_config()
         self._keeper = Keeper.get_instance()
+        self._did_resolver = DIDResolver(self._keeper.did_registry)
 
-        # Add the Metadata store to the interface
-        self._metadata_store = AquariusProvider.get_aquarius()
-
-        # Collect the accounts
+        # Initialize the public sub-modules
         self.accounts = OceanAccounts(self)
-        self._accounts = self.get_accounts()
-        assert self._accounts
+        self.secret_store = SecretStoreProvider.get_secret_store(self._config)
+        self.tokens = OceanTokens()
+        self.services = OceanServices()
+        self.templates = OceanTemplates(
+            self._keeper,
+            ConfigProvider.get_config()
+        )
+        self.agreements = self._make_ocean_agreements()
+        self.assets = OceanAssets(
+            self._keeper,
+            self._did_resolver,
+            self._make_ocean_agreements(),
+            config
+        )
 
-        self._did_resolver = DIDResolver(Web3Provider.get_web3(), self._keeper.did_registry)
-
-        self.assets = OceanAssets(self)
-        self.agreements = OceanAgreements(self)
-
-        if self.config.secret_store_url and self.config.parity_url and self.config.parity_address:
-            logger.info(f'\tSecretStore: url {self.config.secret_store_url}, '
-                        f'parity-client {self.config.parity_url}, '
-                        f'account {self.config.parity_address}')
+        self._validate_all_modules()
 
         # Verify keeper contracts
         Diagnostics.verify_contracts()
         Diagnostics.check_deployed_agreement_templates()
         logger.info('Squid Ocean instance initialized: ')
-        logger.info(f'\tOther accounts: {sorted(self._accounts)}')
-        logger.info(f'\taquarius: {self._metadata_store.url}')
+        logger.info(f'\tOther accounts: {sorted([a.address for a in self.accounts.list()])}')
+        # logger.info(f'\taquarius: {self._aquarius.url}')
         logger.info(f'\tDIDRegistry @ {self._keeper.did_registry.address}')
+
+    def _make_ocean_agreements(self):
+        return OceanAgreements(
+            self._keeper,
+            self._did_resolver,
+            AssetConsumer,
+            ConfigProvider.get_config()
+        )
+
+    def _validate_all_modules(self):
+        pass
 
     @deprecated("Use ocean.accounts.list")
     def get_accounts(self):

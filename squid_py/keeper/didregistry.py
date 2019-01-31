@@ -6,7 +6,6 @@ from web3 import Web3
 
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.did import did_to_id_bytes
-from squid_py.did_resolver.did_resolver import DID_REGISTRY_EVENT_NAME
 from squid_py.did_resolver.resolver_value_type import ResolverValueType
 from squid_py.keeper.contract_base import ContractBase
 
@@ -15,6 +14,7 @@ logger = logging.getLogger(__name__)
 
 class DIDRegistry(ContractBase):
     """Class to register and update Ocean DID's."""
+    DID_REGISTRY_EVENT_NAME = 'DIDAttributeRegistered'
 
     @staticmethod
     def get_instance():
@@ -126,7 +126,7 @@ class DIDRegistry(ContractBase):
                 f'Please ensure assets are registered in the correct keeper contracts. '
                 f'The keeper-contracts DIDRegistry address is {self.address}')
 
-        event = getattr(self.events, DID_REGISTRY_EVENT_NAME)
+        event = getattr(self.events, DIDRegistry.DID_REGISTRY_EVENT_NAME)
         block_filter = event().createFilter(
             fromBlock=block_number, toBlock=block_number, argument_filters={'did': did_bytes}
         )
@@ -145,6 +145,6 @@ class DIDRegistry(ContractBase):
                 'key': Web3.toBytes(log_item.key)
             }
         else:
-            logger.warning(f'Could not find {DID_REGISTRY_EVENT_NAME} event logs for '
+            logger.warning(f'Could not find {DIDRegistry.DID_REGISTRY_EVENT_NAME} event logs for '
                            f'did {did} at blockNumber {block_number}')
         return result
