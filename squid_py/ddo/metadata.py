@@ -83,6 +83,7 @@ class MetadataBase(object):
             {
                 "url": "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.pdf",
                 "checksum": "efb2c764274b745f5fc37f97c6b0e761",
+                "checksumType": "MD5",
                 "contentLength": "4535431",
                 "resourceId": "access-log2018-02-13-15-17-29-18386C502CAEA932"
             },
