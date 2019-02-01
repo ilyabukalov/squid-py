@@ -90,7 +90,7 @@ def test_did_resolver_library(publisher_ocean_instance):
     # resolve URL from a hash of a DID string
     did_hash = Web3.sha3(text=did_test)
 
-    register_account.unlock()
+    ocean._keeper.unlock_account(register_account)
     register_did = did_registry.register_attribute(did_hash, value_type, key_test, value_test,
                                                    owner_address)
     receipt = did_registry.get_tx_receipt(register_did)
@@ -105,7 +105,7 @@ def test_did_resolver_library(publisher_ocean_instance):
 
     # test update of an already assigned DID
     value_test_new = 'http://aquarius:5000'
-    register_account.unlock()
+    ocean._keeper.unlock_account(register_account)
     register_did = did_registry.register_attribute(did_hash, value_type, key_test, value_test_new,
                                                    owner_address)
     receipt = did_registry.get_tx_receipt(register_did)
@@ -127,7 +127,7 @@ def test_did_resolver_library(publisher_ocean_instance):
 
     for i in range(0, chain_length):
         did_id_bytes = Web3.toBytes(hexstr=ids[i])
-        register_account.unlock()
+        ocean._keeper.unlock_account(register_account)
         logger.debug('end chain {0} -> URL'.format(Web3.toHex(did_id_bytes)))
         register_did = did_registry.register_attribute(
             did_id_bytes, ResolverValueType.URL, key_test, value_test, owner_address)

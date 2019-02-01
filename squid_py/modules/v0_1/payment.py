@@ -1,6 +1,7 @@
 import logging
 
 from squid_py.config import DEFAULT_GAS_LIMIT
+from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.modules.v0_1.utils import (
     get_condition_contract_data,
@@ -32,7 +33,7 @@ def handlePaymentAction(account, service_agreement_id,
     transact = {'from': account.address, 'gas': DEFAULT_GAS_LIMIT}
 
     try:
-        account.unlock()
+        Keeper.get_instance().unlock_account(account)
         tx_hash = getattr(payment_conditions, function_name)(service_agreement_id, asset_id, price,
                                                              transact=transact)
         process_tx_receipt(tx_hash, getattr(contract.events, event_name), event_name)

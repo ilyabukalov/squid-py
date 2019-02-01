@@ -1,6 +1,7 @@
 import logging
 
 from squid_py.config import DEFAULT_GAS_LIMIT
+from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.modules.v0_1.utils import (
     get_condition_contract_data,
@@ -39,7 +40,7 @@ def grantAccess(account, service_agreement_id, service_definition,
     logger.info(f'About to do grantAccess: account {account.address}, saId {service_agreement_id}, '
                 f'documentKeyId {document_key_id}')
     try:
-        account.unlock()
+        Keeper.get_instance().unlock_account(account)
         tx_hash = access_conditions.grantAccess(service_agreement_id, document_key_id,
                                                 transact=transact)
         process_tx_receipt(tx_hash, contract.events.AccessGranted, 'AccessGranted')

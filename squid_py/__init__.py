@@ -15,7 +15,9 @@ from .exceptions import (OceanDIDAlreadyExist, OceanDIDNotFound,
                          OceanDIDUnknownValueType, OceanInvalidContractAddress,
                          OceanInvalidMetadata, OceanInvalidServiceAgreementSignature,
                          OceanKeeperContractsNotFound, OceanServiceAgreementExists)
-from .ocean import (Account, Ocean, OceanBase)
+from .ocean import (
+    Ocean,
+)
 from .service_agreement import (ACCESS_SERVICE_TEMPLATE_ID, ServiceAgreement,
                                 ServiceAgreementTemplate, ServiceDescriptor, ServiceFactory,
                                 ServiceTypes)

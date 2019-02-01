@@ -38,7 +38,7 @@ class OceanAssets:
             downloads_path = self._config.get('resources', 'downloads.path') or downloads_path
         self._downloads_path = downloads_path
 
-    def _get_aquarius(self, url):
+    def _get_aquarius(self, url=None):
         return AquariusProvider.get_aquarius(url or self._aquarius_url)
 
     def create(self, metadata, publisher_account, service_descriptors=None):
@@ -72,7 +72,7 @@ class OceanAssets:
         ddo = DDO(did)
 
         # Add public key and authentication
-        publisher_account.unlock()
+        self._keeper.unlock_account(publisher_account)
         pub_key, auth = make_public_key_and_authentication(did, publisher_account.address,
                                                            Web3Provider.get_web3())
         ddo.add_public_key(pub_key)
@@ -87,7 +87,7 @@ class OceanAssets:
             'files'], 'files is required in the metadata base attributes.'
         assert Metadata.validate(metadata), 'metadata seems invalid.'
         logger.debug('Encrypting content urls in the metadata.')
-        files_encrypted = SecretStoreProvider.get_secret_store() \
+        files_encrypted = SecretStoreProvider.get_secret_store(self._config) \
             .encrypt_document(
             did_to_id(did),
             json.dumps(metadata_copy['base']['files']),
@@ -110,13 +110,13 @@ class OceanAssets:
         # Add all services to ddo
         if not service_descriptors:
             brizo = BrizoProvider.get_brizo()
-            service_descriptors = ServiceDescriptor.access_service_descriptor(
+            service_descriptors = [ServiceDescriptor.access_service_descriptor(
                 metadata[MetadataBase.KEY]['price'],
-                brizo.get_purchase_endpoint(),
-                brizo.get_service_endpoint(),
+                brizo.get_purchase_endpoint(self._config),
+                brizo.get_service_endpoint(self._config),
                 3600,
                 ACCESS_SERVICE_TEMPLATE_ID
-            )
+            )]
         _service_descriptors = service_descriptors + [metadata_service_desc]
         for service in ServiceFactory.build_services(Web3Provider.get_web3(),
                                                      self._keeper.artifacts_path, did,
@@ -141,9 +141,10 @@ class OceanAssets:
             return None
 
         # register on-chain
-        self._keeper.did_registry.create(
+        self._keeper.unlock_account(publisher_account)
+        self._keeper.did_registry.register(
             did,
-            key=Web3Provider.get_web3().sha3(text='Metadata'),
+            checksum=Web3Provider.get_web3().sha3(text='Metadata'),
             url=ddo_service_endpoint,
             account=publisher_account
         )
@@ -228,6 +229,7 @@ class OceanAssets:
             did, service_definition_id, consumer_account
         )
         self._agreements.send(did, agreement_id, service_definition_id, signature, consumer_account)
+        return agreement_id
 
     def consume(
         self,

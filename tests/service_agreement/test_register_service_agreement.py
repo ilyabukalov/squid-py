@@ -450,7 +450,7 @@ class TestRegisterServiceAgreement:
             [2, 3],  # root condition
             1,  # AND
         ]
-        cls.consumer_acc.unlock()
+        cls.keeper.unlock_account(cls.consumer_acc)
         receipt = cls.service_agreement.contract_concise.setupTemplate(
             *setup_args,
             transact={'from': cls.consumer}
@@ -494,7 +494,7 @@ class TestRegisterServiceAgreement:
 
     def _execute_service_agreement(self, service_agreement_id, did, price):
         hashes, timeouts = self._get_conditions_data(did, price)
-        self.consumer_acc.unlock()
+        self.keeper.unlock_account(self.consumer_acc)
         signature = self.web3.eth.sign(
             self.consumer,
             hexstr=self.web3.soliditySha3(
@@ -516,7 +516,7 @@ class TestRegisterServiceAgreement:
             service_agreement_id,
             did,
         ]
-        self.consumer_acc.unlock()
+        self.keeper.unlock_account(self.consumer_acc)
         self.service_agreement.contract_concise.initializeAgreement(
             *execute_args,
             transact={'from': self.consumer}
@@ -524,9 +524,9 @@ class TestRegisterServiceAgreement:
 
     @classmethod
     def _setup_token(cls):
-        cls.consumer_acc.unlock()
+        cls.keeper.unlock_account(cls.consumer_acc)
         cls.dispenser.contract_concise.requestTokens(100, transact={'from': cls.consumer})
-        cls.consumer_acc.unlock()
+        cls.keeper.unlock_account(cls.consumer_acc)
         cls.token.contract_concise.approve(
             cls.payment_conditions.address,
             100,

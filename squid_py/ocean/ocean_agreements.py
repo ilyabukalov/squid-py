@@ -10,7 +10,7 @@ from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.service_agreement.register_service_agreement import register_service_agreement
 from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.service_agreement.utils import get_conditions_data_from_keeper_contracts
-from squid_py.utils.utilities import (get_metadata_url, prepare_prefixed_hash)
+from squid_py.utils.utilities import prepare_prefixed_hash
 
 logger = logging.getLogger('ocean')
 
@@ -24,26 +24,26 @@ class OceanAgreements:
 
     def prepare(self, did, service_definition_id, consumer_account):
         agreement_id = ServiceAgreement.create_new_agreement_id()
-        ddo = self._asset_resolver.resolve(did)
-        service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
+        asset = self._asset_resolver.resolve(did)
+        service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
         try:
             service_agreement.validate_conditions()
         except AssertionError:
             OceanAgreements._log_conditions_data(service_agreement)
             raise
 
-        if not consumer_account.unlock():
+        if not self._keeper.unlock_account(consumer_account):
             logger.warning(f'Unlock of consumer account failed {consumer_account.address}')
 
         agreement_hash = service_agreement.get_service_agreement_hash(agreement_id)
-        signature = consumer_account.sign_hash(agreement_hash)
+        signature = self._keeper.sign_hash(agreement_hash, consumer_account)
 
         return agreement_id, signature
 
     def send(self, did, agreement_id, service_definition_id, signature, consumer_account):
-        ddo = self._asset_resolver.resolve(did)
-        service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
-        service_def = ddo.find_service_by_id(service_definition_id).as_dictionary()
+        asset = self._asset_resolver.resolve(did)
+        service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
+        service_def = asset.find_service_by_id(service_definition_id).as_dictionary()
         # Must approve token transfer for this purchase
         self._approve_token_transfer(service_agreement.get_price(), consumer_account)
         # subscribe to events related to this service_agreement_id before sending the request.
@@ -57,8 +57,8 @@ class OceanAgreements:
             'consumer',
             service_definition_id,
             service_agreement.get_price(),
-            get_metadata_url(ddo),
-            self._asset_consumer.consume,
+            asset.encrypted_files,
+            self._asset_consumer.download,
             0
         )
 
@@ -98,17 +98,17 @@ class OceanAgreements:
         assert publisher_account.address in self._keeper.accounts, \
             f'Unrecognized publisher address {publisher_account.address}'
         asset_id = did_to_id(did)
-        ddo = self._asset_resolver.resolve(did)
-        service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
+        asset = self._asset_resolver.resolve(did)
+        service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
         try:
             service_agreement.validate_conditions()
         except AssertionError:
             OceanAgreements._log_conditions_data(service_agreement)
             raise
 
-        service_def = ddo.find_service_by_id(service_definition_id).as_dictionary()
+        service_def = asset.find_service_by_id(service_definition_id).as_dictionary()
 
-        content_urls = get_metadata_url(ddo)
+        encrypted_files = asset.encrypted_files
         # Raise error if agreement is already executed
         if self._keeper.service_agreement.get_service_agreement_consumer(
                 service_agreement_id) is not None:
@@ -117,7 +117,7 @@ class OceanAgreements:
 
         if not self._verify_service_agreement_signature(
                 did, service_agreement_id, service_definition_id,
-                consumer_address, service_agreement_signature, ddo=ddo
+                consumer_address, service_agreement_signature, ddo=asset
         ):
             raise OceanInvalidServiceAgreementSignature(
                 f'Verifying consumer signature failed: '
@@ -135,7 +135,7 @@ class OceanAgreements:
             'publisher',
             service_definition_id,
             service_agreement.get_price(),
-            content_urls,
+            encrypted_files,
             None,
             0
         )
@@ -190,7 +190,7 @@ class OceanAgreements:
         :param service_definition_id: int
         :param consumer_address: Account address, str
         :param signature: Signature, str
-        :param ddo: DDO
+        :param ddo: DDO instance
         :return: True if signature is legitimate, False otherwise
         :raises: ValueError if service is not found in the ddo
         :raises: AssertionError if conditions keys do not match the on-chain conditions keys
@@ -222,6 +222,7 @@ class OceanAgreements:
                 f'Account {consumer_account.address} does not have sufficient tokens '
                 f'to approve for transfer.')
 
+        self._keeper.unlock_account(consumer_account)
         self._keeper.token.token_approve(self._keeper.payment_conditions.address, amount,
                                          consumer_account)
 

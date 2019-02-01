@@ -16,6 +16,10 @@ class OceanAccounts:
                 if account.address.lower() == address:
                     account.password = config.parity_password
 
+    @property
+    def accounts_addresses(self):
+        return [a.address for a in self._accounts]
+
     def list(self):
         return self._accounts[:]
 
@@ -24,4 +28,5 @@ class OceanAccounts:
                        self._keeper.token.get_token_balance(account.address))
 
     def request_tokens(self, account, amount):
+        self._keeper.unlock_account(account)
         return self._keeper.dispenser.request_tokens(amount, account.address)

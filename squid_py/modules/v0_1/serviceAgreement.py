@@ -1,5 +1,6 @@
 import logging
 
+from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.modules.v0_1.utils import process_tx_receipt
 
@@ -19,7 +20,7 @@ def fulfillAgreement(account, service_agreement_id,
                 f'saId {service_agreement_id}, '
                 f'ServiceAgreement address {service_agreement_address}')
     try:
-        account.unlock()
+        Keeper.get_instance().unlock_account(account)
         tx_hash = service_agreement_concise.fulfillAgreement(service_agreement_id,
                                                              transact={'from': account.address})
         process_tx_receipt(

@@ -1,5 +1,6 @@
 from eth_utils import add_0x_prefix
 
+from squid_py.keeper import Keeper
 from squid_py.keeper.utils import generate_multi_value_hash
 from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
 from squid_py.service_agreement.service_agreement_contract import ServiceAgreementContract
@@ -117,7 +118,8 @@ class ServiceAgreement(object):
         agreement_hash = self.get_service_agreement_hash(service_agreement_id)
         # We cannot use `web3.eth.account.signHash()` here because it requires privateKey which
         # is not available.
-        return consumer_account.sign_hash(agreement_hash), agreement_hash.hex()
+        return (Keeper.get_instance().sign_hash(agreement_hash, consumer_account),
+                agreement_hash.hex())
 
     def update_conditions_keys(self, web3, contract_path):
         """Update the conditions keys based on the current keeper contracts.

@@ -21,49 +21,39 @@ class DIDRegistry(ContractBase):
         """Returns a ContractBase instance of the DIDRegistry contract."""
         return DIDRegistry('DIDRegistry')
 
-    def register(self, did_source, url=None, key=None, account=None):
+    def register(self, did_source, checksum, url=None, account=None):
         """
         Register or update a DID on the block chain using the DIDRegistry smart contract.
 
         :param did_source: DID to register/update, can be a 32 byte or hexstring
+        :param checksum: hex str hash of TODO
         :param url: URL of the resolved DID
-        :param key: Optional 32 byte key ( 64 char hex )
         :param account: instance of Account to use to register/update the DID
         :return: Receipt
         """
 
-        value_type = ResolverValueType.URL
-        value = None
-
         did_source_id = did_to_id_bytes(did_source)
-
         if not did_source_id:
             raise ValueError(f'{did_source} must be a valid DID to register')
 
-        if url:
-            value = url
-            if not urlparse(url):
-                raise ValueError(f'Invalid URL {url} to register for DID {did_source}')
+        if not urlparse(url):
+            raise ValueError(f'Invalid URL {url} to register for DID {did_source}')
 
-        if isinstance(key, str):
-            key = Web3.sha3(text=key)
+        if checksum is None:
+            checksum = Web3.toBytes(0)
 
-        if key is None:
-            key = Web3.toBytes(0)
-
-        if not isinstance(key, bytes):
-            raise ValueError(f'Invalid key value {key}, must be bytes or string')
+        if not isinstance(checksum, bytes):
+            raise ValueError(f'Invalid checksum value {checksum}, must be bytes or string')
 
         if account is None:
             raise ValueError('You must provide an account to use to register a DID')
 
-        account.unlock()
-        transaction = self.register_attribute(did_source_id, value_type, key, value,
+        transaction = self.register_attribute(did_source_id, checksum, url,
                                               account.address)
         receipt = self.get_tx_receipt(transaction)
         return receipt
 
-    def register_attribute(self, did_hash, value_type, key, value, account_address):
+    def register_attribute(self, did_hash, checksum, value, account_address):
         """Register an DID attribute as an event on the block chain.
 
             did_hash: 32 byte string/hex of the DID
@@ -74,8 +64,7 @@ class DIDRegistry(ContractBase):
         """
         return self.contract_concise.registerAttribute(
             did_hash,
-            value_type,
-            key,
+            checksum,
             value,
             transact={'from': account_address}
         )
@@ -134,15 +123,13 @@ class DIDRegistry(ContractBase):
         if log_items:
             log_item = log_items[-1].args
             value = log_item.value
-            value_type = log_item.valueType
             block_number = log_item.updatedAt
             result = {
-                'value_type': value_type,
+                'checksum': log_item.checksum,
                 'value': value,
                 'block_number': block_number,
                 'did_bytes': log_item.did,
                 'owner': Web3.toChecksumAddress(log_item.owner),
-                'key': Web3.toBytes(log_item.key)
             }
         else:
             logger.warning(f'Could not find {DIDRegistry.DID_REGISTRY_EVENT_NAME} event logs for '

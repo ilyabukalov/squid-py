@@ -6,6 +6,7 @@ import requests
 
 from squid_py import DDO
 from squid_py.aquarius.exceptions import AquariusGenericError
+from squid_py.assets.asset import Asset
 
 logger = logging.getLogger('aquarius')
 
@@ -73,7 +74,7 @@ class Aquarius:
             raise ValueError(response.decode('UTF-8'))
         if parsed_response is None:
             return {}
-        return DDO(dictionary=parsed_response)
+        return Asset(dictionary=parsed_response)
 
     def get_asset_metadata(self, did):
         """

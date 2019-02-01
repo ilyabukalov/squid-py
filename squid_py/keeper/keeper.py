@@ -94,8 +94,8 @@ class Keeper(object):
         return Web3Provider.get_web3().eth.sign(account.address, msg_hash).hex()
 
     @staticmethod
-    def unlock_account(address, password):
-        return Web3Provider.get_web3().personal.unlockAccount(address, password)
+    def unlock_account(account):
+        return Web3Provider.get_web3().personal.unlockAccount(account.address, account.password)
 
     @staticmethod
     def get_ether_balance(address):

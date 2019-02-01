@@ -59,7 +59,7 @@ class Ocean:
         self._did_resolver = DIDResolver(self._keeper.did_registry)
 
         # Initialize the public sub-modules
-        self.accounts = OceanAccounts(self)
+        self.accounts = OceanAccounts(self._keeper, self._config)
         self.secret_store = SecretStoreProvider.get_secret_store(self._config)
         self.tokens = OceanTokens()
         self.services = OceanServices()

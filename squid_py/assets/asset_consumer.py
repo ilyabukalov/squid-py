@@ -2,7 +2,8 @@ import logging
 import json
 import os
 
-from squid_py import ServiceTypes, ServiceAgreement
+from squid_py.service_agreement.service_types import ServiceTypes
+from squid_py.service_agreement.service_agreement import ServiceAgreement
 from squid_py.brizo import BrizoProvider
 from squid_py.did import did_to_id
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider

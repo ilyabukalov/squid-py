@@ -51,7 +51,4 @@ class DIDResolver:
         if not (data and data.get('value')):
             return None
 
-        if data['value_type'] != ResolverValueType.URL:
-            raise OceanDIDUnknownValueType(f'Unknown value type {data["value_type"]}')
-
         return data['value']

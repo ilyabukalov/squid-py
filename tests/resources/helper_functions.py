@@ -2,8 +2,10 @@ import os
 import pathlib
 import time
 
-from squid_py import (ACCESS_SERVICE_TEMPLATE_ID, Account, ConfigProvider, Ocean,
+from squid_py import (ACCESS_SERVICE_TEMPLATE_ID, ConfigProvider, Ocean,
                       ServiceAgreementTemplate)
+from squid_py.accounts.account import Account
+
 from squid_py.brizo.brizo import Brizo
 from squid_py.ddo.metadata import Metadata
 from squid_py.examples.example_config import ExampleConfig
@@ -29,7 +31,8 @@ def get_resource_path(dir_name, file_name):
 
 
 def init_ocn_tokens(ocn, account, amount=100):
-    account.request_tokens(amount)
+    ocn.accounts.request_tokens(account, amount)
+    ocn._keeper.unlock_account(account)
     ocn._keeper.token.token_approve(
         ocn._keeper.payment_conditions.address,
         amount,
@@ -40,7 +43,7 @@ def init_ocn_tokens(ocn, account, amount=100):
 def make_ocean_instance(secret_store_client, account_index):
     SecretStore.set_client(secret_store_client)
     ocn = Ocean(ExampleConfig.get_config())
-    account = list(ocn.accounts.values())[account_index]
+    account = ocn.accounts.list()[account_index]
     if account_index == 0:
         account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password')
     else:
@@ -67,10 +70,10 @@ def get_consumer_account(config):
 def get_publisher_ocean_instance():
     ocn = make_ocean_instance(SecretStoreClientMock, PUBLISHER_INDEX)
     account = get_publisher_account(ConfigProvider.get_config())
-    if account.address in ocn.accounts:
+    if account.address in ocn.accounts.accounts_addresses:
         ocn.main_account = account
     else:
-        ocn.main_account = Account(list(ocn.accounts)[0])
+        ocn.main_account = ocn.accounts.list()[0]
     init_ocn_tokens(ocn, ocn.main_account)
     return ocn
 
@@ -78,10 +81,10 @@ def get_publisher_ocean_instance():
 def get_consumer_ocean_instance():
     ocn = make_ocean_instance(SecretStoreClientMock, CONSUMER_INDEX)
     account = get_consumer_account(ConfigProvider.get_config())
-    if account.address in ocn.accounts:
+    if account.address in ocn.accounts.accounts_addresses:
         ocn.main_account = account
     else:
-        ocn.main_account = Account(list(ocn.accounts)[1])
+        ocn.main_account = ocn.accounts.list()[1]
     init_ocn_tokens(ocn, ocn.main_account)
     return ocn
 

@@ -2,6 +2,7 @@ import logging
 
 from squid_py import Ocean, ServiceAgreement, ConfigProvider
 from squid_py.examples.example_config import ExampleConfig
+from squid_py.keeper import Keeper
 from tests.resources.helper_functions import get_account_from_config, get_registered_ddo
 
 from time import sleep
@@ -20,7 +21,7 @@ def sign_service_agreement():
     # sign agreement using the registered asset did above
     agreement_id = ServiceAgreement.create_new_agreement_id()
     service_agreement = ServiceAgreement.from_ddo('0', ddo)
-    if not acc.unlock():
+    if not Keeper.get_instance().unlock_account(acc):
         logging.warning(f'Unlock of consumer account failed {acc.address}')
 
     sleep(ASYNC_DELAY)
@@ -29,7 +30,7 @@ def sign_service_agreement():
 
     sleep(ASYNC_DELAY)
 
-    signature = acc.sign_hash(agreement_hash)
+    signature = ocn.accounts.sign_hash(agreement_hash, acc)
 
     logging.info(f'service agreement signed: '
                  f'\nservice agreement id: {agreement_id}, '

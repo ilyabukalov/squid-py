@@ -9,6 +9,7 @@ from squid_py.ddo import DDO
 from squid_py.ddo.metadata import Metadata
 from squid_py.did import DID, did_to_id
 from squid_py.exceptions import OceanDIDNotFound
+from squid_py.keeper import Keeper
 from squid_py.keeper.utils import get_fingerprint_by_name
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.modules.v0_1.accessControl import grantAccess
@@ -33,7 +34,7 @@ def print_config(ocean_instance):
 @e2e_test
 def test_ocean_instance(publisher_ocean_instance):
     print_config(publisher_ocean_instance)
-    assert publisher_ocean_instance.keeper.token is not None
+    assert publisher_ocean_instance.tokens is not None
 
     print_config(publisher_ocean_instance)
 
@@ -137,7 +138,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     #  - asset ddo already registered
 
     consumer_acc = consumer_ocean_instance.main_account
-
+    keeper = Keeper.get_instance()
     # point consumer_ocean_instance's brizo mock to the publisher's ocean instance
     Brizo.set_http_client(
         BrizoMock(publisher_ocean_instance, publisher_ocean_instance.main_account))
@@ -155,19 +156,19 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     print('got new service agreement id:', service_agreement_id)
     filter1 = {'agreementId': Web3.toBytes(hexstr=service_agreement_id)}
     executed = wait_for_event(
-        consumer_ocean_instance.keeper.service_agreement.events.AgreementInitialized, filter1)
+        keeper.service_agreement.events.AgreementInitialized, filter1)
     assert executed
-    locked = wait_for_event(consumer_ocean_instance.keeper.payment_conditions.events.PaymentLocked,
+    locked = wait_for_event(keeper.payment_conditions.events.PaymentLocked,
                             filter1)
     assert locked
-    granted = wait_for_event(consumer_ocean_instance.keeper.access_conditions.events.AccessGranted,
+    granted = wait_for_event(keeper.access_conditions.events.AccessGranted,
                              filter1)
     assert granted
     released = wait_for_event(
-        consumer_ocean_instance.keeper.payment_conditions.events.PaymentReleased, filter1)
+        keeper.payment_conditions.events.PaymentReleased, filter1)
     assert released
     fulfilled = wait_for_event(
-        consumer_ocean_instance.keeper.service_agreement.events.AgreementFulfilled, filter1)
+        keeper.service_agreement.events.AgreementFulfilled, filter1)
     assert fulfilled
     print('agreement was fulfilled.')
 
@@ -182,7 +183,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
 
     """
     consumer_ocn = consumer_ocean_instance
-    keeper = consumer_ocn.keeper
+    keeper = Keeper.get_instance()
     web3 = Web3Provider.get_web3()
     consumer_acc = consumer_ocn.main_account
     publisher_acc = publisher_ocean_instance.main_account
@@ -195,18 +196,18 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     service_def = ddo.find_service_by_id(service_definition_id).as_dictionary()
 
     # sign agreement
-    consumer_ocn.main_account.unlock()
+    keeper.unlock_account(consumer_ocn.main_account)
     signature, sa_hash = service_agreement.get_signed_agreement_hash(
         agreement_id, consumer_acc
     )
     # Must approve token transfer for this purchase
-    consumer_ocn._approve_token_transfer(service_agreement.get_price(), consumer_acc)
+    consumer_ocn.agreements._approve_token_transfer(service_agreement.get_price(), consumer_acc)
 
     # execute the agreement
     pub_ocn = publisher_ocean_instance
     asset_id = did_to_id(ddo.did)
 
-    pub_ocn.keeper.service_agreement.execute_service_agreement(
+    keeper.service_agreement.execute_service_agreement(
         service_agreement.template_id,
         signature,
         consumer_acc.address,
@@ -220,7 +221,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     _filter = {'agreementId': Web3.toBytes(hexstr=agreement_id)}
 
     # WAIT FOR ####### AgreementInitialized Event
-    executed = wait_for_event(pub_ocn.keeper.service_agreement.events.AgreementInitialized, _filter)
+    executed = wait_for_event(keeper.service_agreement.events.AgreementInitialized, _filter)
     assert executed, ''
     cons = keeper.service_agreement.get_service_agreement_consumer(agreement_id)
     pub = keeper.service_agreement.get_service_agreement_publisher(agreement_id)

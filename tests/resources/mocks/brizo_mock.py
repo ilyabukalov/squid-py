@@ -26,18 +26,14 @@ class BrizoMock(object):
             sa_def_id = payload[ServiceAgreement.SERVICE_DEFINITION_ID]
             signature = payload['signature']
             consumer = payload['consumerAddress']
-            valid_signature = self.ocean_instance._verify_service_agreement_signature(did, sa_id,
-                                                                                      sa_def_id,
-                                                                                      consumer,
-                                                                                      signature)
-            assert valid_signature, 'Service agreement signature seems invalid.'
-            if valid_signature:
-                self.ocean_instance.execute_service_agreement(did, sa_def_id, sa_id, signature,
-                                                              consumer,
-                                                              self.account)
-                response.status_code = 201
-            else:
-                response.status_code = 401
+            self.ocean_instance.execute_service_agreement(
+                did,
+                sa_def_id,
+                sa_id,
+                signature,
+                consumer,
+                self.account)
+            response.status_code = 201
         else:
             response.status_code = 404
 
