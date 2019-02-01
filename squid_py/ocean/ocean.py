@@ -210,8 +210,7 @@ class Ocean:
         # only assign if the encryption worked
         if files_encrypted:
             logger.debug('Content urls encrypted successfully.')
-            for url in range(len(metadata_copy['base']['files'])):
-                metadata_copy['base']['files'][url]['url'] = ''
+            del metadata_copy['base']['files']
             metadata_copy['base']['encryptedFiles'] = files_encrypted
         else:
             raise AssertionError('Encrypting the files failed. Make sure the secret store is'
