@@ -1,6 +1,5 @@
 """Ocean module."""
 
-import hashlib
 import json
 import logging
 import os
@@ -206,7 +205,7 @@ class Ocean:
             json.dumps(metadata_copy['base']['files']),
         )
 
-        metadata_copy['base']['checksum'] = self._generate_checksum(did, metadata)
+        metadata_copy['base']['checksum'] = ddo.generate_checksum(did, metadata)
 
         # only assign if the encryption worked
         if files_encrypted:
@@ -293,7 +292,7 @@ class Ocean:
             the keeper-contracts for the status of the service agreement) and signed agreement hash
         """
         assert consumer_account.address in self.accounts, f'Unrecognized consumer address ' \
-            f'consumer_account'
+            f'{consumer_account.address}'
 
         agreement_id = ServiceAgreement.create_new_agreement_id()
         ddo = self.resolve_asset_did(did)
@@ -562,15 +561,3 @@ class Ocean:
         logger.debug(f'conditions contracts: {conditions_data[0]}')
         logger.debug(f'conditions fingerprints: {[fn.hex() for fn in conditions_data[1]]}')
         logger.debug(f'template id: {sa.template_id}')
-
-    @staticmethod
-    def _generate_checksum(did, metadata):
-        files_checksum = ''
-        for file in metadata['base']['files']:
-            if 'checksum' in file:
-                files_checksum = files_checksum + file['checksum']
-        return hashlib.sha3_256((files_checksum +
-                                 metadata['base']['name'] +
-                                 metadata['base']['author'] +
-                                 metadata['base']['license'] +
-                                 did).encode('UTF-8')).hexdigest()

@@ -198,13 +198,13 @@
           ],
           "events": [
             {
-              "name": "PaymentReleased",
+              "name": "PaymentRefund",
               "actorType": [
                 "consumer"
               ],
               "handlers": {
                 "moduleName": "serviceAgreement",
-                "functionName": "fulfillAgreement",
+                "functionName": "terminateAgreement",
                 "version": "0.1"
               }
             }
