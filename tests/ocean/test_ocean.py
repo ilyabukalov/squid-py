@@ -305,7 +305,7 @@ def test_agreement_hash(publisher_ocean_instance):
     # user_address = "0x00bd138abd70e2f00903268f3db08f2d25677c9e"
     template_id = "0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d"
     service_agreement_id = '0xf136d6fadecb48fdb2fc1fb420f5a5d1c32d22d9424e47ab9461556e058fefaa'
-    ddo_file_name = 'shared_ddo_example.json'
+    ddo_file_name = 'ddo_sa_sample.json'
 
     file_path = get_resource_path('ddo', ddo_file_name)
     ddo = DDO(json_filename=file_path)

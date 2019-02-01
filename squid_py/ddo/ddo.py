@@ -1,5 +1,6 @@
 """DID Lib to do DID's and DDO's."""
 import datetime
+import hashlib
 import json
 import logging
 import re
@@ -551,3 +552,15 @@ class DDO:
     def get_timestamp():
         """Return the current system timestamp."""
         return str(datetime.datetime.now())
+
+    @staticmethod
+    def generate_checksum(did, metadata):
+        files_checksum = ''
+        for file in metadata['base']['files']:
+            if 'checksum' in file:
+                files_checksum = files_checksum + file['checksum']
+        return hashlib.sha3_256((files_checksum +
+                                 metadata['base']['name'] +
+                                 metadata['base']['author'] +
+                                 metadata['base']['license'] +
+                                 did).encode('UTF-8')).hexdigest()

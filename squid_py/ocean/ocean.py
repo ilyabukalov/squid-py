@@ -205,6 +205,8 @@ class Ocean:
             json.dumps(metadata_copy['base']['files']),
         )
 
+        metadata_copy['base']['checksum'] = ddo.generate_checksum(did, metadata)
+
         # only assign if the encryption worked
         if files_encrypted:
             logger.debug('Content urls encrypted successfully.')
@@ -289,7 +291,7 @@ class Ocean:
             the keeper-contracts for the status of the service agreement) and signed agreement hash
         """
         assert consumer_account.address in self.accounts, f'Unrecognized consumer address ' \
-                                                          f'consumer_account'
+            f'{consumer_account.address}'
 
         agreement_id = ServiceAgreement.create_new_agreement_id()
         ddo = self.resolve_asset_did(did)
