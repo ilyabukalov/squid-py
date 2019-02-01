@@ -17,7 +17,7 @@ with open('HISTORY.md') as history_file:
 # or pip install -e .
 install_requirements = [
     'coloredlogs',
-    'keeper-contracts==0.5.3',
+    'keeper-contracts==0.6.11',
     'pyopenssl',
     'PyJWT',  # not jwt
     'PyYAML==4.2b4',
@@ -89,6 +89,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/oceanprotocol/squid-py',
-    version='0.3.2',
+    version='0.3.3',
     zip_safe=False,
 )
