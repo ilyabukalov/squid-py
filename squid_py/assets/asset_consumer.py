@@ -23,8 +23,8 @@ class AssetConsumer:
         """
         did = ddo.did
         metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
-        content_urls = metadata_service.get_values()['metadata']['base']['contentUrls']
-        content_urls = content_urls if isinstance(content_urls, str) else content_urls[0]
+        files = metadata_service.get_values()['metadata']['base']['encryptedFiles']
+        files = files if isinstance(files, str) else files[0]
         sa = ServiceAgreement.from_ddo(service_definition_id, ddo)
         service_url = sa.service_endpoint
         if not service_url:
@@ -35,7 +35,7 @@ class AssetConsumer:
 
         # decrypt the contentUrls
         decrypted_content_urls = json.loads(
-            SecretStoreProvider.get_secret_store().decrypt_document(did_to_id(did), content_urls)
+            SecretStoreProvider.get_secret_store().decrypt_document(did_to_id(did), files)
         )
         if isinstance(decrypted_content_urls, str):
             decrypted_content_urls = [decrypted_content_urls]

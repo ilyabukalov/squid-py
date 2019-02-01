@@ -2,6 +2,7 @@ import os
 import json
 import logging
 
+from squid_py.aquarius.aquarius_provider import AquariusProvider
 from squid_py.aquarius.exceptions import AquariusGenericError
 from squid_py.assets.asset_consumer import AssetConsumer
 from squid_py.brizo.brizo_provider import BrizoProvider
@@ -77,24 +78,28 @@ class OceanAssets:
         ddo.add_public_key(pub_key)
         ddo.add_authentication(auth, PUBLIC_KEY_TYPE_RSA)
 
+        priv_key = ddo.add_signature()
+        ddo.add_proof(1, priv_key)
+
         # Setup metadata service
-        # First replace `contentUrls` with encrypted `contentUrls`
+        # First replace `files` with encrypted `files`
         assert metadata_copy['base'][
-            'contentUrls'], 'contentUrls is required in the metadata base attributes.'
+            'files'], 'files is required in the metadata base attributes.'
         assert Metadata.validate(metadata), 'metadata seems invalid.'
         logger.debug('Encrypting content urls in the metadata.')
-        content_urls_encrypted = SecretStoreProvider.get_secret_store() \
+        files_encrypted = SecretStoreProvider.get_secret_store() \
             .encrypt_document(
             did_to_id(did),
-            json.dumps(metadata_copy['base']['contentUrls']),
+            json.dumps(metadata_copy['base']['files']),
         )
 
         # only assign if the encryption worked
-        if content_urls_encrypted:
+        if files_encrypted:
             logger.debug('Content urls encrypted successfully.')
-            metadata_copy['base']['contentUrls'] = [content_urls_encrypted]
+            del metadata_copy['base']['files']
+            metadata_copy['base']['encryptedFiles'] = files_encrypted
         else:
-            raise AssertionError('Encrypting the contentUrls failed. Make sure the secret store is'
+            raise AssertionError('Encrypting the files failed. Make sure the secret store is'
                                  ' setup properly in your config file.')
 
         # DDO url and `Metadata` service
