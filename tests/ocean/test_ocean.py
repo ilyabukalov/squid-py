@@ -69,7 +69,7 @@ def test_token_request(publisher_ocean_instance):
 @e2e_test
 def test_register_asset(publisher_ocean_instance):
     logging.debug("".format())
-    sample_ddo_path = get_resource_path('ddo', 'ddo_sample2.json')
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sa_sample.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
     ##########################################################

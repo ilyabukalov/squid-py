@@ -31,6 +31,12 @@
       "publicKey": "did:op:did:op:d75305ebc1617834339e64cdafb7fd542aa657c0f94dac0f4f84068f5f910ca2#keys-2"
     }
   ],
+  "proof": {
+    "type": "UUIDSignature",
+    "created": "2016-02-08T16:02:20Z",
+    "creator": "did:example:8uQhQMGzWxR8vw5P3UWH1ja",
+    "signatureValue": "QNB13Y7Q9...1tzjn4w=="
+  },
   "service": [
     {
       "type": "Consume",
@@ -57,9 +63,7 @@
           "compression": "zip",
           "contentType": "text/csv",
           "workExample": "423432fsd,51.509865,-0.118092,2011-01-01T10:55:11+00:00,7.2,68",
-          "contentUrls": [
-            "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.zip"
-          ],
+          "encryptedFiles": "encryptedListOfFiles",
           "links": [
             {
               "name": "Sample of Asset Data",
