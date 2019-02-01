@@ -523,22 +523,24 @@ class Ocean:
                 'Consume asset failed, service definition is missing the "serviceEndpoint".')
 
         # decrypt the files
-        decrypted_content_urls = json.loads(
-            SecretStoreProvider.get_secret_store().decrypt_document(did_to_id(did), files)
-        )
-        if isinstance(decrypted_content_urls, str):
-            decrypted_content_urls = [decrypted_content_urls]
-        logger.debug(f'got decrypted files: {decrypted_content_urls}')
+        try:
+            decrypted_content_urls = json.loads(
+                SecretStoreProvider.get_secret_store().decrypt_document(did_to_id(did), files)
+            )
+            if isinstance(decrypted_content_urls, str):
+                decrypted_content_urls = [decrypted_content_urls]
+            logger.debug(f'got decrypted files: {decrypted_content_urls}')
 
-        asset_folder = self._get_asset_folder_path(did, service_definition_id)
-        if not os.path.exists(self._downloads_path):
-            os.mkdir(self._downloads_path)
-        if not os.path.exists(asset_folder):
-            os.mkdir(asset_folder)
-
-        BrizoProvider.get_brizo().consume_service(
-            service_agreement_id, service_url, consumer_account.address, decrypted_content_urls,
-            asset_folder)
+            asset_folder = self._get_asset_folder_path(did, service_definition_id)
+            if not os.path.exists(self._downloads_path):
+                os.mkdir(self._downloads_path)
+            if not os.path.exists(asset_folder):
+                os.mkdir(asset_folder)
+            BrizoProvider.get_brizo().consume_service(
+                service_agreement_id, service_url, consumer_account.address, decrypted_content_urls,
+                asset_folder)
+        except Exception as e:
+            raise Exception(f'Error decrypting the urls: {e}')
 
     def _get_asset_folder_path(self, did, service_definition_id):
         """
