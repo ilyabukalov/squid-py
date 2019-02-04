@@ -24,8 +24,8 @@ def test_create_asset_ddo_file():
     assert isinstance(asset1, DDO)
     assert asset1.is_valid
 
-    assert asset1.get_metadata()
-    print(asset1.get_metadata())
+    assert asset1.metadata
+    print(asset1.metadata)
 
 
 @e2e_test

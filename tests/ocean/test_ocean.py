@@ -25,10 +25,10 @@ from tests.resources.tiers import e2e_test
 
 def print_config(ocean_instance):
     print("Ocean object configuration:".format())
-    print("Ocean.config.keeper_path: {}".format(ocean_instance.config.keeper_path))
-    print("Ocean.config.keeper_url: {}".format(ocean_instance.config.keeper_url))
-    print("Ocean.config.gas_limit: {}".format(ocean_instance.config.gas_limit))
-    print("Ocean.config.aquarius_url: {}".format(ocean_instance.config.aquarius_url))
+    print("Ocean.config.keeper_path: {}".format(ocean_instance._config.keeper_path))
+    print("Ocean.config.keeper_url: {}".format(ocean_instance._config.keeper_url))
+    print("Ocean.config.gas_limit: {}".format(ocean_instance._config.gas_limit))
+    print("Ocean.config.aquarius_url: {}".format(ocean_instance._config.aquarius_url))
 
 
 @e2e_test
@@ -41,30 +41,30 @@ def test_ocean_instance(publisher_ocean_instance):
 
 @e2e_test
 def test_accounts(publisher_ocean_instance):
-    for address in publisher_ocean_instance.accounts:
-        print(publisher_ocean_instance.accounts[address])
+    for account in publisher_ocean_instance.accounts.list():
+        print(account)
 
     # These accounts have a positive ETH balance
-    for address, account in publisher_ocean_instance.accounts.items():
-        assert account.ether_balance >= 0
-        assert account.ocean_balance >= 0
+    for account in publisher_ocean_instance.accounts.list():
+        assert publisher_ocean_instance.accounts.balance(account).eth >= 0
+        assert publisher_ocean_instance.accounts.balance(account).ocn >= 0
 
 
 @e2e_test
 def test_token_request(publisher_ocean_instance):
     receiver_account = publisher_ocean_instance.main_account
     # Starting balance for comparison
-    start_ocean = receiver_account.ocean_balance
+    start_ocean = publisher_ocean_instance.accounts.balance(receiver_account).ocn
 
     # Make requests, assert success on request
-    receiver_account.request_tokens(2000)
+    publisher_ocean_instance.accounts.request_tokens(receiver_account, 2000)
     # Should be no change, 2000 exceeds the max of 1000
-    assert receiver_account.ocean_balance == start_ocean
+    assert publisher_ocean_instance.accounts.balance(receiver_account).ocn == start_ocean
 
     amount = 500
-    receiver_account.request_tokens(amount)
+    publisher_ocean_instance.accounts.request_tokens(receiver_account, amount)
     # Confirm balance changes
-    assert receiver_account.ocean_balance == start_ocean + amount
+    assert publisher_ocean_instance.accounts.balance(receiver_account).ocn == start_ocean + amount
 
 
 @e2e_test
@@ -79,29 +79,21 @@ def test_register_asset(publisher_ocean_instance):
     publisher = publisher_ocean_instance.main_account
 
     # ensure Ocean token balance
-    if publisher.ocean_balance == 0:
-        publisher.request_tokens(200)
+    if publisher_ocean_instance.accounts.balance(publisher).ocn == 0:
+        publisher_ocean_instance.accounts.request_tokens(publisher, 200)
 
     # You will need some token to make this transfer!
-    assert publisher.ocean_balance > 0
+    assert publisher_ocean_instance.accounts.balance(publisher).ocn > 0
 
     ##########################################################
     # Create an asset DDO with valid metadata
     ##########################################################
     asset = DDO(json_filename=sample_ddo_path)
 
-    ######################
-
-    # For this test, ensure the asset does not exist in Aquarius
-    meta_data_assets = publisher_ocean_instance.metadata_store.list_assets()
-    if asset.did in meta_data_assets:
-        publisher_ocean_instance.metadata_store.get_asset_ddo(asset.did)
-        publisher_ocean_instance.metadata_store.retire_asset_ddo(asset.did)
-
     ##########################################################
     # Register using high-level interface
     ##########################################################
-    publisher_ocean_instance.register_asset(asset.get_metadata(), publisher)
+    publisher_ocean_instance.assets.create(asset.metadata, publisher)
 
 
 @e2e_test

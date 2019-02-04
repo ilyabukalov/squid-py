@@ -10,7 +10,7 @@ from squid_py.service_agreement.service_agreement import ServiceAgreement
 logger = logging.getLogger(__name__)
 
 
-class Brizo(object):
+class Brizo:
     """
     `Brizo` is the name chosen for the asset service provider.
 
@@ -43,7 +43,7 @@ class Brizo(object):
         :param purchase_endpoint: str -- url of the service provider
         :return:
         """
-        payload = Brizo.prepare_purchase_payload(
+        payload = Brizo._prepare_purchase_payload(
             did, agreement_id, service_definition_id, signature, account_address
         )
         response = Brizo._http_client.post(
@@ -95,8 +95,8 @@ class Brizo(object):
                 logger.warning(f'consume failed: {response.reason}')
 
     @staticmethod
-    def prepare_purchase_payload(did, service_agreement_id, service_definition_id, signature,
-                                 consumer_address):
+    def _prepare_purchase_payload(did, service_agreement_id, service_definition_id, signature,
+                                  consumer_address):
         """Prepare a payload to send to `Brizo`.
 
         :param did: DID, str

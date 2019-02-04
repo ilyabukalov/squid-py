@@ -6,6 +6,10 @@ class AquariusProvider:
     _aquarius_class = Aquarius
 
     @staticmethod
+    def get_url(config):
+        return config.aquarius_url
+
+    @staticmethod
     def get_aquarius(url):
         """ Get an Aquarius instance."""
         return AquariusProvider._aquarius_class(url)

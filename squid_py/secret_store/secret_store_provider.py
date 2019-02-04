@@ -6,9 +6,9 @@ class SecretStoreProvider(object):
     _secret_store_class = SecretStore
 
     @staticmethod
-    def get_secret_store(config):
+    def get_secret_store(secret_store_url, keeper_url, account):
         """ Get an SecretStore instance."""
-        return SecretStoreProvider._secret_store_class(config)
+        return SecretStoreProvider._secret_store_class(secret_store_url, keeper_url, account)
 
     @staticmethod
     def set_secret_store_class(secret_store_class):

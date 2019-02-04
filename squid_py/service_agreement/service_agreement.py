@@ -1,3 +1,5 @@
+from collections import namedtuple
+
 from eth_utils import add_0x_prefix
 
 from squid_py.keeper import Keeper
@@ -8,6 +10,8 @@ from squid_py.service_agreement.service_agreement_template import ServiceAgreeme
 from squid_py.service_agreement.utils import (get_conditions_data_from_keeper_contracts,
                                               get_conditions_with_updated_keys)
 from squid_py.utils import generate_prefixed_id
+
+Agreement = namedtuple('Agreement', ('template', 'conditions'))
 
 
 class ServiceAgreement(object):
@@ -32,6 +36,10 @@ class ServiceAgreement(object):
             for p in cond.parameters:
                 if p.name == 'price':
                     return p.value
+
+    @property
+    def agreement(self):
+        return Agreement(self.template_id, self.conditions[:])
 
     @property
     def conditions_params_value_hashes(self):

@@ -4,20 +4,30 @@
 """
 
 import json
-import re
+import logging
+from collections import namedtuple
+
+from squid_py import ServiceTypes, ServiceAgreement
+
+logger = logging.getLogger(__name__)
+
+Endpoints = namedtuple('Endpoints', ('service', 'consume'))
 
 
 class Service:
     """Service class to create validate service in a DDO."""
+    SERVICE_ENDPOINT = 'serviceEndpoint'
+    PURCHASE_ENDPOINT = 'purchaseEndpoint'
 
-    def __init__(self, endpoint, service_type, values):
+    def __init__(self, service_endpoint, service_type, values, consume_endpoint=None):
         """Initialize Service instance."""
-        self._endpoint = endpoint
+        self._service_endpoint = service_endpoint
+        self._consume_endpoint = consume_endpoint if consume_endpoint else service_endpoint
         self._type = service_type
 
         # assign the _values property to empty until they are used
-        self._values = {}
-        reserved_names = {'serviceEndpoint', 'type'}
+        self._values = dict()
+        reserved_names = {self.SERVICE_ENDPOINT, 'type', self.PURCHASE_ENDPOINT}
         if values:
             for name, value in values.items():
                 if name not in reserved_names:
@@ -27,17 +37,24 @@ class Service:
     def type(self):
         return self._type
 
-    def get_type(self):
-        """Get the service type."""
-        return self._type
+    @property
+    def service_definition_id(self):
+        return self._values.get('serviceDefinitionId')
 
-    def get_endpoint(self):
-        """Get the service endpoint."""
-        return self._endpoint
+    @property
+    def agreement(self):
+        if self._type == ServiceTypes.METADATA:
+            return None
 
-    def get_values(self):
-        """Get any service values."""
-        return self._values
+        return ServiceAgreement.from_service_dict(self.as_dictionary()).agreement
+
+    @property
+    def endpoints(self):
+        return Endpoints(self._service_endpoint, self._consume_endpoint)
+
+    @property
+    def values(self):
+        return self._values.copy()
 
     def update_value(self, name, value):
         """
@@ -47,14 +64,19 @@ class Service:
         :param value: New value, str
         :return: None
         """
-        if name not in {'id', 'serviceEndpoint', 'type'}:
+        if name not in {'id', self.SERVICE_ENDPOINT, self.PURCHASE_ENDPOINT, 'type'}:
             self._values[name] = value
+
+    def is_valid(self):
+        """Return True if the sevice is valid."""
+        return self._service_endpoint is not None and self._type is not None
 
     def as_text(self, is_pretty=False):
         """Return the service as a JSON string."""
         values = {
             'type': self._type,
-            'serviceEndpoint': self._endpoint
+            self.SERVICE_ENDPOINT: self._consume_endpoint,
+            self.PURCHASE_ENDPOINT: self._service_endpoint
         }
         if self._values:
             # add extra service values to the dictionary
@@ -70,7 +92,8 @@ class Service:
         """Return the service as a python dictionary."""
         values = {
             'type': self._type,
-            'serviceEndpoint': self._endpoint
+            self.SERVICE_ENDPOINT: self._consume_endpoint,
+            self.PURCHASE_ENDPOINT: self._service_endpoint
         }
         if self._values:
             # add extra service values to the dictionary
@@ -83,6 +106,33 @@ class Service:
                 values[name] = value
         return values
 
-    def is_valid(self):
-        """Return True if the sevice is valid."""
-        return self._endpoint is not None and self._type is not None
+    @classmethod
+    def from_json(cls, service_dict):
+        """Create a service object from a JSON string."""
+        service_endpoint = service_dict.get(cls.PURCHASE_ENDPOINT)
+        consume_endpoint = service_dict.get(cls.SERVICE_ENDPOINT)
+        if not (service_endpoint or consume_endpoint):
+            logger.error(
+                'Service definition in DDO document is missing the "serviceEndpoint" key/value.')
+            raise IndexError
+
+        _type = service_dict.get('type')
+        if _type:
+            logger.error('Service definition in DDO document is missing the "type" key/value.')
+            raise IndexError
+
+        if not service_endpoint:
+            service_endpoint = consume_endpoint
+        if not consume_endpoint:
+            consume_endpoint = service_endpoint
+
+        if cls.PURCHASE_ENDPOINT in service_dict:
+            service_dict.pop(cls.PURCHASE_ENDPOINT)
+
+        service_dict.pop(cls.SERVICE_ENDPOINT)
+        service_dict.pop('type')
+        return cls(
+            service_endpoint,
+            service_dict['type'],
+            service_dict,
+            consume_endpoint)

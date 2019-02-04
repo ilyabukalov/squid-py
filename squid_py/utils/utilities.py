@@ -10,6 +10,7 @@ from eth_keys import KeyAPI
 from eth_utils import big_endian_to_int
 from web3 import Web3
 
+from squid_py.assets.asset import Asset
 from squid_py.keeper.utils import generate_multi_value_hash
 from squid_py.service_agreement.service_types import ServiceTypes
 
@@ -23,8 +24,8 @@ def get_metadata_files(ddo):
     :param ddo: DDO
     :return: Url, str
     """
-    metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
-    files = metadata_service.get_values()['metadata']['base']['encryptedFiles']
+    metadata = ddo.metadata
+    files = metadata['base']['encryptedFiles']
     return files
 
 

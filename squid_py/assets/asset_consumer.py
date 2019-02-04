@@ -2,11 +2,8 @@ import logging
 import json
 import os
 
-from squid_py.service_agreement.service_types import ServiceTypes
 from squid_py.service_agreement.service_agreement import ServiceAgreement
-from squid_py.brizo import BrizoProvider
 from squid_py.did import did_to_id
-from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 
 logger = logging.getLogger(__name__)
 
@@ -16,15 +13,22 @@ class AssetConsumer:
     #   been purchased.
 
     @staticmethod
-    def download(service_agreement_id, service_definition_id, ddo, consumer_account, destination):
+    def download(
+            service_agreement_id,
+            service_definition_id,
+            ddo,
+            consumer_account,
+            destination,
+            brizo,
+            secret_store
+    ):
         """
         Download asset data files or result files from a compute job
 
         :return:
         """
         did = ddo.did
-        metadata_service = ddo.get_service(service_type=ServiceTypes.METADATA)
-        files = metadata_service.get_values()['metadata']['base']['encryptedFiles']
+        files = ddo.metadata['base']['encryptedFiles']
         files = files if isinstance(files, str) else files[0]
         sa = ServiceAgreement.from_ddo(service_definition_id, ddo)
         service_url = sa.service_endpoint
@@ -36,7 +40,7 @@ class AssetConsumer:
 
         # decrypt the contentUrls
         decrypted_content_urls = json.loads(
-            SecretStoreProvider.get_secret_store().decrypt_document(did_to_id(did), files)
+            secret_store.decrypt_document(did_to_id(did), files)
         )
         if isinstance(decrypted_content_urls, str):
             decrypted_content_urls = [decrypted_content_urls]
@@ -46,6 +50,10 @@ class AssetConsumer:
         if not os.path.exists(asset_folder):
             os.mkdir(asset_folder)
 
-        BrizoProvider.get_brizo().consume_service(
-            service_agreement_id, service_url, consumer_account.address, decrypted_content_urls,
-            asset_folder)
+        brizo.consume_service(
+            service_agreement_id,
+            service_url,
+            consumer_account.address,
+            decrypted_content_urls,
+            asset_folder
+        )

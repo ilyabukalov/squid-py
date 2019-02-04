@@ -26,10 +26,11 @@ logger = logging.getLogger('ocean')
 
 
 class OceanAssets:
-    def __init__(self, keeper, did_resolver, agreements, config):
+    def __init__(self, keeper, did_resolver, agreements, asset_consumer, config):
         self._keeper = keeper
         self._did_resolver = did_resolver
         self._agreements = agreements
+        self._asset_consumer = asset_consumer
         self._config = config
         self._aquarius_url = config.aquarius_url
 
@@ -126,7 +127,7 @@ class OceanAssets:
         logger.debug(
             f'Generated ddo and services, DID is {ddo.did},'
             f' metadata service @{ddo_service_endpoint}, '
-            f'`Access` service purchase @{ddo.services[0].get_values()["purchaseEndpoint"]}.')
+            f'`Access` service purchase @{ddo.services[0].endpoints.service}.')
         response = None
         try:
             # publish the new ddo in ocean-db/Aquarius
@@ -155,7 +156,7 @@ class OceanAssets:
         try:
             ddo = self.resolve(did)
             metadata_service = ddo.find_service_by_type(ServiceTypes.METADATA)
-            self._get_aquarius(metadata_service.get_endpoint()).retire_asset_ddo(did)
+            self._get_aquarius(metadata_service.endpoints.service).retire_asset_ddo(did)
             return True
         except AquariusGenericError as err:
             logger.error(err)
@@ -257,10 +258,11 @@ class OceanAssets:
         :return: None
         """
         ddo = self.resolve(did)
-        return AssetConsumer.download(
+        return self._asset_consumer.download(
             service_agreement_id,
             service_definition_id,
             ddo,
             consumer_account,
-            destination
+            destination,
+
         )

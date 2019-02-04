@@ -1,12 +1,15 @@
-from secret_store_client.client import Client
 
+class SecretStoreMock:
+    def __init__(self, secret_store_url, keeper_url, account):
+        self.args = (secret_store_url, keeper_url, account)
+        self.id_to_document = dict()
 
-class SecretStoreClientMock(Client):
-    def __init__(self, *args, **kwargs):
-        pass
-
-    def publish_document(self, document_id, document, threshold=0):
-        return '!!%s!!' % document
+    def encrypt_document(self, document_id, document, threshold=0):
+        encrypted = f'{self}.{document_id}!!{document}!!{threshold}'
+        self.id_to_document[document_id] = (document, encrypted)
+        return encrypted
 
     def decrypt_document(self, document_id, encrypted_document):
-        return encrypted_document[2: -2]
+        doc, encrypted = self.id_to_document.get(document_id)
+        assert encrypted == encrypted_document
+        return doc

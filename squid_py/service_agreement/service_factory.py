@@ -98,11 +98,13 @@ class ServiceFactory(object):
             ServiceAgreement.SERVICE_DEFINITION_ID: sa.sa_definition_id,
             ServiceAgreementTemplate.TEMPLATE_ID_KEY: sla_template.template_id,
             ServiceAgreement.SERVICE_CONTRACT: sa.service_agreement_contract,
-            ServiceAgreement.SERVICE_CONDITIONS: sa.conditions,
-            'purchaseEndpoint': purchase_endpoint
+            ServiceAgreement.SERVICE_CONDITIONS: sa.conditions
         }
 
-        return Service(service_endpoint, ServiceTypes.ASSET_ACCESS, values=other_values)
+        return Service(purchase_endpoint,
+                       ServiceTypes.ASSET_ACCESS,
+                       values=other_values,
+                       consume_endpoint=service_endpoint)
 
     @staticmethod
     def build_compute_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint,

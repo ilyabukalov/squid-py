@@ -5,6 +5,7 @@ import time
 from squid_py import (ACCESS_SERVICE_TEMPLATE_ID, ConfigProvider, Ocean,
                       ServiceAgreementTemplate)
 from squid_py.accounts.account import Account
+from squid_py.brizo import BrizoProvider
 
 from squid_py.brizo.brizo import Brizo
 from squid_py.ddo.metadata import Metadata
@@ -12,11 +13,12 @@ from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.secret_store.secret_store import SecretStore
+from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from squid_py.service_agreement.utils import (get_sla_template_path,
                                               register_service_agreement_template)
 from squid_py.utils.utilities import prepare_prefixed_hash
 from tests.resources.mocks.brizo_mock import BrizoMock
-from tests.resources.mocks.secret_store_mock import SecretStoreClientMock
+from tests.resources.mocks.secret_store_mock import SecretStoreMock
 
 PUBLISHER_INDEX = 1
 CONSUMER_INDEX = 0
@@ -40,8 +42,8 @@ def init_ocn_tokens(ocn, account, amount=100):
     )
 
 
-def make_ocean_instance(secret_store_client, account_index):
-    SecretStore.set_client(secret_store_client)
+def make_ocean_instance(secret_store_mock, account_index):
+    SecretStoreProvider.set_secret_store_class(secret_store_mock)
     ocn = Ocean(ExampleConfig.get_config())
     account = ocn.accounts.list()[account_index]
     if account_index == 0:
@@ -49,7 +51,7 @@ def make_ocean_instance(secret_store_client, account_index):
     else:
         account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password1')
     # We can remove the BrizoMock if we assuming that the asset is in Azure.
-    Brizo.set_http_client(BrizoMock(ocn, account))
+    BrizoProvider.set_brizo_class(BrizoMock)
     return ocn
 
 
@@ -67,25 +69,29 @@ def get_consumer_account(config):
     return acc
 
 
-def get_publisher_ocean_instance():
-    ocn = make_ocean_instance(SecretStoreClientMock, PUBLISHER_INDEX)
+def get_publisher_ocean_instance(init_tokens=True):
+    ocn = make_ocean_instance(SecretStoreMock, PUBLISHER_INDEX)
     account = get_publisher_account(ConfigProvider.get_config())
     if account.address in ocn.accounts.accounts_addresses:
         ocn.main_account = account
     else:
         ocn.main_account = ocn.accounts.list()[0]
-    init_ocn_tokens(ocn, ocn.main_account)
+
+    if init_tokens:
+        init_ocn_tokens(ocn, ocn.main_account)
     return ocn
 
 
-def get_consumer_ocean_instance():
-    ocn = make_ocean_instance(SecretStoreClientMock, CONSUMER_INDEX)
+def get_consumer_ocean_instance(init_tokens=True):
+    ocn = make_ocean_instance(SecretStoreMock, CONSUMER_INDEX)
     account = get_consumer_account(ConfigProvider.get_config())
     if account.address in ocn.accounts.accounts_addresses:
         ocn.main_account = account
     else:
         ocn.main_account = ocn.accounts.list()[1]
-    init_ocn_tokens(ocn, ocn.main_account)
+
+    if init_tokens:
+        init_ocn_tokens(ocn, ocn.main_account)
     return ocn
 
 

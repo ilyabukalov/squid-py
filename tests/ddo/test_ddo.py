@@ -243,9 +243,8 @@ def test_load_ddo_json():
     this_ddo = DDO(json_text=sample_ddo_json_string)
     service = this_ddo.get_service('Metadata')
     assert service
-    assert service.get_type() == 'Metadata'
-    values = service.get_values()
-    assert values['metadata']
+    assert service.type == 'Metadata'
+    assert service.values['metadata']
 
 
 @unit_test

@@ -4,7 +4,6 @@ import logging
 
 import requests
 
-from squid_py import DDO
 from squid_py.aquarius.exceptions import AquariusGenericError
 from squid_py.assets.asset import Asset
 
