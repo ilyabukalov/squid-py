@@ -119,8 +119,7 @@ def watch_service_agreement_events(did, storage_path, account,
             .listen_once(_get_callback(fn), timeout, start_time)
 
 
-def watch_service_agreement_fulfilled(service_agreement_id, service_definition,
-                                      callback):
+def watch_service_agreement_fulfilled(service_agreement_id, service_definition, callback):
     """ Subscribes to the service agreement fulfilled event, filtering by the given
         service agreement ID.
     """

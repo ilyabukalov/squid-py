@@ -2,8 +2,11 @@ import logging
 import json
 import os
 
+from squid_py import ConfigProvider
 from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.did import did_to_id
+from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +48,11 @@ class AssetConsumer:
         if isinstance(decrypted_content_urls, str):
             decrypted_content_urls = [decrypted_content_urls]
         logger.debug(f'got decrypted contentUrls: {decrypted_content_urls}')
+
+        if not os.path.isabs(destination):
+            destination = os.path.abspath(destination)
+        if not os.path.exists(destination):
+            os.mkdir(destination)
 
         asset_folder = os.path.join(destination, f'datafile.{did_to_id(did)}.{service_definition_id}')
         if not os.path.exists(asset_folder):

@@ -1,8 +1,10 @@
 
 class SecretStoreMock:
+    args = None
+    id_to_document = dict()
+
     def __init__(self, secret_store_url, keeper_url, account):
         self.args = (secret_store_url, keeper_url, account)
-        self.id_to_document = dict()
 
     def encrypt_document(self, document_id, document, threshold=0):
         encrypted = f'{self}.{document_id}!!{document}!!{threshold}'

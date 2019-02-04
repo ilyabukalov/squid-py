@@ -12,7 +12,7 @@ from squid_py.agreements.service_agreement_template import ServiceAgreementTempl
 logger = logging.getLogger('service_agreement')
 
 
-def handlePaymentAction(account, service_agreement_id,
+def handle_payment_action(account, service_agreement_id,
                         service_definition, function_name, event_name):
     payment_conditions, contract, abi, payment_condition_definition = get_condition_contract_data(
         service_definition,
@@ -42,30 +42,35 @@ def handlePaymentAction(account, service_agreement_id,
         raise e
 
 
-def lockPayment(account, service_agreement_id,
-                service_definition, *args, **kwargs):
+def lock_payment(account, service_agreement_id,
+                 service_definition, *args, **kwargs):
     """ Checks if the lockPayment condition has been fulfilled and if not calls
         PaymentConditions.lockPayment smart contract function.
 
         The account is supposed to have sufficient amount of approved Ocean tokens.
     """
-    handlePaymentAction(account, service_agreement_id, service_definition,
-                        'lockPayment', 'PaymentLocked')
+    handle_payment_action(account, service_agreement_id, service_definition,
+                          'lockPayment', 'PaymentLocked')
 
 
-def releasePayment(account, service_agreement_id,
-                   service_definition, *args, **kwargs):
+def release_payment(account, service_agreement_id,
+                    service_definition, *args, **kwargs):
     """ Checks if the releasePayment condition has been fulfilled and if not calls
         PaymentConditions.releasePayment smart contract function.
     """
-    handlePaymentAction(account, service_agreement_id, service_definition,
-                        'releasePayment', 'PaymentReleased')
+    handle_payment_action(account, service_agreement_id, service_definition,
+                          'releasePayment', 'PaymentReleased')
 
 
-def refundPayment(account, service_agreement_id,
-                  service_definition, *args, **kwargs):
+def refund_payment(account, service_agreement_id,
+                   service_definition, *args, **kwargs):
     """ Checks if the refundPayment condition has been fulfilled and if not calls
         PaymentConditions.refundPayment smart contract function.
     """
-    handlePaymentAction(account, service_agreement_id, service_definition,
-                        'refundPayment', 'PaymentRefund')
+    handle_payment_action(account, service_agreement_id, service_definition,
+                          'refundPayment', 'PaymentRefund')
+
+
+lockPayment = lock_payment
+releasePayment = release_payment
+refundPayment = refund_payment

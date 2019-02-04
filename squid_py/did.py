@@ -1,10 +1,11 @@
 """DID Lib to do DID's and DDO's."""
 
 import re
-import uuid
 
 from eth_utils import remove_0x_prefix
 from web3 import Web3
+
+from squid_py.utils.utilities import generate_new_id
 
 OCEAN_PREFIX = 'did:op:'
 
@@ -22,7 +23,7 @@ class DID:
 
         :return: Asset did, str.
         """
-        return OCEAN_PREFIX + uuid.uuid4().hex + uuid.uuid4().hex
+        return OCEAN_PREFIX + generate_new_id()
 
 
 def did_parse(did):

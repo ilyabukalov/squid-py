@@ -5,6 +5,7 @@ import pytest
 from web3 import Web3
 
 from squid_py.brizo.brizo import Brizo
+from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.ddo.ddo import DDO
 from squid_py.ddo.metadata import Metadata
 from squid_py.did import DID, did_to_id
@@ -18,6 +19,8 @@ from squid_py.modules.v0_1.serviceAgreement import fulfillAgreement
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.agreements.utils import build_condition_key
+from squid_py.secret_store.secret_store import SecretStore
+from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from tests.resources.helper_functions import get_resource_path, verify_signature, wait_for_event
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.tiers import e2e_test
@@ -130,7 +133,8 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     # assumptions:
     #  - service agreement template must already be registered
     #  - asset ddo already registered
-
+    SecretStoreProvider.set_secret_store_class(SecretStore)
+    # BrizoProvider.set_brizo_class()
     consumer_acc = consumer_ocean_instance.main_account
     keeper = Keeper.get_instance()
     # point consumer_ocean_instance's brizo mock to the publisher's ocean instance

@@ -7,8 +7,8 @@ from squid_py.modules.v0_1.utils import process_tx_receipt
 logger = logging.getLogger('service_agreement')
 
 
-def fulfillAgreement(account, service_agreement_id,
-                     service_definition, *args, **kwargs):
+def fulfill_agreement(account, service_agreement_id,
+                      service_definition, *args, **kwargs):
     """ Checks if serviceAgreement has been fulfilled and if not calls
         ServiceAgreement.fulfillAgreement smart contract function.
     """
@@ -30,7 +30,11 @@ def fulfillAgreement(account, service_agreement_id,
         raise e
 
 
-def terminateAgreement(account, service_agreement_id,
-                       service_definition, *args, **kwargs):
+def terminate_agreement(account, service_agreement_id,
+                        service_definition, *args, **kwargs):
     fulfillAgreement(account, service_agreement_id, service_definition, *args,
                      **kwargs)
+
+
+fulfillAgreement = fulfill_agreement
+terminateAgreement = terminate_agreement
