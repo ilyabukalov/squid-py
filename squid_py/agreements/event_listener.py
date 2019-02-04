@@ -5,8 +5,8 @@ from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.service_execution_agreement import ServiceExecutionAgreement
 from squid_py.keeper.utils import get_event_def_from_abi
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.service_agreement.service_agreement_condition import Event, ServiceAgreementCondition
-from squid_py.service_agreement.storage import update_service_agreement_status
+from squid_py.agreements.service_agreement_condition import Event, ServiceAgreementCondition
+from squid_py.agreements.storage import update_service_agreement_status
 
 MIN_TIMEOUT = 2  # seconds
 MAX_TIMEOUT = 60 * 60 * 24 * 7  # 7 days expressed in seconds

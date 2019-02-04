@@ -7,7 +7,8 @@ import json
 import logging
 from collections import namedtuple
 
-from squid_py import ServiceTypes, ServiceAgreement
+from squid_py.agreements.service_types import ServiceTypes
+from squid_py.agreements.service_agreement import ServiceAgreement
 
 logger = logging.getLogger(__name__)
 
@@ -109,15 +110,16 @@ class Service:
     @classmethod
     def from_json(cls, service_dict):
         """Create a service object from a JSON string."""
-        service_endpoint = service_dict.get(cls.PURCHASE_ENDPOINT)
-        consume_endpoint = service_dict.get(cls.SERVICE_ENDPOINT)
+        sd = service_dict.copy()
+        service_endpoint = sd.get(cls.PURCHASE_ENDPOINT)
+        consume_endpoint = sd.get(cls.SERVICE_ENDPOINT)
         if not (service_endpoint or consume_endpoint):
             logger.error(
                 'Service definition in DDO document is missing the "serviceEndpoint" key/value.')
             raise IndexError
 
-        _type = service_dict.get('type')
-        if _type:
+        _type = sd.get('type')
+        if not _type:
             logger.error('Service definition in DDO document is missing the "type" key/value.')
             raise IndexError
 
@@ -126,13 +128,13 @@ class Service:
         if not consume_endpoint:
             consume_endpoint = service_endpoint
 
-        if cls.PURCHASE_ENDPOINT in service_dict:
-            service_dict.pop(cls.PURCHASE_ENDPOINT)
+        if cls.PURCHASE_ENDPOINT in sd:
+            sd.pop(cls.PURCHASE_ENDPOINT)
 
-        service_dict.pop(cls.SERVICE_ENDPOINT)
-        service_dict.pop('type')
+        sd.pop(cls.SERVICE_ENDPOINT)
+        sd.pop('type')
         return cls(
             service_endpoint,
-            service_dict['type'],
-            service_dict,
+            _type,
+            sd,
             consume_endpoint)

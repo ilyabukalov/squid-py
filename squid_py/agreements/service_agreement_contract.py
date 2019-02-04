@@ -1,4 +1,4 @@
-from squid_py.service_agreement.service_agreement_condition import Event
+from squid_py.agreements.service_agreement_condition import Event
 
 
 class ServiceAgreementContract(object):

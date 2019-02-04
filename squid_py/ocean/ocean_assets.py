@@ -4,9 +4,8 @@ import logging
 
 from squid_py.aquarius.aquarius_provider import AquariusProvider
 from squid_py.aquarius.exceptions import AquariusGenericError
-from squid_py.assets.asset_consumer import AssetConsumer
 from squid_py.brizo.brizo_provider import BrizoProvider
-from squid_py.ddo import DDO
+from squid_py.ddo.ddo import DDO
 from squid_py.ddo.metadata import Metadata, MetadataBase
 from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
 from squid_py.did import DID, did_to_id
@@ -16,9 +15,9 @@ from squid_py.exceptions import (
 )
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
-from squid_py.service_agreement.service_factory import ServiceDescriptor, ServiceFactory
-from squid_py.service_agreement.service_types import ACCESS_SERVICE_TEMPLATE_ID, ServiceTypes
-from squid_py.service_agreement.utils import (
+from squid_py.agreements.service_factory import ServiceDescriptor, ServiceFactory
+from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID, ServiceTypes
+from squid_py.agreements.utils import (
     make_public_key_and_authentication,
 )
 
@@ -41,6 +40,11 @@ class OceanAssets:
 
     def _get_aquarius(self, url=None):
         return AquariusProvider.get_aquarius(url or self._aquarius_url)
+
+    def _get_secret_store(self):
+        return SecretStoreProvider.get_secret_store(
+            *SecretStoreProvider.get_args_from_config(self._config)
+        )
 
     def create(self, metadata, publisher_account, service_descriptors=None):
         """
@@ -88,7 +92,7 @@ class OceanAssets:
             'files'], 'files is required in the metadata base attributes.'
         assert Metadata.validate(metadata), 'metadata seems invalid.'
         logger.debug('Encrypting content urls in the metadata.')
-        files_encrypted = SecretStoreProvider.get_secret_store(self._config) \
+        files_encrypted = self._get_secret_store()\
             .encrypt_document(
             did_to_id(did),
             json.dumps(metadata_copy['base']['files']),

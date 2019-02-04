@@ -7,7 +7,7 @@ from squid_py.keeper.utils import (
 )
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.modules.v0_1.exceptions import InvalidModule
-from squid_py.service_agreement.utils import build_condition_key
+from squid_py.agreements.utils import build_condition_key
 
 logger = logging.getLogger('keeper-utils')
 

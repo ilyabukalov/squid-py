@@ -1,16 +1,18 @@
 import os
 
-from squid_py import Brizo, ConfigProvider
-from tests.resources.helper_functions import get_publisher_ocean_instance, get_publisher_account
+from squid_py import ConfigProvider
+from squid_py.brizo.brizo import Brizo
 
 
 class BrizoMock(object):
     def __init__(self, ocean_instance=None, account=None):
         self.ocean_instance = ocean_instance
         if not ocean_instance:
+            from tests.resources.helper_functions import get_publisher_ocean_instance
             self.ocean_instance = get_publisher_ocean_instance(init_tokens=False)
         self.account = account
         if not account:
+            from tests.resources.helper_functions import get_publisher_account
             self.account = get_publisher_account(ConfigProvider.get_config())
 
     def initialize_service_agreement(self, did, agreement_id, service_definition_id,

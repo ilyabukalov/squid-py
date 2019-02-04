@@ -2,7 +2,7 @@ import logging
 import json
 import os
 
-from squid_py.service_agreement.service_agreement import ServiceAgreement
+from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.did import did_to_id
 
 logger = logging.getLogger(__name__)

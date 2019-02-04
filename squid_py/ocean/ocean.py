@@ -13,6 +13,7 @@ from squid_py.log import setup_logging
 from squid_py.ocean.ocean_agreements import OceanAgreements
 from squid_py.ocean.ocean_accounts import OceanAccounts
 from squid_py.ocean.ocean_assets import OceanAssets
+from squid_py.ocean.ocean_secret_store import OceanSecretStore
 from squid_py.ocean.ocean_services import OceanServices
 from squid_py.ocean.ocean_templates import OceanTemplates
 from squid_py.ocean.ocean_tokens import OceanTokens
@@ -60,7 +61,7 @@ class Ocean:
 
         # Initialize the public sub-modules
         self.accounts = OceanAccounts(self._keeper, self._config)
-        self.secret_store = SecretStoreProvider.get_secret_store(self._config)
+        self.secret_store = OceanSecretStore(self._config)
         self.tokens = OceanTokens()
         self.services = OceanServices()
         self.templates = OceanTemplates(
@@ -72,6 +73,7 @@ class Ocean:
             self._keeper,
             self._did_resolver,
             self._make_ocean_agreements(),
+            AssetConsumer,
             config
         )
 

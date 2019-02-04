@@ -4,7 +4,7 @@ import logging
 
 import pytest
 
-from squid_py.ddo import DDO
+from squid_py.ddo.ddo import DDO
 from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import e2e_test

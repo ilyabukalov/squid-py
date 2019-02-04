@@ -11,7 +11,7 @@ from web3 import Web3
 
 from squid_py.ddo.public_key_hex import PublicKeyHex
 from squid_py.did import did_to_id
-from squid_py.service_agreement.service_types import ServiceTypes
+from squid_py.agreements.service_types import ServiceTypes
 from .authentication import Authentication
 from .constants import DID_DDO_CONTEXT_URL, KEY_PAIR_MODULUS_BIT
 from .public_key_base import PUBLIC_KEY_STORE_TYPE_PEM, PublicKeyBase
@@ -220,7 +220,7 @@ class DDO:
             for value in values['service']:
                 if isinstance(value, str):
                     value = json.loads(value)
-                self.services.append(Service.from_json(value))
+                self._services.append(Service.from_json(value))
         if 'proof' in values:
             self._proof = values['proof']
 

@@ -4,12 +4,14 @@ from eth_utils import add_0x_prefix
 
 from squid_py.keeper import Keeper
 from squid_py.keeper.utils import generate_multi_value_hash
-from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
-from squid_py.service_agreement.service_agreement_contract import ServiceAgreementContract
-from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
-from squid_py.service_agreement.utils import (get_conditions_data_from_keeper_contracts,
-                                              get_conditions_with_updated_keys)
-from squid_py.utils import generate_prefixed_id
+from squid_py.agreements.service_agreement_condition import ServiceAgreementCondition
+from squid_py.agreements.service_agreement_contract import ServiceAgreementContract
+from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
+from squid_py.agreements.utils import (
+    get_conditions_data_from_keeper_contracts,
+    get_conditions_with_updated_keys
+)
+from squid_py.utils.utilities import generate_prefixed_id
 
 Agreement = namedtuple('Agreement', ('template', 'conditions'))
 

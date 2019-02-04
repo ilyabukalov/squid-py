@@ -7,7 +7,7 @@ from squid_py.modules.v0_1.utils import (
     get_condition_contract_data,
     is_condition_fulfilled,
     process_tx_receipt)
-from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
+from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
 
 logger = logging.getLogger('service_agreement')
 

@@ -1,7 +1,7 @@
 import json
 
-from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
-from squid_py.service_agreement.service_agreement_contract import ServiceAgreementContract
+from squid_py.agreements.service_agreement_condition import ServiceAgreementCondition
+from squid_py.agreements.service_agreement_contract import ServiceAgreementContract
 
 
 class ServiceAgreementTemplate(object):

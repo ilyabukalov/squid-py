@@ -1,6 +1,6 @@
 from web3 import Web3
 
-from squid_py.service_agreement.utils import build_condition_key
+from squid_py.agreements.utils import build_condition_key
 from tests.resources.tiers import e2e_test
 
 

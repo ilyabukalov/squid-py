@@ -1,6 +1,8 @@
 import os
 
-from squid_py import ServiceAgreement, ServiceTypes, ConfigProvider
+from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.service_types import ServiceTypes
+from squid_py.config_provider import ConfigProvider
 from squid_py.ddo.ddo import DDO
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper.event_listener import EventListener

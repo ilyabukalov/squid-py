@@ -1,15 +1,15 @@
 import logging
 
-from squid_py.brizo import BrizoProvider
+from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.did import did_to_id
 from squid_py.exceptions import (
     OceanInvalidServiceAgreementSignature,
     OceanServiceAgreementExists,
 )
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.service_agreement.register_service_agreement import register_service_agreement
-from squid_py.service_agreement.service_agreement import ServiceAgreement
-from squid_py.service_agreement.utils import get_conditions_data_from_keeper_contracts
+from squid_py.agreements.register_service_agreement import register_service_agreement
+from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.utils import get_conditions_data_from_keeper_contracts
 from squid_py.utils.utilities import prepare_prefixed_hash
 
 logger = logging.getLogger('ocean')

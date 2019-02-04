@@ -2,20 +2,22 @@ import os
 import pathlib
 import time
 
-from squid_py import (ACCESS_SERVICE_TEMPLATE_ID, ConfigProvider, Ocean,
-                      ServiceAgreementTemplate)
+from squid_py.ocean.ocean import Ocean
+from squid_py import ConfigProvider
+from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
+from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
 from squid_py.accounts.account import Account
-from squid_py.brizo import BrizoProvider
+from squid_py.brizo.brizo_provider import BrizoProvider
 
-from squid_py.brizo.brizo import Brizo
 from squid_py.ddo.metadata import Metadata
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.secret_store.secret_store import SecretStore
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
-from squid_py.service_agreement.utils import (get_sla_template_path,
-                                              register_service_agreement_template)
+from squid_py.agreements.utils import (
+    get_sla_template_path,
+    register_service_agreement_template
+)
 from squid_py.utils.utilities import prepare_prefixed_hash
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.mocks.secret_store_mock import SecretStoreMock

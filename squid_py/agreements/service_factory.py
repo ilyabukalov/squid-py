@@ -1,9 +1,9 @@
 from squid_py.ddo.service import Service
 from squid_py.did import did_to_id
-from squid_py.service_agreement.service_agreement import ServiceAgreement
-from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
-from squid_py.service_agreement.service_types import ServiceTypes
-from squid_py.service_agreement.utils import get_sla_template_path
+from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
+from squid_py.agreements.service_types import ServiceTypes
+from squid_py.agreements.utils import get_sla_template_path
 
 
 class ServiceDescriptor(object):

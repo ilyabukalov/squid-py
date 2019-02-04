@@ -7,9 +7,9 @@ from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (generate_multi_value_hash, get_fingerprint_by_name,
                                    hexstr_to_bytes)
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
-from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
-from squid_py.service_agreement.service_types import ServiceTypes
+from squid_py.agreements.service_agreement_condition import ServiceAgreementCondition
+from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
+from squid_py.agreements.service_types import ServiceTypes
 from squid_py.utils.utilities import get_public_key_from_address
 
 

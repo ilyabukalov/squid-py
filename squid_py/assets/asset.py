@@ -1,4 +1,4 @@
-from squid_py.ddo import DDO
+from squid_py.ddo.ddo import DDO
 
 
 class Asset(DDO):

@@ -10,9 +10,7 @@ from eth_keys import KeyAPI
 from eth_utils import big_endian_to_int
 from web3 import Web3
 
-from squid_py.assets.asset import Asset
 from squid_py.keeper.utils import generate_multi_value_hash
-from squid_py.service_agreement.service_types import ServiceTypes
 
 Signature = namedtuple('Signature', ('v', 'r', 's'))
 
