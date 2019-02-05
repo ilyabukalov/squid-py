@@ -1,13 +1,14 @@
 import logging
 
+from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.modules.v0_1.utils import process_tx_receipt
 
 logger = logging.getLogger('service_agreement')
 
 
-def fulfillAgreement(account, service_agreement_id,
-                     service_definition, *args, **kwargs):
+def fulfill_agreement(account, service_agreement_id,
+                      service_definition, *args, **kwargs):
     """ Checks if serviceAgreement has been fulfilled and if not calls
         ServiceAgreement.fulfillAgreement smart contract function.
     """
@@ -19,7 +20,7 @@ def fulfillAgreement(account, service_agreement_id,
                 f'saId {service_agreement_id}, '
                 f'ServiceAgreement address {service_agreement_address}')
     try:
-        account.unlock()
+        Keeper.get_instance().unlock_account(account)
         tx_hash = service_agreement_concise.fulfillAgreement(service_agreement_id,
                                                              transact={'from': account.address})
         process_tx_receipt(
@@ -29,7 +30,11 @@ def fulfillAgreement(account, service_agreement_id,
         raise e
 
 
-def terminateAgreement(account, service_agreement_id,
-                       service_definition, *args, **kwargs):
+def terminate_agreement(account, service_agreement_id,
+                        service_definition, *args, **kwargs):
     fulfillAgreement(account, service_agreement_id, service_definition, *args,
                      **kwargs)
+
+
+fulfillAgreement = fulfill_agreement
+terminateAgreement = terminate_agreement

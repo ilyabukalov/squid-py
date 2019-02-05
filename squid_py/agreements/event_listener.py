@@ -5,8 +5,8 @@ from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.service_execution_agreement import ServiceExecutionAgreement
 from squid_py.keeper.utils import get_event_def_from_abi
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.service_agreement.service_agreement_condition import Event, ServiceAgreementCondition
-from squid_py.service_agreement.storage import update_service_agreement_status
+from squid_py.agreements.service_agreement_condition import Event, ServiceAgreementCondition
+from squid_py.agreements.storage import update_service_agreement_status
 
 MIN_TIMEOUT = 2  # seconds
 MAX_TIMEOUT = 60 * 60 * 24 * 7  # 7 days expressed in seconds
@@ -119,8 +119,7 @@ def watch_service_agreement_events(did, storage_path, account,
             .listen_once(_get_callback(fn), timeout, start_time)
 
 
-def watch_service_agreement_fulfilled(service_agreement_id, service_definition,
-                                      callback):
+def watch_service_agreement_fulfilled(service_agreement_id, service_definition, callback):
     """ Subscribes to the service agreement fulfilled event, filtering by the given
         service agreement ID.
     """

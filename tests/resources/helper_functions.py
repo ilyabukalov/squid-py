@@ -2,19 +2,25 @@ import os
 import pathlib
 import time
 
-from squid_py import (ACCESS_SERVICE_TEMPLATE_ID, Account, ConfigProvider, Ocean,
-                      ServiceAgreementTemplate)
-from squid_py.brizo.brizo import Brizo
+from squid_py.ocean.ocean import Ocean
+from squid_py import ConfigProvider
+from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
+from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
+from squid_py.accounts.account import Account
+from squid_py.brizo.brizo_provider import BrizoProvider
+
 from squid_py.ddo.metadata import Metadata
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.secret_store.secret_store import SecretStore
-from squid_py.service_agreement.utils import (get_sla_template_path,
-                                              register_service_agreement_template)
+from squid_py.secret_store.secret_store_provider import SecretStoreProvider
+from squid_py.agreements.utils import (
+    get_sla_template_path,
+    register_service_agreement_template
+)
 from squid_py.utils.utilities import prepare_prefixed_hash
 from tests.resources.mocks.brizo_mock import BrizoMock
-from tests.resources.mocks.secret_store_mock import SecretStoreClientMock
+from tests.resources.mocks.secret_store_mock import SecretStoreMock
 
 PUBLISHER_INDEX = 1
 CONSUMER_INDEX = 0
@@ -29,24 +35,25 @@ def get_resource_path(dir_name, file_name):
 
 
 def init_ocn_tokens(ocn, account, amount=100):
-    account.request_tokens(amount)
-    ocn.keeper.token.token_approve(
-        ocn.keeper.payment_conditions.address,
+    ocn.accounts.request_tokens(account, amount)
+    ocn._keeper.unlock_account(account)
+    ocn._keeper.token.token_approve(
+        ocn._keeper.payment_conditions.address,
         amount,
         account
     )
 
 
-def make_ocean_instance(secret_store_client, account_index):
-    SecretStore.set_client(secret_store_client)
+def make_ocean_instance(secret_store_mock, account_index):
+    SecretStoreProvider.set_secret_store_class(secret_store_mock)
     ocn = Ocean(ExampleConfig.get_config())
-    account = list(ocn.accounts.values())[account_index]
+    account = ocn.accounts.list()[account_index]
     if account_index == 0:
         account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password')
     else:
         account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password1')
     # We can remove the BrizoMock if we assuming that the asset is in Azure.
-    Brizo.set_http_client(BrizoMock(ocn, account))
+    BrizoProvider.set_brizo_class(BrizoMock)
     return ocn
 
 
@@ -64,25 +71,29 @@ def get_consumer_account(config):
     return acc
 
 
-def get_publisher_ocean_instance():
-    ocn = make_ocean_instance(SecretStoreClientMock, PUBLISHER_INDEX)
+def get_publisher_ocean_instance(init_tokens=True):
+    ocn = make_ocean_instance(SecretStoreMock, PUBLISHER_INDEX)
     account = get_publisher_account(ConfigProvider.get_config())
-    if account.address in ocn.accounts:
+    if account.address in ocn.accounts.accounts_addresses:
         ocn.main_account = account
     else:
-        ocn.main_account = Account(list(ocn.accounts)[0])
-    init_ocn_tokens(ocn, ocn.main_account)
+        ocn.main_account = ocn.accounts.list()[0]
+
+    if init_tokens:
+        init_ocn_tokens(ocn, ocn.main_account)
     return ocn
 
 
-def get_consumer_ocean_instance():
-    ocn = make_ocean_instance(SecretStoreClientMock, CONSUMER_INDEX)
+def get_consumer_ocean_instance(init_tokens=True):
+    ocn = make_ocean_instance(SecretStoreMock, CONSUMER_INDEX)
     account = get_consumer_account(ConfigProvider.get_config())
-    if account.address in ocn.accounts:
+    if account.address in ocn.accounts.accounts_addresses:
         ocn.main_account = account
     else:
-        ocn.main_account = Account(list(ocn.accounts)[1])
-    init_ocn_tokens(ocn, ocn.main_account)
+        ocn.main_account = ocn.accounts.list()[1]
+
+    if init_tokens:
+        init_ocn_tokens(ocn, ocn.main_account)
     return ocn
 
 
@@ -102,24 +113,25 @@ def get_account_from_config(config, config_account_key, config_account_password_
     return Account(address, password)
 
 
-def get_registered_access_service_template(ocean_instance, account):
+def get_registered_access_service_template(keeper, account):
     # register an asset Access service agreement template
     template = ServiceAgreementTemplate.from_json_file(get_sla_template_path())
     template_id = ACCESS_SERVICE_TEMPLATE_ID
-    template_owner = ocean_instance.keeper.service_agreement.get_template_owner(template_id)
+    template_owner = keeper.service_agreement.get_template_owner(template_id)
     if not template_owner:
+        keeper.unlock_account(account)
         template = register_service_agreement_template(
-            ocean_instance.keeper.service_agreement,
+            keeper.service_agreement,
             account, template,
-            ocean_instance.keeper.network_name
+            keeper.network_name
         )
 
     return template
 
 
 def get_registered_ddo(ocean_instance, account):
-    get_registered_access_service_template(ocean_instance, account)
-    ddo = ocean_instance.register_asset(Metadata.get_example(), account)
+    get_registered_access_service_template(Keeper.get_instance(), account)
+    ddo = ocean_instance.assets.create(Metadata.get_example(), account)
     return ddo
 
 

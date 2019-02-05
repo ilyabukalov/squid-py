@@ -3,8 +3,13 @@
 """
 import json
 
-from squid_py.ddo import (DDO, PUBLIC_KEY_STORE_TYPE_BASE64, PUBLIC_KEY_STORE_TYPE_BASE85,
-                          PUBLIC_KEY_STORE_TYPE_HEX, PUBLIC_KEY_STORE_TYPE_PEM)
+from squid_py.ddo.ddo import DDO
+from squid_py.ddo.public_key_base import (
+    PUBLIC_KEY_STORE_TYPE_BASE64,
+    PUBLIC_KEY_STORE_TYPE_BASE85,
+    PUBLIC_KEY_STORE_TYPE_HEX,
+    PUBLIC_KEY_STORE_TYPE_PEM
+)
 from squid_py.did import DID
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import unit_test
@@ -243,9 +248,8 @@ def test_load_ddo_json():
     this_ddo = DDO(json_text=sample_ddo_json_string)
     service = this_ddo.get_service('Metadata')
     assert service
-    assert service.get_type() == 'Metadata'
-    values = service.get_values()
-    assert values['metadata']
+    assert service.type == 'Metadata'
+    assert service.values['metadata']
 
 
 @unit_test

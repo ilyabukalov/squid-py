@@ -88,3 +88,19 @@ class Keeper(object):
         :return: Network id, int
         """
         return int(Web3Provider.get_web3().version.network)
+
+    @staticmethod
+    def sign_hash(msg_hash, account):
+        return Web3Provider.get_web3().eth.sign(account.address, msg_hash).hex()
+
+    @staticmethod
+    def unlock_account(account):
+        return Web3Provider.get_web3().personal.unlockAccount(account.address, account.password)
+
+    @staticmethod
+    def get_ether_balance(address):
+        return Web3Provider.get_web3().eth.getBalance(address, block_identifier='latest')
+
+    @staticmethod
+    def get_token_balance(address):
+        return Keeper.token.get_token_balance(address)

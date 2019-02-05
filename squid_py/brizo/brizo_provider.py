@@ -2,23 +2,19 @@ from squid_py.brizo.brizo import Brizo
 
 
 class BrizoProvider(object):
-    """Provides the Brizo instance."""
-    _brizo = None
+    """Provides a Brizo instance."""
+    _brizo_class = Brizo
 
     @staticmethod
     def get_brizo():
         """ Get a Brizo instance."""
-        if BrizoProvider._brizo is None:
-            BrizoProvider._brizo = Brizo()
-
-        return BrizoProvider._brizo
+        return BrizoProvider._brizo_class()
 
     @staticmethod
-    def set_brizo(brizo):
+    def set_brizo_class(brizo_class):
         """
-         Set a Brizo instance.
+         Set a Brizo class.
 
-        :param brizo: Brizo
-        :return:  New Brizo instance.
+        :param brizo_class: Brizo-compatible class
         """
-        BrizoProvider._brizo = brizo
+        BrizoProvider._brizo_class = brizo_class

@@ -1,24 +1,24 @@
 from squid_py.aquarius.aquarius import Aquarius
 
 
-class AquariusProvider(object):
+class AquariusProvider:
     """Provides the Aquarius instance."""
-    _aquarius = None
+    _aquarius_class = Aquarius
 
     @staticmethod
-    def get_aquarius(url=None):
+    def get_url(config):
+        return config.aquarius_url
+
+    @staticmethod
+    def get_aquarius(url):
         """ Get an Aquarius instance."""
-        if not AquariusProvider._aquarius:
-            AquariusProvider._aquarius = Aquarius(url)
-
-        return AquariusProvider._aquarius
+        return AquariusProvider._aquarius_class(url)
 
     @staticmethod
-    def set_aquarius(aquarius):
+    def set_aquarius_class(aquarius_class):
         """
-         Set an Aquarius instance.
+         Set an Aquarius class
 
-        :param aquarius: Aquarius
-        :return:  New Aquarius instance.
+        :param aquarius_class: Aquarius or similar compatible class
         """
-        AquariusProvider._aquarius = aquarius
+        AquariusProvider._aquarius_class = aquarius_class

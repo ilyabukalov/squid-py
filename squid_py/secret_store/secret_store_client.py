@@ -1,33 +1,25 @@
-import logging
-
 from eth_utils import remove_0x_prefix
 from secret_store_client.client import Client
 
-logger = logging.getLogger(__name__)
+from squid_py.config_provider import ConfigProvider
 
 
 class SecretStore(object):
-    """Wrapper around the secret store client."""
+    """
+    Wrapper around the secret store client.
+    """
     _client_class = Client
 
-    def __init__(self, url, parity_url, account):
-        self._secret_store_url = url
-        self._parity_node_url = parity_url
-        self._address = account.address
-        self._password = account.password
+    def __init__(self):
+        config = ConfigProvider.get_config()
+        self._secret_store_client = SecretStore._client_class(
+            config.secret_store_url, config.parity_url, config.parity_address,
+            config.parity_password
+        )
 
     @staticmethod
     def set_client(secret_store_client):
         SecretStore._client_class = secret_store_client
-
-    @property
-    def _secret_store_client(self):
-        return SecretStore._client_class(
-            self._secret_store_url, self._parity_node_url, self._address, self._password
-        )
-
-    def set_secret_store_url(self, url):
-        self._secret_store_url = url
 
     def encrypt_document(self, document_id, content, threshold=0):
         """

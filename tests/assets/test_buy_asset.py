@@ -1,6 +1,8 @@
 import os
 
-from squid_py import ServiceAgreement, ServiceTypes, ConfigProvider
+from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.service_types import ServiceTypes
+from squid_py.config_provider import ConfigProvider
 from squid_py.ddo.ddo import DDO
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper.event_listener import EventListener
@@ -29,19 +31,19 @@ def test_buy_asset(consumer_ocean_instance, registered_ddo):
     # restore the http client because we want the actual Brizo server to do the work
     # not the BrizoMock.
     # Brizo.set_http_client(requests)
-    consumer_account = get_account_from_config(cons_ocn.config, 'parity.address1',
+    consumer_account = get_account_from_config(cons_ocn._config, 'parity.address1',
                                                'parity.password1')
 
     downloads_path_elements = len(
-        os.listdir(consumer_ocean_instance.config.downloads_path)) if os.path.exists(
-        consumer_ocean_instance.config.downloads_path) else 0
+        os.listdir(consumer_ocean_instance._config.downloads_path)) if os.path.exists(
+        consumer_ocean_instance._config.downloads_path) else 0
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     assert ServiceAgreement.SERVICE_DEFINITION_ID in service.as_dictionary()
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
     # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
-    consumer_account.request_tokens(100)
-    service_agreement_id = cons_ocn.purchase_asset_service(
+    cons_ocn.accounts.request_tokens(consumer_account, 100)
+    service_agreement_id = cons_ocn.assets.order(
         ddo.did, sa.sa_definition_id, consumer_account)
 
     _filter = {'agreementId': w3.toBytes(hexstr=service_agreement_id)}
@@ -65,4 +67,4 @@ def test_buy_asset(consumer_ocean_instance, registered_ddo):
     assert event, 'No event received for ServiceAgreement Fulfilled.'
     assert w3.toHex(event.args['agreementId']) == service_agreement_id
     assert len(
-        os.listdir(consumer_ocean_instance.config.downloads_path)) == downloads_path_elements + 1
+        os.listdir(consumer_ocean_instance._config.downloads_path)) == downloads_path_elements + 1

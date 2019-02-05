@@ -1,18 +1,23 @@
 import logging
 
+from squid_py import ConfigProvider
+from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.config import DEFAULT_GAS_LIMIT
+from squid_py.did_resolver.did_resolver import DIDResolver
+from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.modules.v0_1.utils import (
     get_condition_contract_data,
     is_condition_fulfilled,
     process_tx_receipt)
-from squid_py.service_agreement.service_agreement import ServiceAgreement
-from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
+from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
+from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 
 logger = logging.getLogger('service_agreement')
 
 
-def grantAccess(account, service_agreement_id, service_definition,
+def grant_access(account, service_agreement_id, service_definition,
                 *args, **kwargs):
     """ Checks if grantAccess condition has been fulfilled and if not calls
         AccessConditions.grantAccess smart contract function.
@@ -39,7 +44,7 @@ def grantAccess(account, service_agreement_id, service_definition,
     logger.info(f'About to do grantAccess: account {account.address}, saId {service_agreement_id}, '
                 f'documentKeyId {document_key_id}')
     try:
-        account.unlock()
+        Keeper.get_instance().unlock_account(account)
         tx_hash = access_conditions.grantAccess(service_agreement_id, document_key_id,
                                                 transact=transact)
         process_tx_receipt(tx_hash, contract.events.AccessGranted, 'AccessGranted')
@@ -48,15 +53,29 @@ def grantAccess(account, service_agreement_id, service_definition,
         raise e
 
 
-def consumeAsset(account, service_agreement_id, service_definition,
+def consume_asset(account, service_agreement_id, service_definition,
                  consume_callback, did, *args, **kwargs):
     if consume_callback:
+        args = SecretStoreProvider.get_args_from_config(ConfigProvider.get_config())
+        secret_store = SecretStoreProvider.get_secret_store(*args)
+        brizo = BrizoProvider.get_brizo()
+
         consume_callback(
-            service_agreement_id, did,
-            service_definition.get(ServiceAgreement.SERVICE_DEFINITION_ID), account
+            service_agreement_id,
+            service_definition.get(ServiceAgreement.SERVICE_DEFINITION_ID),
+            DIDResolver(Keeper.get_instance().did_registry).resolve(did),
+            account,
+            ConfigProvider.get_config().downloads_path,
+            brizo,
+            secret_store
         )
+
         logger.info('Done consuming asset.')
 
     else:
-        logger.error('Handling consume asset but the consume callback is not set.')
-        raise ValueError('Consume asset triggered but the consume callback is not set.')
+        logger.info('Handling consume asset but the consume callback is not set. The user '
+                    'can trigger consume asset directly using the agreementId and assetId.')
+
+
+grantAccess = grant_access
+consumeAsset = consume_asset

@@ -4,7 +4,7 @@ import logging
 
 import pytest
 
-from squid_py.ddo import DDO
+from squid_py.ddo.ddo import DDO
 from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import e2e_test
@@ -24,8 +24,8 @@ def test_create_asset_ddo_file():
     assert isinstance(asset1, DDO)
     assert asset1.is_valid
 
-    assert asset1.get_metadata()
-    print(asset1.get_metadata())
+    assert asset1.metadata
+    print(asset1.metadata)
 
 
 @e2e_test
@@ -47,16 +47,16 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
     consumer_acct = cons_ocn.main_account
 
     # ensure Ocean token balance
-    if aquarius_acct.ocean_balance == 0:
-        rcpt = aquarius_acct.request_tokens(200)
+    if pub_ocn.accounts.balance(aquarius_acct).ocn == 0:
+        rcpt = pub_ocn.accounts.request_tokens(aquarius_acct, 200)
         Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
-    if consumer_acct.ocean_balance == 0:
-        rcpt = consumer_acct.request_tokens(200)
+    if cons_ocn.accounts.balance(consumer_acct).ocn == 0:
+        rcpt = cons_ocn.accounts.request_tokens(consumer_acct, 200)
         Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
 
     # You will need some token to make this transfer!
-    assert aquarius_acct.ocean_balance > 0
-    assert consumer_acct.ocean_balance > 0
+    assert pub_ocn.accounts.balance(aquarius_acct).ocn > 0
+    assert cons_ocn.accounts.balance(consumer_acct).ocn > 0
 
     ##########################################################
     # Create an Asset with valid metadata
@@ -66,24 +66,24 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
     ##########################################################
     # List currently published assets
     ##########################################################
-    meta_data_assets = pub_ocn.metadata_store.list_assets()
+    meta_data_assets = pub_ocn.assets.search('')
     if meta_data_assets:
         print("Currently registered assets:")
         print(meta_data_assets)
 
     if asset.did in meta_data_assets:
-        pub_ocn.metadata_store.get_asset_ddo(asset.did)
-        pub_ocn.metadata_store.retire_asset_ddo(asset.did)
+        pub_ocn.assets.resolve(asset.did)
+        pub_ocn.assets.retire(asset.did)
     # Publish the metadata
-    pub_ocn.metadata_store.publish_asset_ddo(asset)
+    new_asset = pub_ocn.assets.create(asset.metadata, aquarius_acct)
 
     print("Publishing again should raise error")
-    with pytest.raises(ValueError):
-        pub_ocn.metadata_store.publish_asset_ddo(asset)
+    with pytest.raises(Exception):
+        pub_ocn.assets.create(asset.metadata, aquarius_acct)
 
     # TODO: Ensure returned metadata equals sent!
     # get_asset_metadata only returns 'base' key, is this correct?
-    published_metadata = cons_ocn.metadata_store.get_asset_ddo(asset.did)
+    published_metadata = cons_ocn.assets.resolve(new_asset.did)
 
     assert published_metadata
     # only compare top level keys

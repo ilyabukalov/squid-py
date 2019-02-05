@@ -1,6 +1,3 @@
-from squid_py.did_resolver.resolver_value_type import ResolverValueType
-
-
 class ResolvedDID:
     """Class that handles the resolved DID information"""
 
@@ -53,25 +50,6 @@ class ResolvedDID:
     def value(self):
         """return the resolved value can be a URL/DDO(on chain)/DID(string)"""
         return self._value
-
-    @property
-    def value_type(self):
-        """return the resolved value type"""
-        if self._items:
-            return self._items[-1]['value_type']
-        return None
-
-    @property
-    def is_url(self):
-        """return True if the resolved value is an URL"""
-        return self._items and self._items[-1]['value_type'] == ResolverValueType.URL
-
-    @property
-    def url(self):
-        """return the resolved URL"""
-        if self.is_url:
-            return self._value
-        return None
 
     @property
     def items(self):

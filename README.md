@@ -65,6 +65,8 @@ ocean = Ocean()
 config = ConfigProvider.get_config()
 # make account instance, assuming the ethereum account and password are set 
 # in the config file `config.ini`
+account = ocean.accounts.list()[0]
+# or 
 account = Account(config.parity_address, config.parity_password)
 
 # PUBLISHER
@@ -75,21 +77,21 @@ metadata = Metadata.get_example()
 # or passed to Ocean instance in the config_dict.
 # define the services to include in the new asset DDO
 
-ddo = ocean.register_asset(metadata, account)
+ddo = ocean.assets.create(metadata, account)
 
 # Now we have an asset registered, we can verify it exists by resolving the did
-_ddo = ocean.resolve_asset_did(ddo.did)
+_ddo = ocean.assets.resolve(ddo.did)
 # ddo and _ddo should be identical
 
 # CONSUMER
 # search for assets
-asset_ddo = ocean.search_assets_by_text('Ocean protocol')[0]
+asset_ddo = ocean.assets.search('Ocean protocol')[0]
 # Need some ocean tokens to be able to purchase assets
-account.request_tokens(10)
+ocean.accounts.request_tokens(account, 10)
 
 # Start the purchase/consume request. This will automatically make a payment from the specified account.
-account = Account(config.parity_address, config.parity_password)
-service_agreement_id = ocean.purchase_asset(asset_ddo.did, 0, account)
+consumer_account = ocean.accounts.list()[1]
+service_agreement_id = ocean.assets.order(asset_ddo.did, 0, consumer_account)
 
 # after a short wait (seconds to minutes) the asset data files should be available in the `downloads.path` defined in config
 # wait a bit to let things happen

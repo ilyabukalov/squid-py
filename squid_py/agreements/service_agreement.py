@@ -1,12 +1,19 @@
+from collections import namedtuple
+
 from eth_utils import add_0x_prefix
 
+from squid_py.keeper import Keeper
 from squid_py.keeper.utils import generate_multi_value_hash
-from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
-from squid_py.service_agreement.service_agreement_contract import ServiceAgreementContract
-from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
-from squid_py.service_agreement.utils import (get_conditions_data_from_keeper_contracts,
-                                              get_conditions_with_updated_keys)
-from squid_py.utils import generate_prefixed_id
+from squid_py.agreements.service_agreement_condition import ServiceAgreementCondition
+from squid_py.agreements.service_agreement_contract import ServiceAgreementContract
+from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
+from squid_py.agreements.utils import (
+    get_conditions_data_from_keeper_contracts,
+    get_conditions_with_updated_keys
+)
+from squid_py.utils.utilities import generate_prefixed_id
+
+Agreement = namedtuple('Agreement', ('template', 'conditions'))
 
 
 class ServiceAgreement(object):
@@ -31,6 +38,10 @@ class ServiceAgreement(object):
             for p in cond.parameters:
                 if p.name == 'price':
                     return p.value
+
+    @property
+    def agreement(self):
+        return Agreement(self.template_id, self.conditions[:])
 
     @property
     def conditions_params_value_hashes(self):
@@ -117,16 +128,17 @@ class ServiceAgreement(object):
         agreement_hash = self.get_service_agreement_hash(service_agreement_id)
         # We cannot use `web3.eth.account.signHash()` here because it requires privateKey which
         # is not available.
-        return consumer_account.sign_hash(agreement_hash), agreement_hash.hex()
+        return (Keeper.get_instance().sign_hash(agreement_hash, consumer_account),
+                agreement_hash.hex())
 
-    def update_conditions_keys(self, web3, contract_path):
+    def update_conditions_keys(self):
         """Update the conditions keys based on the current keeper contracts.
 
         :param web3:
         :param contract_path:
         :return:
         """
-        self.conditions = get_conditions_with_updated_keys(web3, contract_path, self.conditions,
+        self.conditions = get_conditions_with_updated_keys(self.conditions,
                                                            self.template_id)
 
     def validate_conditions(self):

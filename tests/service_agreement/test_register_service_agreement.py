@@ -2,8 +2,17 @@ import os
 import time
 from datetime import datetime
 
-from squid_py import ConfigProvider, DDO
+from squid_py import ConfigProvider
+from squid_py.agreements.register_service_agreement import (
+    execute_pending_service_agreements,
+    record_service_agreement,
+    register_service_agreement
+)
+from squid_py.agreements.storage import get_service_agreements
+from squid_py.agreements.utils import build_condition_key
+from squid_py.ddo.ddo import DDO
 from squid_py.examples.example_config import ExampleConfig
+from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (
     get_fingerprint_by_name,
@@ -11,13 +20,6 @@ from squid_py.keeper.utils import (
 )
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ocean.ocean import Ocean
-from squid_py.service_agreement.register_service_agreement import (
-    execute_pending_service_agreements,
-    record_service_agreement,
-    register_service_agreement
-)
-from squid_py.service_agreement.storage import get_service_agreements
-from squid_py.service_agreement.utils import build_condition_key
 from squid_py.utils.utilities import generate_new_id
 from tests.resources.helper_functions import get_publisher_account
 from tests.resources.tiers import e2e_test
@@ -44,12 +46,12 @@ class TestRegisterServiceAgreement:
         cls.web3 = Web3Provider.get_web3()
 
         cls.ocean = Ocean(cls.config)
-        cls.keeper = cls.ocean.keeper
-        cls.dispenser = cls.ocean.keeper.dispenser
-        cls.token = cls.ocean.keeper.token
-        cls.payment_conditions = cls.ocean.keeper.payment_conditions
-        cls.access_conditions = cls.ocean.keeper.access_conditions
-        cls.service_agreement = cls.ocean.keeper.service_agreement
+        cls.keeper = Keeper.get_instance()
+        cls.dispenser = cls.keeper.dispenser
+        cls.token = cls.keeper.token
+        cls.payment_conditions = cls.keeper.payment_conditions
+        cls.access_conditions = cls.keeper.access_conditions
+        cls.service_agreement = cls.keeper.service_agreement
 
         cls.consumer_acc = get_publisher_account(cls.config)
         cls.consumer = cls.consumer_acc.address
@@ -450,7 +452,7 @@ class TestRegisterServiceAgreement:
             [2, 3],  # root condition
             1,  # AND
         ]
-        cls.consumer_acc.unlock()
+        cls.keeper.unlock_account(cls.consumer_acc)
         receipt = cls.service_agreement.contract_concise.setupTemplate(
             *setup_args,
             transact={'from': cls.consumer}
@@ -494,7 +496,7 @@ class TestRegisterServiceAgreement:
 
     def _execute_service_agreement(self, service_agreement_id, did, price):
         hashes, timeouts = self._get_conditions_data(did, price)
-        self.consumer_acc.unlock()
+        self.keeper.unlock_account(self.consumer_acc)
         signature = self.web3.eth.sign(
             self.consumer,
             hexstr=self.web3.soliditySha3(
@@ -516,7 +518,7 @@ class TestRegisterServiceAgreement:
             service_agreement_id,
             did,
         ]
-        self.consumer_acc.unlock()
+        self.keeper.unlock_account(self.consumer_acc)
         self.service_agreement.contract_concise.initializeAgreement(
             *execute_args,
             transact={'from': self.consumer}
@@ -524,9 +526,9 @@ class TestRegisterServiceAgreement:
 
     @classmethod
     def _setup_token(cls):
-        cls.consumer_acc.unlock()
+        cls.keeper.unlock_account(cls.consumer_acc)
         cls.dispenser.contract_concise.requestTokens(100, transact={'from': cls.consumer})
-        cls.consumer_acc.unlock()
+        cls.keeper.unlock_account(cls.consumer_acc)
         cls.token.contract_concise.approve(
             cls.payment_conditions.address,
             100,

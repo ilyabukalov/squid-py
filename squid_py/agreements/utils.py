@@ -3,13 +3,14 @@ import os
 
 from squid_py.ddo.authentication import Authentication
 from squid_py.ddo.public_key_hex import AUTHENTICATION_TYPE_HEX, PUBLIC_KEY_TYPE_HEX, PublicKeyHex
+from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (generate_multi_value_hash, get_fingerprint_by_name,
                                    hexstr_to_bytes)
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.service_agreement.service_agreement_condition import ServiceAgreementCondition
-from squid_py.service_agreement.service_agreement_template import ServiceAgreementTemplate
-from squid_py.service_agreement.service_types import ServiceTypes
+from squid_py.agreements.service_agreement_condition import ServiceAgreementCondition
+from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
+from squid_py.agreements.service_types import ServiceTypes
 from squid_py.utils.utilities import get_public_key_from_address
 
 
@@ -94,6 +95,7 @@ def register_service_agreement_template(service_agreement_contract, owner_accoun
     for i in range(len(conditions)):
         conditions[i].condition_key = conditions_keys[i]
 
+    Keeper.get_instance().unlock_account(owner_account)
     service_agreement_contract.setup_agreement_template(
         sla_template_instance.template_id,
         contract_addresses, fingerprints, sla_template_instance.conditions_dependencies,
@@ -103,7 +105,7 @@ def register_service_agreement_template(service_agreement_contract, owner_accoun
     return sla_template_instance
 
 
-def get_conditions_with_updated_keys(web3, contract_path, conditions, template_id):
+def get_conditions_with_updated_keys(conditions, template_id):
     """Return a copy of `conditions` with updated conditions keys using the corresponding
     contracts addresses found in `contract_path`.
     Condition keys are used to identify an instance of a condition controller function in a specific

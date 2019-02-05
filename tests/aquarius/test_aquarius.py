@@ -1,13 +1,14 @@
 import pytest
 
+from squid_py import ConfigProvider
 from squid_py.aquarius.aquarius import Aquarius
-from squid_py.ddo import DDO
+from squid_py.ddo.ddo import DDO
 from squid_py.did import DID
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import e2e_test, should_run_test
 
 if should_run_test('e2e'):
-    aquarius = Aquarius()
+    aquarius = Aquarius(ConfigProvider.get_config().aquarius_url)
 
 
 def _get_asset(file_name):
@@ -32,7 +33,7 @@ def asset2():
 
 @e2e_test
 def test_get_service_endpoint():
-    assert aquarius.get_service_endpoint('did:op:test') == f'{aquarius.url}did:op:test'
+    assert aquarius.get_service_endpoint('did:op:test') == f'{aquarius.url}/did:op:test'
 
 
 @e2e_test
@@ -104,7 +105,9 @@ def test_list_assets_ddo(asset1):
 def test_update_ddo(asset1, asset2):
     aquarius.publish_asset_ddo(asset1)
     aquarius.update_asset_ddo(asset1.did, asset2)
-    assert aquarius.get_asset_ddo(asset1.did)['id'] == asset2.did
+    assert aquarius.get_asset_ddo(asset1.did).did == asset2.did
+    assert aquarius.get_asset_ddo(asset1.did).metadata['base']['name'] != asset1.metadata['base'][
+        'name'], 'The name has not been updated correctly.'
     aquarius.retire_asset_ddo(asset1.did)
 
 

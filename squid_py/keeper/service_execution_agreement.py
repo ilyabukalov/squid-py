@@ -52,7 +52,6 @@ class ServiceExecutionAgreement(ContractBase):
             assert i < len(contracts_addresses), ''
         assert isinstance(fulfillment_operator, int) and fulfillment_operator >= 0, ''
 
-        owner_account.unlock()
         tx_hash = self.contract_concise.setupTemplate(
             template_id,  # bytes32 templateId
             contracts_addresses,  # address[] contracts
@@ -85,7 +84,6 @@ class ServiceExecutionAgreement(ContractBase):
         """
         assert len(hashes) == len(timeouts), ''
 
-        publisher_account.unlock()
         tx_hash = self.contract_concise.initializeAgreement(
             template_id,  # bytes32 templateId,
             signature,  # bytes signature,
@@ -107,7 +105,6 @@ class ServiceExecutionAgreement(ContractBase):
         :return: true if all the conditions are fulfilled according to the fulfillment criteria
         otherwise returns false, bool
         """
-        from_account.unlock()
         return self.contract_concise.fulfillAgreement(service_agreement_id)
 
     def revoke_agreement_template(self, template_id, owner_account):
@@ -118,7 +115,6 @@ class ServiceExecutionAgreement(ContractBase):
         :param owner_account: ethereum account revoking this agreement template, Account instance
         :return: True if the service execution agreement template was revoked, bool
         """
-        owner_account.unlock()
         return self.contract_concise.revokeAgreementTemplate(template_id)
 
     def get_template_status(self, template_id):
