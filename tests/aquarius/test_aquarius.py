@@ -106,6 +106,8 @@ def test_update_ddo(asset1, asset2):
     aquarius.publish_asset_ddo(asset1)
     aquarius.update_asset_ddo(asset1.did, asset2)
     assert aquarius.get_asset_ddo(asset1.did).did == asset2.did
+    assert aquarius.get_asset_ddo(asset1.did).metadata['base']['name'] != asset1.metadata['base'][
+        'name'], 'The name has not been updated correctly.'
     aquarius.retire_asset_ddo(asset1.did)
 
 

@@ -3,21 +3,21 @@ import logging
 from eth_utils import remove_0x_prefix
 from secret_store_client.client import Client
 
+from squid_py.config_provider import ConfigProvider
+
 logger = logging.getLogger(__name__)
 
 
 class SecretStore(object):
-    """
-    Wrapper around the secret store client.
-    """
+    """Wrapper around the secret store client."""
     _client_class = Client
 
-    def __init__(self, secret_store_url, keeper_url, account):
+    def __init__(self, url=None):
+        config = ConfigProvider.get_config()
+        self.secret_store_url = url if url is not None else config.secret_store_url
         self._secret_store_client = SecretStore._client_class(
-            secret_store_url,
-            keeper_url,
-            account.address,
-            account.password
+            self.secret_store_url, config.parity_url, config.parity_address,
+            config.parity_password
         )
 
     @staticmethod

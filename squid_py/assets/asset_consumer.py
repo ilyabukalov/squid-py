@@ -1,9 +1,11 @@
-import logging
 import json
+import logging
 import os
 
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.did import did_to_id
+from squid_py.secret_store.secret_store import SecretStore
+from squid_py.agreements.service_types import ServiceTypes
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,10 @@ class AssetConsumer:
             raise AssertionError(
                 'Consume asset failed, service definition is missing the "serviceEndpoint".')
 
+        if ddo.get_service('Authorization'):
+            secret_store_service = ddo.get_service(service_type=ServiceTypes.AUTHORIZATION)
+            secret_store_url = secret_store_service.endpoints.consume
+            secret_store.set_client(SecretStore(secret_store_url))
         # decrypt the contentUrls
         decrypted_content_urls = json.loads(
             secret_store.decrypt_document(did_to_id(did), files)
@@ -52,7 +58,8 @@ class AssetConsumer:
         if not os.path.exists(destination):
             os.mkdir(destination)
 
-        asset_folder = os.path.join(destination, f'datafile.{did_to_id(did)}.{service_definition_id}')
+        asset_folder = os.path.join(destination,
+                                    f'datafile.{did_to_id(did)}.{service_definition_id}')
         if not os.path.exists(asset_folder):
             os.mkdir(asset_folder)
 

@@ -119,6 +119,7 @@ def get_registered_access_service_template(keeper, account):
     template_id = ACCESS_SERVICE_TEMPLATE_ID
     template_owner = keeper.service_agreement.get_template_owner(template_id)
     if not template_owner:
+        keeper.unlock_account(account)
         template = register_service_agreement_template(
             keeper.service_agreement,
             account, template,

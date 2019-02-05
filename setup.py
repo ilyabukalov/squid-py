@@ -17,7 +17,7 @@ with open('HISTORY.md') as history_file:
 # or pip install -e .
 install_requirements = [
     'coloredlogs',
-    'keeper-contracts==0.5.3',
+    'keeper-contracts==0.6.12',
     'pyopenssl',
     'PyJWT',  # not jwt
     'PyYAML==4.2b4',
@@ -25,6 +25,7 @@ install_requirements = [
     'ocean-secret-store-client==0.0.1',
     'requests',
     'deprecated',
+    'pycryptodomex'
     # web3 requires eth-abi, requests, and more,
     # so those will be installed too.
     # See https://github.com/ethereum/web3.py/blob/master/setup.py
@@ -90,6 +91,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/oceanprotocol/squid-py',
-    version='0.3.2',
+    version='0.3.3',
     zip_safe=False,
 )

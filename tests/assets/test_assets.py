@@ -51,7 +51,7 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
         rcpt = pub_ocn.accounts.request_tokens(aquarius_acct, 200)
         Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
     if cons_ocn.accounts.balance(consumer_acct).ocn == 0:
-        rcpt = consumer_acct.accounts.request_tokens(consumer_acct, 200)
+        rcpt = cons_ocn.accounts.request_tokens(consumer_acct, 200)
         Web3Provider.get_web3().eth.waitForTransactionReceipt(rcpt)
 
     # You will need some token to make this transfer!
@@ -66,7 +66,7 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
     ##########################################################
     # List currently published assets
     ##########################################################
-    meta_data_assets = pub_ocn.assets.list_assets()
+    meta_data_assets = pub_ocn.assets.search('')
     if meta_data_assets:
         print("Currently registered assets:")
         print(meta_data_assets)
@@ -75,7 +75,11 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
         pub_ocn.assets.resolve(asset.did)
         pub_ocn.assets.retire(asset.did)
     # Publish the metadata
-    pub_ocn.assets.create(asset.metadata, aquarius_acct)
+    ddo = pub_ocn.assets.create(asset.metadata, aquarius_acct)
+
+    print("Publishing again should raise error")
+    with pytest.raises(Exception):
+        pub_ocn.assets.create(asset.metadata, aquarius_acct)
 
     # TODO: Ensure returned metadata equals sent!
     # get_asset_metadata only returns 'base' key, is this correct?

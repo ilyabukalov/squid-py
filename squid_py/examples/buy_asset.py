@@ -68,12 +68,16 @@ def buy_asset():
         10,
         blocking=True
     )
-    event = EventListener('ServiceExecutionAgreement', 'AgreementFulfilled', filters=_filter).listen_once(
+    event = EventListener('ServiceExecutionAgreement', 'AgreementFulfilled',
+                          filters=_filter).listen_once(
         _log_event('AgreementFulfilled'),
         10,
         blocking=True
     )
     time.sleep(10)
+
+    ocn.is_access_granted(service_agreement_id, ddo.did, consumer_account.address)
+    ocn.is_access_granted(service_agreement_id, ddo.did, consumer_account.address)
 
     assert event, 'No event received for ServiceAgreement Fulfilled.'
     logging.info('Success buying asset.')

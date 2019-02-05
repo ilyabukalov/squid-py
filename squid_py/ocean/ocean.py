@@ -72,7 +72,7 @@ class Ocean:
             self._did_resolver,
             self._make_ocean_agreements(),
             AssetConsumer,
-            config
+            self._config
         )
         self.services = OceanServices(self.assets)
 
