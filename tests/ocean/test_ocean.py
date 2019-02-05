@@ -4,8 +4,8 @@ import logging
 import pytest
 from web3 import Web3
 
+from squid_py import ConfigProvider
 from squid_py.brizo.brizo import Brizo
-from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.ddo.ddo import DDO
 from squid_py.ddo.metadata import Metadata
 from squid_py.did import DID, did_to_id
@@ -19,8 +19,6 @@ from squid_py.modules.v0_1.serviceAgreement import fulfillAgreement
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.agreements.utils import build_condition_key
-from squid_py.secret_store.secret_store import SecretStore
-from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from tests.resources.helper_functions import get_resource_path, verify_signature, wait_for_event
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.tiers import e2e_test
@@ -104,11 +102,11 @@ def test_resolve_did(publisher_ocean_instance):
     # prep ddo
     metadata = Metadata.get_example()
     publisher = publisher_ocean_instance.main_account
-    original_ddo = publisher_ocean_instance.register_asset(metadata, publisher)
+    original_ddo = publisher_ocean_instance.assets.create(metadata, publisher)
 
     # happy path
     did = original_ddo.did
-    ddo = publisher_ocean_instance.resolve_asset_did(did).as_dictionary()
+    ddo = publisher_ocean_instance.assets.resolve(did).as_dictionary()
     original = original_ddo.as_dictionary()
     assert ddo['publicKey'] == original['publicKey']
     assert ddo['authentication'] == original['authentication']
@@ -120,12 +118,12 @@ def test_resolve_did(publisher_ocean_instance):
     # Can't resolve unregistered asset
     unregistered_did = DID.did()
     with pytest.raises(OceanDIDNotFound):
-        publisher_ocean_instance.resolve_asset_did(unregistered_did)
+        publisher_ocean_instance.assets.resolve(unregistered_did)
 
     # Raise error on bad did
     invalid_did = "did:op:0123456789"
     with pytest.raises(OceanDIDNotFound):
-        publisher_ocean_instance.resolve_asset_did(invalid_did)
+        publisher_ocean_instance.assets.resolve(invalid_did)
 
 
 @e2e_test
@@ -133,8 +131,6 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     # assumptions:
     #  - service agreement template must already be registered
     #  - asset ddo already registered
-    SecretStoreProvider.set_secret_store_class(SecretStore)
-    # BrizoProvider.set_brizo_class()
     consumer_acc = consumer_ocean_instance.main_account
     keeper = Keeper.get_instance()
     # point consumer_ocean_instance's brizo mock to the publisher's ocean instance
@@ -189,7 +185,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     did = registered_ddo.did
 
     agreement_id = ServiceAgreement.create_new_agreement_id()
-    ddo = consumer_ocn.resolve_asset_did(did)
+    ddo = consumer_ocn.assets.resolve(did)
     service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
     service_def = ddo.find_service_by_id(service_definition_id).as_dictionary()
 
@@ -290,7 +286,11 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     # Wait for ####### AgreementFulfilled event (verify agreement was fulfilled)
     fulfilled = wait_for_event(keeper.service_agreement.events.AgreementFulfilled, _filter)
     assert fulfilled, ''
-    print('All good.')
+    path = consumer_ocean_instance.assets.consume(
+        agreement_id, did, service_definition_id,
+        consumer_acc, ConfigProvider.get_config().downloads_path
+    )
+    print('All good, files are here: %s' % path)
     # Repeat execute test but with a refund payment (i.e. don't grant access)
 
 

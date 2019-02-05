@@ -17,7 +17,6 @@ from squid_py.ocean.ocean_secret_store import OceanSecretStore
 from squid_py.ocean.ocean_services import OceanServices
 from squid_py.ocean.ocean_templates import OceanTemplates
 from squid_py.ocean.ocean_tokens import OceanTokens
-from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
@@ -60,10 +59,9 @@ class Ocean:
         self._did_resolver = DIDResolver(self._keeper.did_registry)
 
         # Initialize the public sub-modules
-        self.accounts = OceanAccounts(self._keeper, self._config)
+        self.tokens = OceanTokens(self._keeper)
+        self.accounts = OceanAccounts(self._keeper, self._config, self.tokens)
         self.secret_store = OceanSecretStore(self._config)
-        self.tokens = OceanTokens()
-        self.services = OceanServices()
         self.templates = OceanTemplates(
             self._keeper,
             ConfigProvider.get_config()
@@ -76,6 +74,7 @@ class Ocean:
             AssetConsumer,
             config
         )
+        self.services = OceanServices(self.assets)
 
         self._validate_all_modules()
 

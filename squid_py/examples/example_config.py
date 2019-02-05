@@ -2,6 +2,7 @@ from squid_py import Config
 import logging
 import os
 
+
 class ExampleConfig:
     if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
         environment = 'TEST_NILE'

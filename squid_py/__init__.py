@@ -14,3 +14,9 @@ from .exceptions import (OceanDIDAlreadyExist, OceanDIDNotFound,
 from .ocean import (
     Ocean,
 )
+from .accounts.account import (
+    Account
+)
+from .ddo.metadata import (
+    Metadata
+)

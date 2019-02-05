@@ -42,7 +42,15 @@ class Token(ContractBase):
         if not Web3Provider.get_web3().isChecksumAddress(spender_address):
             spender_address = Web3Provider.get_web3().toChecksumAddress(spender_address)
 
-        return self.contract_concise.approve(spender_address,
-                                             price,
-                                             transact={'from': from_account.address}
-                                             )
+        return self.contract_concise.approve(
+            spender_address,
+            price,
+            transact={'from': from_account.address}
+        )
+
+    def transfer(self, receiver_address, amount, from_account):
+        return self.contract_concise.transfer(
+            receiver_address,
+            amount,
+            transact={'from': from_account.address}
+        )

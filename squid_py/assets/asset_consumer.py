@@ -45,6 +45,8 @@ class AssetConsumer:
         decrypted_content_urls = json.loads(
             secret_store.decrypt_document(did_to_id(did), files)
         )
+        print(f'*********** got decrypted urls: {decrypted_content_urls}')
+
         if isinstance(decrypted_content_urls, str):
             decrypted_content_urls = [decrypted_content_urls]
         logger.debug(f'got decrypted contentUrls: {decrypted_content_urls}')
@@ -65,3 +67,4 @@ class AssetConsumer:
             decrypted_content_urls,
             asset_folder
         )
+        return asset_folder

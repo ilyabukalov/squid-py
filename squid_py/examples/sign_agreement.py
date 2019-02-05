@@ -1,40 +1,41 @@
 import logging
 
-from squid_py import Ocean, ServiceAgreement, ConfigProvider
+from squid_py import Ocean, ConfigProvider, Metadata
+from squid_py.agreements.service_types import ServiceTypes
 from squid_py.examples.example_config import ExampleConfig
-from squid_py.keeper import Keeper
-from tests.resources.helper_functions import get_account_from_config, get_registered_ddo
 
 from time import sleep
 
 import os
-if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1': ASYNC_DELAY = 5 # seconds
-else: ASYNC_DELAY = 1  # seconds
+
+from tests.resources.helper_functions import get_account_from_config
+
+if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
+    ASYNC_DELAY = 5  # seconds
+else:
+    ASYNC_DELAY = 1  # seconds
+
 
 def sign_service_agreement():
     ConfigProvider.set_config(ExampleConfig.get_config())
+    config = ConfigProvider.get_config()
     # make ocean instance and register an asset
     ocn = Ocean()
-    acc = get_account_from_config(ocn.config, 'parity.address', 'parity.password')
-    ddo = get_registered_ddo(ocn, acc)
+    acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
+    ddo = ocn.assets.create(Metadata.get_example(), acc)
 
-    # sign agreement using the registered asset did above
-    agreement_id = ServiceAgreement.create_new_agreement_id()
-    service_agreement = ServiceAgreement.from_ddo('0', ddo)
-    if not Keeper.get_instance().unlock_account(acc):
-        logging.warning(f'Unlock of consumer account failed {acc.address}')
-
-    sleep(ASYNC_DELAY)
-
-    agreement_hash = service_agreement.get_service_agreement_hash(agreement_id)
+    consumer_account = get_account_from_config(config, 'parity.address1', 'parity.password1')
+    service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
+    agreement_id, signature = ocn.agreements.prepare(
+        ddo.did,
+        service.service_definition_id,
+        consumer_account
+    )
 
     sleep(ASYNC_DELAY)
-
-    signature = ocn.accounts.sign_hash(agreement_hash, acc)
 
     logging.info(f'service agreement signed: '
                  f'\nservice agreement id: {agreement_id}, '
-                 f'\nagreement hash: {agreement_hash.hex()}, '
                  f'\nsignature: {signature}')
 
 

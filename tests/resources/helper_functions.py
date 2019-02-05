@@ -113,24 +113,24 @@ def get_account_from_config(config, config_account_key, config_account_password_
     return Account(address, password)
 
 
-def get_registered_access_service_template(ocean_instance, account):
+def get_registered_access_service_template(keeper, account):
     # register an asset Access service agreement template
     template = ServiceAgreementTemplate.from_json_file(get_sla_template_path())
     template_id = ACCESS_SERVICE_TEMPLATE_ID
-    template_owner = ocean_instance._keeper.service_agreement.get_template_owner(template_id)
+    template_owner = keeper.service_agreement.get_template_owner(template_id)
     if not template_owner:
         template = register_service_agreement_template(
-            ocean_instance._keeper.service_agreement,
+            keeper.service_agreement,
             account, template,
-            ocean_instance._keeper.network_name
+            keeper.network_name
         )
 
     return template
 
 
 def get_registered_ddo(ocean_instance, account):
-    get_registered_access_service_template(ocean_instance, account)
-    ddo = ocean_instance.register_asset(Metadata.get_example(), account)
+    get_registered_access_service_template(Keeper.get_instance(), account)
+    ddo = ocean_instance.assets.create(Metadata.get_example(), account)
     return ddo
 
 

@@ -131,14 +131,14 @@ class ServiceAgreement(object):
         return (Keeper.get_instance().sign_hash(agreement_hash, consumer_account),
                 agreement_hash.hex())
 
-    def update_conditions_keys(self, web3, contract_path):
+    def update_conditions_keys(self):
         """Update the conditions keys based on the current keeper contracts.
 
         :param web3:
         :param contract_path:
         :return:
         """
-        self.conditions = get_conditions_with_updated_keys(web3, contract_path, self.conditions,
+        self.conditions = get_conditions_with_updated_keys(self.conditions,
                                                            self.template_id)
 
     def validate_conditions(self):

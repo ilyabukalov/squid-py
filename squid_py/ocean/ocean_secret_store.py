@@ -18,15 +18,15 @@ class OceanSecretStore:
         self._parity_url = config.parity_url
         self._account = Account(config.parity_address, config.parity_password)
 
-    def _secret_store(self):
+    def _secret_store(self, account):
         return SecretStoreProvider.get_secret_store(
             self._secret_store_url,
             self._parity_url,
-            self._account
+            account or self._account
         )
 
     def encrypt(self, document_id, content, account):
-        return
+        return self._secret_store(account).encrypt_document(document_id, content)
 
-    def decrypt(self, document_id, encryptedContent, account):
-        pass
+    def decrypt(self, document_id, encrypted_content, account):
+        return self._secret_store(account).decrypt_document(document_id, encrypted_content)

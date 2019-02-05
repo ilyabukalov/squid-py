@@ -100,7 +100,7 @@ class OceanAssets:
 
         # only assign if the encryption worked
         if files_encrypted:
-            logger.debug('Content urls encrypted successfully.')
+            logger.info(f'Content urls encrypted successfully {files_encrypted}')
             del metadata_copy['base']['files']
             metadata_copy['base']['encryptedFiles'] = files_encrypted
         else:
@@ -122,10 +122,8 @@ class OceanAssets:
                 3600,
                 ACCESS_SERVICE_TEMPLATE_ID
             )]
-        _service_descriptors = service_descriptors + [metadata_service_desc]
-        for service in ServiceFactory.build_services(Web3Provider.get_web3(),
-                                                     self._keeper.artifacts_path, did,
-                                                     _service_descriptors):
+        service_descriptors += [metadata_service_desc]
+        for service in ServiceFactory.build_services(did, service_descriptors):
             ddo.add_service(service)
 
         logger.debug(
@@ -259,7 +257,7 @@ class OceanAssets:
         :param service_definition_id: int
         :param consumer_account: Account address, str
         :param destination: str path
-        :return: None
+        :return: str path to saved files
         """
         ddo = self.resolve(did)
         return self._asset_consumer.download(
@@ -268,5 +266,6 @@ class OceanAssets:
             ddo,
             consumer_account,
             destination,
-
+            BrizoProvider.get_brizo(),
+            self._get_secret_store()
         )

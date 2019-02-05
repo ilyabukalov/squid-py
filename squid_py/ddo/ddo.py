@@ -4,14 +4,14 @@ import json
 import logging
 from base64 import b64decode, b64encode
 
-from Crypto.Hash import SHA256
-from Crypto.PublicKey import RSA
-from Crypto.Signature import PKCS1_v1_5
-from web3 import Web3
+from Cryptodome.Hash import SHA256
+from Cryptodome.PublicKey import RSA
+from Cryptodome.Signature import PKCS1_v1_5
 
 from squid_py.ddo.public_key_hex import PublicKeyHex
 from squid_py.did import did_to_id
 from squid_py.agreements.service_types import ServiceTypes
+from squid_py.keeper.web3_provider import Web3Provider
 from .authentication import Authentication
 from .constants import DID_DDO_CONTEXT_URL, KEY_PAIR_MODULUS_BIT
 from .public_key_base import PUBLIC_KEY_STORE_TYPE_PEM, PublicKeyBase
@@ -156,7 +156,7 @@ class DDO:
         if isinstance(service_type, Service):
             service = service_type
         else:
-            service = Service(service_endpoint, service_type, values)
+            service = Service(service_endpoint, service_type, values, did=self._did)
         logger.debug(f'Adding service with service type {service_type} with did {self._did}')
         self._services.append(service)
 
@@ -220,7 +220,9 @@ class DDO:
             for value in values['service']:
                 if isinstance(value, str):
                     value = json.loads(value)
-                self._services.append(Service.from_json(value))
+                service = Service.from_json(value)
+                service.set_did(self._did)
+                self._services.append(service)
         if 'proof' in values:
             self._proof = values['proof']
 
@@ -284,7 +286,7 @@ class DDO:
 
     def is_proof_defined(self):
         """Return true if a static proof exists in this DDO."""
-        return not self._proof is None
+        return self._proof is not None
 
     def validate_from_key(self, key_id, signature_text, signature_value):
         """Validate a signature based on a given public_key key_id/name."""
@@ -419,7 +421,7 @@ class DDO:
         """Return a sha3 hash of important bits of the DDO, excluding any DID portion,
         as this hash can be used to generate the DID."""
         hash_text_list = self._hash_text_list()
-        return Web3.sha3(text="".join(hash_text_list))
+        return Web3Provider.get_web3().sha3(text="".join(hash_text_list))
 
     def _is_did_assigend(self):
         """Return true if a DID is assigned to this DDO."""
@@ -502,19 +504,6 @@ class DDO:
             authentication = Authentication(key_id, authentication_type)
 
         return authentication
-
-    @staticmethod
-    def _create_service_from_json(values):
-        """Create a service object from a JSON string."""
-        if not 'serviceEndpoint' in values:
-            logger.error(
-                'Service definition in DDO document is missing the "serviceEndpoint" key/value.')
-            raise IndexError
-        if not 'type' in values:
-            logger.error('Service definition in DDO document is missing the "type" key/value.')
-            raise IndexError
-        service = Service(values['serviceEndpoint'], values['type'], values)
-        return service
 
     @staticmethod
     def _get_timestamp():

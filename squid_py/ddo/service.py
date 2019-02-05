@@ -20,11 +20,12 @@ class Service:
     SERVICE_ENDPOINT = 'serviceEndpoint'
     PURCHASE_ENDPOINT = 'purchaseEndpoint'
 
-    def __init__(self, service_endpoint, service_type, values, consume_endpoint=None):
+    def __init__(self, service_endpoint, service_type, values, consume_endpoint=None, did=None):
         """Initialize Service instance."""
         self._service_endpoint = service_endpoint
         self._consume_endpoint = consume_endpoint if consume_endpoint else service_endpoint
         self._type = service_type
+        self._did = did
 
         # assign the _values property to empty until they are used
         self._values = dict()
@@ -33,6 +34,10 @@ class Service:
             for name, value in values.items():
                 if name not in reserved_names:
                     self._values[name] = value
+
+    @property
+    def did(self):
+        return self._did
 
     @property
     def type(self):
@@ -67,6 +72,10 @@ class Service:
         """
         if name not in {'id', self.SERVICE_ENDPOINT, self.PURCHASE_ENDPOINT, 'type'}:
             self._values[name] = value
+
+    def set_did(self, did):
+        assert self._did is None, 'service did already set.'
+        self._did = did
 
     def is_valid(self):
         """Return True if the sevice is valid."""

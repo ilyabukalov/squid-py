@@ -29,11 +29,11 @@ class ServiceDescriptor(object):
 
 class ServiceFactory(object):
     @staticmethod
-    def build_services(web3, contract_path, did, service_descriptors):
+    def build_services(did, service_descriptors):
         services = []
         sa_def_key = ServiceAgreement.SERVICE_DEFINITION_ID
         for i, service_desc in enumerate(service_descriptors):
-            service = ServiceFactory.build_service(web3, contract_path, service_desc, did)
+            service = ServiceFactory.build_service(service_desc, did)
             # set serviceDefinitionId for each service
             service.update_value(sa_def_key, str(i))
             services.append(service)
@@ -41,35 +41,41 @@ class ServiceFactory(object):
         return services
 
     @staticmethod
-    def build_service(web3, contract_path, service_descriptor, did):
+    def build_service(service_descriptor, did):
         assert isinstance(service_descriptor, tuple) and len(
             service_descriptor) == 2, 'Unknown service descriptor format.'
         service_type, kwargs = service_descriptor
         if service_type == ServiceTypes.METADATA:
-            return ServiceFactory.build_metadata_service(kwargs['metadata'],
-                                                         kwargs['serviceEndpoint'])
+            return ServiceFactory.build_metadata_service(
+                did,
+                kwargs['metadata'],
+                kwargs['serviceEndpoint']
+            )
 
         elif service_type == ServiceTypes.ASSET_ACCESS:
             return ServiceFactory.build_access_service(
-                web3, contract_path, did, kwargs['price'],
+                did, kwargs['price'],
                 kwargs['purchaseEndpoint'], kwargs['serviceEndpoint'],
                 kwargs['timeout'], kwargs['templateId']
             )
 
         elif service_type == ServiceTypes.CLOUD_COMPUTE:
             return ServiceFactory.build_compute_service(
-                web3, contract_path, did, kwargs['price'],
+                did, kwargs['price'],
                 kwargs['purchaseEndpoint'], kwargs['serviceEndpoint'], kwargs['timeout']
             )
 
         raise ValueError(f'Unknown service type {service_type}')
 
     @staticmethod
-    def build_metadata_service(metadata, service_endpoint):
-        return Service(service_endpoint, ServiceTypes.METADATA, values={'metadata': metadata})
+    def build_metadata_service(did, metadata, service_endpoint):
+        return Service(service_endpoint,
+                       ServiceTypes.METADATA,
+                       values={'metadata': metadata},
+                       did=did)
 
     @staticmethod
-    def build_access_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint,
+    def build_access_service(did, price, purchase_endpoint, service_endpoint,
                              timeout,
                              template_id):
         param_map = {
@@ -93,7 +99,7 @@ class ServiceFactory(object):
 
         sa = ServiceAgreement(1, sla_template.template_id, sla_template.conditions,
                               sla_template.service_agreement_contract)
-        sa.update_conditions_keys(web3, contract_path)
+        sa.update_conditions_keys()
         other_values = {
             ServiceAgreement.SERVICE_DEFINITION_ID: sa.sa_definition_id,
             ServiceAgreementTemplate.TEMPLATE_ID_KEY: sla_template.template_id,
@@ -104,10 +110,11 @@ class ServiceFactory(object):
         return Service(purchase_endpoint,
                        ServiceTypes.ASSET_ACCESS,
                        values=other_values,
-                       consume_endpoint=service_endpoint)
+                       consume_endpoint=service_endpoint,
+                       did=did)
 
     @staticmethod
-    def build_compute_service(web3, contract_path, did, price, purchase_endpoint, service_endpoint,
+    def build_compute_service(did, price, purchase_endpoint, service_endpoint,
                               timeout):
         # TODO: implement this once the compute flow is ready
         return

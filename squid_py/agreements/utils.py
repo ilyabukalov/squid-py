@@ -103,7 +103,7 @@ def register_service_agreement_template(service_agreement_contract, owner_accoun
     return sla_template_instance
 
 
-def get_conditions_with_updated_keys(web3, contract_path, conditions, template_id):
+def get_conditions_with_updated_keys(conditions, template_id):
     """Return a copy of `conditions` with updated conditions keys using the corresponding
     contracts addresses found in `contract_path`.
     Condition keys are used to identify an instance of a condition controller function in a specific
