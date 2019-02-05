@@ -1,6 +1,7 @@
 import hashlib
 import json
 import secrets
+from unittest.mock import Mock, MagicMock
 
 from squid_py import ConfigProvider
 from squid_py.secret_store.secret_store import SecretStore
@@ -18,7 +19,12 @@ def test_secret_store():
     document_id = hashlib.sha256((metadata_json + secrets.token_hex(32)).encode()).hexdigest()
     print(document_id)
     config = ConfigProvider.get_config()
+    ss_client = Mock
+    ss_client.publish_document = MagicMock(return_value='!!document!!')
+    ss_client.decrypt_document = MagicMock(return_value=metadata_json)
+    SecretStore.set_client(ss_client)
+
     args = SecretStoreProvider.get_args_from_config(config)
     result = SecretStore(*args).encrypt_document(document_id, metadata_json)
     print(result)
-    assert json.loads(SecretStore(*args).decrypt_document(document_id, result)) == metadata
+    assert SecretStore(*args).decrypt_document(document_id, result) == metadata_json
