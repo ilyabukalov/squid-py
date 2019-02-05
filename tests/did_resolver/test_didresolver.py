@@ -12,10 +12,14 @@ from squid_py.did_resolver.resolver_value_type import ResolverValueType
 from squid_py.exceptions import (
     OceanDIDNotFound,
 )
-from squid_py.keeper.web3_provider import Web3Provider
+from squid_py.keeper import Keeper
 from tests.resources.tiers import e2e_test
 
 logger = logging.getLogger()
+
+
+def keeper():
+    return Keeper.get_instance()
 
 
 @e2e_test
@@ -23,7 +27,7 @@ def test_did_registry_register(publisher_ocean_instance):
     ocean = publisher_ocean_instance
 
     register_account = ocean.main_account
-    did_registry = ocean.keeper.did_registry
+    did_registry = keeper().did_registry
     did_id = secrets.token_hex(32)
     did_test = 'did:op:' + did_id
     key_test = Web3.sha3(text='provider')
@@ -37,17 +41,17 @@ def test_did_registry_register(publisher_ocean_instance):
 def test_did_registry_no_accout_provided(publisher_ocean_instance):
     ocean = publisher_ocean_instance
     register_account = ocean.main_account
-    did_registry = ocean.keeper.did_registry
+    did_registry = keeper().did_registry
     did_id = secrets.token_hex(32)
     did_test = 'did:op:' + did_id
     value_test = 'http://localhost:5000'
     # No account provided
     with pytest.raises(ValueError):
-        did_registry.create(did_test, url=value_test)
+        did_registry.register(did_test, did_test, url=value_test)
 
     # Invalide key field provided
     with pytest.raises(ValueError):
-        did_registry.create(did_test, url=value_test, account=register_account, key=42)
+        did_registry.register(did_test, did_test, url=value_test, account=register_account)
 
 
 @e2e_test
@@ -55,7 +59,7 @@ def test_did_resolver_library(publisher_ocean_instance):
     ocean = publisher_ocean_instance
     register_account = ocean.main_account
     owner_address = register_account.address
-    did_registry = ocean.keeper.did_registry
+    did_registry = keeper().did_registry
     did_id = secrets.token_hex(32)
     did_test = 'did:op:' + did_id
     value_type = ResolverValueType.URL
@@ -63,7 +67,7 @@ def test_did_resolver_library(publisher_ocean_instance):
     value_test = 'http://localhost:5000'
     key_zero = Web3.toBytes(hexstr='0x' + ('00' * 32))
 
-    did_resolver = DIDResolver(Web3Provider.get_web3(), ocean.keeper.did_registry)
+    did_resolver = DIDResolver(keeper().did_registry)
 
     # resolve URL from a direct DID ID value
     did_id_bytes = Web3.toBytes(hexstr=did_id)
@@ -147,8 +151,7 @@ def test_did_resolver_library(publisher_ocean_instance):
 
 @e2e_test
 def test_did_not_found(publisher_ocean_instance):
-    ocean = publisher_ocean_instance
-    did_resolver = DIDResolver(Web3Provider.get_web3(), ocean.keeper.did_registry)
+    did_resolver = DIDResolver(keeper().did_registry)
     did_id = secrets.token_hex(32)
     did_id_bytes = Web3.toBytes(hexstr=did_id)
     with pytest.raises(OceanDIDNotFound):
@@ -159,18 +162,18 @@ def test_did_not_found(publisher_ocean_instance):
 def test_get_did(publisher_ocean_instance):
     ocean = publisher_ocean_instance
     register_account = ocean.main_account
-    did_registry = ocean.keeper.did_registry
+    did_registry = keeper().did_registry
     did = DID.did()
     value_test = 'http://localhost:5000'
-    did_resolver = DIDResolver(Web3Provider.get_web3(), ocean.keeper.did_registry)
+    did_resolver = DIDResolver(keeper().did_registry)
     did_registry.create(did, url=value_test, account=register_account)
     did_id = did_to_id(did)
-    did_resolver.get_did(Web3.toBytes(hexstr=did_id))
+    url = did_resolver.get_resolve_url(Web3.toBytes(hexstr=did_id))
+    assert url == value_test
 
 
 @e2e_test
 def test_get_did_not_valid(publisher_ocean_instance):
-    ocean = publisher_ocean_instance
-    did_resolver = DIDResolver(Web3Provider.get_web3(), ocean.keeper.did_registry)
+    did_resolver = DIDResolver(keeper().did_registry)
     with pytest.raises(TypeError):
-        did_resolver.get_did('not valid')
+        did_resolver.get_resolve_url('not valid')

@@ -33,7 +33,7 @@ def asset2():
 
 @e2e_test
 def test_get_service_endpoint():
-    assert aquarius.get_service_endpoint('did:op:test') == f'{aquarius.url}did:op:test'
+    assert aquarius.get_service_endpoint('did:op:test') == f'{aquarius.url}/did:op:test'
 
 
 @e2e_test
@@ -105,7 +105,7 @@ def test_list_assets_ddo(asset1):
 def test_update_ddo(asset1, asset2):
     aquarius.publish_asset_ddo(asset1)
     aquarius.update_asset_ddo(asset1.did, asset2)
-    assert aquarius.get_asset_ddo(asset1.did)['id'] == asset2.did
+    assert aquarius.get_asset_ddo(asset1.did).did == asset2.did
     aquarius.retire_asset_ddo(asset1.did)
 
 

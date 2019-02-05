@@ -50,8 +50,21 @@ class Aquarius:
 
         :return: List of DID string
         """
-        asset_list = json.loads(requests.get(self._base_url).content)
-        if asset_list and 'ids' in asset_list:
+        response = requests.get(self._base_url).content
+        if not response:
+            return {}
+
+        try:
+            asset_list = json.loads(response)
+        except TypeError:
+            asset_list = None
+        except ValueError:
+            raise ValueError(response.decode('UTF-8'))
+
+        if not asset_list:
+            return []
+
+        if 'ids' in asset_list:
             return asset_list['ids']
         return []
 

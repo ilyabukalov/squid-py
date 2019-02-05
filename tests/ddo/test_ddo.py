@@ -3,8 +3,13 @@
 """
 import json
 
-from squid_py.ddo import (DDO, PUBLIC_KEY_STORE_TYPE_BASE64, PUBLIC_KEY_STORE_TYPE_BASE85,
-                          PUBLIC_KEY_STORE_TYPE_HEX, PUBLIC_KEY_STORE_TYPE_PEM)
+from squid_py.ddo.ddo import DDO
+from squid_py.ddo.public_key_base import (
+    PUBLIC_KEY_STORE_TYPE_BASE64,
+    PUBLIC_KEY_STORE_TYPE_BASE85,
+    PUBLIC_KEY_STORE_TYPE_HEX,
+    PUBLIC_KEY_STORE_TYPE_PEM
+)
 from squid_py.did import DID
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import unit_test

@@ -3,6 +3,7 @@ import os
 
 from squid_py.ddo.authentication import Authentication
 from squid_py.ddo.public_key_hex import AUTHENTICATION_TYPE_HEX, PUBLIC_KEY_TYPE_HEX, PublicKeyHex
+from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (generate_multi_value_hash, get_fingerprint_by_name,
                                    hexstr_to_bytes)
@@ -94,6 +95,7 @@ def register_service_agreement_template(service_agreement_contract, owner_accoun
     for i in range(len(conditions)):
         conditions[i].condition_key = conditions_keys[i]
 
+    Keeper.get_instance().unlock_account(owner_account)
     service_agreement_contract.setup_agreement_template(
         sla_template_instance.template_id,
         contract_addresses, fingerprints, sla_template_instance.conditions_dependencies,

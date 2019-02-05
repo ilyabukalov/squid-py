@@ -2,8 +2,10 @@ import os
 import time
 from datetime import datetime
 
-from squid_py import ConfigProvider, DDO
+from squid_py import ConfigProvider
+from squid_py.ddo.ddo import DDO
 from squid_py.examples.example_config import ExampleConfig
+from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (
     get_fingerprint_by_name,
@@ -44,12 +46,12 @@ class TestRegisterServiceAgreement:
         cls.web3 = Web3Provider.get_web3()
 
         cls.ocean = Ocean(cls.config)
-        cls.keeper = cls.ocean.keeper
-        cls.dispenser = cls.ocean.keeper.dispenser
-        cls.token = cls.ocean.keeper.token
-        cls.payment_conditions = cls.ocean.keeper.payment_conditions
-        cls.access_conditions = cls.ocean.keeper.access_conditions
-        cls.service_agreement = cls.ocean.keeper.service_agreement
+        cls.keeper = Keeper.get_instance()
+        cls.dispenser = cls.keeper.dispenser
+        cls.token = cls.keeper.token
+        cls.payment_conditions = cls.keeper.payment_conditions
+        cls.access_conditions = cls.keeper.access_conditions
+        cls.service_agreement = cls.keeper.service_agreement
 
         cls.consumer_acc = get_publisher_account(cls.config)
         cls.consumer = cls.consumer_acc.address

@@ -2,11 +2,8 @@ import logging
 import json
 import os
 
-from squid_py import ConfigProvider
 from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.did import did_to_id
-from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 
 logger = logging.getLogger(__name__)
 
@@ -45,7 +42,6 @@ class AssetConsumer:
         decrypted_content_urls = json.loads(
             secret_store.decrypt_document(did_to_id(did), files)
         )
-        print(f'*********** got decrypted urls: {decrypted_content_urls}')
 
         if isinstance(decrypted_content_urls, str):
             decrypted_content_urls = [decrypted_content_urls]

@@ -286,6 +286,13 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     # Wait for ####### AgreementFulfilled event (verify agreement was fulfilled)
     fulfilled = wait_for_event(keeper.service_agreement.events.AgreementFulfilled, _filter)
     assert fulfilled, ''
+    # check permissions
+
+    # /shadow/
+    # 65128ec689064ff086356121994ebd24a81fc50ca77f4d4d9eba1e6c9d487a19/
+    # e073e72781609b2da97742746c0dc2910a898debabc5a07279716d1a156dcff8196a1cbe3b47a9beebdd0dccffd56258c68c60876d31d49c78e1c401566acd4c00
+    good = keeper.access_conditions.check_permissions(consumer_acc.address, asset_id)
+    print('*' * 50, 'good is', good)
     path = consumer_ocean_instance.assets.consume(
         agreement_id, did, service_definition_id,
         consumer_acc, ConfigProvider.get_config().downloads_path
