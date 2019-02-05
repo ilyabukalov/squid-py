@@ -1,9 +1,9 @@
-from squid_py.ddo.service import Service
-from squid_py.did import did_to_id
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.agreements.utils import get_sla_template_path
+from squid_py.ddo.service import Service
+from squid_py.did import did_to_id
 
 
 class ServiceDescriptor(object):
@@ -11,6 +11,11 @@ class ServiceDescriptor(object):
     def metadata_service_descriptor(metadata, service_endpoint):
         return (ServiceTypes.METADATA,
                 {'metadata': metadata, 'serviceEndpoint': service_endpoint})
+
+    @staticmethod
+    def authorization_service_descriptor(service_endpoint):
+        return (ServiceTypes.AUTHORIZATION,
+                {'serviceEndpoint': service_endpoint})
 
     @staticmethod
     def access_service_descriptor(price, purchase_endpoint, service_endpoint, timeout, template_id):
@@ -52,6 +57,11 @@ class ServiceFactory(object):
                 kwargs['serviceEndpoint']
             )
 
+        elif service_type == ServiceTypes.AUTHORIZATION:
+            return ServiceFactory.build_authorization_service(
+                kwargs['serviceEndpoint']
+            )
+
         elif service_type == ServiceTypes.ASSET_ACCESS:
             return ServiceFactory.build_access_service(
                 did, kwargs['price'],
@@ -73,6 +83,11 @@ class ServiceFactory(object):
                        ServiceTypes.METADATA,
                        values={'metadata': metadata},
                        did=did)
+
+    @staticmethod
+    def build_authorization_service(service_endpoint):
+        return Service(service_endpoint, ServiceTypes.AUTHORIZATION,
+                       values={'service': 'SecretStore'})
 
     @staticmethod
     def build_access_service(did, price, purchase_endpoint, service_endpoint,

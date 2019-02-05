@@ -6,6 +6,9 @@ class SecretStoreMock:
     def __init__(self, secret_store_url, keeper_url, account):
         self.args = (secret_store_url, keeper_url, account)
 
+    def set_client(self, secret_store):
+        return secret_store
+
     def encrypt_document(self, document_id, document, threshold=0):
         encrypted = f'{self}.{document_id}!!{document}!!{threshold}'
         self.id_to_document[document_id] = (document, encrypted)

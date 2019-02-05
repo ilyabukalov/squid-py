@@ -22,7 +22,7 @@ def test_split_signature():
 @e2e_test
 def test_get_publickey_from_address(publisher_ocean_instance):
     from eth_keys.exceptions import BadSignature
-    for account in publisher_ocean_instance.accounts:
+    for account in publisher_ocean_instance.accounts.accounts_addresses:
         try:
             pub_key = utilities.get_public_key_from_address(Web3Provider.get_web3(), account)
             assert pub_key.to_checksum_address() == account, \

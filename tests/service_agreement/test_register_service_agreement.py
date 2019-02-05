@@ -2,7 +2,15 @@ import os
 import time
 from datetime import datetime
 
-from squid_py import ConfigProvider, DDO
+from squid_py import ConfigProvider
+from squid_py.agreements.register_service_agreement import (
+    execute_pending_service_agreements,
+    record_service_agreement,
+    register_service_agreement
+)
+from squid_py.agreements.storage import get_service_agreements
+from squid_py.agreements.utils import build_condition_key
+from squid_py.ddo.ddo import DDO
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (
@@ -11,13 +19,6 @@ from squid_py.keeper.utils import (
 )
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ocean.ocean import Ocean
-from squid_py.agreements.register_service_agreement import (
-    execute_pending_service_agreements,
-    record_service_agreement,
-    register_service_agreement
-)
-from squid_py.agreements.storage import get_service_agreements
-from squid_py.agreements.utils import build_condition_key
 from squid_py.utils.utilities import generate_new_id
 from tests.resources.helper_functions import get_publisher_account
 from tests.resources.tiers import e2e_test
@@ -44,12 +45,12 @@ class TestRegisterServiceAgreement:
         cls.web3 = Web3Provider.get_web3()
 
         cls.ocean = Ocean(cls.config)
-        cls.keeper = cls.ocean.keeper
-        cls.dispenser = cls.ocean.keeper.dispenser
-        cls.token = cls.ocean.keeper.token
-        cls.payment_conditions = cls.ocean.keeper.payment_conditions
-        cls.access_conditions = cls.ocean.keeper.access_conditions
-        cls.service_agreement = cls.ocean.keeper.service_agreement
+        cls.keeper = cls.ocean._keeper
+        cls.dispenser = cls.ocean._keeper.dispenser
+        cls.token = cls.ocean._keeper.token
+        cls.payment_conditions = cls.ocean._keeper.payment_conditions
+        cls.access_conditions = cls.ocean._keeper.access_conditions
+        cls.service_agreement = cls.ocean._keeper.service_agreement
 
         cls.consumer_acc = get_publisher_account(cls.config)
         cls.consumer = cls.consumer_acc.address
