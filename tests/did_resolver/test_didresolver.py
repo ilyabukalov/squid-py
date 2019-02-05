@@ -96,14 +96,14 @@ def test_did_not_found(publisher_ocean_instance):
 
 
 @e2e_test
-def test_get_did(publisher_ocean_instance):
+def test_get_resolve_url(publisher_ocean_instance):
     ocean = publisher_ocean_instance
     register_account = ocean.main_account
     did_registry = keeper().did_registry
     did = DID.did()
     value_test = 'http://localhost:5000'
     did_resolver = DIDResolver(keeper().did_registry)
-    did_registry.create(did, b'test', url=value_test, account=register_account)
+    did_registry.register(did, b'test', url=value_test, account=register_account)
     did_id = did_to_id(did)
     url = did_resolver.get_resolve_url(Web3.toBytes(hexstr=did_id))
     assert url == value_test
