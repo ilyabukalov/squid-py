@@ -1,8 +1,5 @@
 """Ocean module."""
 import logging
-from collections import namedtuple
-
-Balance = namedtuple('Balance', ('eth', 'ocn'))
 
 logger = logging.getLogger('account')
 
