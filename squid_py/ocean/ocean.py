@@ -30,6 +30,8 @@ class Ocean:
     def __init__(self, config=None):
         """
         Initialize Ocean class.
+           >> # Make a new Ocean instance
+           >> ocean = Ocean({...})
 
         This class provides the main top-level functions in ocean protocol:
          * Publish assets metadata and associated services
@@ -37,13 +39,20 @@ class Ocean:
             * The DDO contains the asset's services including the metadata
             * The DID is registered on-chain with a URL of the metadata store
               to retrieve the DDO from
-         * Discover/Search assets via the current configured metadata store
+
+            >> ddo = ocean.assets.create(metadata, publisher_account)
+
+         * Discover/Search assets via the current configured metadata store (Aquarius)
+            >> assets_list = ocean.assets.search('search text')
+
          * Purchase asset services by choosing a service agreement from the
            asset's DDO. Purchase goes through the service agreements interface
            and starts by signing a service agreement then sending the signature
-           to the publisher's Brizo via the `purchaseEndpoint` in the service
+           to the publisher's Brizo server via the `purchaseEndpoint` in the service
            definition:
-           >> service_agreement_id = Ocean.purchase_asset_service(did, consumer_account)
+
+           >> service_def_id = ddo.get_service(ServiceTypes.ASSET_ACCESS).service_definition_id
+           >> service_agreement_id = ocean.assets.order(did, service_def_id, consumer_account)
 
         An instance of Ocean is parameterized by a `Config` instance.
 

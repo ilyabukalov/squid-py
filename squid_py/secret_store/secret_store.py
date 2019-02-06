@@ -11,19 +11,24 @@ class SecretStore(object):
     _client_class = Client
 
     def __init__(self, url, parity_url, account):
+        """
+        :param url: str URL of secret store node to create a document encryption session and store
+            the decryption keys
+        :param parity_url: str URL of parity/ethereum node to use for
+            signing and encryption/decryption
+        :param account: Account instance of ethereum account to either encrypt or decrypt a document
+        """
         self._secret_store_url = url
         self._parity_node_url = parity_url
-        self._address = account.address
-        self._password = account.password
+        self._account = account
 
     @staticmethod
     def set_client(secret_store_client):
         SecretStore._client_class = secret_store_client
 
-    @property
-    def _secret_store_client(self):
+    def _secret_store_client(self, account):
         return SecretStore._client_class(
-            self._secret_store_url, self._parity_node_url, self._address, self._password
+            self._secret_store_url, self._parity_node_url, account.address, account.password
         )
 
     def set_secret_store_url(self, url):
@@ -43,7 +48,7 @@ class SecretStore(object):
             None -- if encryption failed
             hex str -- the encrypted document
         """
-        return self._secret_store_client.publish_document(
+        return self._secret_store_client(self._account).publish_document(
             remove_0x_prefix(document_id), content, threshold
         )
 
@@ -61,5 +66,7 @@ class SecretStore(object):
             None -- if decryption failed
             str -- the original content that was encrypted previously
         """
-        return self._secret_store_client.decrypt_document(remove_0x_prefix(document_id),
-                                                          encrypted_content)
+        return self._secret_store_client(self._account).decrypt_document(
+            remove_0x_prefix(document_id),
+            encrypted_content
+        )

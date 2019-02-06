@@ -26,7 +26,21 @@ class OceanSecretStore:
         )
 
     def encrypt(self, document_id, content, account):
+        """
+
+        :param document_id: hex str id of document to use for encryption session
+        :param content: str to be encrypted
+        :param account: Account instance encrypting this content
+        :return: hex str encrypted content
+        """
         return self._secret_store(account).encrypt_document(document_id, content)
 
     def decrypt(self, document_id, encrypted_content, account):
+        """
+
+        :param document_id: hex str id of document to use to retrieve the decryption keys
+        :param encrypted_content: hex str
+        :param account: Account instance to use for decrypting the `encrypted_content`
+        :return: str original content
+        """
         return self._secret_store(account).decrypt_document(document_id, encrypted_content)
