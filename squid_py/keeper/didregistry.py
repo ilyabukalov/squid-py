@@ -91,10 +91,8 @@ class DIDRegistry(ContractBase):
                 {'did': b'\x02n\xfc\xfb\xfdNM\xe9\xb8\xe0\xba\xc2\xb2\xc7\xbeg\xc9/\x95\xc3\x16\
                            x98G^\xb9\xe1\xf0T\xce\x83\xcf\xab',
                  'owner': '0xAd12CFbff2Cb3E558303334e7e6f0d25D5791fc2',
-                 'key': b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
-                          \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00',
                  'value': 'http://localhost:5000',
-                 'valueType': 2,
+                 'checksum': '0x...',
                  'updatedAt': 1947}),
              'event': 'DIDAttributeRegistered',
              'logIndex': 0,
