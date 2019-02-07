@@ -181,7 +181,7 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     web3 = Web3Provider.get_web3()
     consumer_acc = consumer_ocn.main_account
     publisher_acc = publisher_ocean_instance.main_account
-    service_definition_id = '0'
+    service_definition_id = '1'
     did = registered_ddo.did
 
     agreement_id = ServiceAgreement.create_new_agreement_id()
