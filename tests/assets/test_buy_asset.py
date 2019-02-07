@@ -1,5 +1,7 @@
 import os
 
+from secret_store_client.client import RPCError
+import time
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.config_provider import ConfigProvider
@@ -7,7 +9,13 @@ from squid_py.ddo.ddo import DDO
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.web3_provider import Web3Provider
-from tests.resources.helper_functions import get_account_from_config
+from squid_py.secret_store.secret_store import SecretStore
+from squid_py.secret_store.secret_store_provider import SecretStoreProvider
+from tests.resources.helper_functions import (
+    get_account_from_config,
+    get_registered_ddo,
+    get_publisher_account
+)
 
 
 def _log_event(event_name):
@@ -17,12 +25,15 @@ def _log_event(event_name):
     return _process_event
 
 
-def test_buy_asset(consumer_ocean_instance, registered_ddo):
-    ConfigProvider.set_config(ExampleConfig.get_config())
+def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
+    config = ExampleConfig.get_config()
+    ConfigProvider.set_config(config)
+    SecretStoreProvider.set_secret_store_class(SecretStore)
     w3 = Web3Provider.get_web3()
+    pub_acc = get_publisher_account(config)
 
     # Register ddo
-    ddo = registered_ddo
+    ddo = get_registered_ddo(publisher_ocean_instance, pub_acc)
     assert isinstance(ddo, DDO)
     # ocn here will be used only to publish the asset. Handling the asset by the publisher
     # will be performed by the Brizo server running locally
@@ -43,10 +54,10 @@ def test_buy_asset(consumer_ocean_instance, registered_ddo):
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
     # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
     cons_ocn.accounts.request_tokens(consumer_account, 100)
-    service_agreement_id = cons_ocn.assets.order(
+    agreement_id = cons_ocn.assets.order(
         ddo.did, sa.sa_definition_id, consumer_account)
 
-    _filter = {'agreementId': w3.toBytes(hexstr=service_agreement_id)}
+    _filter = {'agreementId': w3.toBytes(hexstr=agreement_id)}
 
     EventListener('ServiceExecutionAgreement', 'AgreementInitialized', filters=_filter).listen_once(
         _log_event('AgreementInitialized'),
@@ -65,6 +76,16 @@ def test_buy_asset(consumer_ocean_instance, registered_ddo):
     )
 
     assert event, 'No event received for ServiceAgreement Fulfilled.'
-    assert w3.toHex(event.args['agreementId']) == service_agreement_id
-    assert len(
-        os.listdir(consumer_ocean_instance._config.downloads_path)) == downloads_path_elements + 1
+    assert w3.toHex(event.args['agreementId']) == agreement_id
+    time.sleep(5)
+    assert len(os.listdir(config.downloads_path)) == downloads_path_elements + 1
+
+    # decrypt the contentUrls using the publisher account instead of consumer account.
+    # if the secret store is working and ACL check is enabled, this should fail
+    # since SecretStore decrypt will fail the checkPermissions check
+    try:
+        cons_ocn.assets.consume(
+            agreement_id, ddo.did, service.service_definition_id, pub_acc, config.downloads_path
+        )
+    except RPCError:
+        print('hooray, secret store is working as expected.')

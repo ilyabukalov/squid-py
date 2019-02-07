@@ -44,16 +44,14 @@ def init_ocn_tokens(ocn, account, amount=100):
     )
 
 
-def make_ocean_instance(secret_store_mock, account_index):
-    SecretStoreProvider.set_secret_store_class(secret_store_mock)
+def make_ocean_instance(account_index):
     ocn = Ocean(ExampleConfig.get_config())
     account = ocn.accounts.list()[account_index]
     if account_index == 0:
         account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password')
     else:
         account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password1')
-    # We can remove the BrizoMock if we assuming that the asset is in Azure.
-    BrizoProvider.set_brizo_class(BrizoMock)
+
     return ocn
 
 
@@ -71,8 +69,8 @@ def get_consumer_account(config):
     return acc
 
 
-def get_publisher_ocean_instance(init_tokens=True):
-    ocn = make_ocean_instance(SecretStoreMock, PUBLISHER_INDEX)
+def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
+    ocn = make_ocean_instance(PUBLISHER_INDEX)
     account = get_publisher_account(ConfigProvider.get_config())
     if account.address in ocn.accounts.accounts_addresses:
         ocn.main_account = account
@@ -81,11 +79,16 @@ def get_publisher_ocean_instance(init_tokens=True):
 
     if init_tokens:
         init_ocn_tokens(ocn, ocn.main_account)
+    if use_ss_mock:
+        SecretStoreProvider.set_secret_store_class(SecretStoreMock)
+    if use_brizo_mock:
+        BrizoProvider.set_brizo_class(BrizoMock)
+
     return ocn
 
 
-def get_consumer_ocean_instance(init_tokens=True):
-    ocn = make_ocean_instance(SecretStoreMock, CONSUMER_INDEX)
+def get_consumer_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
+    ocn = make_ocean_instance(CONSUMER_INDEX)
     account = get_consumer_account(ConfigProvider.get_config())
     if account.address in ocn.accounts.accounts_addresses:
         ocn.main_account = account
@@ -94,6 +97,11 @@ def get_consumer_ocean_instance(init_tokens=True):
 
     if init_tokens:
         init_ocn_tokens(ocn, ocn.main_account)
+    if use_ss_mock:
+        SecretStoreProvider.set_secret_store_class(SecretStoreMock)
+    if use_brizo_mock:
+        BrizoProvider.set_brizo_class(BrizoMock)
+
     return ocn
 
 

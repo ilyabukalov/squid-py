@@ -11,6 +11,12 @@ class OceanTemplates:
         self.access_template_id = ACCESS_SERVICE_TEMPLATE_ID
 
     def create(self, template_id, account):
+        """
+
+        :param template_id: hex str id of the template to create on-chain
+        :param account: Account instance to be owner of this template
+        :return: bool
+        """
         if not template_id:
             template_id = ACCESS_SERVICE_TEMPLATE_ID
 
@@ -19,11 +25,11 @@ class OceanTemplates:
         assert template_id == template.template_id
         template_owner = self._keeper.service_agreement.get_template_owner(template_id)
         if not template_owner:
-            register_service_agreement_template(
+            template = register_service_agreement_template(
                 self._keeper.service_agreement,
                 account,
                 template,
                 self._keeper.network_name
             )
 
-        return template
+        return template is not None

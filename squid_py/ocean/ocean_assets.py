@@ -41,9 +41,9 @@ class OceanAssets:
     def _get_aquarius(self, url=None):
         return AquariusProvider.get_aquarius(url or self._aquarius_url)
 
-    def _get_secret_store(self):
+    def _get_secret_store(self, account):
         return SecretStoreProvider.get_secret_store(
-            *SecretStoreProvider.get_args_from_config(self._config)
+            self._config.secret_store_url, self._config.parity_url, account
         )
 
     def create(self, metadata, publisher_account, service_descriptors=None):
@@ -92,7 +92,7 @@ class OceanAssets:
             'files'], 'files is required in the metadata base attributes.'
         assert Metadata.validate(metadata), 'metadata seems invalid.'
         logger.debug('Encrypting content urls in the metadata.')
-        files_encrypted = self._get_secret_store() \
+        files_encrypted = self._get_secret_store(publisher_account) \
             .encrypt_document(
             did_to_id(did),
             json.dumps(metadata_copy['base']['files']),
@@ -272,5 +272,5 @@ class OceanAssets:
             consumer_account,
             destination,
             BrizoProvider.get_brizo(),
-            self._get_secret_store()
+            self._get_secret_store(consumer_account)
         )

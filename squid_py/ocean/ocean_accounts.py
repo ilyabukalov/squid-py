@@ -23,11 +23,27 @@ class OceanAccounts:
         return [a.address for a in self._accounts]
 
     def list(self):
+        """
+        Return list of Account instances available in the current ethereum node
+        :return: list of Account instances
+        """
         return self._accounts[:]
 
     def balance(self, account):
+        """
+
+        :param account: Account instance to return the balance of
+        :return: Balance tuple of (eth, ocn)
+        """
         return Balance(self._keeper.get_ether_balance(account.address),
                        self._keeper.token.get_token_balance(account.address))
 
     def request_tokens(self, account, amount):
+        """
+
+        :param account: Account instance making the tokens request
+        :param amount: int amount of tokens requested
+        :raises OceanInvalidTransaction: if transaction fails
+        :return: bool
+        """
         return self._ocean_tokens.request(account, amount)

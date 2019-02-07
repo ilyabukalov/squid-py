@@ -96,12 +96,16 @@ def register_service_agreement_template(service_agreement_contract, owner_accoun
         conditions[i].condition_key = conditions_keys[i]
 
     Keeper.get_instance().unlock_account(owner_account)
-    service_agreement_contract.setup_agreement_template(
+    receipt = service_agreement_contract.setup_agreement_template(
         sla_template_instance.template_id,
         contract_addresses, fingerprints, sla_template_instance.conditions_dependencies,
         fulfillment_indices, sla_template_instance.service_agreement_contract.fulfillment_operator,
         owner_account
     )
+
+    if receipt.status == 0:
+        return None
+
     return sla_template_instance
 
 

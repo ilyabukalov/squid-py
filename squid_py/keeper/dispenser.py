@@ -18,12 +18,12 @@ class Dispenser(ContractBase):
     def request_tokens(self, amount, address):
         """
         Request an amount of tokens for a particular address.
-        This transanction has gas cost
+        This transaction has gas cost
 
         :param amount: Amount of tokens, int
         :param address: Account address, str
         :raise OceanInvalidTransaction: Transaction failed
-        :return: Tx receipt
+        :return: bool
         """
         try:
             tx_hash = self.contract_concise.requestTokens(amount, transact={'from': address, 'gas': DEFAULT_GAS_LIMIT})
@@ -31,11 +31,12 @@ class Dispenser(ContractBase):
             receipt = Web3Provider.get_web3().eth.waitForTransactionReceipt(tx_hash)
             logging.debug(f'requestTokens receipt: {receipt}')
             if not receipt:
-                return None
+                return False
 
             if receipt.status == 0:
                 logging.warning(f'request tokens failed: Tx-receipt={receipt}')
                 logging.warning(f'request tokens failed: account {address}')
+                return False
 
             # check for emitted events:
             rfe = self.events.RequestFrequencyExceeded().createFilter(
@@ -45,6 +46,7 @@ class Dispenser(ContractBase):
             if logs:
                 logging.warning(f'request tokens failed RequestFrequencyExceeded')
                 logging.info(f'RequestFrequencyExceeded event logs: {logs}')
+                return False
 
             rle = self.events.RequestLimitExceeded().createFilter(
                 fromBlock='latest', toBlock='latest', argument_filters={'requester': address}
@@ -53,8 +55,9 @@ class Dispenser(ContractBase):
             if logs:
                 logging.warning(f'request tokens failed RequestLimitExceeded')
                 logging.info(f'RequestLimitExceeded event logs: {logs}')
+                return False
 
-            return receipt
+            return True
 
         except ValueError as err:
             raise OceanInvalidTransaction(

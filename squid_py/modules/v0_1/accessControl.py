@@ -56,8 +56,10 @@ def grant_access(account, service_agreement_id, service_definition,
 def consume_asset(account, service_agreement_id, service_definition,
                  consume_callback, did, *args, **kwargs):
     if consume_callback:
-        args = SecretStoreProvider.get_args_from_config(ConfigProvider.get_config())
-        secret_store = SecretStoreProvider.get_secret_store(*args)
+        config = ConfigProvider.get_config()
+        secret_store = SecretStoreProvider.get_secret_store(
+            config.secret_store_url, config.parity_url, account
+        )
         brizo = BrizoProvider.get_brizo()
 
         consume_callback(

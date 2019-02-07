@@ -9,7 +9,9 @@ class BrizoMock(object):
         self.ocean_instance = ocean_instance
         if not ocean_instance:
             from tests.resources.helper_functions import get_publisher_ocean_instance
-            self.ocean_instance = get_publisher_ocean_instance(init_tokens=False)
+            self.ocean_instance = get_publisher_ocean_instance(
+                init_tokens=False, use_ss_mock=False, use_brizo_mock=False
+            )
         self.account = account
         if not account:
             from tests.resources.helper_functions import get_publisher_account

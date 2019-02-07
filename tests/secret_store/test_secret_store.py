@@ -3,9 +3,8 @@ import json
 import secrets
 from unittest.mock import Mock, MagicMock
 
-from squid_py import ConfigProvider
+from squid_py import ConfigProvider, Account
 from squid_py.secret_store.secret_store import SecretStore
-from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import e2e_test
 
@@ -24,7 +23,7 @@ def test_secret_store():
     ss_client.decrypt_document = MagicMock(return_value=metadata_json)
     SecretStore.set_client(ss_client)
 
-    args = SecretStoreProvider.get_args_from_config(config)
-    result = SecretStore(*args).encrypt_document(document_id, metadata_json)
+    ss_args = (config.secret_store_url, config.parity_url, Account('0x0000', 'aaa'))
+    result = SecretStore(*ss_args).encrypt_document(document_id, metadata_json)
     print(result)
-    assert SecretStore(*args).decrypt_document(document_id, result) == metadata_json
+    assert SecretStore(*ss_args).decrypt_document(document_id, result) == metadata_json

@@ -74,10 +74,9 @@ def buy_asset():
         10,
         blocking=True
     )
-    time.sleep(10)
+    time.sleep(3)
 
-    ocn.is_access_granted(service_agreement_id, ddo.did, consumer_account.address)
-    ocn.is_access_granted(service_agreement_id, ddo.did, consumer_account.address)
+    ocn.agreements.is_access_granted(service_agreement_id, ddo.did, consumer_account.address)
 
     assert event, 'No event received for ServiceAgreement Fulfilled.'
     logging.info('Success buying asset.')

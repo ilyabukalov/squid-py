@@ -23,6 +23,14 @@ class OceanAgreements:
         self._config = config
 
     def prepare(self, did, service_definition_id, consumer_account):
+        """
+
+        :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
+        :param service_definition_id: int identifies the specific service in
+         the ddo to use in this agreement.
+        :param consumer_account: ethereum account address of publisher
+        :return: tuple (agreement_id: str, signature: hex str)
+        """
         agreement_id = ServiceAgreement.create_new_agreement_id()
         asset = self._asset_resolver.resolve(did)
         service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
@@ -41,12 +49,27 @@ class OceanAgreements:
         return agreement_id, signature
 
     def send(self, did, agreement_id, service_definition_id, signature, consumer_account):
+        """
+        Send a signed service agreement to the publisher Brizo instance to
+        purchase/access the service.
+
+        :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
+        :param agreement_id: 32 bytes identifier created by the consumer and will be used
+         on-chain for the executed agreement.
+        :param service_definition_id: int identifies the specific service in
+         the ddo to use in this agreement.
+        :param signature: str the signed agreement message hash which includes
+         conditions and their parameters values and other details of the agreement.
+        :param consumer_account: ethereum account address of consumer
+        :raises OceanInitializeServiceAgreementError: on failure
+        :return: bool
+        """
         asset = self._asset_resolver.resolve(did)
         service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
         service_def = asset.find_service_by_id(service_definition_id).as_dictionary()
         # Must approve token transfer for this purchase
         self._approve_token_transfer(service_agreement.get_price(), consumer_account)
-        # subscribe to events related to this service_agreement_id before sending the request.
+        # subscribe to events related to this agreement_id before sending the request.
         logger.debug(f'Registering service agreement with id: {agreement_id}')
         register_service_agreement(
             self._config.storage_path,
@@ -62,7 +85,7 @@ class OceanAgreements:
             0
         )
 
-        BrizoProvider.get_brizo().initialize_service_agreement(
+        return BrizoProvider.get_brizo().initialize_service_agreement(
             did,
             agreement_id,
             service_definition_id,
@@ -71,7 +94,7 @@ class OceanAgreements:
             service_agreement.purchase_endpoint
         )
 
-    def create(self, did, service_definition_id, service_agreement_id,
+    def create(self, did, service_definition_id, agreement_id,
                service_agreement_signature, consumer_address, publisher_account):
         """
         Execute the service agreement on-chain using keeper's ServiceAgreement contract.
@@ -85,7 +108,7 @@ class OceanAgreements:
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
         :param service_definition_id: int identifies the specific service in
          the ddo to use in this agreement.
-        :param service_agreement_id: 32 bytes identifier created by the consumer and will be used
+        :param agreement_id: 32 bytes identifier created by the consumer and will be used
          on-chain for the executed agreement.
         :param service_agreement_signature: str the signed agreement message hash which includes
          conditions and their parameters values and other details of the agreement.
@@ -111,12 +134,12 @@ class OceanAgreements:
         encrypted_files = asset.encrypted_files
         # Raise error if agreement is already executed
         if self._keeper.service_agreement.get_service_agreement_consumer(
-                service_agreement_id) is not None:
+                agreement_id) is not None:
             raise OceanServiceAgreementExists(
-                f'Service agreement {service_agreement_id} is already executed.')
+                f'Service agreement {agreement_id} is already executed.')
 
         if not self._verify_service_agreement_signature(
-                did, service_agreement_id, service_definition_id,
+                did, agreement_id, service_definition_id,
                 consumer_address, service_agreement_signature, ddo=asset
         ):
             raise OceanInvalidServiceAgreementSignature(
@@ -125,11 +148,11 @@ class OceanAgreements:
                 f'consumerAddress {consumer_address}'
             )
 
-        # subscribe to events related to this service_agreement_id
+        # subscribe to events related to this agreement_id
         register_service_agreement(
             self._config.storage_path,
             publisher_account,
-            service_agreement_id,
+            agreement_id,
             did,
             service_def,
             'publisher',
@@ -146,37 +169,37 @@ class OceanAgreements:
             consumer_address,
             service_agreement.conditions_params_value_hashes,
             service_agreement.conditions_timeouts,
-            service_agreement_id,
+            agreement_id,
             asset_id,
             publisher_account
         )
-        logger.info(f'Service agreement {service_agreement_id} executed successfully.')
+        logger.info(f'Service agreement {agreement_id} executed successfully.')
         return receipt
 
-    def is_access_granted(self, service_agreement_id, did, consumer_address):
+    def is_access_granted(self, agreement_id, did, consumer_address):
         """
         Check permission for the agreement.
 
         Verify on-chain that the `consumer_address` has permission to access the given asset `did`
-        according to the `service_agreement_id`.
+        according to the `agreement_id`.
 
-        :param service_agreement_id: str
+        :param agreement_id: str
         :param did: DID, str
         :param consumer_address: Account address, str
         :return: bool True if user has permission
         """
         agreement_consumer = self._keeper.service_agreement.get_service_agreement_consumer(
-            service_agreement_id
+            agreement_id
         )
         if agreement_consumer != consumer_address:
             logger.warning(f'Invalid consumer address {consumer_address} and/or '
-                           f'service agreement id {service_agreement_id} (did {did})')
+                           f'service agreement id {agreement_id} (did {did})')
             return False
 
         document_id = did_to_id(did)
         return self._keeper.access_conditions.check_permissions(consumer_address, document_id)
 
-    def _verify_service_agreement_signature(self, did, service_agreement_id, service_definition_id,
+    def _verify_service_agreement_signature(self, did, agreement_id, service_definition_id,
                                             consumer_address, signature,
                                             ddo=None):
         """
@@ -186,7 +209,7 @@ class OceanAgreements:
         and represents this did's service agreement..
 
         :param did: DID, str
-        :param service_agreement_id: str
+        :param agreement_id: str
         :param service_definition_id: int
         :param consumer_address: Account address, str
         :param signature: Signature, str
@@ -205,7 +228,7 @@ class OceanAgreements:
             OceanAgreements._log_conditions_data(service_agreement)
             raise
 
-        agreement_hash = service_agreement.get_service_agreement_hash(service_agreement_id)
+        agreement_hash = service_agreement.get_service_agreement_hash(agreement_id)
         prefixed_hash = prepare_prefixed_hash(agreement_hash)
         recovered_address = Web3Provider.get_web3().eth.account.recoverHash(
             prefixed_hash, signature=signature
