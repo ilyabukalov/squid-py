@@ -8,7 +8,7 @@ from squid_py.ddo.ddo import DDO
 from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import e2e_test
-
+from squid_py.agreements.service_factory import ServiceDescriptor, ServiceTypes
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("web3").setLevel(logging.WARNING)
 
@@ -89,3 +89,20 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
     # only compare top level keys
     # assert sorted(list(asset.metadata['base'].keys())) == sorted(list(published_metadata['base'].keys()))
     # asset.metadata == published_metadata
+
+
+def test_create_asset_with_different_secret_store(publisher_ocean_instance):
+    ocn = publisher_ocean_instance
+
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
+    assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
+
+    acct= ocn.main_account
+
+    asset = DDO(json_filename=sample_ddo_path)
+    my_secret_store = 'http://myownsecretstore.com'
+    auth_service = ServiceDescriptor.authorization_service_descriptor(my_secret_store)
+    new_asset = ocn.assets.create(asset.metadata, acct, [auth_service])
+    assert new_asset.get_service(ServiceTypes.AUTHORIZATION).endpoints.consume == my_secret_store
+    assert new_asset.get_service(ServiceTypes.ASSET_ACCESS)
+    assert new_asset.get_service(ServiceTypes.METADATA)

@@ -113,21 +113,34 @@ class OceanAssets:
         ddo_service_endpoint = self._get_aquarius().get_service_endpoint(did)
         metadata_service_desc = ServiceDescriptor.metadata_service_descriptor(metadata_copy,
                                                                               ddo_service_endpoint)
-
-        # Add all services to ddo
         if not service_descriptors:
+            service_descriptors += ServiceDescriptor.authorization_service_descriptor(
+                self._config.secret_store_url)
             brizo = BrizoProvider.get_brizo()
-            service_descriptors = [ServiceDescriptor.access_service_descriptor(
+            service_descriptors += [ServiceDescriptor.access_service_descriptor(
                 metadata[MetadataBase.KEY]['price'],
                 brizo.get_purchase_endpoint(self._config),
                 brizo.get_service_endpoint(self._config),
                 3600,
                 ACCESS_SERVICE_TEMPLATE_ID
             )]
-        authorization_descriptor = ServiceDescriptor.authorization_service_descriptor(
-            self._config.secret_store_url)
-        service_descriptors = service_descriptors + [authorization_descriptor] + \
-                              [metadata_service_desc]
+        else:
+            service_types = list(map(lambda x: x[0], service_descriptors))
+            if ServiceTypes.AUTHORIZATION not in service_types:
+                service_descriptors += ServiceDescriptor.authorization_service_descriptor(
+                    self._config.secret_store_url)
+            else:
+                brizo = BrizoProvider.get_brizo()
+                service_descriptors += [ServiceDescriptor.access_service_descriptor(
+                    metadata[MetadataBase.KEY]['price'],
+                    brizo.get_purchase_endpoint(self._config),
+                    brizo.get_service_endpoint(self._config),
+                    3600,
+                    ACCESS_SERVICE_TEMPLATE_ID
+                )]
+
+        # Add all services to ddo
+        service_descriptors = service_descriptors + [metadata_service_desc]
         for service in ServiceFactory.build_services(did, service_descriptors):
             ddo.add_service(service)
 
