@@ -4,6 +4,7 @@ import logging
 
 import pytest
 
+from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
 from squid_py.ddo.ddo import DDO
 from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import get_resource_path
@@ -97,7 +98,7 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
     sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
-    acct= ocn.main_account
+    acct = ocn.main_account
 
     asset = DDO(json_filename=sample_ddo_path)
     my_secret_store = 'http://myownsecretstore.com'
@@ -106,3 +107,44 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
     assert new_asset.get_service(ServiceTypes.AUTHORIZATION).endpoints.consume == my_secret_store
     assert new_asset.get_service(ServiceTypes.ASSET_ACCESS)
     assert new_asset.get_service(ServiceTypes.METADATA)
+
+    new_asset = ocn.assets.create(asset.metadata, acct)
+    assert new_asset.get_service(ServiceTypes.AUTHORIZATION)
+    assert new_asset.get_service(ServiceTypes.ASSET_ACCESS)
+    assert new_asset.get_service(ServiceTypes.METADATA)
+
+    access_service = ServiceDescriptor.access_service_descriptor(
+        2, 'purchase', 'consume', 35, ACCESS_SERVICE_TEMPLATE_ID
+    )
+    new_asset = ocn.assets.create(asset.metadata, acct, [access_service])
+    assert new_asset.get_service(ServiceTypes.AUTHORIZATION)
+    assert new_asset.get_service(ServiceTypes.ASSET_ACCESS)
+    assert new_asset.get_service(ServiceTypes.METADATA)
+
+
+def test_create():
+    pass
+
+
+def test_resolve():
+    pass
+
+
+def test_retire():
+    pass
+
+
+def test_order():
+    pass
+
+
+def test_search():
+    pass
+
+
+def test_query():
+    pass
+
+
+def test_consume():
+    pass

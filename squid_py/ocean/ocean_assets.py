@@ -1,3 +1,4 @@
+import copy
 import json
 import logging
 import os
@@ -64,7 +65,7 @@ class OceanAssets:
                                        ' the required metadata values are filled in.')
 
         # copy metadata so we don't change the original
-        metadata_copy = metadata.copy()
+        metadata_copy = copy.deepcopy(metadata)
 
         # Create a DDO object
         did = DID.did()
