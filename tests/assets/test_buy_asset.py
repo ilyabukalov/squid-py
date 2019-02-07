@@ -1,7 +1,7 @@
 import os
 
 from secret_store_client.client import RPCError
-import time
+
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.config_provider import ConfigProvider
@@ -77,7 +77,6 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
 
     assert event, 'No event received for ServiceAgreement Fulfilled.'
     assert w3.toHex(event.args['agreementId']) == agreement_id
-    time.sleep(5)
     assert len(os.listdir(config.downloads_path)) == downloads_path_elements + 1
 
     # decrypt the contentUrls using the publisher account instead of consumer account.
