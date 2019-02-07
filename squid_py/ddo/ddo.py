@@ -1,17 +1,18 @@
 """DID Lib to do DID's and DDO's."""
-import datetime
 import hashlib
 import json
 import logging
 from base64 import b64decode, b64encode
+from datetime import datetime
 
+import pytz
 from Cryptodome.Hash import SHA256
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Signature import PKCS1_v1_5
 
+from squid_py.agreements.service_types import ServiceTypes
 from squid_py.ddo.public_key_hex import PublicKeyHex
 from squid_py.did import did_to_id
-from squid_py.agreements.service_types import ServiceTypes
 from squid_py.keeper.web3_provider import Web3Provider
 from .authentication import Authentication
 from .constants import DID_DDO_CONTEXT_URL, KEY_PAIR_MODULUS_BIT
@@ -509,7 +510,7 @@ class DDO:
     @staticmethod
     def _get_timestamp():
         """Return the current system timestamp."""
-        return str(datetime.datetime.now())
+        return datetime.utcnow().replace(microsecond=0).replace(tzinfo=pytz.UTC).isoformat()
 
     @staticmethod
     def generate_checksum(did, metadata):
