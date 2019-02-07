@@ -78,10 +78,6 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
     # Publish the metadata
     new_asset = pub_ocn.assets.create(asset.metadata, aquarius_acct)
 
-    print("Publishing again should raise error")
-    with pytest.raises(Exception):
-        pub_ocn.assets.create(asset.metadata, aquarius_acct)
-
     # TODO: Ensure returned metadata equals sent!
     # get_asset_metadata only returns 'base' key, is this correct?
     published_metadata = cons_ocn.assets.resolve(new_asset.did)

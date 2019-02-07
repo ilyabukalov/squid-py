@@ -128,8 +128,8 @@ class OceanAssets:
         else:
             service_types = set(map(lambda x: x[0], service_descriptors))
             if ServiceTypes.AUTHORIZATION not in service_types:
-                service_descriptors += ServiceDescriptor.authorization_service_descriptor(
-                    self._config.secret_store_url)
+                service_descriptors += [ServiceDescriptor.authorization_service_descriptor(
+                    self._config.secret_store_url)]
             else:
                 brizo = BrizoProvider.get_brizo()
                 service_descriptors += [ServiceDescriptor.access_service_descriptor(
