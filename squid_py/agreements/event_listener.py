@@ -1,12 +1,12 @@
 import importlib
 
+from squid_py.agreements.service_agreement_condition import Event, ServiceAgreementCondition
+from squid_py.agreements.storage import update_service_agreement_status
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.service_execution_agreement import ServiceExecutionAgreement
 from squid_py.keeper.utils import get_event_def_from_abi
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.agreements.service_agreement_condition import Event, ServiceAgreementCondition
-from squid_py.agreements.storage import update_service_agreement_status
 
 MIN_TIMEOUT = 2  # seconds
 MAX_TIMEOUT = 60 * 60 * 24 * 7  # 7 days expressed in seconds
@@ -59,7 +59,7 @@ def watch_service_agreement_events(did, storage_path, account,
                 if cond_instance.timeout_flags[i] == 1:
                     # dependency has a timeout
                     assert cond_dep_name in name_to_cond, f'dependency name {cond_dep_name}' \
-                                                          f' not found in conditions'
+                        f' not found in conditions'
                     cond_to_dependants_timeouts[cond_dep_name] = [
                         (cond_instance.name, cond_instance.timeout)]
 
@@ -93,7 +93,7 @@ def watch_service_agreement_events(did, storage_path, account,
         fn = get_event_handler_function(event)
         if timeout_event and timeout:
             assert MIN_TIMEOUT < timeout < MAX_TIMEOUT, f'TIMEOUT value not within allowed ' \
-                                                        f'range {MIN_TIMEOUT}-{MAX_TIMEOUT}.'
+                f'range {MIN_TIMEOUT}-{MAX_TIMEOUT}.'
 
         def _get_callback(func_to_call):
             def _callback(payload):
@@ -109,13 +109,13 @@ def watch_service_agreement_events(did, storage_path, account,
         service_id_arg_name = event_abi_dict['inputs'][0]['name']
         assert service_id_arg_name == ServiceExecutionAgreement.SERVICE_AGREEMENT_ID, \
             f'unknown event first arg, ' \
-            f'expected {ServiceExecutionAgreement.SERVICE_AGREEMENT_ID}, ' \
-            f'got {service_id_arg_name}'
+                f'expected {ServiceExecutionAgreement.SERVICE_AGREEMENT_ID}, ' \
+                f'got {service_id_arg_name}'
 
         _filters = {
             service_id_arg_name: Web3Provider.get_web3().toBytes(hexstr=service_agreement_id)
         }
-        EventListener(contract_name, event.name, filters=_filters)\
+        EventListener(contract_name, event.name, filters=_filters) \
             .listen_once(_get_callback(fn), timeout, start_time)
 
 

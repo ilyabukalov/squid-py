@@ -7,8 +7,8 @@ import json
 import logging
 from collections import namedtuple
 
-from squid_py.agreements.service_types import ServiceTypes
 from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.service_types import ServiceTypes
 
 logger = logging.getLogger(__name__)
 

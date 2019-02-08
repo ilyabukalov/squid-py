@@ -94,7 +94,8 @@ class MetadataBase(object):
                 "resourceId": "access-log2018-02-13-15-17-29-18386C502CAEA932"
             },
             {
-                "url": "http://www3.cs.stonybrook.edu/~algorith/implement/graphbase/distrib/cweb3.4e.tar.gz"
+                "url": "http://www3.cs.stonybrook.edu/~algorith/implement/graphbase/distrib/cweb3"
+                       ".4e.tar.gz"
             },
         ],
         'links': [

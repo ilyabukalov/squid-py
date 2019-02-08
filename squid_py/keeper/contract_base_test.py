@@ -1,4 +1,4 @@
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock, Mock
 
 from tests.resources.dependencies import inject_dependencies
 from tests.resources.tiers import unit_test
