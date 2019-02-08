@@ -1,5 +1,6 @@
 import logging
 
+from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
 from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
@@ -7,13 +8,12 @@ from squid_py.modules.v0_1.utils import (
     get_condition_contract_data,
     is_condition_fulfilled,
     process_tx_receipt)
-from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
 
 logger = logging.getLogger('service_agreement')
 
 
 def handle_payment_action(account, service_agreement_id,
-                        service_definition, function_name, event_name):
+                          service_definition, function_name, event_name):
     payment_conditions, contract, abi, payment_condition_definition = get_condition_contract_data(
         service_definition,
         function_name,

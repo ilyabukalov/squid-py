@@ -1,3 +1,4 @@
+"""Brizo module."""
 from squid_py.brizo.brizo import Brizo
 
 

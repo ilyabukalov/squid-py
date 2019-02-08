@@ -1,13 +1,10 @@
+"""Aquarius module."""
 from squid_py.aquarius.aquarius import Aquarius
 
 
 class AquariusProvider:
     """Provides the Aquarius instance."""
     _aquarius_class = Aquarius
-
-    @staticmethod
-    def get_url(config):
-        return config.aquarius_url
 
     @staticmethod
     def get_aquarius(url):

@@ -1,8 +1,11 @@
+"""
+Example of a buying an asset.
+"""
 import logging
 import os
 import time
 
-from squid_py import ConfigProvider, Ocean, Metadata
+from squid_py import ConfigProvider, Metadata, Ocean
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper.event_listener import EventListener

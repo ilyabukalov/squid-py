@@ -1,4 +1,4 @@
-"""Utilities class"""
+"""Utilities class."""
 import uuid
 from collections import namedtuple
 
@@ -104,7 +104,7 @@ def split_signature(web3, signature):
     :return:
     """
     assert len(signature) == 65, f'invalid signature, ' \
-                                 f'expecting bytes of length 65, got {len(signature)}'
+        f'expecting bytes of length 65, got {len(signature)}'
     v = web3.toInt(signature[-1])
     r = to_32byte_hex(web3, int.from_bytes(signature[:32], 'big'))
     s = to_32byte_hex(web3, int.from_bytes(signature[32:64], 'big'))

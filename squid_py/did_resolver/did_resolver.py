@@ -1,4 +1,4 @@
-"""DID Resolver Class."""
+"""DID Resolver module."""
 import logging
 
 from squid_py.aquarius.aquarius_provider import AquariusProvider
@@ -41,7 +41,11 @@ class DIDResolver:
         return AquariusProvider.get_aquarius(url).get_asset_ddo(did)
 
     def get_resolve_url(self, did_bytes):
-        """Return a did value and value type from the block chain event record using 'did'."""
+        """Return a did value and value type from the block chain event record using 'did'.
+
+        :param did_bytes: DID, hex-str
+        :return url: Url, str
+        """
         data = self._did_registry.get_registered_attribute(did_bytes)
         if not (data and data.get('value')):
             return None
