@@ -46,6 +46,8 @@ websockets = "==5.0.1"
 PyJWT = "==1.7.1"
 pyOpenSSL = "==19.0.0"
 PyYAML = "==4.2b4"
+deprecated = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.7"
