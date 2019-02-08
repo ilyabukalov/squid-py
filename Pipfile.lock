@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "2dc08531044b6bda6d8af9915808ef199ff03d36119c6828edc730ebc761d037"
+            "sha256": "87a8dec421d5c22a00de9e9dccf7259b5201c5de175820c4020b0ffe73e575ae"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -480,11 +480,6 @@
             ],
             "index": "pypi",
             "version": "==1.12.0"
-        },
-        "squid-py": {
-            "editable": true,
-            "git": "https://github.com/oceanprotocol/squid-py.git",
-            "ref": "c493bfc91978a8d11cb1918e1a4b079f0a26a2f7"
         },
         "toolz": {
             "hashes": [
