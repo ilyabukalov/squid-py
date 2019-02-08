@@ -1,6 +1,8 @@
-from squid_py import Config
+"""Examples of dictionary configs to work in Nile and Spree."""
 import logging
 import os
+
+from squid_py import Config
 
 
 class ExampleConfig:

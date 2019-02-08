@@ -1,14 +1,12 @@
+"""Asset module."""
 from squid_py.ddo.ddo import DDO
 
 
 class Asset(DDO):
-    @property
-    def encrypted_files(self):
-        files = self.metadata['base']['encryptedFiles']
-        # files = files if isinstance(files, str) else files[0]
-        return files
+    """Class representing an asset base in a DDO object."""
 
     @property
-    def files(self):
-        files = self.metadata['base']['files']
+    def encrypted_files(self):
+        """Return encryptedFiles field in the base metadata. """
+        files = self.metadata['base']['encryptedFiles']
         return files

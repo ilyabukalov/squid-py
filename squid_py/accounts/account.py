@@ -1,4 +1,4 @@
-"""Ocean module."""
+"""Accounts module."""
 import logging
 
 logger = logging.getLogger('account')

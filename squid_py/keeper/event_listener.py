@@ -42,7 +42,8 @@ class EventListener(object):
 
         Thread(
             target=EventListener.watch_one_event,
-            args=(self.event_filter, callback, timeout if timeout is not None else self.timeout, start_time),
+            args=(self.event_filter, callback, timeout if timeout is not None else self.timeout,
+                  start_time),
             daemon=True,
         ).start()
         if blocking:

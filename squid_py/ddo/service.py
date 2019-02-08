@@ -7,8 +7,8 @@ import json
 import logging
 from collections import namedtuple
 
-from squid_py.agreements.service_types import ServiceTypes
 from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.service_types import ServiceTypes
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +49,7 @@ class Service:
 
     @property
     def agreement(self):
-        if self._type == ServiceTypes.METADATA:
+        if self._type == ServiceTypes.METADATA or self._type == ServiceTypes.AUTHORIZATION:
             return None
 
         return ServiceAgreement.from_service_dict(self.as_dictionary()).agreement

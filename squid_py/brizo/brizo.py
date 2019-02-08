@@ -1,11 +1,12 @@
+"""Brizo module."""
 import json
 import logging
 import os
 
 import requests
 
-from squid_py.exceptions import OceanInitializeServiceAgreementError
 from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.exceptions import OceanInitializeServiceAgreementError
 
 logger = logging.getLogger(__name__)
 

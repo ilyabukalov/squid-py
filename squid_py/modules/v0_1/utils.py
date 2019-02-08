@@ -1,5 +1,6 @@
 import logging
 
+from squid_py.agreements.utils import build_condition_key
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.utils import (
     get_fingerprint_by_name,
@@ -7,7 +8,6 @@ from squid_py.keeper.utils import (
 )
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.modules.v0_1.exceptions import InvalidModule
-from squid_py.agreements.utils import build_condition_key
 
 logger = logging.getLogger('keeper-utils')
 
@@ -26,7 +26,8 @@ def process_tx_receipt(tx_hash, event, event_name):
                      f' fulfillment condition. This is the transaction receipt {receipt}')
 
     if receipt and receipt.status == 0:
-        logger.warning(f'Transaction failed: tx_hash {tx_hash}, tx event {event_name}, receipt {receipt}')
+        logger.warning(
+            f'Transaction failed: tx_hash {tx_hash}, tx event {event_name}, receipt {receipt}')
 
 
 def is_condition_fulfilled(template_id, service_agreement_id,
