@@ -1,4 +1,7 @@
-"""Help to communicate with the metadata store."""
+"""
+Aquarius module.
+Help to communicate with the metadata store.
+"""
 import json
 import logging
 

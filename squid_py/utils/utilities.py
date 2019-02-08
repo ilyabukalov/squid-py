@@ -1,4 +1,4 @@
-"""Utilities class"""
+"""Utilities class."""
 import uuid
 from collections import namedtuple
 

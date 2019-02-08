@@ -1,3 +1,4 @@
+"""Secret Store module."""
 from squid_py.secret_store.secret_store import SecretStore
 
 

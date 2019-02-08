@@ -1,13 +1,11 @@
+"""Example of how to sign a service agreement in Ocean."""
 import logging
-
-from squid_py import Ocean, ConfigProvider, Metadata
-from squid_py.agreements.service_types import ServiceTypes
-from squid_py.examples.example_config import ExampleConfig
-
+import os
 from time import sleep
 
-import os
-
+from squid_py import ConfigProvider, Metadata, Ocean
+from squid_py.agreements.service_types import ServiceTypes
+from squid_py.examples.example_config import ExampleConfig
 from tests.resources.helper_functions import get_account_from_config
 
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':

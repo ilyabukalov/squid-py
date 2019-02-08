@@ -1,3 +1,4 @@
+"""Secret Store module."""
 import logging
 
 from eth_utils import remove_0x_prefix
@@ -24,6 +25,10 @@ class SecretStore(object):
 
     @staticmethod
     def set_client(secret_store_client):
+        """Set a different secret store client.
+
+        :param secret_store_client: SecretStore client
+        """
         SecretStore._client_class = secret_store_client
 
     def _secret_store_client(self, account):
@@ -32,6 +37,11 @@ class SecretStore(object):
         )
 
     def set_secret_store_url(self, url):
+        """
+        Set secret store url.
+
+        :param url: Url, str
+        """
         self._secret_store_url = url
 
     def encrypt_document(self, document_id, content, threshold=0):
