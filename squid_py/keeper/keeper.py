@@ -6,8 +6,8 @@ import logging
 import os
 
 from squid_py.config_provider import ConfigProvider
-from squid_py.keeper.conditions.access_conditions import AccessConditions
-from squid_py.keeper.conditions.payment_conditions import PaymentConditions
+from squid_py.keeper.agreements.conditions import AccessConditions
+from squid_py.keeper.agreements.conditions import PaymentConditions
 from squid_py.keeper.didregistry import DIDRegistry
 from squid_py.keeper.dispenser import Dispenser
 from squid_py.keeper.service_execution_agreement import ServiceExecutionAgreement

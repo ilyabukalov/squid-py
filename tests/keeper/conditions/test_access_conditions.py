@@ -1,7 +1,7 @@
 """Test AccessConditions contract."""
 from squid_py.config_provider import ConfigProvider
 from squid_py.did import DID, did_to_id
-from squid_py.keeper.conditions.access_conditions import AccessConditions
+from squid_py.keeper.agreements.conditions import AccessConditions
 from tests.resources.helper_functions import get_consumer_account
 from tests.resources.tiers import e2e_test
 
