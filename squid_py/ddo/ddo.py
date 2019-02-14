@@ -510,7 +510,7 @@ class DDO:
     @staticmethod
     def _get_timestamp():
         """Return the current system timestamp."""
-        return datetime.utcnow().replace(microsecond=0).replace(tzinfo=pytz.UTC).isoformat()
+        return f'{datetime.utcnow().replace(microsecond=0).isoformat()}Z'
 
     @staticmethod
     def generate_checksum(did, metadata):
