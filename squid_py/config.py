@@ -4,6 +4,7 @@ import configparser
 import logging
 import os
 import site
+from pathlib import Path
 
 DEFAULT_KEEPER_HOST = 'localhost'
 DEFAULT_KEEPER_PORT = 8545
@@ -111,7 +112,10 @@ class Config(configparser.ConfigParser):
     @property
     def keeper_path(self):
         """Path where the keeper-contracts artifacts are allocated."""
-        path = self.get(self._section_name, NAME_KEEPER_PATH)
+        keeper_path_string = self.get(self._section_name, NAME_KEEPER_PATH)
+        path = Path(keeper_path_string).expanduser().resolve()
+        #TODO: Handle the default case and make default empty string
+        # assert path.exists(), "Can't find the keeper path: {} ({})"..format(keeper_path_string, path)
         if os.path.exists(path):
             pass
         elif os.getenv('VIRTUAL_ENV'):
