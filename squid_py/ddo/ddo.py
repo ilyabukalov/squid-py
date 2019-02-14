@@ -5,7 +5,6 @@ import logging
 from base64 import b64decode, b64encode
 from datetime import datetime
 
-import pytz
 from Cryptodome.Hash import SHA256
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Signature import PKCS1_v1_5
@@ -167,9 +166,9 @@ class DDO:
         if is_proof == False then do not include the 'proof' element"""
         data = self.as_dictionary(is_proof)
         if is_pretty:
-            return json.dumps(data, indent=2, separators=(',', ': '))
+            return json.dumps(data, indent=2, separators=(',', ': '), default=self._my_converter)
 
-        return json.dumps(data)
+        return json.dumps(data, default=self._my_converter)
 
     def as_dictionary(self, is_proof=True):
         if self._created is None:
@@ -510,7 +509,8 @@ class DDO:
     @staticmethod
     def _get_timestamp():
         """Return the current system timestamp."""
-        return datetime.utcnow().replace(microsecond=0).replace(tzinfo=pytz.UTC).isoformat()
+        return datetime.strptime(f'{datetime.utcnow().replace(microsecond=0).isoformat()}Z',
+                                 '%Y-%m-%dT%H:%M:%SZ')
 
     @staticmethod
     def generate_checksum(did, metadata):
@@ -523,3 +523,8 @@ class DDO:
                                  metadata['base']['author'] +
                                  metadata['base']['license'] +
                                  did).encode('UTF-8')).hexdigest()
+
+    @staticmethod
+    def _my_converter(o):
+        if isinstance(o, datetime):
+            return o.strftime('%Y-%m-%dT%H:%M:%SZ')
