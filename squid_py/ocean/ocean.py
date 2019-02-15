@@ -190,7 +190,7 @@ class Ocean:
         is usedon-chain to verify that the values actually match the signed hashes.
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: int identifies the specific service in
+        :param service_definition_id: str identifies the specific service in
          the ddo to use in this agreement.
         :param service_agreement_id: 32 bytes identifier created by the consumer and will be used
          on-chain for the executed agreement.
@@ -241,7 +241,7 @@ class Ocean:
 
         :param service_agreement_id: str
         :param did: DID, str
-        :param service_definition_id: int
+        :param service_definition_id: str
         :param consumer_account: Account address, str
         :return: None
         """

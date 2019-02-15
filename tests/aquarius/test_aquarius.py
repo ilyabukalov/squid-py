@@ -145,15 +145,15 @@ def test_query_search(asset1, asset2):
         aquarius.query_search(search_query={}))
     aquarius.publish_asset_ddo(asset1)
 
-    assert len(aquarius.query_search(search_query={"type": "MessagingService"})) == (
+    assert len(aquarius.query_search(search_query={"query": {"type": ["MessagingService"]}})) == (
             num_matches + 1)
 
     aquarius.publish_asset_ddo(asset2)
 
-    assert len(aquarius.query_search(search_query={"type": "Access"})) == (
-                num_matches + 2)
+    assert len(aquarius.query_search(search_query={"query": {"type": ["Consume"]}})) == (
+            num_matches + 2)
     aquarius.retire_asset_ddo(asset1.did)
-    aquarius.retire_asset_ddo(asset2.did) \
+    aquarius.retire_asset_ddo(asset2.did)
 
 @e2e_test
 def test_query_search_invalid_query():

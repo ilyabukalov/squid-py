@@ -55,7 +55,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
     cons_ocn.accounts.request_tokens(consumer_account, 100)
     agreement_id = cons_ocn.assets.order(
-        ddo.did, sa.sa_definition_id, consumer_account)
+        ddo.did, sa.service_definition_id, consumer_account)
 
     _filter = {'agreementId': w3.toBytes(hexstr=agreement_id)}
 

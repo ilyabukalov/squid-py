@@ -26,7 +26,7 @@ class OceanAgreements:
         """
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: int identifies the specific service in
+        :param service_definition_id: str identifies the specific service in
          the ddo to use in this agreement.
         :param consumer_account: ethereum account address of publisher
         :return: tuple (agreement_id: str, signature: hex str)
@@ -56,7 +56,7 @@ class OceanAgreements:
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
         :param agreement_id: 32 bytes identifier created by the consumer and will be used
          on-chain for the executed agreement.
-        :param service_definition_id: int identifies the specific service in
+        :param service_definition_id: str identifies the specific service in
          the ddo to use in this agreement.
         :param signature: str the signed agreement message hash which includes
          conditions and their parameters values and other details of the agreement.
@@ -106,7 +106,7 @@ class OceanAgreements:
         is usedon-chain to verify that the values actually match the signed hashes.
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: int identifies the specific service in
+        :param service_definition_id: str identifies the specific service in
          the ddo to use in this agreement.
         :param agreement_id: 32 bytes identifier created by the consumer and will be used
          on-chain for the executed agreement.
@@ -210,7 +210,7 @@ class OceanAgreements:
 
         :param did: DID, str
         :param agreement_id: str
-        :param service_definition_id: int
+        :param service_definition_id: str
         :param consumer_address: Account address, str
         :param signature: Signature, str
         :param ddo: DDO instance

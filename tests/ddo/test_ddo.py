@@ -119,9 +119,17 @@ TEST_SERVICES = [
     },
     {
         "type": "Compute",
+        "serviceDefinitionId": "1",
         "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/compute?pubKey=${"
                            "pubKey}&agreementId={agreementId}&algo={algo}&container={container}"
     },
+    {
+        "type": "Access",
+        "purchaseEndpoint": "service",
+        "serviceEndpoint": "consume",
+        "serviceDefinitionId": "0",
+        "templateId": "0x00000",
+    }
 ]
 
 
@@ -139,9 +147,12 @@ def generate_sample_ddo():
     ddo.add_service("Metadata", "http://myaquarius.org/api/v1/provider/assets/metadata/{did}",
                     values={'metadata': metadata})
     for test_service in TEST_SERVICES:
-        values = None
         if 'values' in test_service:
             values = test_service['values']
+        else:
+            values = test_service.copy()
+            values.pop('type')
+            values.pop('serviceEndpoint')
 
         ddo.add_service(test_service['type'], test_service['serviceEndpoint'], values=values)
 
@@ -277,3 +288,25 @@ def test_generate_test_ddo_files():
                                                     f'ddo_sample_generated_{index}_private_key.pem')
         with open(private_output_filename, 'w') as fp:
             fp.write(private_key.decode('utf-8'))
+
+
+@unit_test
+def test_find_service():
+    ddo, pvk = generate_sample_ddo()
+    service = ddo.find_service_by_id(0)
+    assert service and service.type == 'Access', 'Failed to find service by integer id.'
+    service = ddo.find_service_by_id('0')
+    assert service and service.type == 'Access', 'Failed to find service by str(int) id.'
+
+    service = ddo.find_service_by_id(1)
+    assert service and service.type == 'Compute', 'Failed to find service by integer id.'
+    service = ddo.find_service_by_id('1')
+    assert service and service.type == 'Compute', 'Failed to find service by str(int) id.'
+
+    service = ddo.find_service_by_id('Access')
+    assert service and service.type == 'Access', 'Failed to find service by id using service type.'
+    assert service.service_definition_id == '0', 'serviceDefinitionId not as expected.'
+
+    service = ddo.find_service_by_id('Compute')
+    assert service and service.type == 'Compute', 'Failed to find service by id using service type.'
+    assert service.service_definition_id == '1', 'serviceDefinitionId not as expected.'
