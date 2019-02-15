@@ -78,7 +78,7 @@ class OceanAgreements:
             did,
             service_def,
             'consumer',
-            service_def.service_definition_id,
+            service_definition_id,
             service_agreement.get_price(),
             asset.encrypted_files,
             self._asset_consumer.download,
@@ -88,7 +88,7 @@ class OceanAgreements:
         return BrizoProvider.get_brizo().initialize_service_agreement(
             did,
             agreement_id,
-            service_def.service_definition_id,
+            service_definition_id,
             signature,
             consumer_account.address,
             service_agreement.purchase_endpoint
@@ -139,7 +139,7 @@ class OceanAgreements:
                 f'Service agreement {agreement_id} is already executed.')
 
         if not self._verify_service_agreement_signature(
-                did, agreement_id, service_def.service_definition_id,
+                did, agreement_id, service_definition_id,
                 consumer_address, service_agreement_signature, ddo=asset
         ):
             raise OceanInvalidServiceAgreementSignature(
@@ -156,7 +156,7 @@ class OceanAgreements:
             did,
             service_def,
             'publisher',
-            service_def.service_definition_id,
+            service_definition_id,
             service_agreement.get_price(),
             encrypted_files,
             None,
