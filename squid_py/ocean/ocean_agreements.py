@@ -26,7 +26,7 @@ class OceanAgreements:
         """
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: int identifies the specific service in
+        :param service_definition_id: str identifies the specific service in
          the ddo to use in this agreement.
         :param consumer_account: ethereum account address of publisher
         :return: tuple (agreement_id: str, signature: hex str)
@@ -56,7 +56,7 @@ class OceanAgreements:
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
         :param agreement_id: 32 bytes identifier created by the consumer and will be used
          on-chain for the executed agreement.
-        :param service_definition_id: int identifies the specific service in
+        :param service_definition_id: str identifies the specific service in
          the ddo to use in this agreement.
         :param signature: str the signed agreement message hash which includes
          conditions and their parameters values and other details of the agreement.
@@ -78,7 +78,7 @@ class OceanAgreements:
             did,
             service_def,
             'consumer',
-            service_definition_id,
+            service_def.service_definition_id,
             service_agreement.get_price(),
             asset.encrypted_files,
             self._asset_consumer.download,
@@ -88,7 +88,7 @@ class OceanAgreements:
         return BrizoProvider.get_brizo().initialize_service_agreement(
             did,
             agreement_id,
-            service_definition_id,
+            service_def.service_definition_id,
             signature,
             consumer_account.address,
             service_agreement.purchase_endpoint
@@ -106,7 +106,7 @@ class OceanAgreements:
         is usedon-chain to verify that the values actually match the signed hashes.
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: int identifies the specific service in
+        :param service_definition_id: str identifies the specific service in
          the ddo to use in this agreement.
         :param agreement_id: 32 bytes identifier created by the consumer and will be used
          on-chain for the executed agreement.
@@ -139,7 +139,7 @@ class OceanAgreements:
                 f'Service agreement {agreement_id} is already executed.')
 
         if not self._verify_service_agreement_signature(
-                did, agreement_id, service_definition_id,
+                did, agreement_id, service_def.service_definition_id,
                 consumer_address, service_agreement_signature, ddo=asset
         ):
             raise OceanInvalidServiceAgreementSignature(
@@ -156,7 +156,7 @@ class OceanAgreements:
             did,
             service_def,
             'publisher',
-            service_definition_id,
+            service_def.service_definition_id,
             service_agreement.get_price(),
             encrypted_files,
             None,
@@ -210,7 +210,7 @@ class OceanAgreements:
 
         :param did: DID, str
         :param agreement_id: str
-        :param service_definition_id: int
+        :param service_definition_id: str
         :param consumer_address: Account address, str
         :param signature: Signature, str
         :param ddo: DDO instance

@@ -273,7 +273,7 @@ class OceanAssets:
 
         :param service_agreement_id: str
         :param did: DID, str
-        :param service_definition_id: int
+        :param service_definition_id: str
         :param consumer_account: Account address, str
         :param destination: str path
         :return: str path to saved files

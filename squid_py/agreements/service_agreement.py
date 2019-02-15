@@ -40,6 +40,10 @@ class ServiceAgreement(object):
                     return p.value
 
     @property
+    def service_definition_id(self):
+        return self.sa_definition_id
+
+    @property
     def agreement(self):
         return Agreement(self.template_id, self.conditions[:])
 
