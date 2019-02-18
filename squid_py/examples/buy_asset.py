@@ -77,7 +77,7 @@ def buy_asset():
         10,
         blocking=True
     )
-    time.sleep(3)
+    time.sleep(10)
 
     ocn.agreements.is_access_granted(service_agreement_id, ddo.did, consumer_account.address)
 

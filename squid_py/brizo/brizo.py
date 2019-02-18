@@ -3,6 +3,7 @@ import json
 import logging
 import os
 
+import progressbar
 import requests
 
 from squid_py.agreements.service_agreement import ServiceAgreement
@@ -86,11 +87,20 @@ class Brizo:
                            f'{service_agreement_id}&consumerAddress={account_address}'
                            )
             logger.info(f'invoke consume endpoint with this url: {consume_url}')
-            response = Brizo._http_client.get(consume_url)
+            response = Brizo._http_client.get(consume_url, stream=True)
+
+            file_name = os.path.basename(url)
+            total_size = response.headers.get('content-length', 0)
+
+            logger.info(f'Total size of {file_name}: {total_size} bytes.')
+            bar = progressbar.ProgressBar(maxval=int(total_size)).start()
             if response.status_code == 200:
-                file_name = os.path.basename(url)
                 with open(os.path.join(destination_folder, file_name), 'wb') as f:
-                    f.write(response.content)
+                    i = 0
+                    for chunk in response.iter_content():
+                        f.write(chunk)
+                        bar.update(i)
+                        i += 1
                     logger.info(f'Saved downloaded file in {f.name}')
             else:
                 logger.warning(f'consume failed: {response.reason}')
