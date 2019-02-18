@@ -5,6 +5,7 @@ import os
 
 import progressbar
 import requests
+from tqdm import tqdm
 
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.exceptions import OceanInitializeServiceAgreementError
@@ -93,15 +94,14 @@ class Brizo:
             total_size = response.headers.get('content-length', 0)
 
             logger.info(f'Total size of {file_name}: {total_size} bytes.')
-            bar = progressbar.ProgressBar(maxval=int(total_size)).start()
+            # bar = progressbar.ProgressBar(maxval=int(total_size)).start()
+            bar = tqdm(total=int(total_size), unit='KB', leave=False)
             if response.status_code == 200:
                 with open(os.path.join(destination_folder, file_name), 'wb') as f:
-                    i = 0
                     for chunk in response.iter_content():
                         f.write(chunk)
-                        bar.update(i)
-                        i += 1
-                    logger.info(f'Saved downloaded file in {f.name}')
+                        bar.update(len(chunk))
+                logger.info(f'Saved downloaded file in {f.name}')
             else:
                 logger.warning(f'consume failed: {response.reason}')
 
