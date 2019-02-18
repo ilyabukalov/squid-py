@@ -13,18 +13,28 @@ logger = logging.getLogger('keeper')
 
 class ContractBase(object):
     """Base class for all contract objects."""
+    CONTRACT_NAME = None
 
-    def __init__(self, contract_name, dependencies={}):
+    def __init__(self, contract_name, dependencies=None):
 
+        assert contract_name, 'param contract_name is required and must ' \
+                              'match a valid keeper contract.'
         self.name = contract_name
 
-        if 'ContractHandler' not in dependencies:
+        if not dependencies or 'ContractHandler' not in dependencies:
             from squid_py.keeper.contract_handler import ContractHandler
             dependencies['ContractHandler'] = ContractHandler
+
         self.contract_concise = dependencies['ContractHandler'].get_concise_contract(contract_name)
         self.contract = dependencies['ContractHandler'].get(contract_name)
 
         logger.debug(f'Loaded {self}')
+
+    @classmethod
+    def get_instance(cls, dependencies=None):
+        assert cls is not ContractBase, 'ContractBase is not meant to be used directly.'
+        assert cls.CONTRACT_NAME, 'CONTRACT_NAME must be set to a valid keeper contract name.'
+        return cls(cls.CONTRACT_NAME, dependencies)
 
     @property
     def _contract_concise(self):

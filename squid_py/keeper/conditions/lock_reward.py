@@ -1,7 +1,9 @@
-from squid_py.keeper.agreements.conditions.condition_base import ConditionBase
+from squid_py.keeper.conditions.condition_base import ConditionBase
 
 
 class LockRewardCondition(ConditionBase):
+    CONTRACT_NAME = 'LockRewardCondition'
+
     def fulfill(self, agreement_id, reward_address, amount):
         return super(self).fulfill(
             agreement_id,

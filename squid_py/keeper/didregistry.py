@@ -16,10 +16,7 @@ class DIDRegistry(ContractBase):
     """Class to register and update Ocean DID's."""
     DID_REGISTRY_EVENT_NAME = 'DIDAttributeRegistered'
 
-    @staticmethod
-    def get_instance():
-        """Returns a ContractBase instance of the DIDRegistry contract."""
-        return DIDRegistry('DIDRegistry')
+    CONTRACT_NAME = 'DIDRegistry'
 
     def register(self, did_source, checksum, url=None, account=None):
         """

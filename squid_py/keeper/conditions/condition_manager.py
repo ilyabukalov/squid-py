@@ -1,7 +1,9 @@
 from squid_py.keeper import ContractBase
 
 
-class ConditionManager(ContractBase):
+class ConditionStoreManager(ContractBase):
+    CONTRACT_NAME = 'ConditionStoreManager'
+
     def get_condition(self, condition_id):
         return self.contract_concise.getCondition(condition_id)
 

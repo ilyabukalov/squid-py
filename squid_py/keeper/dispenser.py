@@ -10,10 +10,7 @@ from squid_py.keeper.web3_provider import Web3Provider
 class Dispenser(ContractBase):
     """Class representing the Dispenser contract."""
 
-    @staticmethod
-    def get_instance():
-        """Returns a ContractBase instance of the Dispenser contract."""
-        return Dispenser('Dispenser')
+    CONTRACT_NAME = 'Dispenser'
 
     def request_tokens(self, amount, address):
         """

@@ -1,7 +1,9 @@
-from squid_py.keeper.agreements.conditions.condition_base import ConditionBase
+from squid_py.keeper.conditions.condition_base import ConditionBase
 
 
 class EscrowRewardCondition(ConditionBase):
+    CONTRACT_NAME = 'EscrowReward'
+
     def fulfill(
             self,
             agreement_id,
@@ -35,4 +37,3 @@ class EscrowRewardCondition(ConditionBase):
             lock_condition_id,
             release_condition_id
         )
-
