@@ -3,7 +3,6 @@ import json
 import logging
 import os
 
-import progressbar
 import requests
 from tqdm import tqdm
 
