@@ -37,7 +37,7 @@ class OceanAgreements:
         try:
             service_agreement.validate_conditions()
         except AssertionError:
-            OceanAgreements._log_conditions_data(service_agreement)
+            # OceanAgreements._log_conditions_data(service_agreement)
             raise
 
         if not self._keeper.unlock_account(consumer_account):
@@ -188,16 +188,16 @@ class OceanAgreements:
         :param consumer_address: Account address, str
         :return: bool True if user has permission
         """
-        agreement_consumer = self._keeper.service_agreement.get_service_agreement_consumer(
-            agreement_id
-        )
-        if agreement_consumer != consumer_address:
-            logger.warning(f'Invalid consumer address {consumer_address} and/or '
-                           f'service agreement id {agreement_id} (did {did})')
-            return False
+        # agreement_consumer = self._keeper.service_agreement.get_service_agreement_consumer(
+        #     agreement_id
+        # )
+        # if agreement_consumer != consumer_address:
+        #     logger.warning(f'Invalid consumer address {consumer_address} and/or '
+        #                    f'service agreement id {agreement_id} (did {did})')
+        #     return False
 
         document_id = did_to_id(did)
-        return self._keeper.access_conditions.check_permissions(consumer_address, document_id)
+        return self._keeper.access_secret_store_condition.check_permissions(consumer_address, document_id)
 
     def _verify_service_agreement_signature(self, did, agreement_id, service_definition_id,
                                             consumer_address, signature,
@@ -249,13 +249,13 @@ class OceanAgreements:
         self._keeper.token.token_approve(self._keeper.payment_conditions.address, amount,
                                          consumer_account)
 
-    @staticmethod
-    def _log_conditions_data(sa):
-        # conditions_data = (contract_addresses, fingerprints, fulfillment_indices, conditions_keys)
-        conditions_data = get_conditions_data_from_keeper_contracts(
-            sa.conditions, sa.template_id
-        )
-        logger.debug(f'conditions keys: {sa.conditions_keys}')
-        logger.debug(f'conditions contracts: {conditions_data[0]}')
-        logger.debug(f'conditions fingerprints: {[fn.hex() for fn in conditions_data[1]]}')
-        logger.debug(f'template id: {sa.template_id}')
+    # @staticmethod
+    # def _log_conditions_data(sa):
+    #     # conditions_data = (contract_addresses, fingerprints, fulfillment_indices, conditions_keys)
+    #     conditions_data = get_conditions_data_from_keeper_contracts(
+    #         sa.conditions, sa.template_id
+    #     )
+    #     logger.debug(f'conditions keys: {sa.conditions_keys}')
+    #     logger.debug(f'conditions contracts: {conditions_data[0]}')
+    #     logger.debug(f'conditions fingerprints: {[fn.hex() for fn in conditions_data[1]]}')
+    #     logger.debug(f'template id: {sa.template_id}')

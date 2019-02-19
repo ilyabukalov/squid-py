@@ -1,8 +1,8 @@
 from squid_py.keeper.conditions.condition_base import ConditionBase
 
 
-class AccessCondition(ConditionBase):
-    CONTRACT_NAME = 'AccesSecretStoreCondition'
+class AccessSecretStoreCondition(ConditionBase):
+    CONTRACT_NAME = 'AccessSecretStoreCondition'
 
     def fulfill(self, agreement_id, document_id, grantee_address):
         return super(self).fulfill(agreement_id, document_id, grantee_address)

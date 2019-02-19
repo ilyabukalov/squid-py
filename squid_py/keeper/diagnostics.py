@@ -11,6 +11,8 @@ logger = logging.getLogger(__name__)
 
 
 class Diagnostics:
+    TEST_CONTRACT_NAME = 'ServiceExecutionAgreement'
+
     @staticmethod
     def check_deployed_agreement_templates():
         keeper = Keeper.get_instance()
@@ -34,8 +36,9 @@ class Diagnostics:
                            f'{os.environ.get("KEEPER_NETWORK_NAME")}. '
                            f'This enables the user to override the method of how the network name '
                            f'is inferred from network id.')
+
         # try to find contract with this network name
-        contract_name = 'ServiceExecutionAgreement'
+        contract_name = Diagnostics.TEST_CONTRACT_NAME
         network_id = Keeper.get_network_id()
         network_name = Keeper.get_network_name(network_id)
         logger.info(f'Using keeper contracts from network {network_name}, '
@@ -59,7 +62,10 @@ class Diagnostics:
 
         keeper = Keeper.get_instance()
         contracts = [keeper.dispenser, keeper.token, keeper.did_registry,
-                     keeper.service_agreement, keeper.payment_conditions, keeper.access_conditions]
+                     keeper.agreement_manager, keeper.template_manager, keeper.condition_manager,
+                     keeper.access_template, keeper.sign_condition, keeper.lock_reward_condition,
+                     keeper.escrow_access_condition, keeper.escrow_reward_condition,
+        ]
         addresses = '\n'.join([f'\t{c.name}: {c.address}' for c in contracts])
         logging.info('Finished loading keeper contracts:\n'
                      '%s', addresses)
