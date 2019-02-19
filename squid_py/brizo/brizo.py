@@ -4,6 +4,7 @@ import logging
 import os
 
 import requests
+from tqdm import tqdm
 
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.exceptions import OceanInitializeServiceAgreementError
@@ -86,12 +87,19 @@ class Brizo:
                            f'{service_agreement_id}&consumerAddress={account_address}'
                            )
             logger.info(f'invoke consume endpoint with this url: {consume_url}')
-            response = Brizo._http_client.get(consume_url)
+            response = Brizo._http_client.get(consume_url, stream=True)
+
+            file_name = os.path.basename(url)
+            total_size = response.headers.get('content-length', 0)
+
+            logger.info(f'Total size of {file_name}: {total_size} bytes.')
+            bar = tqdm(total=int(total_size), unit='KB', leave=False, smoothing=0.1)
             if response.status_code == 200:
-                file_name = os.path.basename(url)
                 with open(os.path.join(destination_folder, file_name), 'wb') as f:
-                    f.write(response.content)
-                    logger.info(f'Saved downloaded file in {f.name}')
+                    for chunk in response.iter_content():
+                        f.write(chunk)
+                        bar.update(len(chunk))
+                logger.info(f'Saved downloaded file in {f.name}')
             else:
                 logger.warning(f'consume failed: {response.reason}')
 

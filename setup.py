@@ -25,7 +25,8 @@ install_requirements = [
     'ocean-secret-store-client==0.0.1',
     'requests',
     'deprecated',
-    'pycryptodomex'
+    'pycryptodomex',
+    'tqdm'
     # web3 requires eth-abi, requests, and more,
     # so those will be installed too.
     # See https://github.com/ethereum/web3.py/blob/master/setup.py
