@@ -93,7 +93,7 @@ class Brizo:
             total_size = response.headers.get('content-length', 0)
 
             logger.info(f'Total size of {file_name}: {total_size} bytes.')
-            bar = tqdm(total=int(total_size), unit='KB', leave=False)
+            bar = tqdm(total=int(total_size), unit='KB', leave=False, smoothing=0.1)
             if response.status_code == 200:
                 with open(os.path.join(destination_folder, file_name), 'wb') as f:
                     for chunk in response.iter_content():
