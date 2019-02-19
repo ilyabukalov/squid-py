@@ -163,6 +163,7 @@ class OceanAgreements:
             0
         )
 
+        self._keeper.unlock_account(publisher_account)
         receipt = self._keeper.service_agreement.execute_service_agreement(
             service_agreement.template_id,
             service_agreement_signature,

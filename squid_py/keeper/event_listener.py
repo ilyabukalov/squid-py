@@ -39,7 +39,7 @@ class EventListener(object):
 
         if blocking:
             callback = _callback
-
+        # TODO Review where to close this threads.
         Thread(
             target=EventListener.watch_one_event,
             args=(self.event_filter, callback, timeout if timeout is not None else self.timeout,
