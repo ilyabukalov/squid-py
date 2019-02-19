@@ -1,5 +1,5 @@
 __author__ = """OceanProtocol"""
-__version__ = '0.4.2'
+__version__ = '0.4.3'
 
 from .accounts.account import (
     Account
