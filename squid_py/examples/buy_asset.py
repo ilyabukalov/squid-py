@@ -10,7 +10,7 @@ from squid_py.agreements.service_types import ServiceTypes
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.web3_provider import Web3Provider
-from tests.resources.helper_functions import get_account_from_config
+from squid_py.examples.helper_functions import get_account_from_config
 
 
 def _log_event(event_name):
