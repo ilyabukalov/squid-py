@@ -26,7 +26,8 @@ install_requirements = [
     'requests',
     'deprecated',
     'pycryptodomex',
-    'tqdm'
+    'tqdm',
+    'pytz'
     # web3 requires eth-abi, requests, and more,
     # so those will be installed too.
     # See https://github.com/ethereum/web3.py/blob/master/setup.py
