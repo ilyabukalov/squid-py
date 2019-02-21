@@ -8,7 +8,6 @@ class AgreementStoreManager(ContractBase):
             self,
             agreement_id,     # bytes32 _id
             did,              # bytes32 _did
-            did_owner,        # address _didOwner
             condition_types,  # address[] memory _conditionTypes
             condition_ids,    # bytes32[] memory _conditionIds
             time_locks,       # uint[] memory _timeLocks
@@ -18,7 +17,6 @@ class AgreementStoreManager(ContractBase):
         tx_hash = self.contract_concise.createAgreement(
             agreement_id,
             did,
-            did_owner,
             condition_types,
             condition_ids,
             time_locks,

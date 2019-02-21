@@ -9,7 +9,6 @@ from squid_py.exceptions import (
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.agreements.register_service_agreement import register_service_agreement
 from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.agreements.utils import get_conditions_data_from_keeper_contracts
 from squid_py.utils.utilities import prepare_prefixed_hash
 
 logger = logging.getLogger('ocean')
@@ -37,7 +36,6 @@ class OceanAgreements:
         try:
             service_agreement.validate_conditions()
         except AssertionError:
-            # OceanAgreements._log_conditions_data(service_agreement)
             raise
 
         if not self._keeper.unlock_account(consumer_account):
@@ -126,15 +124,15 @@ class OceanAgreements:
         try:
             service_agreement.validate_conditions()
         except AssertionError:
-            OceanAgreements._log_conditions_data(service_agreement)
             raise
 
+        agreement_template = self._keeper.escrow_access_secretstore_template
         service_def = asset.find_service_by_id(service_definition_id).as_dictionary()
 
         encrypted_files = asset.encrypted_files
         # Raise error if agreement is already executed
-        if self._keeper.service_agreement.get_service_agreement_consumer(
-                agreement_id) is not None:
+
+        if agreement_template.get_agreement_consumer(agreement_id) is not None:
             raise OceanServiceAgreementExists(
                 f'Service agreement {agreement_id} is already executed.')
 
@@ -162,19 +160,35 @@ class OceanAgreements:
             None,
             0
         )
-
-        receipt = self._keeper.service_agreement.execute_service_agreement(
-            service_agreement.template_id,
-            service_agreement_signature,
-            consumer_address,
-            service_agreement.conditions_params_value_hashes,
-            service_agreement.conditions_timeouts,
+        condition_ids = self._generate_condition_ids(service_agreement)
+        time_locks = self._get_time_locks(service_agreement)
+        time_outs = self._get_time_outs(service_agreement)
+        service_agreement.conditions_timeouts,
+        receipt = agreement_template.create_agreement(
+            # agreement_id,
+            # did,
+            # condition_ids,
+            # time_locks,
+            # time_outs,
+            # consumer
             agreement_id,
             asset_id,
-            publisher_account
+            condition_ids,
+            time_locks,
+            time_outs,
+            consumer_address
         )
         logger.info(f'Service agreement {agreement_id} executed successfully.')
         return receipt
+
+    def _generate_condition_ids(self, service_agreement):
+        return service_agreement.generate_conditions_ids(self._keeper)
+
+    def _get_time_locks(self, service_agreement):
+        return service_agreement.conditions_timelocks
+
+    def _get_time_outs(self, service_agreement):
+        return service_agreement.conditions_timeouts
 
     def is_access_granted(self, agreement_id, did, consumer_address):
         """
@@ -225,7 +239,7 @@ class OceanAgreements:
         try:
             service_agreement.validate_conditions()
         except AssertionError:
-            OceanAgreements._log_conditions_data(service_agreement)
+            # OceanAgreements._log_conditions_data(service_agreement)
             raise
 
         agreement_hash = service_agreement.get_service_agreement_hash(agreement_id)

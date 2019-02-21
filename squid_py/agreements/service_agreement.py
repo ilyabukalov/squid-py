@@ -56,6 +56,10 @@ class ServiceAgreement(object):
         return [cond.timeout for cond in self.conditions]
 
     @property
+    def conditions_timelocks(self):
+        return [0 for cond in self.conditions]
+
+    @property
     def conditions_keys(self):
         return [cond.condition_key for cond in self.conditions]
 
@@ -140,6 +144,12 @@ class ServiceAgreement(object):
         """
         self.conditions = get_conditions_with_updated_keys(self.conditions,
                                                            self.template_id)
+
+    def generate_conditions_ids(self, keeper):
+        # const conditionIdAccess = await accessSecretStoreCondition.generateId(agreementId, await accessSecretStoreCondition.hashValues(did, receiver))
+        # const conditionIdLock = await lockRewardCondition.generateId(agreementId, await lockRewardCondition.hashValues(escrowReward.address, escrowAmount))
+        # const conditionIdEscrow = await escrowReward.generateId(agreementId, await escrowReward.hashValues(escrowAmount, receiver, sender, conditionIdLock, conditionIdAccess))
+        return []
 
     def validate_conditions(self):
         # TODO: Rewrite this to verify conditions based on the agreement template.
