@@ -26,7 +26,8 @@ install_requirements = [
     'requests',
     'deprecated',
     'pycryptodomex',
-    'tqdm'
+    'tqdm',
+    'pytz'
     # web3 requires eth-abi, requests, and more,
     # so those will be installed too.
     # See https://github.com/ethereum/web3.py/blob/master/setup.py
@@ -92,6 +93,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/oceanprotocol/squid-py',
-    version='0.4.3',
+    version='0.4.4',
     zip_safe=False,
 )

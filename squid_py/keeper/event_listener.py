@@ -68,7 +68,7 @@ class EventListener(object):
 
             except ValueError as err:
                 # ignore error, but log it
-                logger.error(f'Got error grabbing keeper events: {str(err)}')
+                logger.debug(f'Got error grabbing keeper events: {str(err)}')
 
             time.sleep(0.1)
             elapsed = int(datetime.now().timestamp()) - start_time
