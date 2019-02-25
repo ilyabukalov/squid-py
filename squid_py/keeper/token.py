@@ -46,6 +46,13 @@ class Token(ContractBase):
         return self.get_tx_receipt(tx_hash).status == 1
 
     def transfer(self, receiver_address, amount, from_account):
+        """
+
+        :param receiver_address:
+        :param amount:
+        :param from_account:
+        :return:
+        """
         tx_hash = self.contract_concise.transfer(
             receiver_address,
             amount,
@@ -54,12 +61,23 @@ class Token(ContractBase):
         return self.get_tx_receipt(tx_hash).status == 1
 
     def total_supply(self):
+        """
+
+        :return:
+        """
         return self.contract_concise.totalSupply()
 
     # def transfer_from(self, from_address, to_address, value):
     #     return self.contract_concise.transferFrom()
 
     def increase_allowance(self, spender_address, added_value, owner_account):
+        """
+
+        :param spender_address:
+        :param added_value:
+        :param owner_account:
+        :return:
+        """
         tx_hash = self.contract_concise.increaseAllowance(
             spender_address,
             added_value,
@@ -68,6 +86,13 @@ class Token(ContractBase):
         return self.get_tx_receipt(tx_hash).status == 1
 
     def decrease_allowance(self, spender_address, subtracted_value, owner_account):
+        """
+
+        :param spender_address:
+        :param subtracted_value:
+        :param owner_account:
+        :return:
+        """
         tx_hash = self.contract_concise.decreaseAllowance(
             spender_address,
             subtracted_value,

@@ -1,6 +1,4 @@
-"""
-    Keeper module to call keeper-contracts.
-"""
+"""Keeper module to call keeper-contracts."""
 
 import logging
 import os
@@ -13,22 +11,16 @@ from squid_py.keeper.conditions.escrow_reward import EscrowRewardCondition
 from squid_py.keeper.conditions.hash_lock import HashLockCondition
 from squid_py.keeper.conditions.lock_reward import LockRewardCondition
 from squid_py.keeper.conditions.sign import SignCondition
-# from squid_py.keeper.conditions import AccessConditions
-# from squid_py.keeper.conditions import PaymentConditions
 from squid_py.keeper.didregistry import DIDRegistry
 from squid_py.keeper.dispenser import Dispenser
 from squid_py.keeper.templates.access_secret_store_template import EscrowAccessSecretStoreTemplate
 from squid_py.keeper.templates.template_manager import TemplateStoreManager
-# from squid_py.keeper.service_execution_agreement import ServiceExecutionAgreement
 from squid_py.keeper.token import Token
 from squid_py.keeper.web3_provider import Web3Provider
 
 
 class Keeper(object):
-    """
-    The Keeper class aggregates all contracts in the Ocean Protocol node.
-
-    """
+    """The Keeper class aggregates all contracts in the Ocean Protocol node."""
 
     DEFAULT_NETWORK_NAME = 'development'
     _network_name_map = {
@@ -60,9 +52,6 @@ class Keeper(object):
         self.escrow_reward_condition = EscrowRewardCondition.get_instance()
         self.access_secret_store_condition = AccessSecretStoreCondition.get_instance()
         self.hash_lock_condition = HashLockCondition.get_instance()
-        # instance.service_agreement = ServiceExecutionAgreement.get_instance()
-        # instance.payment_conditions = PaymentConditions.get_instance()
-        # instance.access_conditions = AccessConditions.get_instance()
 
     @staticmethod
     def get_instance():
@@ -99,8 +88,20 @@ class Keeper(object):
 
     @staticmethod
     def unlock_account(account):
+        """
+        Unlock the account.
+
+        :param account: Account
+        :return:
+        """
         return Web3Provider.get_web3().personal.unlockAccount(account.address, account.password)
 
     @staticmethod
     def get_ether_balance(address):
+        """
+        Get balance of an ethereum address.
+
+        :param address: address, bytes32
+        :return: balance, int
+        """
         return Web3Provider.get_web3().eth.getBalance(address, block_identifier='latest')

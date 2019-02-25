@@ -3,6 +3,7 @@ from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
 
 
 class OceanTemplates:
+    """Class"""
 
     def __init__(self, keeper, config):
         self._keeper = keeper
