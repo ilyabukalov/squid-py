@@ -1,11 +1,11 @@
+"""Example of how to resolve an asset registered in Ocean."""
 import logging
-
-from squid_py import Ocean, ConfigProvider, Metadata
-from squid_py.examples.example_config import ExampleConfig
-
+import os
 from time import sleep
 
-import os
+from squid_py import ConfigProvider, Metadata, Ocean
+from squid_py.examples.example_config import ExampleConfig
+
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
     ASYNC_DELAY = 5  # seconds
 else:

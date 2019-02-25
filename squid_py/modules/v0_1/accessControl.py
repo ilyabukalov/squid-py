@@ -1,6 +1,8 @@
 import logging
 
 from squid_py import ConfigProvider
+from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.did_resolver.did_resolver import DIDResolver
@@ -10,15 +12,13 @@ from squid_py.modules.v0_1.utils import (
     get_condition_contract_data,
     is_condition_fulfilled,
     process_tx_receipt)
-from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 
 logger = logging.getLogger('service_agreement')
 
 
 def grant_access(account, service_agreement_id, service_definition,
-                *args, **kwargs):
+                 *args, **kwargs):
     """ Checks if grantAccess condition has been fulfilled and if not calls
         AccessConditions.grantAccess smart contract function.
     """
@@ -54,7 +54,7 @@ def grant_access(account, service_agreement_id, service_definition,
 
 
 def consume_asset(account, service_agreement_id, service_definition,
-                 consume_callback, did, *args, **kwargs):
+                  consume_callback, did, *args, **kwargs):
     if consume_callback:
         config = ConfigProvider.get_config()
         secret_store = SecretStoreProvider.get_secret_store(

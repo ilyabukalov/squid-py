@@ -4,18 +4,17 @@ import secrets
 import pytest
 from web3 import Web3
 
+from squid_py.ddo.ddo import DDO
 from squid_py.did import DID, did_to_id
 from squid_py.did_resolver.did_resolver import (
     DIDResolver,
 )
-from squid_py.did_resolver.resolver_value_type import ResolverValueType
 from squid_py.exceptions import (
     OceanDIDNotFound,
 )
 from squid_py.keeper import Keeper
-from tests.resources.tiers import e2e_test
 from tests.resources.helper_functions import get_resource_path
-from squid_py.ddo.ddo import DDO
+from tests.resources.tiers import e2e_test
 
 logger = logging.getLogger()
 

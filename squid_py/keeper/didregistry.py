@@ -4,9 +4,8 @@ from urllib.parse import urlparse
 
 from web3 import Web3
 
-from squid_py.exceptions import OceanDIDNotFound
 from squid_py.did import did_to_id_bytes
-from squid_py.did_resolver.resolver_value_type import ResolverValueType
+from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper.contract_base import ContractBase
 
 logger = logging.getLogger(__name__)
@@ -94,9 +93,11 @@ class DIDRegistry(ContractBase):
              'event': 'DIDAttributeRegistered',
              'logIndex': 0,
              'transactionIndex': 1,
-             'transactionHash': HexBytes('0xea9ca5748d54766fb43fe9660dd04b2e3bb29a0fbe18414457cca3dd488d359d'),
+             'transactionHash': HexBytes(
+             '0xea9ca5748d54766fb43fe9660dd04b2e3bb29a0fbe18414457cca3dd488d359d'),
              'address': '0x86DF95937ec3761588e6DEbAB6E3508e271cC4dc',
-             'blockHash': HexBytes('0xbbbe1046b737f33b2076cb0bb5ba85a840c836cf1ffe88891afd71193d677ba2'),
+             'blockHash': HexBytes(
+             '0xbbbe1046b737f33b2076cb0bb5ba85a840c836cf1ffe88891afd71193d677ba2'),
              'blockNumber': 1947})]
 
         """

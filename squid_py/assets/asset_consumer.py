@@ -3,8 +3,8 @@ import logging
 import os
 
 from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.did import did_to_id
 from squid_py.agreements.service_types import ServiceTypes
+from squid_py.did import did_to_id
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class AssetConsumer:
             os.mkdir(destination)
 
         asset_folder = os.path.join(destination,
-                                    f'datafile.{did_to_id(did)}.{service_definition_id}')
+                                    f'datafile.{did_to_id(did)}.{sa.service_definition_id}')
         if not os.path.exists(asset_folder):
             os.mkdir(asset_folder)
 

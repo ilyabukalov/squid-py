@@ -350,11 +350,20 @@ class DDO:
 
     def find_service_by_id(self, service_id):
         service_id_key = 'serviceDefinitionId'
+        service_id = str(service_id)
         for s in self._services:
-            if service_id_key in s.values and s.values[service_id_key] == service_id:
+            if service_id_key in s.values and str(s.values[service_id_key]) == service_id:
                 return s
 
-        return None
+        try:
+            # If service_id is int or can be converted to int then we couldn't find it
+            int(service_id)
+            return None
+        except ValueError:
+            pass
+
+        # try to find by type
+        return self.find_service_by_type(service_id)
 
     def find_service_by_type(self, service_type):
         for s in self._services:
@@ -510,7 +519,7 @@ class DDO:
     @staticmethod
     def _get_timestamp():
         """Return the current system timestamp."""
-        return datetime.utcnow().replace(microsecond=0).replace(tzinfo=pytz.UTC).isoformat()
+        return f'{datetime.utcnow().replace(microsecond=0).isoformat()}Z'
 
     @staticmethod
     def generate_checksum(did, metadata):

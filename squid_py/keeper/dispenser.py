@@ -23,7 +23,9 @@ class Dispenser(ContractBase):
         :return: bool
         """
         try:
-            tx_hash = self.contract_concise.requestTokens(amount, transact={'from': address, 'gas': DEFAULT_GAS_LIMIT})
+            tx_hash = self.contract_concise.requestTokens(amount, transact={'from': address,
+                                                                            'gas':
+                                                                                DEFAULT_GAS_LIMIT})
             logging.debug(f'{address} requests {amount} tokens, returning receipt')
             receipt = Web3Provider.get_web3().eth.waitForTransactionReceipt(tx_hash)
             logging.debug(f'requestTokens receipt: {receipt}')

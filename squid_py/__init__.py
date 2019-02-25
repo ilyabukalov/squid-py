@@ -1,11 +1,17 @@
 __author__ = """OceanProtocol"""
-__version__ = '0.4.2'
+__version__ = '0.4.4'
 
+from .accounts.account import (
+    Account
+)
 from .config import (
     Config
 )
 from .config_provider import (
     ConfigProvider,
+)
+from .ddo.metadata import (
+    Metadata
 )
 from .exceptions import (OceanDIDAlreadyExist, OceanDIDNotFound,
                          OceanDIDUnknownValueType, OceanInvalidContractAddress,
@@ -13,10 +19,4 @@ from .exceptions import (OceanDIDAlreadyExist, OceanDIDNotFound,
                          OceanKeeperContractsNotFound, OceanServiceAgreementExists)
 from .ocean import (
     Ocean,
-)
-from .accounts.account import (
-    Account
-)
-from .ddo.metadata import (
-    Metadata
 )

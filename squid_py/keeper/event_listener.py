@@ -39,10 +39,11 @@ class EventListener(object):
 
         if blocking:
             callback = _callback
-
+        # TODO Review where to close this threads.
         Thread(
             target=EventListener.watch_one_event,
-            args=(self.event_filter, callback, timeout if timeout is not None else self.timeout, start_time),
+            args=(self.event_filter, callback, timeout if timeout is not None else self.timeout,
+                  start_time),
             daemon=True,
         ).start()
         if blocking:
@@ -67,7 +68,7 @@ class EventListener(object):
 
             except ValueError as err:
                 # ignore error, but log it
-                logger.error(f'Got error grabbing keeper events: {str(err)}')
+                logger.debug(f'Got error grabbing keeper events: {str(err)}')
 
             time.sleep(0.1)
             elapsed = int(datetime.now().timestamp()) - start_time

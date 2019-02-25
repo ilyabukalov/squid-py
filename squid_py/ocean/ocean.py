@@ -10,8 +10,8 @@ from squid_py.did_resolver.did_resolver import DIDResolver
 from squid_py.keeper import Keeper
 from squid_py.keeper.diagnostics import Diagnostics
 from squid_py.log import setup_logging
-from squid_py.ocean.ocean_agreements import OceanAgreements
 from squid_py.ocean.ocean_accounts import OceanAccounts
+from squid_py.ocean.ocean_agreements import OceanAgreements
 from squid_py.ocean.ocean_assets import OceanAssets
 from squid_py.ocean.ocean_secret_store import OceanSecretStore
 from squid_py.ocean.ocean_services import OceanServices
@@ -190,7 +190,7 @@ class Ocean:
         is usedon-chain to verify that the values actually match the signed hashes.
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: int identifies the specific service in
+        :param service_definition_id: str identifies the specific service in
          the ddo to use in this agreement.
         :param service_agreement_id: 32 bytes identifier created by the consumer and will be used
          on-chain for the executed agreement.
@@ -241,7 +241,7 @@ class Ocean:
 
         :param service_agreement_id: str
         :param did: DID, str
-        :param service_definition_id: int
+        :param service_definition_id: str
         :param consumer_account: Account address, str
         :return: None
         """

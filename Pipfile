@@ -6,7 +6,6 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-squid-py = {editable = true,git = "https://github.com/oceanprotocol/squid-py.git",ref = "c493bfc91978a8d11cb1918e1a4b079f0a26a2f7"}
 asn1crypto = "==0.24.0"
 attrdict = "==2.0.0"
 certifi = "==2018.11.29"
@@ -46,6 +45,8 @@ websockets = "==5.0.1"
 PyJWT = "==1.7.1"
 pyOpenSSL = "==19.0.0"
 PyYAML = "==4.2b4"
+deprecated = "*"
+pytest = "*"
 
 [requires]
 python_version = "3.7"

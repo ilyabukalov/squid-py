@@ -1,5 +1,4 @@
 import logging
-
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.did import did_to_id
 from squid_py.exceptions import (
@@ -25,7 +24,7 @@ class OceanAgreements:
         """
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: int identifies the specific service in
+        :param service_definition_id: str identifies the specific service in
          the ddo to use in this agreement.
         :param consumer_account: ethereum account address of publisher
         :return: tuple (agreement_id: str, signature: hex str)
@@ -54,7 +53,7 @@ class OceanAgreements:
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
         :param agreement_id: 32 bytes identifier created by the consumer and will be used
          on-chain for the executed agreement.
-        :param service_definition_id: int identifies the specific service in
+        :param service_definition_id: str identifies the specific service in
          the ddo to use in this agreement.
         :param signature: str the signed agreement message hash which includes
          conditions and their parameters values and other details of the agreement.
@@ -104,7 +103,7 @@ class OceanAgreements:
         is usedon-chain to verify that the values actually match the signed hashes.
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: int identifies the specific service in
+        :param service_definition_id: str identifies the specific service in
          the ddo to use in this agreement.
         :param agreement_id: 32 bytes identifier created by the consumer and will be used
          on-chain for the executed agreement.
@@ -163,7 +162,7 @@ class OceanAgreements:
         condition_ids = self._generate_condition_ids(service_agreement)
         time_locks = self._get_time_locks(service_agreement)
         time_outs = self._get_time_outs(service_agreement)
-        service_agreement.conditions_timeouts,
+        # service_agreement.conditions_timeouts,
         receipt = agreement_template.create_agreement(
             # agreement_id,
             # did,
@@ -224,7 +223,7 @@ class OceanAgreements:
 
         :param did: DID, str
         :param agreement_id: str
-        :param service_definition_id: int
+        :param service_definition_id: str
         :param consumer_address: Account address, str
         :param signature: Signature, str
         :param ddo: DDO instance

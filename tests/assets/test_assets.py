@@ -2,14 +2,13 @@
 
 import logging
 
-import pytest
-
+from squid_py.agreements.service_factory import ServiceDescriptor, ServiceTypes
 from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
 from squid_py.ddo.ddo import DDO
 from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import e2e_test
-from squid_py.agreements.service_factory import ServiceDescriptor, ServiceTypes
+
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("web3").setLevel(logging.WARNING)
 
@@ -26,11 +25,10 @@ def test_create_asset_ddo_file():
     assert asset1.is_valid
 
     assert asset1.metadata
-    print(asset1.metadata)
 
 
 @e2e_test
-def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_instance):
+def test_create_data_asset(publisher_ocean_instance, consumer_ocean_instance):
     """
     Setup accounts and asset, register this asset on Aquarius (MetaData store)
     """
@@ -84,8 +82,8 @@ def test_publish_data_asset_aquarius(publisher_ocean_instance, consumer_ocean_in
 
     assert published_metadata
     # only compare top level keys
-    # assert sorted(list(asset.metadata['base'].keys())) == sorted(list(published_metadata['base'].keys()))
-    # asset.metadata == published_metadata
+    assert sorted(list(asset.metadata['base'].keys())).remove('files') == sorted(
+        list(published_metadata.metadata['base'].keys())).remove('encryptedFiles')
 
 
 def test_create_asset_with_different_secret_store(publisher_ocean_instance):
@@ -116,31 +114,3 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
     assert new_asset.get_service(ServiceTypes.AUTHORIZATION)
     assert new_asset.get_service(ServiceTypes.ASSET_ACCESS)
     assert new_asset.get_service(ServiceTypes.METADATA)
-
-
-def test_create():
-    pass
-
-
-def test_resolve():
-    pass
-
-
-def test_retire():
-    pass
-
-
-def test_order():
-    pass
-
-
-def test_search():
-    pass
-
-
-def test_query():
-    pass
-
-
-def test_consume():
-    pass
