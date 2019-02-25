@@ -1,4 +1,4 @@
-"""Example of register and asset in Ocean."""
+#!/usr/bin/env python
 import logging
 import os
 from time import sleep

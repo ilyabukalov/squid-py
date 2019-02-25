@@ -65,7 +65,7 @@ class Diagnostics:
                      keeper.agreement_manager, keeper.template_manager, keeper.condition_manager,
                      keeper.access_template, keeper.sign_condition, keeper.lock_reward_condition,
                      keeper.escrow_access_condition, keeper.escrow_reward_condition,
-        ]
+                     ]
         addresses = '\n'.join([f'\t{c.name}: {c.address}' for c in contracts])
         logging.info('Finished loading keeper contracts:\n'
                      '%s', addresses)

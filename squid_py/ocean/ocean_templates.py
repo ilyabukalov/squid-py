@@ -1,6 +1,5 @@
-from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
+"""Ocean module."""
 from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
-from squid_py.agreements.utils import get_sla_template_path, register_service_agreement_template
 
 
 class OceanTemplates:

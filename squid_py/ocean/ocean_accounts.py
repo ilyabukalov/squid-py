@@ -1,3 +1,4 @@
+"""Ocean module."""
 from collections import namedtuple
 
 from squid_py.accounts.account import Account
@@ -6,6 +7,8 @@ Balance = namedtuple('Balance', ('eth', 'ocn'))
 
 
 class OceanAccounts:
+    """    """
+
     def __init__(self, keeper, config, ocean_tokens):
         self._keeper = keeper
         self._config = config

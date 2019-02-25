@@ -15,7 +15,6 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
             consumer_address,
             publisher_account
     ):
-
         tx_hash = self.contract_concise.createAgreement(
             agreement_id,
             did,

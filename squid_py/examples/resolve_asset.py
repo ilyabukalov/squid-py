@@ -1,4 +1,3 @@
-"""Example of how to resolve an asset registered in Ocean."""
 import logging
 import os
 from time import sleep

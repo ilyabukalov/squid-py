@@ -6,7 +6,6 @@ from squid_py.agreements.service_agreement_condition import ServiceAgreementCond
 from squid_py.agreements.service_agreement_contract import ServiceAgreementContract
 from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
 from squid_py.agreements.utils import (
-    get_conditions_data_from_keeper_contracts,
     get_conditions_with_updated_keys
 )
 from squid_py.keeper import Keeper
@@ -38,10 +37,6 @@ class ServiceAgreement(object):
             for p in cond.parameters:
                 if p.name == 'price':
                     return p.value
-
-    @property
-    def service_definition_id(self):
-        return self.sa_definition_id
 
     @property
     def agreement(self):
@@ -150,20 +145,26 @@ class ServiceAgreement(object):
                                                            self.template_id)
 
     def generate_conditions_ids(self, keeper):
-        # const conditionIdAccess = await accessSecretStoreCondition.generateId(agreementId, await accessSecretStoreCondition.hashValues(did, receiver))
-        # const conditionIdLock = await lockRewardCondition.generateId(agreementId, await lockRewardCondition.hashValues(escrowReward.address, escrowAmount))
-        # const conditionIdEscrow = await escrowReward.generateId(agreementId, await escrowReward.hashValues(escrowAmount, receiver, sender, conditionIdLock, conditionIdAccess))
+        # const conditionIdAccess = await accessSecretStoreCondition.generateId(agreementId,
+        # await accessSecretStoreCondition.hashValues(did, receiver))
+        # const conditionIdLock = await lockRewardCondition.generateId(agreementId,
+        # await lockRewardCondition.hashValues(escrowReward.address, escrowAmount))
+        # const conditionIdEscrow = await escrowReward.generateId(agreementId,
+        # await escrowReward.hashValues(escrowAmount, receiver, sender, conditionIdLock,
+        # conditionIdAccess))
         return []
 
     def validate_conditions(self):
         # TODO: Rewrite this to verify conditions based on the agreement template.
         return
-        # # conditions_data = (contract_addresses, fingerprints, fulfillment_indices, conditions_keys)
+        # # conditions_data = (contract_addresses, fingerprints, fulfillment_indices,
+        # conditions_keys)
         # conditions_data = get_conditions_data_from_keeper_contracts(
         #     self.conditions, self.template_id
         # )
         # if conditions_data[3] != self.conditions_keys:
-        #     raise AssertionError(f'Conditions keys set in this service agreement do not match the '
+        #     raise AssertionError(f'Conditions keys set in this service agreement do not match
+        #     the '
         #                          f'conditions keys from the keeper\'s agreement template '
         #                          f'"{self.template_id}".')
 

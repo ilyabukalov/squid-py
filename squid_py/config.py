@@ -114,8 +114,9 @@ class Config(configparser.ConfigParser):
         """Path where the keeper-contracts artifacts are allocated."""
         keeper_path_string = self.get(self._section_name, NAME_KEEPER_PATH)
         path = Path(keeper_path_string).expanduser().resolve()
-        #TODO: Handle the default case and make default empty string
-        # assert path.exists(), "Can't find the keeper path: {} ({})"..format(keeper_path_string, path)
+        # TODO: Handle the default case and make default empty string
+        # assert path.exists(), "Can't find the keeper path: {} ({})"..format(keeper_path_string,
+        # path)
         if os.path.exists(path):
             pass
         elif os.getenv('VIRTUAL_ENV'):

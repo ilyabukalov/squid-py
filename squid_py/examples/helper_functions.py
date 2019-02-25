@@ -1,6 +1,6 @@
-from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.keeper import Keeper
 from squid_py.accounts.account import Account
+from squid_py.keeper import Keeper
+from squid_py.keeper.web3_provider import Web3Provider
 
 
 def get_account_from_config(config, config_account_key, config_account_password_key):

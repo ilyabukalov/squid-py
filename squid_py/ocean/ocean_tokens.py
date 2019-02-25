@@ -1,3 +1,6 @@
+"""Ocean module."""
+
+
 class OceanTokens:
     def __init__(self, keeper):
         self._keeper = keeper

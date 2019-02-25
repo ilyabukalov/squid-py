@@ -1,3 +1,4 @@
+"""Ocean module."""
 import logging
 
 from squid_py.accounts.account import Account

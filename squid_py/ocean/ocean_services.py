@@ -1,3 +1,4 @@
+"""Ocean module."""
 from squid_py.agreements.service_factory import ServiceDescriptor
 from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID, ServiceTypes
 

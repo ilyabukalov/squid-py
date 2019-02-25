@@ -5,7 +5,6 @@ import logging
 from base64 import b64decode, b64encode
 from datetime import datetime
 
-import pytz
 from Cryptodome.Hash import SHA256
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Signature import PKCS1_v1_5

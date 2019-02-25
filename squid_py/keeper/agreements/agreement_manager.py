@@ -2,17 +2,24 @@ from squid_py.keeper import ContractBase
 
 
 class AgreementStoreManager(ContractBase):
+    """Class representing the AgreementStoreManager contract."""
     CONTRACT_NAME = 'AgreementStoreManager'
 
-    def create_agreement(
-            self,
-            agreement_id,     # bytes32 _id
-            did,              # bytes32 _did
-            condition_types,  # address[] memory _conditionTypes
-            condition_ids,    # bytes32[] memory _conditionIds
-            time_locks,       # uint[] memory _timeLocks
-            time_outs,        # uint[] memory _timeOuts
-    ):
+    def create_agreement(self, agreement_id, did, condition_types, condition_ids, time_locks,
+                         time_outs):
+        """
+        Create a new agreement.
+        The agreement will create conditions of conditionType with conditionId.
+        Only "approved" templates can access this function.
+        :param agreement_id: is the ID of the new agreement, bytes32
+        :param did: DID of the asset. The DID must be registered beforehand, bytes32
+        :param condition_types: is a list of addresses that point to Condition contracts,
+                                list(address)
+        :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
+        :param time_locks: is a list of uint time lock values associated to each Condition, int
+        :param time_outs: is a list of uint time out values associated to each Condition, int
+        :return: bool
+        """
 
         tx_hash = self.contract_concise.createAgreement(
             agreement_id,
@@ -26,6 +33,12 @@ class AgreementStoreManager(ContractBase):
         return receipt and receipt.status == 1
 
     def get_agreement(self, agreement_id):
+        """
+        Retrieve the agreement for a agreement_id.
+
+        :param agreement_id: ID of the agreement, bytes32
+        :return: the agreement attributes.
+        """
         (did,
          owner,
          template_id,
@@ -43,7 +56,16 @@ class AgreementStoreManager(ContractBase):
         )
 
     def get_agreement_did_owner(self, agreement_id):
+        """Get the DID owner for this agreement with _id.
+
+        :param agreement_id: ID of the agreement, bytes32
+        :return: the DID owner associated with agreement.did from the DID registry.
+        """
         return self.contract_concise.getAgreementDidOwner(agreement_id)
 
     def get_num_agreements(self):
+        """Return the size of the Agreements list.
+
+        :return: the length of the agreement list, int
+        """
         return self.contract_concise.getAgreementListSize()

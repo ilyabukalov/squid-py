@@ -1,4 +1,3 @@
-"""Examples of dictionary configs to work in Nile and Spree."""
 import logging
 import os
 

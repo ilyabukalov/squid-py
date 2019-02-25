@@ -6,24 +6,22 @@ import logging
 import os
 
 from squid_py.config_provider import ConfigProvider
+from squid_py.keeper.agreements.agreement_manager import AgreementStoreManager
+from squid_py.keeper.conditions.access import AccessSecretStoreCondition
+from squid_py.keeper.conditions.condition_manager import ConditionStoreManager
+from squid_py.keeper.conditions.escrow_reward import EscrowRewardCondition
+from squid_py.keeper.conditions.hash_lock import HashLockCondition
+from squid_py.keeper.conditions.lock_reward import LockRewardCondition
+from squid_py.keeper.conditions.sign import SignCondition
 # from squid_py.keeper.conditions import AccessConditions
 # from squid_py.keeper.conditions import PaymentConditions
 from squid_py.keeper.didregistry import DIDRegistry
 from squid_py.keeper.dispenser import Dispenser
+from squid_py.keeper.templates.access_secret_store_template import EscrowAccessSecretStoreTemplate
+from squid_py.keeper.templates.template_manager import TemplateStoreManager
 # from squid_py.keeper.service_execution_agreement import ServiceExecutionAgreement
 from squid_py.keeper.token import Token
-from squid_py.keeper.templates.template_manager import TemplateStoreManager
-from squid_py.keeper.templates.access_secret_store_template import EscrowAccessSecretStoreTemplate
-from squid_py.keeper.agreements.agreement_manager import AgreementStoreManager
-from squid_py.keeper.conditions.condition_manager import ConditionStoreManager
-from squid_py.keeper.conditions.hash_lock import HashLockCondition
-from squid_py.keeper.conditions.sign import SignCondition
-from squid_py.keeper.conditions.lock_reward import LockRewardCondition
-from squid_py.keeper.conditions.access import AccessSecretStoreCondition
-from squid_py.keeper.conditions.escrow_reward import EscrowRewardCondition
-
 from squid_py.keeper.web3_provider import Web3Provider
-
 
 
 class Keeper(object):

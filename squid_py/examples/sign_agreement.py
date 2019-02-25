@@ -1,4 +1,3 @@
-"""Example of how to sign a service agreement in Ocean."""
 import logging
 import os
 from time import sleep
@@ -6,7 +5,7 @@ from time import sleep
 from squid_py import ConfigProvider, Metadata, Ocean
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.examples.example_config import ExampleConfig
-from squid_py.examples.helper_functions import get_account_from_config
+from tests.resources.helper_functions import get_account_from_config
 
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
     ASYNC_DELAY = 5  # seconds
