@@ -4,12 +4,12 @@ from squid_py.agreements.service_agreement_condition import Event, ServiceAgreem
 from squid_py.agreements.storage import update_service_agreement_status
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.event_listener import EventListener
-from squid_py.keeper.service_execution_agreement import ServiceExecutionAgreement
 from squid_py.keeper.utils import get_event_def_from_abi
 from squid_py.keeper.web3_provider import Web3Provider
 
 MIN_TIMEOUT = 2  # seconds
 MAX_TIMEOUT = 60 * 60 * 24 * 7  # 7 days expressed in seconds
+SERVICE_AGREEMENT_ID = 'agreementId'
 
 
 def get_event_handler_function(event):
@@ -107,9 +107,9 @@ def watch_service_agreement_events(did, storage_path, account,
         contract = ContractHandler.get(contract_name)
         event_abi_dict = get_event_def_from_abi(contract.abi, event.name)
         service_id_arg_name = event_abi_dict['inputs'][0]['name']
-        assert service_id_arg_name == ServiceExecutionAgreement.SERVICE_AGREEMENT_ID, \
+        assert service_id_arg_name == SERVICE_AGREEMENT_ID, \
             f'unknown event first arg, ' \
-                f'expected {ServiceExecutionAgreement.SERVICE_AGREEMENT_ID}, ' \
+                f'expected {SERVICE_AGREEMENT_ID}, ' \
                 f'got {service_id_arg_name}'
 
         _filters = {
@@ -124,8 +124,5 @@ def watch_service_agreement_fulfilled(service_agreement_id, service_definition, 
         service agreement ID.
     """
     contract_name = service_definition['serviceAgreementContract']['contractName']
-    filters = {
-        ServiceExecutionAgreement.SERVICE_AGREEMENT_ID:
-            Web3Provider.get_web3().toBytes(hexstr=service_agreement_id)
-    }
+    filters = {SERVICE_AGREEMENT_ID: Web3Provider.get_web3().toBytes(hexstr=service_agreement_id)}
     EventListener(contract_name, 'AgreementFulfilled', filters=filters).listen_once(callback)
