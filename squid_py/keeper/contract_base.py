@@ -22,6 +22,7 @@ class ContractBase(object):
         self.name = contract_name
 
         if not dependencies or 'ContractHandler' not in dependencies:
+            dependencies = dict()
             from squid_py.keeper.contract_handler import ContractHandler
             dependencies['ContractHandler'] = ContractHandler
 
