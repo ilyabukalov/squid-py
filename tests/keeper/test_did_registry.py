@@ -13,6 +13,6 @@ def test_did_registry_contract():
     assert isinstance(did_registry, DIDRegistry)
 
 
-def test_did_registry_get_update_at():
+def test_did_registry_get_block_number_updated():
     test_id = secrets.token_hex(32)
-    assert did_registry.get_update_at(test_id) == 0
+    assert did_registry.get_block_number_updated(test_id) == 0

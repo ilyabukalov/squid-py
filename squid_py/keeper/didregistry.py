@@ -65,9 +65,9 @@ class DIDRegistry(ContractBase):
             transact={'from': account_address}
         )
 
-    def get_update_at(self, did):
+    def get_block_number_updated(self, did):
         """Return the block number the last did was updated on the block chain."""
-        return self.contract_concise.getUpdateAt(did)
+        return self.contract_concise.getBlockNumberUpdated(did)
 
     def get_owner(self, did):
         """
@@ -103,7 +103,7 @@ class DIDRegistry(ContractBase):
         """
         result = None
         did = Web3.toHex(did_bytes)
-        block_number = self.get_update_at(did_bytes)
+        block_number = self.get_block_number_updated(did_bytes)
         logger.debug(f'got blockNumber {block_number} for did {did}')
         if block_number == 0:
             raise OceanDIDNotFound(

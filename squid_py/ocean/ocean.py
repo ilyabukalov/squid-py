@@ -89,7 +89,7 @@ class Ocean:
 
         # Verify keeper contracts
         Diagnostics.verify_contracts()
-        Diagnostics.check_deployed_agreement_templates()
+        # Diagnostics.check_deployed_agreement_templates()
         logger.info('Squid Ocean instance initialized: ')
         logger.info(f'\tOther accounts: {sorted([a.address for a in self.accounts.list()])}')
         # logger.info(f'\taquarius: {self._aquarius.url}')

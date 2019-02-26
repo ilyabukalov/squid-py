@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class Diagnostics:
-    TEST_CONTRACT_NAME = 'ServiceExecutionAgreement'
+    TEST_CONTRACT_NAME = 'AgreementStoreManager'
 
     @staticmethod
     def check_deployed_agreement_templates():
@@ -63,8 +63,9 @@ class Diagnostics:
         keeper = Keeper.get_instance()
         contracts = [keeper.dispenser, keeper.token, keeper.did_registry,
                      keeper.agreement_manager, keeper.template_manager, keeper.condition_manager,
-                     keeper.access_template, keeper.sign_condition, keeper.lock_reward_condition,
-                     keeper.escrow_access_condition, keeper.escrow_reward_condition,
+                     keeper.access_secret_store_condition, keeper.sign_condition,
+                     keeper.lock_reward_condition, keeper.escrow_access_secretstore_template,
+                     keeper.escrow_reward_condition, keeper.hash_lock_condition
                      ]
         addresses = '\n'.join([f'\t{c.name}: {c.address}' for c in contracts])
         logging.info('Finished loading keeper contracts:\n'
