@@ -8,7 +8,7 @@
     "contractName": "EscrowAccessSecretStoreTemplate",
     "events": [
       {
-        "name": "AgreementInitialized",
+        "name": "AgreementCreated",
         "actorType": "consumer",
         "handler": {
           "moduleName": "escrowAccessSecretStoreTemplate",
@@ -33,6 +33,7 @@
     "conditions": [
       {
         "name": "lockReward",
+        "timelock": 0,
         "timeout": 0,
         "contractName": "LockRewardCondition",
         "functionName": "fulfill",
@@ -50,7 +51,7 @@
         ],
         "events": [
           {
-            "name": "LockRewardFulfilled",
+            "name": "Fulfilled",
             "actorType": "publisher",
             "handler": {
               "moduleName": "lockRewardCondition",
@@ -62,6 +63,7 @@
       },
       {
         "name": "accessSecretStore",
+        "timelock": 0,
         "timeout": 0,
         "contractName": "AccessSecretStoreCondition",
         "functionName": "fulfill",
@@ -79,7 +81,7 @@
         ],
         "events": [
           {
-            "name": "AccessSecretStoreFulfilled",
+            "name": "Fulfilled",
             "actorType": "publisher",
             "handler": {
               "moduleName": "accessSecretStore",
@@ -88,7 +90,7 @@
             }
           },
           {
-            "name": "AccessTimedOut",
+            "name": "TimedOut",
             "actorType": "consumer",
             "handler": {
               "moduleName": "accessSecretStore",
@@ -100,6 +102,7 @@
       },
       {
         "name": "escrowReward",
+        "timelock": 0,
         "timeout": 0,
         "contractName": "EscrowReward",
         "functionName": "fulfill",
@@ -132,7 +135,7 @@
         ],
         "events": [
           {
-            "name": "EscrowRewardFulfilled",
+            "name": "Fulfilled",
             "actorType": "publisher",
             "handler": {
               "moduleName": "escrowRewardCondition",
