@@ -38,7 +38,7 @@ def init_ocn_tokens(ocn, account, amount=100):
     ocn.accounts.request_tokens(account, amount)
     ocn._keeper.unlock_account(account)
     ocn._keeper.token.token_approve(
-        ocn._keeper.payment_conditions.address,
+        ocn._keeper.dispenser.address,
         amount,
         account
     )
