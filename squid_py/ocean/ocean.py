@@ -83,7 +83,7 @@ class Ocean:
             AssetConsumer,
             self._config
         )
-        self.services = OceanServices(self.assets)
+        self.services = OceanServices()
 
         self._validate_all_modules()
 
