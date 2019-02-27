@@ -120,15 +120,18 @@ class ServiceAgreement(Service):
         lock_cond_id = keeper.lock_reward_condition.generate_id(
             agreement_id,
             self.condition_by_name['lockReward'].param_types,
-            self.condition_by_name['lockReward'].param_values)
+            [keeper.escrow_reward_condition.address, self.get_price()])
+
         access_cond_id = keeper.access_secret_store_condition.generate_id(
             agreement_id,
             self.condition_by_name['accessSecretStore'].param_types,
-            self.condition_by_name['accessSecretStore'].param_values)
+            [asset_id, consumer_address])
+
         escrow_cond_id = keeper.escrow_reward_condition.generate_id(
             agreement_id,
             self.condition_by_name['escrowReward'].param_types,
-            self.condition_by_name['escrowReward'].param_values)
+            [self.get_price(), publisher_address, consumer_address,
+             lock_cond_id, access_cond_id])
 
         return lock_cond_id, access_cond_id, escrow_cond_id
 

@@ -4,6 +4,7 @@ from squid_py.agreements.service_types import ServiceTypes
 from squid_py.agreements.utils import get_sla_template_path
 from squid_py.ddo.service import Service
 from squid_py.did import did_to_id
+from squid_py.keeper import Keeper
 
 
 class ServiceDescriptor(object):
@@ -97,12 +98,7 @@ class ServiceFactory(object):
         param_map = {
             '_documentId': did_to_id(did),
             '_amount': price,
-            '_rewardAddress': '',
-            '_grantee': '',
-            '_receiver': '',
-            '_sender': '',
-            '_lockCondition': '',
-            '_releaseCondition': ''
+            '_rewardAddress': Keeper.get_instance().escrow_reward_condition.address,
         }
         sla_template_path = get_sla_template_path()
         sla_template = ServiceAgreementTemplate.from_json_file(sla_template_path)
