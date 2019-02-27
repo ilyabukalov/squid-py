@@ -69,14 +69,14 @@ class DIDRegistry(ContractBase):
         """Return the block number the last did was updated on the block chain."""
         return self.contract_concise.getBlockNumberUpdated(did)
 
-    def get_owner(self, did):
+    def get_did_owner(self, did):
         """
         Return the owner of the did.
 
         :param did: Asset did, did
         :return:
         """
-        return self.contract_concise.getOwner(did)
+        return self.contract_concise.getDIDOwner(did)
 
     def get_registered_attribute(self, did_bytes):
         """

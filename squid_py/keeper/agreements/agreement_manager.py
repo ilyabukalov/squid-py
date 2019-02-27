@@ -39,21 +39,23 @@ class AgreementStoreManager(ContractBase):
         :param agreement_id: ID of the agreement, bytes32
         :return: the agreement attributes.
         """
-        (did,
-         owner,
-         template_id,
-         conditions_ids,
-         updated_by,
-         block_number_updated) = self.contract_concise.getAgreement(agreement_id)
+        agreement = self.contract_concise.getAgreement(agreement_id)
+        if agreement:
+            (did,
+             owner,
+             template_id,
+             conditions_ids,
+             updated_by,
+             block_number_updated) = agreement
+            return (
+                did,
+                owner,
+                template_id,
+                conditions_ids,
+                updated_by,
+                block_number_updated)
 
-        return (
-            did,
-            owner,
-            template_id,
-            conditions_ids,
-            updated_by,
-            block_number_updated
-        )
+        return None
 
     def get_agreement_did_owner(self, agreement_id):
         """Get the DID owner for this agreement with _id.

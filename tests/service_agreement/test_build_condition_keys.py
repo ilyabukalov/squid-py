@@ -5,7 +5,8 @@ from tests.resources.tiers import e2e_test
 
 
 @e2e_test
-def test_build_condition_key():
+def test_generate_condition_id():
+    # :TODO:
     contract_address = Web3.toChecksumAddress('0x00bd138abd70e2f00903268f3db08f2d25677c9e')
     template_id = '0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d'
 

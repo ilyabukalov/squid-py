@@ -6,6 +6,7 @@
 
 import logging
 
+from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.web3_provider import Web3Provider
 
 logger = logging.getLogger('keeper')
@@ -84,6 +85,20 @@ class ContractBase(object):
         """
         Web3Provider.get_web3().eth.waitForTransactionReceipt(tx_hash)
         return Web3Provider.get_web3().eth.getTransactionReceipt(tx_hash)
+
+    def subscribe_to_event(self, event_name, timeout, event_filter, callback=False,
+                           timeout_callback=None, args=None, wait=False):
+        return EventListener(
+            self.CONTRACT_NAME,
+            event_name,
+            args,
+            filters=event_filter
+        ).listen_once(
+            callback,
+            timeout_callback=timeout_callback,
+            timeout=timeout,
+            blocking=wait
+        )
 
     def __str__(self):
         return f'{self.name} at {self.address}'

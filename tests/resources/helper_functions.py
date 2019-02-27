@@ -15,8 +15,7 @@ from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from squid_py.agreements.utils import (
-    get_sla_template_path,
-    register_service_agreement_template
+    get_sla_template_path
 )
 from squid_py.utils.utilities import prepare_prefixed_hash
 from tests.resources.mocks.brizo_mock import BrizoMock
@@ -121,24 +120,7 @@ def get_account_from_config(config, config_account_key, config_account_password_
     return Account(address, password)
 
 
-def get_registered_access_service_template(keeper, account):
-    # register an asset Access service agreement template
-    template = ServiceAgreementTemplate.from_json_file(get_sla_template_path())
-    template_id = ACCESS_SERVICE_TEMPLATE_ID
-    template_owner = keeper.service_agreement.get_template_owner(template_id)
-    if not template_owner:
-        keeper.unlock_account(account)
-        template = register_service_agreement_template(
-            keeper.service_agreement,
-            account, template,
-            keeper.network_name
-        )
-
-    return template
-
-
 def get_registered_ddo(ocean_instance, account):
-    get_registered_access_service_template(Keeper.get_instance(), account)
     ddo = ocean_instance.assets.create(Metadata.get_example(), account)
     return ddo
 

@@ -114,7 +114,6 @@ class ServiceFactory(object):
 
         sa = ServiceAgreement(1, sla_template.template_id, sla_template.conditions,
                               sla_template.service_agreement_contract)
-        sa.update_conditions_keys()
         other_values = {
             ServiceAgreement.SERVICE_DEFINITION_ID: sa.sa_definition_id,
             ServiceAgreementTemplate.TEMPLATE_ID_KEY: sla_template.template_id,

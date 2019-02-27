@@ -1,8 +1,17 @@
-from squid_py.keeper import ContractBase
+from squid_py.keeper import ContractBase, utils
+from squid_py.keeper.web3_provider import Web3Provider
 
 
 class ConditionBase(ContractBase):
     """Base class for all the Condition contract objects."""
+    FULFILLED_EVENT = 'Fulfilled'
+
+    def generate_id(self, agreement_id, types, values):
+        values_hash = utils.generate_multi_value_hash(types, values)
+        return utils.generate_multi_value_hash(
+            ['bytes32', 'address', 'bytes32'],
+            [agreement_id, self.address, values_hash]
+        )
 
     def fulfill(self, *args, **kwargs):
         """
@@ -34,3 +43,15 @@ class ConditionBase(ContractBase):
         :return:
         """
         return self.contract_concise.hashValues(*args, **kwargs)
+
+    def subscribe_condition_fulfilled(self, agreement_id, timeout, callback, args,
+                                      timeout_callback=None, wait=False):
+        return self.subscribe_to_event(
+            self.FULFILLED_EVENT,
+            timeout,
+            {'_agreementId': Web3Provider.get_web3().toBytes(hexstr=agreement_id)},
+            callback=callback,
+            timeout_callback=timeout_callback,
+            args=args,
+            wait=wait
+        )

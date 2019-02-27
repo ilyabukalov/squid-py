@@ -41,97 +41,32 @@ def build_condition_key(contract_address, fingerprint, template_id):
     ).hex()
 
 
-def build_conditions_keys(contract_addresses, fingerprints, template_id):
-    return [build_condition_key(address, fingerprints[i], template_id)
-            for i, address in enumerate(contract_addresses)]
-
-
-def get_conditions_data_from_keeper_contracts(conditions, template_id):
-    """Helper function to generate conditions data that is typically used together in a
-    service agreement.
-
-    :param conditions: list of ServiceAgreementCondition instances
-    :param template_id:
-    :return:
-    """
-    names = {cond.contract_name for cond in conditions}
-    name_to_contract = {
-        name: ContractHandler.get(name)
-        for name in names
-    }
-    contract_addresses = [
-        Web3Provider.get_web3().toChecksumAddress(name_to_contract[cond.contract_name].address)
-        for cond in conditions
-    ]
-    fingerprints = [
-        hexstr_to_bytes(Web3Provider.get_web3(), get_fingerprint_by_name(
-            name_to_contract[cond.contract_name].abi,
-            cond.function_name
-        ))
-        for i, cond in enumerate(conditions)
-    ]
-    fulfillment_indices = [i for i, cond in enumerate(conditions) if cond.is_terminal]
-    conditions_keys = build_conditions_keys(contract_addresses, fingerprints, template_id)
-    return contract_addresses, fingerprints, fulfillment_indices, conditions_keys
-
-
-def register_service_agreement_template(service_agreement_contract, owner_account,
-                                        sla_template_instance=None, sla_template_path=None):
-    if sla_template_instance is None:
-        if sla_template_path is None:
-            raise AssertionError(
-                'Invalid arguments, a template instance or a template json path is required.')
-
-        sla_template_instance = ServiceAgreementTemplate.from_json_file(sla_template_path)
-
-    # sla_template_instance.template_id = generate_prefixed_id()
-    conditions_data = get_conditions_data_from_keeper_contracts(
-        sla_template_instance.conditions,
-        sla_template_instance.template_id
-    )
-    contract_addresses, fingerprints, fulfillment_indices, conditions_keys = conditions_data
-    # Fill the conditionKey in each condition in the template
-    conditions = sla_template_instance.conditions
-    for i in range(len(conditions)):
-        conditions[i].condition_key = conditions_keys[i]
-
-    Keeper.get_instance().unlock_account(owner_account)
-    receipt = service_agreement_contract.setup_agreement_template(
-        sla_template_instance.template_id,
-        contract_addresses, fingerprints, sla_template_instance.conditions_dependencies,
-        fulfillment_indices, sla_template_instance.service_agreement_contract.fulfillment_operator,
-        owner_account
-    )
-
-    if receipt.status == 0:
-        return None
-
-    return sla_template_instance
-
-
-def get_conditions_with_updated_keys(conditions, template_id):
-    """Return a copy of `conditions` with updated conditions keys using the corresponding
-    contracts addresses found in `contract_path`.
-    Condition keys are used to identify an instance of a condition controller function in a specific
-    deployed instance of a solidity contract. The key binds the function to a service agreement
-    template id that is registered on-chain.
-
-    :param web3:
-    :param contract_path:
-    :param conditions:
-    :param template_id:
-    :return:
-    """
-    conditions_data = get_conditions_data_from_keeper_contracts(
-        conditions, template_id
-    )
-    fingerprints, fulfillment_indices, conditions_keys = conditions_data[1:]
-    # Fill the conditionKey in each condition in the template
-    _conditions = [ServiceAgreementCondition(cond.as_dictionary()) for cond in conditions]
-    for i, cond in enumerate(_conditions):
-        cond.condition_key = conditions_keys[i]
-
-    return _conditions
+# def get_conditions_data_from_keeper_contracts(conditions, template_id):
+#     """Helper function to generate conditions data that is typically used together in a
+#     service agreement.
+#
+#     :param conditions: list of ServiceAgreementCondition instances
+#     :param template_id:
+#     :return:
+#     """
+#     names = {cond.contract_name for cond in conditions}
+#     name_to_contract = {
+#         name: ContractHandler.get(name)
+#         for name in names
+#     }
+#     contract_addresses = [
+#         Web3Provider.get_web3().toChecksumAddress(name_to_contract[cond.contract_name].address)
+#         for cond in conditions
+#     ]
+#     fingerprints = [
+#         hexstr_to_bytes(Web3Provider.get_web3(), get_fingerprint_by_name(
+#             name_to_contract[cond.contract_name].abi,
+#             cond.function_name
+#         ))
+#         for i, cond in enumerate(conditions)
+#     ]
+#     fulfillment_indices = [i for i, cond in enumerate(conditions) if cond.is_terminal]
+#     return contract_addresses, fingerprints, fulfillment_indices
 
 
 def make_public_key_and_authentication(did, publisher_address, web3):

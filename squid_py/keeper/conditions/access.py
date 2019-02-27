@@ -5,7 +5,7 @@ class AccessSecretStoreCondition(ConditionBase):
     """Class representing the AccessSecretStoreCondition contract."""
     CONTRACT_NAME = 'AccessSecretStoreCondition'
 
-    def fulfill(self, agreement_id, document_id, grantee_address):
+    def fulfill(self, agreement_id, document_id, grantee_address, account):
         """
         Fulfill the access secret store condition.
 
@@ -13,9 +13,15 @@ class AccessSecretStoreCondition(ConditionBase):
         :param document_id: refers to the DID in which secret store will issue the decryption
         keys, DID
         :param grantee_address: is the address of the granted user, str
+        :param account: Account instance
         :return: true if the condition was successfully fulfilled, bool
         """
-        return super(self).fulfill(agreement_id, document_id, grantee_address)
+        return super(self).fulfill(
+            agreement_id,
+            document_id,
+            grantee_address,
+            transact={'from': account.address}
+        )
 
     def hash_values(self, document_id, grantee_address):
         """

@@ -5,8 +5,14 @@ class EscrowRewardCondition(ConditionBase):
     """Class representing the EscrowReward contract."""
     CONTRACT_NAME = 'EscrowReward'
 
-    def fulfill(self, agreement_id, amount, receiver_address, sender_address, lock_condition_id,
-                release_condition_id):
+    def fulfill(self,
+                agreement_id,
+                amount,
+                receiver_address,
+                sender_address,
+                lock_condition_id,
+                release_condition_id,
+                account):
         """
         Fulfill the escrow reward condition.
 
@@ -16,6 +22,7 @@ class EscrowRewardCondition(ConditionBase):
         :param sender_address:
         :param lock_condition_id:
         :param release_condition_id:
+        :param account: Account instance
         :return:
         """
         return super(self).fulfill(
@@ -24,7 +31,8 @@ class EscrowRewardCondition(ConditionBase):
             receiver_address,
             sender_address,
             lock_condition_id,
-            release_condition_id
+            release_condition_id,
+            transact={'from': account.address}
         )
 
     def hash_values(self, amount, receiver_address, sender_address, lock_condition_id,

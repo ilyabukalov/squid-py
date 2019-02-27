@@ -5,18 +5,20 @@ class LockRewardCondition(ConditionBase):
     """Class representing the LockRewardCondition contract."""
     CONTRACT_NAME = 'LockRewardCondition'
 
-    def fulfill(self, agreement_id, reward_address, amount):
+    def fulfill(self, agreement_id, reward_address, amount, account):
         """
 
         :param agreement_id:
         :param reward_address:
         :param amount:
+        :param account: Account instance
         :return:
         """
         return super(self).fulfill(
             agreement_id,
             reward_address,
-            amount
+            amount,
+            transact={'from': account.address}
         )
 
     def hash_values(self, reward_address, amount):
