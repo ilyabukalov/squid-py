@@ -64,7 +64,7 @@ class ServiceAgreementTemplate(object):
         }
         return {
             'type': self.DOCUMENT_TYPE,
-            'id': self.template_id,
+            'templateId': self.template_id,
             'name': self.name,
             'creator': self.creator,
             'serviceAgreementTemplate': template
@@ -73,8 +73,8 @@ class ServiceAgreementTemplate(object):
     @staticmethod
     def example_dict():
         return {
-            "type": "OceanProtocolServiceAgreementTemplate",
-            "id": "0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d",
+            "type": "Access",
+            "templateId": "0x044852b2a670ade5407e78fb2863c51de9fcb96542a07186fe3aeda6bb8a116d",
             "name": "dataAssetAccessServiceAgreement",
             "creator": "",
             "serviceAgreementTemplate": {

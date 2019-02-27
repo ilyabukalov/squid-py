@@ -93,7 +93,7 @@ class ServiceAgreement(Service):
     def from_service_dict(cls, service_dict):
         return cls(
             service_dict[cls.SERVICE_DEFINITION_ID],
-            service_dict[cls.AGREEMENT_TEMPLATE],
+            ServiceAgreementTemplate(service_dict[cls.AGREEMENT_TEMPLATE]),
             service_dict.get(cls.PURCHASE_ENDPOINT),
             service_dict.get(cls.SERVICE_ENDPOINT),
             service_dict.get('type')
@@ -117,19 +117,18 @@ class ServiceAgreement(Service):
 
     def generate_agreement_condition_ids(self, agreement_id, asset_id, consumer_address,
                                          publisher_address, keeper):
-        lock_cond_id = keeper.lock_reward_condition.generateId(
+        lock_cond_id = keeper.lock_reward_condition.generate_id(
             agreement_id,
-            ['address', 'uint256'],
-            [keeper.escrow_reward_condition.address, self.get_price()])
-        access_cond_id = keeper.access_secret_store_condition.generateId(
+            self.condition_by_name['lockReward'].param_types,
+            self.condition_by_name['lockReward'].param_values)
+        access_cond_id = keeper.access_secret_store_condition.generate_id(
             agreement_id,
-            ['bytes32', 'address'],
-            [asset_id, consumer_address])
-        escrow_cond_id = keeper.escrow_reward_condition.generateId(
+            self.condition_by_name['accessSecretStore'].param_types,
+            self.condition_by_name['accessSecretStore'].param_values)
+        escrow_cond_id = keeper.escrow_reward_condition.generate_id(
             agreement_id,
-            ['uint256', 'address', 'address', 'bytes32', 'bytes32'],
-            [self.get_price(), consumer_address, publisher_address,
-             lock_cond_id, access_cond_id])
+            self.condition_by_name['escrowReward'].param_types,
+            self.condition_by_name['escrowReward'].param_values)
 
         return lock_cond_id, access_cond_id, escrow_cond_id
 

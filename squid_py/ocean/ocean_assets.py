@@ -124,7 +124,7 @@ class OceanAssets:
                 brizo.get_purchase_endpoint(self._config),
                 brizo.get_service_endpoint(self._config),
                 3600,
-                ''
+                ACCESS_SERVICE_TEMPLATE_ID
             )]
         else:
             service_types = set(map(lambda x: x[0], service_descriptors))
@@ -138,7 +138,7 @@ class OceanAssets:
                     brizo.get_purchase_endpoint(self._config),
                     brizo.get_service_endpoint(self._config),
                     3600,
-                    ''
+                    ACCESS_SERVICE_TEMPLATE_ID
                 )]
 
         # Add all services to ddo
