@@ -93,9 +93,16 @@ class ServiceFactory(object):
     def build_access_service(did, price, purchase_endpoint, service_endpoint,
                              timeout,
                              template_id):
+        # TODO fill all the possible mappings
         param_map = {
             '_documentId': did_to_id(did),
             '_amount': price,
+            '_rewardAddress': '',
+            '_grantee': '',
+            '_receiver': '',
+            '_sender': '',
+            '_lockCondition': '',
+            '_releaseCondition': ''
         }
         sla_template_path = get_sla_template_path()
         sla_template = ServiceAgreementTemplate.from_json_file(sla_template_path)

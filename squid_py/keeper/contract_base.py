@@ -6,7 +6,6 @@
 
 import logging
 
-from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.web3_provider import Web3Provider
 
 logger = logging.getLogger('keeper')
@@ -88,6 +87,7 @@ class ContractBase(object):
 
     def subscribe_to_event(self, event_name, timeout, event_filter, callback=False,
                            timeout_callback=None, args=None, wait=False):
+        from squid_py.keeper.event_listener import EventListener
         return EventListener(
             self.CONTRACT_NAME,
             event_name,

@@ -6,10 +6,9 @@ from squid_py import ConfigProvider
 from squid_py.agreements.register_service_agreement import (
     execute_pending_service_agreements,
     record_service_agreement,
-    register_service_agreement
+    register_service_agreement_publisher
 )
 from squid_py.agreements.storage import get_service_agreements
-from squid_py.agreements.utils import build_condition_key
 from squid_py.ddo.ddo import DDO
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper import Keeper
@@ -73,18 +72,16 @@ class TestRegisterServiceAgreement:
     def _consume_dummy(self, *args):
         pass
 
-    def _register_agreement(self, agreement_id, did, service_definition, actor_type='consumer'):
-        register_service_agreement(
+    def _register_agreement(self, agreement_id, did, service_definition):
+        register_service_agreement_publisher(
             self.storage_path,
-            self.consumer_acc,
+            self.consumer_acc.address,
             agreement_id,
             did,
             service_definition,
-            actor_type,
             0,
             self.price,
             self.content_url,
-            consume_callback=self._consume_dummy,
             start_time=self.start_time
         )
 

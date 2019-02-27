@@ -1,8 +1,8 @@
 """Ocean module."""
 import logging
 
-from squid_py.agreements.register_service_agreement import register_service_agreement, register_service_agreement_consumer, \
-    register_service_agreement_publisher
+from squid_py.agreements.register_service_agreement import (register_service_agreement_consumer,
+                                                            register_service_agreement_publisher)
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.did import did_to_id
@@ -188,7 +188,8 @@ class OceanAgreements:
         :param consumer_address: Account address, str
         :return: bool True if user has permission
         """
-        agreement_consumer = self._keeper.escrow_access_secretstore_template.get_agreement_consumer(agreement_id)
+        agreement_consumer = self._keeper.escrow_access_secretstore_template.get_agreement_consumer(
+            agreement_id)
         if agreement_consumer != consumer_address:
             logger.warning(f'Invalid consumer address {consumer_address} and/or '
                            f'service agreement id {agreement_id} (did {did})')

@@ -5,7 +5,6 @@ import logging
 import os
 from json import JSONDecodeError
 
-from squid_py.agreements.utils import build_condition_key
 from squid_py.keeper.web3_provider import Web3Provider
 
 logger = logging.getLogger(__name__)
@@ -143,3 +142,12 @@ def is_condition_fulfilled(template_id, service_agreement_id,
         )
     )
     return status == 1
+
+
+def build_condition_key(contract_address, fingerprint, template_id):
+    assert isinstance(fingerprint, bytes), f'Expecting `fingerprint` of type bytes, ' \
+        f'got {type(fingerprint)}'
+    return generate_multi_value_hash(
+        ['bytes32', 'address', 'bytes4'],
+        [template_id, contract_address, fingerprint]
+    ).hex()

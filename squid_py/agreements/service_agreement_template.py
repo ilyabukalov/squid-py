@@ -5,7 +5,7 @@ from squid_py.keeper import Keeper
 
 
 class ServiceAgreementTemplate(object):
-    DOCUMENT_TYPE = 'OceanProtocolServiceAgreementTemplate'
+    DOCUMENT_TYPE = 'Access'
     TEMPLATE_ID_KEY = 'templateId'
 
     def __init__(self, template_json=None):
@@ -24,7 +24,7 @@ class ServiceAgreementTemplate(object):
 
     def parse_template_json(self, template_json):
         assert template_json['type'] == self.DOCUMENT_TYPE, ''
-        self.template_id = template_json['id']
+        self.template_id = template_json['templateId']
         self.name = template_json['name']
         self.creator = template_json['creator']
         self.template = template_json['serviceAgreementTemplate']

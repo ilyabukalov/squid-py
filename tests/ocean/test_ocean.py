@@ -4,15 +4,14 @@ import logging
 import pytest
 from web3 import Web3
 
-from squid_py import ConfigProvider
+from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.service_types import ServiceTypes
 from squid_py.brizo.brizo import Brizo
 from squid_py.ddo.ddo import DDO
 from squid_py.ddo.metadata import Metadata
 from squid_py.did import DID
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper import Keeper
-from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.agreements.service_types import ServiceTypes
 from tests.resources.helper_functions import get_resource_path, verify_signature, wait_for_event
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.tiers import e2e_test
@@ -66,7 +65,9 @@ def test_token_request(publisher_ocean_instance):
     amount = 500
     publisher_ocean_instance.accounts.request_tokens(receiver_account, amount)
     # Confirm balance changes
-    assert publisher_ocean_instance.accounts.balance(receiver_account).ocn == start_ocean + amount
+    # TODO Review representation of amounts.
+    assert publisher_ocean_instance.accounts.balance(
+        receiver_account).ocn == start_ocean + (amount * 1000000000000000000)
 
 
 @e2e_test
@@ -191,9 +192,10 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     ddo = consumer_ocn.assets.resolve(did)
     service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
     price = service_agreement.get_price()
-    lock_cond_id, access_cond_id, escrow_cond_id = service_agreement.generate_agreement_condition_ids(
-        agreement_id, asset_id, consumer_acc.address, publisher_acc.address, keeper
-    )
+    lock_cond_id, access_cond_id, escrow_cond_id = \
+        service_agreement.generate_agreement_condition_ids(
+            agreement_id, asset_id, consumer_acc.address, publisher_acc.address, keeper
+        )
 
     keeper.unlock_account(publisher_acc)
     success = keeper.escrow_access_secretstore_template.create_agreement(
@@ -232,8 +234,10 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     keeper.unlock_account(consumer_acc)
     keeper.token.token_approve(keeper.lock_reward_condition, price, consumer_acc)
     keeper.unlock_account(consumer_acc)
-    keeper.lock_reward_condition.fulfill(agreement_id, keeper.escrow_reward_condition.address, price, consumer_acc)
-    assert keeper.token.get_token_balance(keeper.escrow_reward_condition.address) == (price + starting_balance), ''
+    keeper.lock_reward_condition.fulfill(agreement_id, keeper.escrow_reward_condition.address,
+                                         price, consumer_acc)
+    assert keeper.token.get_token_balance(keeper.escrow_reward_condition.address) == (
+            price + starting_balance), ''
     assert keeper.condition_manager.get_condition_state(lock_cond_id) == 2, ''
     event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
@@ -245,7 +249,8 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
 
     # Fulfill access_secret_store_condition
     keeper.unlock_account(publisher_acc)
-    keeper.access_secret_store_condition.fulfill(agreement_id, asset_id, consumer_acc.address, publisher_acc)
+    keeper.access_secret_store_condition.fulfill(agreement_id, asset_id, consumer_acc.address,
+                                                 publisher_acc)
     assert keeper.condition_manager.get_condition_state(access_cond_id) == 2, ''
     event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
         agreement_id,
@@ -278,7 +283,6 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     # print('All good, files are here: %s' % path)
 
 
-
 # @e2e_test
 # def test_agreement_hash(publisher_ocean_instance):
 #     """
@@ -302,7 +306,8 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
 #     assert template_id == sa.template_id, ''
 #     assert did == ddo.did
 #     agreement_hash = ServiceAgreement.generate_service_agreement_hash(
-#         sa.template_id, sa.conditions_params_value_hashes, sa.conditions_timelocks, sa.conditions_timeouts, service_agreement_id
+#         sa.template_id, sa.conditions_params_value_hashes, sa.conditions_timelocks,
+#         sa.conditions_timeouts, service_agreement_id
 #     )
 #     print('agreement hash: ', agreement_hash.hex())
 #     expected = '0xda310c77710ebd55d20c2982904d95f05f96768c9b83a610083214a1fe831614'
