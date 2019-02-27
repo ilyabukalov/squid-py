@@ -22,10 +22,10 @@ class ServiceAgreement(Service):
         """
 
         :param sa_definition_id:
-        :param service_agreement_template:
-        :param service_endpoint:
-        :param consume_endpoint:
-        :param service_type:
+        :param service_agreement_template: ServiceAgreementTemplate instance
+        :param service_endpoint: str URL to use for requesting service defined in this agreement
+        :param consume_endpoint: str URL to use for consuming the service after access is given
+        :param service_type: str like ServiceTypes.ASSET_ACCESS
         """
         self.sa_definition_id = sa_definition_id
         self.service_agreement_template = service_agreement_template
