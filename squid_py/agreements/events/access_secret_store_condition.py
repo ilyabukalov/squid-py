@@ -1,26 +1,89 @@
+import logging
+
+from eth_utils import add_0x_prefix
+
 from squid_py import ConfigProvider
 from squid_py.brizo import BrizoProvider
 from squid_py.did_resolver.did_resolver import DIDResolver
 from squid_py.keeper import Keeper
+from squid_py.keeper.utils import process_tx_receipt
 from squid_py.secret_store import SecretStoreProvider
+
+logger = logging.getLogger(__name__)
 
 
 def fulfill_escrow_reward_condition(
-    event, agreement_id, did,
-    service_agreement, service_definition_id, price,
-    consumer_address, publisher_account):
-    pass
+        event, agreement_id, did, service_agreement, price,
+        consumer_address, publisher_account, condition_ids
+):
+    logger.debug(f"release reward after event {event}.")
+    lock_id, access_id, escrow_id = condition_ids
+    name_to_parameter = {param.name: param for param in
+                         service_agreement.condition_by_name['escrowReward'].parameters}
+    document_id = name_to_parameter['_documentId'].value
+    assert add_0x_prefix(document_id) == add_0x_prefix(did), 'did <=> document_id mismatch.'
+    assert price == service_agreement.get_price(), 'price mismatch.'
+    # logger.info(f'About to do grantAccess: account {account.address}, saId {service_agreement_id}, '
+    #             f'documentKeyId {document_key_id}')
+    try:
+        Keeper.get_instance().unlock_account(publisher_account)
+        tx_hash = Keeper.get_instance().escrow_reward_condition.fulfill(
+            agreement_id,
+            price,
+            publisher_account.address,
+            consumer_address,
+            lock_id,
+            access_id,
+            publisher_account
+        )
+        process_tx_receipt(
+            tx_hash,
+            Keeper.get_instance().escrow_reward_condition.FULFILLED_EVENT,
+            'EscrowReward.Fulfilled'
+        )
+    except Exception as e:
+        # logger.error(f'Error when doing escrow_reward_condition.fulfills: {e}')
+        raise e
 
 
-def refund_reward(*args):
-    pass
+def refund_reward(
+        event, agreement_id, did, service_agreement, price,
+        consumer_account, publisher_address, condition_ids
+):
+    logger.debug(f"trigger refund after event {event}.")
+    lock_id, access_id, escrow_id = condition_ids
+    name_to_parameter = {param.name: param for param in
+                         service_agreement.condition_by_name['escrowReward'].parameters}
+    document_id = name_to_parameter['_documentId'].value
+    assert add_0x_prefix(document_id) == add_0x_prefix(did), 'did <=> document_id mismatch.'
+    assert price == service_agreement.get_price(), 'price mismatch.'
+    # logger.info(f'About to do grantAccess: account {account.address}, saId {service_agreement_id}, '
+    #             f'documentKeyId {document_key_id}')
+    try:
+        Keeper.get_instance().unlock_account(consumer_account)
+        tx_hash = Keeper.get_instance().escrow_reward_condition.fulfill(
+            agreement_id,
+            price,
+            publisher_address,
+            consumer_account.address,
+            lock_id,
+            access_id,
+            consumer_account
+        )
+        process_tx_receipt(
+            tx_hash,
+            Keeper.get_instance().escrow_reward_condition.FULFILLED_EVENT,
+            'EscrowReward.Fulfilled'
+        )
+    except Exception as e:
+        # logger.error(f'Error when doing escrow_reward_condition.fulfills: {e}')
+        raise e
 
 
 def consume_asset(
-    agreement_id, did, service_agreement, service_definition_id,
-    encrypted_files, publisher_address, consumer_account,
-    consume_callback
+    event, agreement_id, did, service_agreement, consumer_account, consume_callback
 ):
+    logger.debug(f"consuming asset after event {event}.")
     if consume_callback:
         config = ConfigProvider.get_config()
         secret_store = SecretStoreProvider.get_secret_store(

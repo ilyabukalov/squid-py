@@ -72,6 +72,9 @@ class OceanAgreements:
         # subscribe to events related to this agreement_id before sending the request.
         logger.debug(f'Registering service agreement with id: {agreement_id}')
         publisher_address = self._keeper.did_registry.get_did_owner(asset.asset_id)
+        condition_ids = service_agreement.generate_agreement_condition_ids(
+            agreement_id, asset.asset_id, consumer_account.address, publisher_address, self._keeper)
+
         register_service_agreement_consumer(
             self._config.storage_path,
             publisher_address,
@@ -82,6 +85,7 @@ class OceanAgreements:
             service_agreement.get_price(),
             asset.encrypted_files,
             consumer_account,
+            condition_ids,
             self._asset_consumer.download,
         )
 
@@ -129,8 +133,7 @@ class OceanAgreements:
             raise
 
         agreement_template = self._keeper.escrow_access_secretstore_template
-        encrypted_files = asset.encrypted_files
-        # Raise error if agreement is already executed
+        # encrypted_files = asset.encrypted_files
 
         if agreement_template.get_agreement_consumer(agreement_id) is not None:
             raise OceanServiceAgreementExists(
@@ -147,6 +150,9 @@ class OceanAgreements:
                 f'consumerAddress {consumer_address}'
             )
 
+        condition_ids = service_agreement.generate_agreement_condition_ids(
+            agreement_id, asset_id, consumer_address, publisher_account.address, self._keeper)
+
         # subscribe to events related to this agreement_id
         register_service_agreement_publisher(
             self._config.storage_path,
@@ -156,11 +162,10 @@ class OceanAgreements:
             service_agreement,
             service_definition_id,
             service_agreement.get_price(),
-            publisher_account
+            publisher_account,
+            condition_ids
         )
 
-        condition_ids = service_agreement.generate_agreement_condition_ids(
-            agreement_id, asset_id, consumer_address, publisher_account.address, self._keeper)
         time_locks = service_agreement.conditions_timelocks
         time_outs = service_agreement.conditions_timeouts
         self._keeper.unlock_account(publisher_account)

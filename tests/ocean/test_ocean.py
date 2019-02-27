@@ -130,52 +130,116 @@ def test_resolve_did(publisher_ocean_instance):
 
 @e2e_test
 def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, registered_ddo):
-    # assumptions:
-    #  - service agreement template must already be registered
-    #  - asset ddo already registered
-    consumer_acc = consumer_ocean_instance.main_account
-    keeper = Keeper.get_instance()
     # point consumer_ocean_instance's brizo mock to the publisher's ocean instance
     Brizo.set_http_client(
         BrizoMock(publisher_ocean_instance, publisher_ocean_instance.main_account))
-    # sign agreement using the registered asset did above
-    service = registered_ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
-    assert ServiceAgreement.SERVICE_DEFINITION_ID in service.as_dictionary()
-    sa = ServiceAgreement.from_service_dict(service.as_dictionary())
 
-    service_agreement_id = consumer_ocean_instance.assets.order(
-        registered_ddo.did,
-        sa.sa_definition_id,
-        consumer_acc
+    consumer_ocn = consumer_ocean_instance
+    consumer_acc = consumer_ocn.main_account
+    keeper = Keeper.get_instance()
+
+    pub_ocn = publisher_ocean_instance
+    publisher_acc = pub_ocn.main_account
+
+    service_definition_id = '1'
+    did = registered_ddo.did
+    asset_id = registered_ddo.asset_id
+    ddo = consumer_ocn.assets.resolve(did)
+    service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
+    price = service_agreement.get_price()
+
+    # Give consumer some tokens
+    keeper.unlock_account(consumer_acc)
+    keeper.dispenser.request_tokens(price*2, consumer_acc.address)
+
+    agreement_id, signature = consumer_ocean_instance.agreements.prepare(
+        did, service_agreement.service_definition_id, consumer_acc)
+
+    success = publisher_ocean_instance.agreements.create(
+        did,
+        service_agreement.service_definition_id,
+        agreement_id,
+        signature,
+        consumer_acc.address,
+        publisher_acc
     )
-    assert service_agreement_id, 'agreement id is None.'
-    print('got new service agreement id:', service_agreement_id)
-    filter1 = {'agreementId': Web3.toBytes(hexstr=service_agreement_id)}
-    executed = wait_for_event(
-        keeper.service_agreement.events.AgreementInitialized, filter1)
-    assert executed
-    locked = wait_for_event(keeper.payment_conditions.events.PaymentLocked,
-                            filter1)
-    assert locked
-    granted = wait_for_event(keeper.access_conditions.events.AccessGranted,
-                             filter1)
-    assert granted
-    released = wait_for_event(
-        keeper.payment_conditions.events.PaymentReleased, filter1)
-    assert released
-    fulfilled = wait_for_event(
-        keeper.service_agreement.events.AgreementFulfilled, filter1)
-    assert fulfilled
-    print('agreement was fulfilled.')
+    assert success, 'createAgreement failed.'
+
+    event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
+        agreement_id,
+        10,
+        _log_event(keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
+        wait=True
+    )
+    assert event, 'no event for AgreementCreated '
+
+    # Verify condition types (condition contracts)
+    agreement_values = keeper.agreement_manager.get_agreement(agreement_id)
+    assert agreement_values[0] == asset_id, ''
+    cond_types = keeper.escrow_access_secretstore_template.get_condition_types()
+    for i, cond_id in enumerate(agreement_values[3]):
+        cond = keeper.condition_manager.get_condition(cond_id)
+        assert cond.typeRef == cond_types[i]
+        assert int(cond.state) == 1
+
+    lock_cond_id, access_cond_id, escrow_cond_id = agreement_values[3]
+    # Fulfill lock_reward_condition
+    starting_balance = keeper.token.get_token_balance(keeper.escrow_reward_condition.address)
+    keeper.unlock_account(consumer_acc)
+    keeper.token.token_approve(keeper.lock_reward_condition, price, consumer_acc)
+    keeper.unlock_account(consumer_acc)
+    keeper.lock_reward_condition.fulfill(agreement_id, keeper.escrow_reward_condition.address,
+                                         price, consumer_acc)
+    assert keeper.token.get_token_balance(keeper.escrow_reward_condition.address) == (
+            price + starting_balance), ''
+    assert keeper.condition_manager.get_condition_state(lock_cond_id) == 2, ''
+    event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        10,
+        callback=_log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
+        wait=True
+    )
+    assert event, 'no event for LockRewardCondition.Fulfilled'
+
+    # Fulfill access_secret_store_condition
+    keeper.unlock_account(publisher_acc)
+    keeper.access_secret_store_condition.fulfill(agreement_id, asset_id, consumer_acc.address,
+                                                 publisher_acc)
+    assert keeper.condition_manager.get_condition_state(access_cond_id) == 2, ''
+    event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        10,
+        callback=_log_event(keeper.access_secret_store_condition.FULFILLED_EVENT),
+        wait=True
+    )
+    assert event, 'no event for AccessSecretStoreCondition.Fulfilled'
+
+    # Fulfill escrow_reward_condition
+    keeper.unlock_account(publisher_acc)
+    keeper.escrow_reward_condition.fulfill(
+        agreement_id, price, publisher_acc.address,
+        consumer_acc.address, lock_cond_id,
+        access_cond_id, publisher_acc
+    )
+    assert keeper.condition_manager.get_condition_state(escrow_cond_id) == 2, ''
+    event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        10,
+        callback=_log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
+        wait=True
+    )
+    assert event, 'no event for EscrowReward.Fulfilled'
+
+    # path = consumer_ocean_instance.assets.consume(
+    #     agreement_id, did, service_definition_id,
+    #     consumer_acc, ConfigProvider.get_config().downloads_path
+    # )
+    # print('All good, files are here: %s' % path)
 
 
-@e2e_test
-def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, registered_ddo):
+def test_keeper_create_agreement(publisher_ocean_instance, consumer_ocean_instance, registered_ddo):
     """
-    This tests execute agreement without going through Ocean's sign agreement / execute agreement
-    functions so we can bypass the event handling watchers.
-    In this test we invoke all of the conditions directly in the expected order and also check
-    for the emitted events to verify that the keeper contracts are working correctly.
+    Test create agreement using keeper contracts directly
 
     """
     consumer_ocn = consumer_ocean_instance
@@ -188,10 +252,11 @@ def test_execute_agreement(publisher_ocean_instance, consumer_ocean_instance, re
     service_definition_id = '1'
     did = registered_ddo.did
     asset_id = registered_ddo.asset_id
-    agreement_id = ServiceAgreement.create_new_agreement_id()
     ddo = consumer_ocn.assets.resolve(did)
     service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
+    agreement_id = ServiceAgreement.create_new_agreement_id()
     price = service_agreement.get_price()
+
     lock_cond_id, access_cond_id, escrow_cond_id = \
         service_agreement.generate_agreement_condition_ids(
             agreement_id, asset_id, consumer_acc.address, publisher_acc.address, keeper

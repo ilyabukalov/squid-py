@@ -30,5 +30,4 @@ def fulfill_access_secret_store_condition(
         raise e
 
 
-
 fulfillAccessSecretStoreCondition = fulfill_access_secret_store_condition
