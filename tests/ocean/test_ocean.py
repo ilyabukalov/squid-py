@@ -8,18 +8,11 @@ from squid_py import ConfigProvider
 from squid_py.brizo.brizo import Brizo
 from squid_py.ddo.ddo import DDO
 from squid_py.ddo.metadata import Metadata
-from squid_py.did import DID, did_to_id
+from squid_py.did import DID
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper import Keeper
-from squid_py.keeper.event_listener import EventListener
-from squid_py.keeper.utils import get_fingerprint_by_name
-from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.modules.v0_1.accessControl import grantAccess
-from squid_py.modules.v0_1.payment import lockPayment, releasePayment
-from squid_py.modules.v0_1.serviceAgreement import fulfillAgreement
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
-from squid_py.agreements.utils import build_condition_key
 from tests.resources.helper_functions import get_resource_path, verify_signature, wait_for_event
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.tiers import e2e_test

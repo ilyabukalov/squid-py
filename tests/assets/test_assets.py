@@ -108,7 +108,7 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
     assert new_asset.get_service(ServiceTypes.METADATA)
 
     access_service = ServiceDescriptor.access_service_descriptor(
-        2, 'purchase', 'consume', 35, ACCESS_SERVICE_TEMPLATE_ID
+        2, 'purchase', 'consume', 35, ''
     )
     new_asset = ocn.assets.create(asset.metadata, acct, [access_service])
     assert new_asset.get_service(ServiceTypes.AUTHORIZATION)

@@ -94,9 +94,8 @@ class ServiceFactory(object):
                              timeout,
                              template_id):
         param_map = {
-            'assetId': did_to_id(did),
-            'price': price,
-            'documentKeyId': did_to_id(did)
+            '_documentId': did_to_id(did),
+            '_amount': price,
         }
         sla_template_path = get_sla_template_path()
         sla_template = ServiceAgreementTemplate.from_json_file(sla_template_path)
@@ -112,20 +111,15 @@ class ServiceFactory(object):
 
             conditions_json_list.append(cond)
 
-        sa = ServiceAgreement(1, sla_template.template_id, sla_template.conditions,
-                              sla_template.service_agreement_contract)
-        other_values = {
-            ServiceAgreement.SERVICE_DEFINITION_ID: sa.sa_definition_id,
-            ServiceAgreementTemplate.TEMPLATE_ID_KEY: sla_template.template_id,
-            ServiceAgreement.SERVICE_CONTRACT: sa.service_agreement_contract,
-            ServiceAgreement.SERVICE_CONDITIONS: sa.conditions
-        }
-
-        return Service(purchase_endpoint,
-                       ServiceTypes.ASSET_ACCESS,
-                       values=other_values,
-                       consume_endpoint=service_endpoint,
-                       did=did)
+        sa = ServiceAgreement(
+            1,
+            sla_template,
+            purchase_endpoint,
+            service_endpoint,
+            ServiceTypes.ASSET_ACCESS
+        )
+        sa.set_did(did)
+        return sa
 
     @staticmethod
     def build_compute_service(did, price, purchase_endpoint, service_endpoint,

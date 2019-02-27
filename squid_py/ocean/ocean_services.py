@@ -24,7 +24,7 @@ class OceanServices:
         """
         timeout = timeout or 3600  # default to one hour timeout
         service = ServiceDescriptor.access_service_descriptor(
-            price, service_endpoint, consume_endpoint, timeout, ACCESS_SERVICE_TEMPLATE_ID
+            price, service_endpoint, consume_endpoint, timeout, ''
         )
         asset = self._ocean_assets.create(
             metadata, account, [service]
