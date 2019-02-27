@@ -114,6 +114,8 @@ class ServiceFactory(object):
 
             conditions_json_list.append(cond)
 
+        # TODO update service agreement with this conditions
+
         sa = ServiceAgreement(
             1,
             sla_template,

@@ -10,20 +10,23 @@ Agreement = namedtuple('Agreement', ('template', 'conditions'))
 
 
 class ServiceAgreement(Service):
+    """"""
     SERVICE_DEFINITION_ID = 'serviceDefinitionId'
     AGREEMENT_TEMPLATE = 'serviceAgreementTemplate'
     SERVICE_CONDITIONS = 'conditions'
     PURCHASE_ENDPOINT = 'purchaseEndpoint'
     SERVICE_ENDPOINT = 'serviceEndpoint'
 
-    def __init__(
-        self,
-        sa_definition_id,
-        service_agreement_template,
-        service_endpoint=None,
-        consume_endpoint=None,
-        service_type=None
-    ):
+    def __init__(self, sa_definition_id, service_agreement_template, service_endpoint=None,
+                 consume_endpoint=None, service_type=None):
+        """
+
+        :param sa_definition_id:
+        :param service_agreement_template:
+        :param service_endpoint:
+        :param consume_endpoint:
+        :param service_type:
+        """
         self.sa_definition_id = sa_definition_id
         self.service_agreement_template = service_agreement_template
 
@@ -115,8 +118,7 @@ class ServiceAgreement(Service):
     def create_new_agreement_id():
         return generate_prefixed_id()
 
-    def generate_agreement_condition_ids(self, agreement_id, asset_id, consumer_address,
-                                         publisher_address, keeper):
+    def generate_agreement_condition_ids(self, agreement_id, keeper):
         lock_cond_id = keeper.lock_reward_condition.generate_id(
             agreement_id,
             self.condition_by_name['lockReward'].param_types,
@@ -136,7 +138,7 @@ class ServiceAgreement(Service):
         return lock_cond_id, access_cond_id, escrow_cond_id
 
     def get_service_agreement_hash(
-            self, agreement_id, asset_id, consumer_address, publisher_address, keeper):
+            self, agreement_id, keeper):
         """Return the hash of the service agreement values to be signed by a consumer.
 
         :param web3: Web3 instance
@@ -150,8 +152,7 @@ class ServiceAgreement(Service):
         """
         agreement_hash = ServiceAgreement.generate_service_agreement_hash(
             self.template_id,
-            self.generate_agreement_condition_ids(
-                agreement_id, asset_id, consumer_address, publisher_address, keeper),
+            self.generate_agreement_condition_ids(agreement_id, keeper),
             self.conditions_timelocks,
             self.conditions_timeouts,
             agreement_id
