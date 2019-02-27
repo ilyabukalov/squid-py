@@ -118,7 +118,9 @@ class ServiceAgreement(Service):
     def create_new_agreement_id():
         return generate_prefixed_id()
 
-    def generate_agreement_condition_ids(self, agreement_id, keeper):
+    def generate_agreement_condition_ids(self, agreement_id, asset_id, consumer_address,
+                                         publisher_address, keeper):
+
         lock_cond_id = keeper.lock_reward_condition.generate_id(
             agreement_id,
             self.condition_by_name['lockReward'].param_types,
@@ -138,7 +140,7 @@ class ServiceAgreement(Service):
         return lock_cond_id, access_cond_id, escrow_cond_id
 
     def get_service_agreement_hash(
-            self, agreement_id, keeper):
+            self, agreement_id, asset_id, consumer_address, publisher_address, keeper):
         """Return the hash of the service agreement values to be signed by a consumer.
 
         :param web3: Web3 instance
@@ -152,22 +154,13 @@ class ServiceAgreement(Service):
         """
         agreement_hash = ServiceAgreement.generate_service_agreement_hash(
             self.template_id,
-            self.generate_agreement_condition_ids(agreement_id, keeper),
+            self.generate_agreement_condition_ids(
+                agreement_id, asset_id, consumer_address, publisher_address, keeper),
             self.conditions_timelocks,
             self.conditions_timeouts,
             agreement_id
         )
         return agreement_hash
-
-    def generate_conditions_ids(self, keeper):
-        # const conditionIdAccess = await accessSecretStoreCondition.generateId(agreementId,
-        # await accessSecretStoreCondition.hashValues(did, receiver))
-        # const conditionIdLock = await lockRewardCondition.generateId(agreementId,
-        # await lockRewardCondition.hashValues(escrowReward.address, escrowAmount))
-        # const conditionIdEscrow = await escrowReward.generateId(agreementId,
-        # await escrowReward.hashValues(escrowAmount, receiver, sender, conditionIdLock,
-        # conditionIdAccess))
-        return []
 
     def validate_conditions(self):
         # TODO: Rewrite this to verify conditions based on the agreement template.
