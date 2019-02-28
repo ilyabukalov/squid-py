@@ -33,6 +33,10 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
         return self.get_tx_receipt(tx_hash).status == 1
 
     def get_condition_types(self):
+        """
+
+        :return:
+        """
         return self.contract_concise.getConditionTypes()
 
     def get_agreement_data(self, agreement_id):
@@ -54,6 +58,16 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
         return data[0] if data and len(data) > 1 else None
 
     def subscribe_agreement_created(self, agreement_id, timeout, callback, args, wait=False):
+        """
+        Subscribe to an agreement created.
+
+        :param agreement_id:
+        :param timeout:
+        :param callback:
+        :param args:
+        :param wait:
+        :return:
+        """
         return self.subscribe_to_event(
             self.AGREEMENT_CREATED_EVENT,
             timeout,
