@@ -2,10 +2,8 @@
 import logging
 
 import pytest
-from eth_utils import add_0x_prefix
 from web3 import Web3
 
-from squid_py import Account
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.brizo.brizo import Brizo
 from squid_py.ddo.ddo import DDO
@@ -13,9 +11,8 @@ from squid_py.ddo.metadata import Metadata
 from squid_py.did import DID
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper import Keeper
-from tests.resources.helper_functions import get_resource_path, verify_signature
 from squid_py.keeper.web3_provider import Web3Provider
-from tests.resources.helper_functions import get_resource_path, verify_signature, wait_for_event, get_ddo_sample
+from tests.resources.helper_functions import get_resource_path, verify_signature, get_ddo_sample
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.tiers import e2e_test
 
