@@ -3,7 +3,6 @@
 import logging
 
 from squid_py.agreements.service_factory import ServiceDescriptor, ServiceTypes
-from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
 from squid_py.ddo.ddo import DDO
 from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import get_resource_path

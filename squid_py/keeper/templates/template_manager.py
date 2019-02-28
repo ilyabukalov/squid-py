@@ -42,7 +42,7 @@ class TemplateStoreManager(ContractBase):
         :return:
         """
         tx_hash = self.contract_concise.approveTemplate(
-            template_id, transact={'from': from_account})
+            template_id, transact={'from': from_account.address})
         return self.get_tx_receipt(tx_hash).status == 1
 
     def revoke_template(self, template_id, from_account):

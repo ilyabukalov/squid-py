@@ -54,6 +54,9 @@ class ServiceAgreementTemplate(object):
             ServiceAgreementCondition(cond_json) for cond_json in self.template['conditions']
         ]
 
+    def set_conditions(self, conditions):
+        self.template['conditions'] = [cond.as_dictionary() for cond in conditions]
+
     def as_dictionary(self):
         template = {
             'contractName': self.contract_name,

@@ -1,5 +1,5 @@
 """
-    Test did_lib
+    Test did
 """
 import secrets
 
@@ -23,12 +23,16 @@ TEST_SERVICE_URL = 'http://localhost:8005'
 
 @e2e_test
 def test_did():
-    test_id = '%s' % secrets.token_hex(32)
-
-    valid_did = 'did:op:{0}'.format(test_id)
-
     assert DID.did().startswith(OCEAN_PREFIX)
     assert len(DID.did()) - len(OCEAN_PREFIX) == 64
+    assert DID.did() != DID.did(), ''
+    _id = did_to_id(DID.did())
+    assert not _id.startswith('0x'), 'id portion of did should not have a 0x prefix.'
+
+
+def test_did_parse():
+    test_id = '%s' % secrets.token_hex(32)
+    valid_did = 'did:op:{0}'.format(test_id)
 
     with pytest.raises(TypeError):
         did_parse(None)
@@ -49,6 +53,10 @@ def test_did():
     with pytest.raises(TypeError):
         assert is_did_valid(valid_did.encode())
 
+
+def test_id_to_did():
+
+    test_id = '%s' % secrets.token_hex(32)
     valid_did_text = 'did:op:{}'.format(test_id)
     assert id_to_did(test_id) == valid_did_text
 
@@ -65,12 +73,23 @@ def test_did():
         id_to_did({'bad': 'value'})
 
     assert id_to_did('') == 'did:op:0'
-    assert did_to_id(valid_did_text) == test_id
+
+
+def test_did_to_id():
+    did = DID.did()
+    _id = did_to_id(did)
+    assert _id is not None and len(_id) == 64, ''
+
+    test_id = '%s' % secrets.token_hex(32)
+    assert did_to_id(f'{OCEAN_PREFIX}{test_id}') == test_id
     assert did_to_id('did:op1:011') == '011'
     assert did_to_id('did:op:0') == '0'
+    with pytest.raises(ValueError):
+        did_to_id(OCEAN_PREFIX)
+
+    assert did_to_id(f'{OCEAN_PREFIX}AB*&$#') == 'AB', ''
 
 
-@e2e_test
 def test_did_to_bytes():
     id_test = secrets.token_hex(32)
     did_test = 'did:op:{}'.format(id_test)

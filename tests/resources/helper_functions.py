@@ -2,6 +2,7 @@ import os
 import pathlib
 import time
 
+from squid_py.ddo.ddo import DDO
 from squid_py.ocean.ocean import Ocean
 from squid_py import ConfigProvider
 from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
@@ -118,6 +119,10 @@ def get_account_from_config(config, config_account_key, config_account_password_
         password = config.get('keeper-contracts', config_account_password_key)
 
     return Account(address, password)
+
+
+def get_ddo_sample():
+    return DDO(json_filename=get_resource_path('ddo', 'ddo_sa_sample.json'))
 
 
 def get_registered_ddo(ocean_instance, account):

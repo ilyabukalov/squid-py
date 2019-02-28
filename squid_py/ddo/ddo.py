@@ -8,6 +8,7 @@ from datetime import datetime
 from Cryptodome.Hash import SHA256
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Signature import PKCS1_v1_5
+from eth_utils import add_0x_prefix
 
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.ddo.public_key_hex import PublicKeyHex
@@ -56,7 +57,7 @@ class DDO:
     @property
     def asset_id(self):
         """The asset id part of the DID"""
-        return did_to_id(self._did)
+        return add_0x_prefix(did_to_id(self._did))
 
     @property
     def services(self):

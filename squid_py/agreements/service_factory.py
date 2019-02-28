@@ -104,18 +104,14 @@ class ServiceFactory(object):
         sla_template = ServiceAgreementTemplate.from_json_file(sla_template_path)
         sla_template.template_id = template_id
         conditions = sla_template.conditions[:]
-        conditions_json_list = []
         for cond in conditions:
             for param in cond.parameters:
-                param.value = param_map[param.name]
+                param.value = param_map.get(param.name, '')
 
             if cond.timeout > 0:
                 cond.timeout = timeout
 
-            conditions_json_list.append(cond)
-
-        # TODO update service agreement with this conditions
-
+        sla_template.set_conditions(conditions)
         sa = ServiceAgreement(
             1,
             sla_template,

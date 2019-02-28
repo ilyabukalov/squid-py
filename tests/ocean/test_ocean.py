@@ -256,12 +256,27 @@ def test_keeper_create_agreement(publisher_ocean_instance, consumer_ocean_instan
     service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
     agreement_id = ServiceAgreement.create_new_agreement_id()
     price = service_agreement.get_price()
-
-    lock_cond_id, access_cond_id, escrow_cond_id = \
+    print('sa: ', service_agreement.as_text(is_pretty=True))
+    access_cond_id, lock_cond_id, escrow_cond_id = \
         service_agreement.generate_agreement_condition_ids(
             agreement_id, asset_id, consumer_acc.address, publisher_acc.address, keeper
         )
 
+    keeper.unlock_account(publisher_acc)
+    print('creating agreement:'
+          'agrId: ', agreement_id,
+          'asset_id', asset_id,
+          '[lock_cond_id, access_cond_id, escrow_cond_id]', [lock_cond_id, access_cond_id, escrow_cond_id],
+          'tlocks', service_agreement.conditions_timelocks,
+          'touts', service_agreement.conditions_timeouts,
+          'consumer', consumer_acc.address,
+          'publisher', publisher_acc.address
+          )
+
+
+    keeper.template_manager.approve_template(keeper.escrow_access_secretstore_template.address, publisher_acc)
+    assert keeper.template_manager.is_template_approved(keeper.escrow_access_secretstore_template.address), 'Template is not approved.'
+    assert keeper.did_registry.getBlockNumberUpdated(asset_id) > 0, 'asset id not registered'
     keeper.unlock_account(publisher_acc)
     success = keeper.escrow_access_secretstore_template.create_agreement(
         agreement_id,
@@ -272,7 +287,8 @@ def test_keeper_create_agreement(publisher_ocean_instance, consumer_ocean_instan
         consumer_acc.address,
         publisher_acc
     )
-    assert success, 'createAgreement failed.'
+    print('create agreement: ', success)
+    assert success, f'createAgreement failed {success}'
     event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
         agreement_id,
         10,

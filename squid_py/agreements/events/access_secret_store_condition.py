@@ -17,7 +17,7 @@ def fulfill_escrow_reward_condition(
         consumer_address, publisher_account, condition_ids
 ):
     logger.debug(f"release reward after event {event}.")
-    lock_id, access_id, escrow_id = condition_ids
+    access_id, lock_id, escrow_id = condition_ids
     name_to_parameter = {param.name: param for param in
                          service_agreement.condition_by_name['escrowReward'].parameters}
     document_id = name_to_parameter['_documentId'].value
@@ -51,7 +51,7 @@ def refund_reward(
         consumer_account, publisher_address, condition_ids
 ):
     logger.debug(f"trigger refund after event {event}.")
-    lock_id, access_id, escrow_id = condition_ids
+    access_id, lock_id, escrow_id = condition_ids
     name_to_parameter = {param.name: param for param in
                          service_agreement.condition_by_name['escrowReward'].parameters}
     document_id = name_to_parameter['_documentId'].value

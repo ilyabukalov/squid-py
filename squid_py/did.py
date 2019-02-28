@@ -31,7 +31,7 @@ def did_parse(did):
     Parse a DID into it's parts.
 
     :param did: Asset did, str.
-    :return: Python dictionay with the method and the id.
+    :return: Python dictionary with the method and the id.
     """
     if not isinstance(did, str):
         raise TypeError(f'Expecting DID of string type, got {did} of {type(did)} type')
