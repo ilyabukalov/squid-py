@@ -33,9 +33,9 @@ class ServiceAgreement(Service):
         values_dict = {
             ServiceAgreement.SERVICE_DEFINITION_ID: self.sa_definition_id,
             ServiceAgreementTemplate.TEMPLATE_ID_KEY: self.template_id,
-            ServiceAgreement.AGREEMENT_TEMPLATE: self.service_agreement_template.as_dictionary(),
 
         }
+        values_dict.update(self.service_agreement_template.as_dictionary())
 
         Service.__init__(self, service_endpoint,
                          service_type or ServiceTypes.ASSET_ACCESS,
@@ -96,7 +96,7 @@ class ServiceAgreement(Service):
     def from_service_dict(cls, service_dict):
         return cls(
             service_dict[cls.SERVICE_DEFINITION_ID],
-            ServiceAgreementTemplate(service_dict[cls.AGREEMENT_TEMPLATE]),
+            ServiceAgreementTemplate(service_dict),
             service_dict.get(cls.PURCHASE_ENDPOINT),
             service_dict.get(cls.SERVICE_ENDPOINT),
             service_dict.get('type')

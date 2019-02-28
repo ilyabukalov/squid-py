@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class EventListener(object):
-    def __init__(self, contract_name, event_name, args=None, from_block='latest', to_block='latest',
+    def __init__(self, contract_name, event_name, args=None, from_block=0, to_block='latest',
                  filters=None):
         contract = ContractHandler.get(contract_name)
         self.event = getattr(contract.events, event_name)
@@ -79,11 +79,12 @@ class EventListener(object):
                 logger.debug(f'Got error grabbing keeper events: {str(err)}')
 
             time.sleep(0.1)
-            elapsed = int(datetime.now().timestamp()) - start_time
-            if timeout and elapsed > timeout:
-                if timeout_callback:
-                    timeout_callback(*args)
-                else:
-                    callback(None, *args)
+            if timeout:
+                elapsed = int(datetime.now().timestamp()) - start_time
+                if elapsed > timeout:
+                    if timeout_callback:
+                        timeout_callback(*args)
+                    else:
+                        callback(None, *args)
 
-                break
+                    break

@@ -1,3 +1,4 @@
+from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper.conditions.condition_base import ConditionBase
 
 
@@ -14,11 +15,12 @@ class LockRewardCondition(ConditionBase):
         :param account: Account instance
         :return:
         """
-        return super(self).fulfill(
+        return ConditionBase.fulfill(
+            self,
             agreement_id,
             reward_address,
             amount,
-            transact={'from': account.address}
+            transact={'from': account.address, 'gas': DEFAULT_GAS_LIMIT}
         )
 
     def hash_values(self, reward_address, amount):
@@ -28,4 +30,4 @@ class LockRewardCondition(ConditionBase):
         :param amount:
         :return:
         """
-        return super(self).hash_values(reward_address, amount)
+        return ConditionBase.hash_values(self, reward_address, amount)

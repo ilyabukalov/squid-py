@@ -124,8 +124,8 @@ class OceanAgreements:
             consumer_address), f'Invalid consumer address {consumer_address}'
         assert publisher_account.address in self._keeper.accounts, \
             f'Unrecognized publisher address {publisher_account.address}'
-        asset_id = did_to_id(did)
         asset = self._asset_resolver.resolve(did)
+        asset_id = asset.asset_id
         service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
         try:
             service_agreement.validate_conditions()
@@ -169,7 +169,7 @@ class OceanAgreements:
         time_locks = service_agreement.conditions_timelocks
         time_outs = service_agreement.conditions_timeouts
         self._keeper.unlock_account(publisher_account)
-        receipt = agreement_template.create_agreement(
+        success = agreement_template.create_agreement(
             agreement_id,
             asset_id,
             condition_ids,
@@ -179,7 +179,7 @@ class OceanAgreements:
             publisher_account
         )
         logger.info(f'Service agreement {agreement_id} executed successfully.')
-        return receipt
+        return success
 
     def is_access_granted(self, agreement_id, did, consumer_address):
         """
@@ -235,7 +235,7 @@ class OceanAgreements:
             raise
 
         agreement_hash = service_agreement.get_service_agreement_hash(
-            agreement_id, ddo.asset_id, consumer_address, publisher_account, self._keeper)
+            agreement_id, ddo.asset_id, consumer_address, publisher_account.address, self._keeper)
 
         prefixed_hash = prepare_prefixed_hash(agreement_hash)
         recovered_address = Web3Provider.get_web3().eth.account.recoverHash(

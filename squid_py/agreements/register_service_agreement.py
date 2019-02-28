@@ -115,7 +115,7 @@ def register_service_agreement_publisher(storage_path, consumer_address, agreeme
         start_time = int(datetime.now().timestamp())
 
     record_service_agreement(
-        storage_path, agreement_id, did, service_definition_id, price, start_time)
+        storage_path, agreement_id, did, service_definition_id, price, '', start_time)
 
     process_agreement_events_publisher(
         publisher_account, agreement_id, did, service_agreement,

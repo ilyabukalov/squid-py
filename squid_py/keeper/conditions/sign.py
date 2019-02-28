@@ -1,3 +1,4 @@
+from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper.conditions.condition_base import ConditionBase
 
 
@@ -5,20 +6,23 @@ class SignCondition(ConditionBase):
     """Class representing the SignCondition contract."""
     CONTRACT_NAME = 'SignCondition'
 
-    def fulfill(self, agreement_id, message, account_address, signature):
+    def fulfill(self, agreement_id, message, account_address, signature, from_account):
         """
 
         :param agreement_id:
         :param message:
         :param account_address:
         :param signature:
+        :param from_account:
         :return:
         """
-        return super(self).fulfill(
+        return ConditionBase.fulfill(
+            self,
             agreement_id,
             message,
             account_address,
-            signature
+            signature,
+            transact={'from': from_account.address, 'gas': DEFAULT_GAS_LIMIT}
         )
 
     def hash_values(self, message, account_address):
@@ -28,4 +32,4 @@ class SignCondition(ConditionBase):
         :param account_address:
         :return:
         """
-        return super(self).hash_values(message, account_address)
+        return ConditionBase.hash_values(self, message, account_address)

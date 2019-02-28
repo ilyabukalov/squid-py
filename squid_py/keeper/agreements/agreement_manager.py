@@ -1,4 +1,13 @@
+from collections import namedtuple
+
+from eth_utils import add_0x_prefix
+
 from squid_py.keeper import ContractBase
+
+AgreementValues = namedtuple(
+    'AgreementValues',
+    ('did', 'owner', 'template_id', 'condition_ids', 'updated_by', 'block_number_updated')
+)
 
 
 class AgreementStoreManager(ContractBase):
@@ -40,20 +49,19 @@ class AgreementStoreManager(ContractBase):
         :return: the agreement attributes.
         """
         agreement = self.contract_concise.getAgreement(agreement_id)
-        if agreement:
-            (did,
-             owner,
-             template_id,
-             conditions_ids,
-             updated_by,
-             block_number_updated) = agreement
-            return (
+        if agreement and len(agreement) == 6:
+            agreement = AgreementValues(*agreement)
+            did = add_0x_prefix(agreement.did.hex())
+            cond_ids = [add_0x_prefix(_id.hex()) for _id in agreement.condition_ids]
+
+            return AgreementValues(
                 did,
-                owner,
-                template_id,
-                conditions_ids,
-                updated_by,
-                block_number_updated)
+                agreement.owner,
+                agreement.template_id,
+                cond_ids,
+                agreement.updated_by,
+                agreement.block_number_updated
+            )
 
         return None
 

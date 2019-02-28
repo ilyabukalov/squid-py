@@ -1,3 +1,4 @@
+from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper.conditions.condition_base import ConditionBase
 
 
@@ -16,11 +17,12 @@ class AccessSecretStoreCondition(ConditionBase):
         :param account: Account instance
         :return: true if the condition was successfully fulfilled, bool
         """
-        return super(self).fulfill(
+        return ConditionBase.fulfill(
+            self,
             agreement_id,
             document_id,
             grantee_address,
-            transact={'from': account.address}
+            transact={'from': account.address, 'gas': DEFAULT_GAS_LIMIT}
         )
 
     def hash_values(self, document_id, grantee_address):
@@ -32,7 +34,7 @@ class AccessSecretStoreCondition(ConditionBase):
         :param grantee_address: is the address of the granted user, str
         :return:
         """
-        return super(self).hash_values(document_id, grantee_address)
+        return ConditionBase.hash_values(self, document_id, grantee_address)
 
     def check_permissions(self, document_id, grantee_address):
         """

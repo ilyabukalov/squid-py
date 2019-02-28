@@ -2,8 +2,10 @@
 import logging
 
 import pytest
+from eth_utils import add_0x_prefix
 from web3 import Web3
 
+from squid_py import Account
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.brizo.brizo import Brizo
@@ -12,7 +14,8 @@ from squid_py.ddo.metadata import Metadata
 from squid_py.did import DID
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper import Keeper
-from tests.resources.helper_functions import get_resource_path, verify_signature, wait_for_event
+from squid_py.keeper.web3_provider import Web3Provider
+from tests.resources.helper_functions import get_resource_path, verify_signature, wait_for_event, get_ddo_sample
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.tiers import e2e_test
 
@@ -169,24 +172,25 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
         agreement_id,
         10,
         _log_event(keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
+        (),
         wait=True
     )
     assert event, 'no event for AgreementCreated '
 
     # Verify condition types (condition contracts)
     agreement_values = keeper.agreement_manager.get_agreement(agreement_id)
-    assert agreement_values[0] == asset_id, ''
+    assert agreement_values.did == asset_id, ''
     cond_types = keeper.escrow_access_secretstore_template.get_condition_types()
-    for i, cond_id in enumerate(agreement_values[3]):
+    for i, cond_id in enumerate(agreement_values.condition_ids):
         cond = keeper.condition_manager.get_condition(cond_id)
-        assert cond.typeRef == cond_types[i]
+        assert cond.type_ref == cond_types[i]
         assert int(cond.state) == 1
 
-    lock_cond_id, access_cond_id, escrow_cond_id = agreement_values[3]
+    access_cond_id, lock_cond_id, escrow_cond_id = agreement_values.condition_ids
     # Fulfill lock_reward_condition
     starting_balance = keeper.token.get_token_balance(keeper.escrow_reward_condition.address)
     keeper.unlock_account(consumer_acc)
-    keeper.token.token_approve(keeper.lock_reward_condition, price, consumer_acc)
+    keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_acc)
     keeper.unlock_account(consumer_acc)
     keeper.lock_reward_condition.fulfill(agreement_id, keeper.escrow_reward_condition.address,
                                          price, consumer_acc)
@@ -196,20 +200,22 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         10,
-        callback=_log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
+        _log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
+        (),
         wait=True
     )
     assert event, 'no event for LockRewardCondition.Fulfilled'
 
     # Fulfill access_secret_store_condition
     keeper.unlock_account(publisher_acc)
-    keeper.access_secret_store_condition.fulfill(agreement_id, asset_id, consumer_acc.address,
-                                                 publisher_acc)
+    keeper.access_secret_store_condition.fulfill(
+        agreement_id, asset_id, consumer_acc.address, publisher_acc)
     assert keeper.condition_manager.get_condition_state(access_cond_id) == 2, ''
     event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
         agreement_id,
         10,
-        callback=_log_event(keeper.access_secret_store_condition.FULFILLED_EVENT),
+        _log_event(keeper.access_secret_store_condition.FULFILLED_EVENT),
+        (),
         wait=True
     )
     assert event, 'no event for AccessSecretStoreCondition.Fulfilled'
@@ -225,7 +231,8 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         10,
-        callback=_log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
+        _log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
+        (),
         wait=True
     )
     assert event, 'no event for EscrowReward.Fulfilled'
@@ -237,7 +244,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     # print('All good, files are here: %s' % path)
 
 
-def test_keeper_create_agreement(publisher_ocean_instance, consumer_ocean_instance, registered_ddo):
+def test_keeper_create_agreement(publisher_ocean_instance, consumer_ocean_instance):
     """
     Test create agreement using keeper contracts directly
 
@@ -249,14 +256,25 @@ def test_keeper_create_agreement(publisher_ocean_instance, consumer_ocean_instan
     pub_ocn = publisher_ocean_instance
     publisher_acc = pub_ocn.main_account
 
-    service_definition_id = '1'
+    service_definition_id = 'Access'
+
+    ddo = get_ddo_sample()
+    keeper.unlock_account(publisher_acc)
+    keeper.did_registry.register(
+        ddo.did,
+        checksum=Web3Provider.get_web3().sha3(text=ddo.metadata['base']['checksum']),
+        url='aquarius:5000',
+        account=publisher_acc
+    )
+
+    registered_ddo = ddo
     did = registered_ddo.did
     asset_id = registered_ddo.asset_id
-    ddo = consumer_ocn.assets.resolve(did)
+    # ddo = consumer_ocn.assets.resolve(did)
     service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
     agreement_id = ServiceAgreement.create_new_agreement_id()
     price = service_agreement.get_price()
-    print('sa: ', service_agreement.as_text(is_pretty=True))
+    # print('sa: ', service_agreement.as_text(is_pretty=True))
     access_cond_id, lock_cond_id, escrow_cond_id = \
         service_agreement.generate_agreement_condition_ids(
             agreement_id, asset_id, consumer_acc.address, publisher_acc.address, keeper
@@ -273,15 +291,31 @@ def test_keeper_create_agreement(publisher_ocean_instance, consumer_ocean_instan
           'publisher', publisher_acc.address
           )
 
+    try:
+        proposed = keeper.template_manager.propose_template(keeper.escrow_access_secretstore_template.address, publisher_acc)
+        print('template propose: ', proposed)
+    except ValueError:
+        print('propose template failed, maybe it is already proposed.')
+        template_values = keeper.template_manager.get_template(keeper.escrow_access_secretstore_template.address)
+        print('template values: ', template_values)
 
-    keeper.template_manager.approve_template(keeper.escrow_access_secretstore_template.address, publisher_acc)
+    # for acc in  publisher_ocean_instance.accounts.list():
+    #     owner_acc = acc
+    owner_acc = publisher_acc# Account("0xe2DD09d719Da89e5a3D0F2549c7E24566e947260", '')
+    # keeper.unlock_account(owner_acc)
+    try:
+        approved = keeper.template_manager.approve_template(keeper.escrow_access_secretstore_template.address, owner_acc)
+        print('template approve: ', approved)
+    except ValueError:
+        print(f'approve template from account {owner_acc.address} failed')
+
     assert keeper.template_manager.is_template_approved(keeper.escrow_access_secretstore_template.address), 'Template is not approved.'
-    assert keeper.did_registry.getBlockNumberUpdated(asset_id) > 0, 'asset id not registered'
+    assert keeper.did_registry.get_block_number_updated(asset_id) > 0, 'asset id not registered'
     keeper.unlock_account(publisher_acc)
     success = keeper.escrow_access_secretstore_template.create_agreement(
         agreement_id,
         asset_id,
-        [lock_cond_id, access_cond_id, escrow_cond_id],
+        [access_cond_id, lock_cond_id, escrow_cond_id],
         service_agreement.conditions_timelocks,
         service_agreement.conditions_timeouts,
         consumer_acc.address,
@@ -293,6 +327,7 @@ def test_keeper_create_agreement(publisher_ocean_instance, consumer_ocean_instan
         agreement_id,
         10,
         _log_event(keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
+        (),
         wait=True
     )
     assert event, 'no event for AgreementCreated '
@@ -301,9 +336,9 @@ def test_keeper_create_agreement(publisher_ocean_instance, consumer_ocean_instan
     agreement = keeper.agreement_manager.get_agreement(agreement_id)
     assert agreement.did == asset_id, ''
     cond_types = keeper.escrow_access_secretstore_template.get_condition_types()
-    for i, cond_id in enumerate(agreement.conditionIds):
+    for i, cond_id in enumerate(agreement.condition_ids):
         cond = keeper.condition_manager.get_condition(cond_id)
-        assert cond.typeRef == cond_types[i]
+        assert cond.type_ref == cond_types[i]
         assert int(cond.state) == 1
 
     # Give consumer some tokens
@@ -313,30 +348,32 @@ def test_keeper_create_agreement(publisher_ocean_instance, consumer_ocean_instan
     # Fulfill lock_reward_condition
     starting_balance = keeper.token.get_token_balance(keeper.escrow_reward_condition.address)
     keeper.unlock_account(consumer_acc)
-    keeper.token.token_approve(keeper.lock_reward_condition, price, consumer_acc)
+    keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_acc)
     keeper.unlock_account(consumer_acc)
-    keeper.lock_reward_condition.fulfill(agreement_id, keeper.escrow_reward_condition.address,
-                                         price, consumer_acc)
+    keeper.lock_reward_condition.fulfill(
+        agreement_id, keeper.escrow_reward_condition.address, price, consumer_acc)
     assert keeper.token.get_token_balance(keeper.escrow_reward_condition.address) == (
             price + starting_balance), ''
     assert keeper.condition_manager.get_condition_state(lock_cond_id) == 2, ''
     event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         10,
-        callback=_log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
+        _log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
+        (),
         wait=True
     )
     assert event, 'no event for LockRewardCondition.Fulfilled'
 
     # Fulfill access_secret_store_condition
     keeper.unlock_account(publisher_acc)
-    keeper.access_secret_store_condition.fulfill(agreement_id, asset_id, consumer_acc.address,
-                                                 publisher_acc)
+    keeper.access_secret_store_condition.fulfill(
+        agreement_id, asset_id, consumer_acc.address, publisher_acc)
     assert keeper.condition_manager.get_condition_state(access_cond_id) == 2, ''
     event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
         agreement_id,
         10,
-        callback=_log_event(keeper.access_secret_store_condition.FULFILLED_EVENT),
+        _log_event(keeper.access_secret_store_condition.FULFILLED_EVENT),
+        (),
         wait=True
     )
     assert event, 'no event for AccessSecretStoreCondition.Fulfilled'
@@ -352,7 +389,8 @@ def test_keeper_create_agreement(publisher_ocean_instance, consumer_ocean_instan
     event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         10,
-        callback=_log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
+        _log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
+        (),
         wait=True
     )
     assert event, 'no event for EscrowReward.Fulfilled'

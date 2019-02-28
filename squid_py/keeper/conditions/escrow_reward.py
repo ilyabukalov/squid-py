@@ -1,3 +1,4 @@
+from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper.conditions.condition_base import ConditionBase
 
 
@@ -25,14 +26,15 @@ class EscrowRewardCondition(ConditionBase):
         :param account: Account instance
         :return:
         """
-        return super(self).fulfill(
+        return ConditionBase.fulfill(
+            self,
             agreement_id,
             amount,
             receiver_address,
             sender_address,
             lock_condition_id,
             release_condition_id,
-            transact={'from': account.address}
+            transact={'from': account.address, 'gas': DEFAULT_GAS_LIMIT}
         )
 
     def hash_values(self, amount, receiver_address, sender_address, lock_condition_id,
@@ -46,7 +48,8 @@ class EscrowRewardCondition(ConditionBase):
         :param release_condition_id:
         :return:
         """
-        return super(self).hash_values(
+        return ConditionBase.hash_values(
+            self,
             amount,
             receiver_address,
             sender_address,

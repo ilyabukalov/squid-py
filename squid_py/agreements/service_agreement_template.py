@@ -25,8 +25,8 @@ class ServiceAgreementTemplate(object):
     def parse_template_json(self, template_json):
         assert template_json['type'] == self.DOCUMENT_TYPE, ''
         self.template_id = template_json['templateId']
-        self.name = template_json['name']
-        self.creator = template_json['creator']
+        self.name = template_json.get('name')
+        self.creator = template_json.get('creator')
         self.template = template_json['serviceAgreementTemplate']
 
     def set_template_id(self, template_id):
@@ -66,8 +66,8 @@ class ServiceAgreementTemplate(object):
             'conditions': [cond.as_dictionary() for cond in self.conditions]
         }
         return {
-            'type': self.DOCUMENT_TYPE,
-            'templateId': self.template_id,
+            # 'type': self.DOCUMENT_TYPE,
+            'id': self.template_id,
             'name': self.name,
             'creator': self.creator,
             'serviceAgreementTemplate': template
