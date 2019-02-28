@@ -52,25 +52,6 @@ def test_accounts(publisher_ocean_instance):
 
 
 @e2e_test
-def test_token_request(publisher_ocean_instance):
-    receiver_account = publisher_ocean_instance.main_account
-    # Starting balance for comparison
-    start_ocean = publisher_ocean_instance.accounts.balance(receiver_account).ocn
-
-    # Make requests, assert success on request
-    publisher_ocean_instance.accounts.request_tokens(receiver_account, 2000)
-    # Should be no change, 2000 exceeds the max of 1000
-    assert publisher_ocean_instance.accounts.balance(receiver_account).ocn == start_ocean
-
-    amount = 500
-    publisher_ocean_instance.accounts.request_tokens(receiver_account, amount)
-    # Confirm balance changes
-    # TODO Review representation of amounts.
-    assert publisher_ocean_instance.accounts.balance(
-        receiver_account).ocn == start_ocean + (amount * 1000000000000000000)
-
-
-@e2e_test
 def test_register_asset(publisher_ocean_instance):
     logging.debug("".format())
     sample_ddo_path = get_resource_path('ddo', 'ddo_sa_sample.json')
