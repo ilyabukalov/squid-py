@@ -27,4 +27,17 @@ class ConditionStoreManager(ContractBase):
         return None
 
     def get_condition_state(self, condition_id):
+        """Retrieve the condition state.
+
+        :param condition_id: id of the condition, str
+        :return: State of the condition
+        """
         return self.contract_concise.getConditionState(condition_id)
+
+    def get_num_condition(self):
+        """
+        Return the size of the Conditions list.
+
+        :return: the length of the conditions list, int
+        """
+        return self.contract_concise.getConditionListSize()

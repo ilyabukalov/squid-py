@@ -28,4 +28,5 @@ class OceanTokens:
         self._keeper.unlock_account(sender_account)
         self._keeper.token.token_approve(receiver_address, amount,
                                          sender_account)
+        self._keeper.unlock_account(sender_account)
         self._keeper.token.transfer(receiver_address, amount, sender_account)

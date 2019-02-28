@@ -8,8 +8,9 @@ class TemplateStoreManager(ContractBase):
 
     def get_template(self, template_id):
         """
+        Get the template for a given template id.
 
-        :param template_id:
+        :param template_id: id of the template, str
         :return:
         """
         (state,
@@ -25,10 +26,10 @@ class TemplateStoreManager(ContractBase):
         )
 
     def propose_template(self, template_id, from_account):
-        """
+        """Propose a template.
 
-        :param template_id:
-        :param from_account:
+        :param template_id: id of the template, str
+        :param from_account: Account
         :return:
         """
         tx_hash = self.contract_concise.proposeTemplate(
@@ -37,9 +38,10 @@ class TemplateStoreManager(ContractBase):
 
     def approve_template(self, template_id, from_account):
         """
+        Approve a template.
 
-        :param template_id:
-        :param from_account:
+        :param template_id: id of the template, str
+        :param from_account: Account
         :return:
         """
         tx_hash = self.contract_concise.approveTemplate(
@@ -48,9 +50,10 @@ class TemplateStoreManager(ContractBase):
 
     def revoke_template(self, template_id, from_account):
         """
+        Revoke a template.
 
-        :param template_id:
-        :param from_account:
+        :param template_id: id of the template, str
+        :param from_account: Account
         :return:
         """
         tx_hash = self.contract_concise.revokeTemplate(
@@ -59,9 +62,10 @@ class TemplateStoreManager(ContractBase):
 
     def is_template_approved(self, template_id):
         """
+        True if the template is approved.
 
-        :param template_id:
-        :return:
+        :param template_id: id of the template, str
+        :return: bool
         """
         return self.contract_concise.isTemplateApproved(template_id)
 
