@@ -1,12 +1,9 @@
 import logging
 from datetime import datetime
 
-from squid_py.agreements.events import (
-    lock_reward_condition,
-    access_secret_store_condition,
-    escrow_access_secret_store_template,
-    escrow_reward_condition
-)
+from squid_py.agreements.events import (access_secret_store_condition,
+                                        escrow_access_secret_store_template,
+                                        escrow_reward_condition, lock_reward_condition)
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.keeper import Keeper
 from .storage import get_service_agreements, record_service_agreement
@@ -14,12 +11,27 @@ from .storage import get_service_agreements, record_service_agreement
 logger = logging.getLogger(__name__)
 
 
-def register_service_agreement_consumer(
-        storage_path, publisher_address, agreement_id, did, service_agreement,
-        service_definition_id, price, encrypted_files, consumer_account, condition_ids,
-        consume_callback=None, start_time=None):
-    """ Registers the given service agreement in the local storage.
-        Subscribes to the service agreement events.
+def register_service_agreement_consumer(storage_path, publisher_address, agreement_id, did,
+                                        service_agreement, service_definition_id, price,
+                                        encrypted_files, consumer_account, condition_ids,
+                                        consume_callback=None, start_time=None):
+    """
+    Registers the given service agreement in the local storage.
+    Subscribes to the service agreement events.
+
+    :param storage_path:
+    :param publisher_address:
+    :param agreement_id:
+    :param did:
+    :param service_agreement:
+    :param service_definition_id:
+    :param price:
+    :param encrypted_files:
+    :param consumer_account:
+    :param condition_ids:
+    :param consume_callback:
+    :param start_time:
+    :return:
     """
     if start_time is None:
         start_time = int(datetime.now().timestamp())
@@ -34,11 +46,23 @@ def register_service_agreement_consumer(
     )
 
 
-def process_agreement_events_consumer(
-        publisher_address, agreement_id, did, service_agreement,
-        service_definition_id, price, consumer_account, condition_ids,
-        consume_callback
-):
+def process_agreement_events_consumer(publisher_address, agreement_id, did, service_agreement,
+                                      service_definition_id, price, consumer_account, condition_ids,
+                                      consume_callback):
+    """
+
+
+    :param publisher_address:
+    :param agreement_id:
+    :param did:
+    :param service_agreement:
+    :param service_definition_id:
+    :param price:
+    :param consumer_account:
+    :param condition_ids:
+    :param consume_callback:
+    :return:
+    """
     conditions_dict = service_agreement.condition_by_name
     keeper = Keeper.get_instance()
     keeper.escrow_access_secretstore_template.subscribe_agreement_created(
@@ -68,11 +92,25 @@ def process_agreement_events_consumer(
         )
 
 
-def register_service_agreement_publisher(
-        storage_path, consumer_address, agreement_id, did, service_agreement,
-        service_definition_id, price, publisher_account, condition_ids,
-        start_time=None):
+def register_service_agreement_publisher(storage_path, consumer_address, agreement_id, did,
+                                         service_agreement, service_definition_id, price,
+                                         publisher_account, condition_ids, start_time=None):
+    """
+    Registers the given service agreement in the local storage.
+    Subscribes to the service agreement events.
 
+    :param storage_path:
+    :param consumer_address:
+    :param agreement_id:
+    :param did:
+    :param service_agreement:
+    :param service_definition_id:
+    :param price:
+    :param publisher_account:
+    :param condition_ids:
+    :param start_time:
+    :return:
+    """
     if start_time is None:
         start_time = int(datetime.now().timestamp())
 
@@ -85,11 +123,21 @@ def register_service_agreement_publisher(
     )
 
 
-def process_agreement_events_publisher(
-            publisher_account, agreement_id, did, service_agreement,
-            service_definition_id, price, consumer_address, condition_ids
-    ):
+def process_agreement_events_publisher(publisher_account, agreement_id, did, service_agreement,
+                                       service_definition_id, price, consumer_address,
+                                       condition_ids):
+    """
 
+    :param publisher_account:
+    :param agreement_id:
+    :param did:
+    :param service_agreement:
+    :param service_definition_id:
+    :param price:
+    :param consumer_address:
+    :param condition_ids:
+    :return:
+    """
     conditions_dict = service_agreement.condition_by_name
     keeper = Keeper.get_instance()
     keeper.lock_reward_condition.subscribe_condition_fulfilled(
@@ -117,10 +165,16 @@ def process_agreement_events_publisher(
     )
 
 
-def execute_pending_service_agreements(storage_path, account, actor_type,
-                                       did_resolver_fn):
-    """ Iterates over pending service agreements recorded in the local storage,
-        fetches their service definitions, and subscribes to service agreement events.
+def execute_pending_service_agreements(storage_path, account, actor_type, did_resolver_fn):
+    """
+     Iterates over pending service agreements recorded in the local storage,
+    fetches their service definitions, and subscribes to service agreement events.
+
+    :param storage_path:
+    :param account:
+    :param actor_type: 
+    :param did_resolver_fn:
+    :return:
     """
     keeper = Keeper.get_instance()
     # service_agreement_id, did, service_definition_id, price, files, start_time, status
@@ -132,7 +186,8 @@ def execute_pending_service_agreements(storage_path, account, actor_type,
             if service.type != 'Access':
                 continue
 
-            consumer_provider_tuple = keeper.escrow_access_secretstore_template.get_agreement_data(agreement_id)
+            consumer_provider_tuple = keeper.escrow_access_secretstore_template.get_agreement_data(
+                agreement_id)
             if not consumer_provider_tuple:
                 continue
 
@@ -146,12 +201,9 @@ def execute_pending_service_agreements(storage_path, account, actor_type,
                 assert account.address == consumer
                 process_agreement_events_consumer(
                     provider, agreement_id, did, service_agreement,
-                    service_definition_id, price, account, condition_ids,
-
-                )
+                    service_definition_id, price, account, condition_ids)
             else:
                 assert account.address == provider
                 process_agreement_events_publisher(
                     account, agreement_id, did, service_agreement,
-                    service_definition_id, price, consumer, condition_ids
-                )
+                    service_definition_id, price, consumer, condition_ids)

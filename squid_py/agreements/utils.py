@@ -25,8 +25,6 @@ def get_sla_template_dict(path):
         return json.load(template_file)
 
 
-
-
 # def get_conditions_data_from_keeper_contracts(conditions, template_id):
 #     """Helper function to generate conditions data that is typically used together in a
 #     service agreement.
