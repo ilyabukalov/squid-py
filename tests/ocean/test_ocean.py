@@ -5,14 +5,13 @@ import pytest
 from web3 import Web3
 
 from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.agreements.service_types import ServiceTypes
 from squid_py.brizo.brizo import Brizo
 from squid_py.ddo.ddo import DDO
 from squid_py.ddo.metadata import Metadata
 from squid_py.did import DID
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper import Keeper
-from tests.resources.helper_functions import get_resource_path, verify_signature, wait_for_event
+from tests.resources.helper_functions import get_resource_path, verify_signature
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.tiers import e2e_test
 
@@ -38,17 +37,6 @@ def test_ocean_instance(publisher_ocean_instance):
     assert publisher_ocean_instance.tokens is not None
 
     print_config(publisher_ocean_instance)
-
-
-@e2e_test
-def test_accounts(publisher_ocean_instance):
-    for account in publisher_ocean_instance.accounts.list():
-        print(account)
-
-    # These accounts have a positive ETH balance
-    for account in publisher_ocean_instance.accounts.list():
-        assert publisher_ocean_instance.accounts.balance(account).eth >= 0
-        assert publisher_ocean_instance.accounts.balance(account).ocn >= 0
 
 
 @e2e_test
