@@ -18,7 +18,7 @@ class Dispenser(ContractBase):
         This transaction has gas cost
 
         :param amount: Amount of tokens, int
-        :param address: Account address, str
+        :param account: Account instance
         :raise OceanInvalidTransaction: Transaction failed
         :return: bool
         """

@@ -22,7 +22,7 @@ def fulfill_lock_reward_condition(
             'LockRewardCondition.Fulfilled'
         )
     except Exception as e:
-        logger.error('error locking reward: ', e)
+        logger.error(f'error locking reward: {e}')
         raise e
 
 

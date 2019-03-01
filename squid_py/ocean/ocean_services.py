@@ -5,14 +5,12 @@ from squid_py.agreements.service_factory import ServiceDescriptor
 class OceanServices:
 
     @staticmethod
-    def create_accesss_service(
+    def create_access_service(
             price, service_endpoint, consume_endpoint, timeout=None
     ):
         """
         Publish an asset with an `Access` service according to the supplied attributes.
 
-        :param metadata: dict conforming to the Metadata accepted by Ocean Protocol.
-        :param account: Account instance
         :param price: int price of service in ocean tokendids
         :param service_endpoint: str URL for initiating service access request
         :param consume_endpoint: str URL to consume service

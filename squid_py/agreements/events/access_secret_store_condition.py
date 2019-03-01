@@ -18,7 +18,7 @@ def fulfill_escrow_reward_condition(
         consumer_address, publisher_account, condition_ids
 ):
     logger.debug(f"release reward after event {event}.")
-    access_id, lock_id, escrow_id = condition_ids
+    access_id, lock_id = condition_ids[:2]
     assert price == service_agreement.get_price(), 'price mismatch.'
     try:
         Keeper.get_instance().unlock_account(publisher_account)
@@ -46,7 +46,7 @@ def refund_reward(
         consumer_account, publisher_address, condition_ids
 ):
     logger.debug(f"trigger refund after event {event}.")
-    access_id, lock_id, escrow_id = condition_ids
+    access_id, lock_id = condition_ids[:2]
     name_to_parameter = {param.name: param for param in
                          service_agreement.condition_by_name['escrowReward'].parameters}
     document_id = add_0x_prefix(name_to_parameter['_documentId'].value)

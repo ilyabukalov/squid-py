@@ -1,8 +1,6 @@
 """Ocean module."""
 import logging
 
-from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
-
 logger = logging.getLogger(__name__)
 
 

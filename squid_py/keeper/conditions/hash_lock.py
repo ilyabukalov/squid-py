@@ -11,10 +11,10 @@ class HashLockCondition(ConditionBase):
 
         :param agreement_id:
         :param preimage:
+        :param account: Account instance
         :return:
         """
-        return ConditionBase.fulfill(
-            self,
+        return self._fulfill(
             agreement_id,
             preimage,
             transact={'from': account.address, 'gas': DEFAULT_GAS_LIMIT}
@@ -26,4 +26,4 @@ class HashLockCondition(ConditionBase):
         :param preimage:
         :return:
         """
-        return ConditionBase.hash_values(self, preimage)
+        return self._hash_values(preimage)

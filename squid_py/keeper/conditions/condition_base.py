@@ -13,7 +13,7 @@ class ConditionBase(ContractBase):
             [agreement_id, self.address, values_hash]
         )
 
-    def fulfill(self, *args, **kwargs):
+    def _fulfill(self, *args, **kwargs):
         """
         Fulfill the condition.
 
@@ -35,7 +35,7 @@ class ConditionBase(ContractBase):
         receipt = self.get_tx_receipt(tx_hash)
         return receipt.status == 1
 
-    def hash_values(self, *args, **kwargs):
+    def _hash_values(self, *args, **kwargs):
         """
 
         :param args:

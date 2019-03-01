@@ -22,7 +22,7 @@ class OceanConditions:
     def release_reward(self, agreement_id, amount, account):
         agreement_values = self._keeper.agreement_manager.get_agreement(agreement_id)
         consumer, provider = self._keeper.escrow_access_secretstore_template.get_agreement_data(agreement_id)
-        access_id, lock_id, escrow_id = agreement_values.condition_ids
+        access_id, lock_id = agreement_values.condition_ids[:2]
         tx_hash = self._keeper.escrow_reward_condition.fulfill(
             agreement_id,
             amount,

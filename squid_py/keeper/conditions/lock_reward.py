@@ -16,8 +16,7 @@ class LockRewardCondition(ConditionBase):
         :return:
         """
         account.unlock()
-        return ConditionBase.fulfill(
-            self,
+        return self._fulfill(
             agreement_id,
             reward_address,
             amount,
@@ -31,4 +30,4 @@ class LockRewardCondition(ConditionBase):
         :param amount:
         :return:
         """
-        return ConditionBase.hash_values(self, reward_address, amount)
+        return self._hash_values(reward_address, amount)

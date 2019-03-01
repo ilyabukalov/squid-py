@@ -151,8 +151,6 @@ class ServiceAgreement(Service):
             self, agreement_id, asset_id, consumer_address, publisher_address, keeper):
         """Return the hash of the service agreement values to be signed by a consumer.
 
-        :param web3: Web3 instance
-        :param contract_path: str -- path to keeper contracts artifacts (abi files)
         :param agreement_id: hex str identifies an executed service agreement on-chain
         :param asset_id:
         :param consumer_address:

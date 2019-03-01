@@ -5,8 +5,6 @@ import time
 from squid_py.ddo.ddo import DDO
 from squid_py.ocean.ocean import Ocean
 from squid_py import ConfigProvider
-from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
-from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
 from squid_py.accounts.account import Account
 from squid_py.brizo.brizo_provider import BrizoProvider
 
@@ -15,9 +13,6 @@ from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
-from squid_py.agreements.utils import (
-    get_sla_template_path
-)
 from squid_py.utils.utilities import prepare_prefixed_hash
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.mocks.secret_store_mock import SecretStoreMock
@@ -36,9 +31,9 @@ def get_resource_path(dir_name, file_name):
 
 def init_ocn_tokens(ocn, account, amount=100):
     ocn.accounts.request_tokens(account, amount)
-    ocn._keeper.unlock_account(account)
-    ocn._keeper.token.token_approve(
-        ocn._keeper.dispenser.address,
+    Keeper.get_instance().unlock_account(account)
+    Keeper.get_instance().token.token_approve(
+        Keeper.get_instance().dispenser.address,
         amount,
         account
     )

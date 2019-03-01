@@ -66,7 +66,8 @@ class ContractBase(object):
         """
         return self.contract.events
 
-    def to_checksum_address(self, address):
+    @staticmethod
+    def to_checksum_address(address):
         """
         Validate the address provided.
 
@@ -75,7 +76,8 @@ class ContractBase(object):
         """
         return Web3Provider.get_web3().toChecksumAddress(address)
 
-    def get_tx_receipt(self, tx_hash):
+    @staticmethod
+    def get_tx_receipt(tx_hash):
         """
         Get the receipt of a tx.
 

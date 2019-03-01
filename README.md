@@ -23,7 +23,6 @@
   - [Development](#development)
         - [Code style](#code-style)
         - [Testing](#testing)
-        - [New Version / New Release](#new-version-new-release)
   - [License](#license)
 
 ---

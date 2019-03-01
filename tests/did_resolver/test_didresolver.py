@@ -39,9 +39,7 @@ def test_did_registry_register(publisher_ocean_instance):
 
 
 @e2e_test
-def test_did_registry_no_accout_provided(publisher_ocean_instance):
-    ocean = publisher_ocean_instance
-    register_account = ocean.main_account
+def test_did_registry_no_account_provided():
     did_registry = keeper().did_registry
     did_id = secrets.token_hex(32)
     did_test = 'did:op:' + did_id

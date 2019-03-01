@@ -18,8 +18,7 @@ class AccessSecretStoreCondition(ConditionBase):
         :return: true if the condition was successfully fulfilled, bool
         """
         account.unlock()
-        return ConditionBase.fulfill(
-            self,
+        return self._fulfill(
             agreement_id,
             document_id,
             grantee_address,
@@ -35,7 +34,7 @@ class AccessSecretStoreCondition(ConditionBase):
         :param grantee_address: is the address of the granted user, str
         :return:
         """
-        return ConditionBase.hash_values(self, document_id, grantee_address)
+        return self._hash_values(document_id, grantee_address)
 
     def check_permissions(self, document_id, grantee_address):
         """

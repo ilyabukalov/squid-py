@@ -26,6 +26,7 @@ class EventListener(object):
 
         :param callback: a callback function that takes one argument the event dict
         :param timeout: float timeout in seconds
+        :param timeout_callback: a callback function when timeout expires
         :param start_time: float start time in seconds, defaults to current time and is used
             for calculating timeout
         :param blocking: bool blocks this call until the event is detected

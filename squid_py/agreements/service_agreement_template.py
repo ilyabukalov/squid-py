@@ -1,7 +1,6 @@
 import json
 
 from squid_py.agreements.service_agreement_condition import ServiceAgreementCondition, Event
-from squid_py.keeper import Keeper
 
 
 class ServiceAgreementTemplate(object):

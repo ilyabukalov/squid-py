@@ -16,8 +16,7 @@ class SignCondition(ConditionBase):
         :param from_account:
         :return:
         """
-        return ConditionBase.fulfill(
-            self,
+        return self._fulfill(
             agreement_id,
             message,
             account_address,
@@ -32,4 +31,4 @@ class SignCondition(ConditionBase):
         :param account_address:
         :return:
         """
-        return ConditionBase.hash_values(self, message, account_address)
+        return self._hash_values(message, account_address)

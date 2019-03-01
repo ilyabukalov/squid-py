@@ -120,12 +120,8 @@ class Ocean:
         """
         Search an asset in oceanDB using aquarius.
 
-        :param text: String with the value that you are searching
-        :param sort: Dictionary to choose order base in some value
-        :param offset: Number of elements shows by page
-        :param page: Page number
-        :param aquarius_url: Url of the aquarius where you want to search. If there is not
-        provided take the default
+        see OceanAssets.search for params
+
         :return: List of assets that match with the query
         """
         return self.assets.search(*args, **kwargs)
@@ -135,13 +131,8 @@ class Ocean:
         """
         Search an asset in oceanDB using search query.
 
-        :param query: dict with query parameters
-            (e.g.) {"offset": 100, "page": 0, "sort": {"value": 1},
-                    query: {"service:{$elemMatch:{"metadata": {$exists : true}}}}}
-                    Here, OceanDB instance of mongodb can leverage power of mongo queries in
-                    'query' attribute.
-                    For more info -
-                    https://docs.mongodb.com/manual/reference/method/db.collection.find
+        See OceanAssets.query for params
+
         :return: List of assets that match with the query.
         """
         return self.assets.query(*args, **kwargs)
@@ -152,8 +143,8 @@ class Ocean:
         Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (
         Aquarius).
 
-        :param metadata: dict conforming to the Metadata accepted by Ocean Protocol.
-        :param publisher_account: Account of the publisher registering this asset
+        See OceanAssets.query for params
+
         :return: DDO instance
         """
         return self.assets.create(*args, **kwargs)
@@ -167,12 +158,6 @@ class Ocean:
         by `service_definition_id` in the ddo and send the signed agreement to the purchase endpoint
         associated with this service.
 
-        :param did: str starting with the prefix `did:op:` and followed by the asset id which is
-        a hex str
-        :param service_definition_id: str the service definition id identifying a specific
-        service in the DDO (DID document)
-        :param consumer_account: ethereum address of consumer signing the agreement and
-        initiating a purchase/access transaction
         :return: tuple(agreement_id, signature) the service agreement id (can be used to query
             the keeper-contracts for the status of the service agreement) and signed agreement hash
         """
@@ -189,15 +174,6 @@ class Ocean:
         The consumer `signature` includes the conditions timeouts and parameters values which
         is usedon-chain to verify that the values actually match the signed hashes.
 
-        :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: str identifies the specific service in
-         the ddo to use in this agreement.
-        :param service_agreement_id: 32 bytes identifier created by the consumer and will be used
-         on-chain for the executed agreement.
-        :param service_agreement_signature: str the signed agreement message hash which includes
-         conditions and their parameters values and other details of the agreement.
-        :param consumer_address: ethereum account address of consumer
-        :param publisher_account: ethereum account address of publisher
         :return: dict the `initializeAgreement` transaction receipt
         """
         return self.agreements.create(*args, **kwargs)
@@ -210,9 +186,6 @@ class Ocean:
         Verify on-chain that the `consumer_address` has permission to access the given asset `did`
         according to the `service_agreement_id`.
 
-        :param service_agreement_id: str
-        :param did: DID, str
-        :param consumer_address: Account address, str
         :return: bool True if user has permission
         """
         return self.agreements.is_access_granted(*args, **kwargs)
@@ -239,10 +212,6 @@ class Ocean:
         asset.
         This method downloads and saves the asset datafiles to disk.
 
-        :param service_agreement_id: str
-        :param did: DID, str
-        :param service_definition_id: str
-        :param consumer_account: Account address, str
         :return: None
         """
         return self.assets.consume(*args, **kwargs)

@@ -1,9 +1,8 @@
 from squid_py import ConfigProvider
 from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.ddo.ddo import DDO
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
-from tests.resources.helper_functions import get_ddo_sample, log_event, get_consumer_account, get_publisher_account, get_resource_path
+from tests.resources.helper_functions import get_ddo_sample, log_event, get_consumer_account, get_publisher_account
 from tests.resources.tiers import e2e_test
 
 

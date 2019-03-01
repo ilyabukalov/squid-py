@@ -1,5 +1,4 @@
 import os
-import time
 
 from secret_store_client.client import RPCError
 
@@ -9,10 +8,7 @@ from squid_py.config_provider import ConfigProvider
 from squid_py.ddo.ddo import DDO
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.keeper import Keeper
-from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.secret_store.secret_store import SecretStore
-from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from tests.resources.helper_functions import (
     get_account_from_config,
     get_registered_ddo,

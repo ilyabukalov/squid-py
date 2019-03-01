@@ -43,13 +43,13 @@ def register_service_agreement_consumer(storage_path, publisher_address, agreeme
 
     process_agreement_events_consumer(
         publisher_address, agreement_id, did, service_agreement,
-        service_definition_id, price, consumer_account, condition_ids,
+        price, consumer_account, condition_ids,
         consume_callback
     )
 
 
 def process_agreement_events_consumer(publisher_address, agreement_id, did, service_agreement,
-                                      service_definition_id, price, consumer_account, condition_ids,
+                                      price, consumer_account, condition_ids,
                                       consume_callback):
     """
 
@@ -58,7 +58,6 @@ def process_agreement_events_consumer(publisher_address, agreement_id, did, serv
     :param agreement_id:
     :param did:
     :param service_agreement:
-    :param service_definition_id:
     :param price:
     :param consumer_account:
     :param condition_ids:
@@ -120,12 +119,12 @@ def register_service_agreement_publisher(storage_path, consumer_address, agreeme
 
     process_agreement_events_publisher(
         publisher_account, agreement_id, did, service_agreement,
-        service_definition_id, price, consumer_address, condition_ids
+        price, consumer_address, condition_ids
     )
 
 
 def process_agreement_events_publisher(publisher_account, agreement_id, did, service_agreement,
-                                       service_definition_id, price, consumer_address,
+                                       price, consumer_address,
                                        condition_ids):
     """
 
@@ -133,7 +132,6 @@ def process_agreement_events_publisher(publisher_account, agreement_id, did, ser
     :param agreement_id:
     :param did:
     :param service_agreement:
-    :param service_definition_id:
     :param price:
     :param consumer_address:
     :param condition_ids:
@@ -161,7 +159,7 @@ def process_agreement_events_publisher(publisher_account, agreement_id, did, ser
         agreement_id,
         conditions_dict['escrowReward'].timeout,
         escrow_reward_condition.verifyRewardTokens,
-        (agreement_id, did, service_agreement, service_definition_id,
+        (agreement_id, did, service_agreement,
          price, consumer_address, publisher_account)
     )
 
@@ -173,7 +171,7 @@ def execute_pending_service_agreements(storage_path, account, actor_type, did_re
 
     :param storage_path:
     :param account:
-    :param actor_type: 
+    :param actor_type:
     :param did_resolver_fn:
     :return:
     """
@@ -202,9 +200,9 @@ def execute_pending_service_agreements(storage_path, account, actor_type, did_re
                 assert account.address == consumer
                 process_agreement_events_consumer(
                     provider, agreement_id, did, service_agreement,
-                    service_definition_id, price, account, condition_ids, None)
+                    price, account, condition_ids, None)
             else:
                 assert account.address == provider
                 process_agreement_events_publisher(
                     account, agreement_id, did, service_agreement,
-                    service_definition_id, price, consumer, condition_ids)
+                    price, consumer, condition_ids)

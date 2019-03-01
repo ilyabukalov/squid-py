@@ -27,8 +27,7 @@ class EscrowRewardCondition(ConditionBase):
         :return:
         """
         account.unlock()
-        return ConditionBase.fulfill(
-            self,
+        return self._fulfill(
             agreement_id,
             amount,
             receiver_address,
@@ -49,8 +48,7 @@ class EscrowRewardCondition(ConditionBase):
         :param release_condition_id:
         :return:
         """
-        return ConditionBase.hash_values(
-            self,
+        return self._hash_values(
             amount,
             receiver_address,
             sender_address,

@@ -1,8 +1,11 @@
 
+
 def verify_reward_tokens(
     event, agreement_id, did,
-    service_agreement, service_definition_id, price,
-    consumer_address, publisher_account):
+    service_agreement, price,
+    consumer_address, publisher_account
+):
+    # :TODO: verify that tokens were transfered to publisher
     pass
 
 

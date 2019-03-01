@@ -119,14 +119,14 @@ class DIDRegistry(ContractBase):
         log_items = block_filter.get_all_entries()
         if log_items:
             log_item = log_items[-1].args
-            value = log_item._value
-            block_number = log_item._blockNumberUpdated
+            value = log_item['_value']
+            block_number = log_item['_blockNumberUpdated']
             result = {
-                'checksum': log_item._checksum,
+                'checksum': log_item['_checksum'],
                 'value': value,
                 'block_number': block_number,
-                'did_bytes': log_item._did,
-                'owner': Web3.toChecksumAddress(log_item._owner),
+                'did_bytes': log_item['_did'],
+                'owner': Web3.toChecksumAddress(log_item['_owner']),
             }
         else:
             logger.warning(f'Could not find {DIDRegistry.DID_REGISTRY_EVENT_NAME} event logs for '
