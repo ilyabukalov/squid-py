@@ -1,9 +1,11 @@
 import logging
 from datetime import datetime
 
-from squid_py.agreements.events import (access_secret_store_condition,
-                                        escrow_access_secret_store_template,
-                                        escrow_reward_condition, lock_reward_condition)
+from squid_py.agreements.events import (
+    access_secret_store_condition,
+    escrow_access_secret_store_template,
+    escrow_reward_condition, lock_reward_condition
+)
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.keeper import Keeper
 from .storage import get_service_agreements, record_service_agreement
@@ -144,15 +146,15 @@ def process_agreement_events_publisher(publisher_account, agreement_id, did, ser
         agreement_id,
         conditions_dict['lockReward'].timeout,
         lock_reward_condition.fulfillAccessSecretStoreCondition,
-        (agreement_id, did, service_agreement, service_definition_id,
-         price, consumer_address, publisher_account)
+        (agreement_id, did, service_agreement,
+         consumer_address, publisher_account)
     )
 
     keeper.access_secret_store_condition.subscribe_condition_fulfilled(
         agreement_id,
         conditions_dict['accessSecretStore'].timeout,
         access_secret_store_condition.fulfillEscrowRewardCondition,
-        (agreement_id, did, service_agreement, service_definition_id,
+        (agreement_id, service_agreement,
          price, consumer_address, publisher_account, condition_ids)
     )
 
@@ -201,7 +203,7 @@ def execute_pending_service_agreements(storage_path, account, actor_type, did_re
                 assert account.address == consumer
                 process_agreement_events_consumer(
                     provider, agreement_id, did, service_agreement,
-                    service_definition_id, price, account, condition_ids)
+                    service_definition_id, price, account, condition_ids, None)
             else:
                 assert account.address == provider
                 process_agreement_events_publisher(
