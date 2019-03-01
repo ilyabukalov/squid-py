@@ -11,6 +11,7 @@ from squid_py.exceptions import (
     OceanServiceAgreementExists,
 )
 from squid_py.keeper.web3_provider import Web3Provider
+from squid_py.ocean.ocean_conditions import OceanConditions
 from squid_py.utils.utilities import prepare_prefixed_hash
 
 logger = logging.getLogger('ocean')
@@ -22,6 +23,7 @@ class OceanAgreements:
         self._asset_resolver = asset_resolver
         self._asset_consumer = asset_consumer
         self._config = config
+        self.conditions = OceanConditions(self._keeper)
 
     def prepare(self, did, service_definition_id, consumer_account):
         """
