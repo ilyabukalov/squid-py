@@ -1,5 +1,9 @@
 """Ocean module."""
+import logging
+
 from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
+
+logger = logging.getLogger(__name__)
 
 
 class OceanTemplates:
@@ -11,10 +15,61 @@ class OceanTemplates:
         self.access_template_id = ACCESS_SERVICE_TEMPLATE_ID
 
     def propose(self, template_address, account):
-        return
+        """
+
+        :param template_address:
+        :param account:
+        :return:
+        """
+        try:
+            proposed = self._keeper.template_manager.propose_template(template_address, account)
+            return proposed
+        except ValueError as err:
+            template_values = self._keeper.template_manager.get_template(template_address)
+            if not template_values:
+                logger.warning(f'Propose template failed: {err}')
+                return False
+
+            if template_values.state != 1:
+                logger.warning(f'Propose template failed, current state is set to {template_values.state}')
+                return False
+
+            return True
 
     def approve(self, template_address, account):
-        return
+        try:
+            approved = self._keeper.template_manager.approve_template(template_address, account)
+            return approved
+        except ValueError as err:
+            template_values = self._keeper.template_manager.get_template(template_address)
+            if not template_values:
+                logger.warning(f'Approve template failed: {err}')
+                return False
+
+            if template_values.state == 1:
+                logger.warning(f'Approve template failed, this template is '
+                               f'currently in "proposed" state.')
+                return False
+
+            if template_values.state == 3:
+                logger.warning(f'Approve template failed, this template appears to be '
+                               f'revoked.')
+                return False
+
+            if template_values.state == 2:
+                return True
+
+            return False
 
     def revoke(self, template_address, account):
-        return
+        try:
+            revoked = self._keeper.template_manager.revoke_template(template_address, account)
+            return revoked
+        except ValueError as err:
+            template_values = self._keeper.template_manager.get_template(template_address)
+            if not template_values:
+                logger.warning(f'Cannot revoke template since it does not exist: {err}')
+                return False
+
+            logger.warning(f'Only template admin or owner can revoke a template: {err}')
+            return False

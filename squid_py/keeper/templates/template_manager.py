@@ -1,5 +1,12 @@
+from collections import namedtuple
+
 from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper import ContractBase
+
+AgreementTemplate = namedtuple(
+    'AgreementTemplate',
+    ('state', 'owner', 'updated_by', 'block_number_updated')
+)
 
 
 class TemplateStoreManager(ContractBase):
@@ -13,17 +20,11 @@ class TemplateStoreManager(ContractBase):
         :param template_id: id of the template, str
         :return:
         """
-        (state,
-         owner,
-         updated_by,
-         block_number_updated) = self.contract_concise.getTemplate(template_id)
+        template = self.contract_concise.getTemplate(template_id)
+        if template and len(template) == 4:
+            return AgreementTemplate(*template)
 
-        return (
-            state,
-            owner,
-            updated_by,
-            block_number_updated
-        )
+        return None
 
     def propose_template(self, template_id, from_account):
         """Propose a template.
