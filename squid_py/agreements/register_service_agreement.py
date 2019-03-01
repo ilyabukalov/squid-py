@@ -71,8 +71,7 @@ def process_agreement_events_consumer(publisher_address, agreement_id, did, serv
         agreement_id,
         60,
         escrow_access_secret_store_template.fulfillLockRewardCondition,
-        (agreement_id, did, service_agreement, service_definition_id,
-         price, publisher_address, consumer_account)
+        (agreement_id, price, consumer_account)
     )
 
     if consume_callback:

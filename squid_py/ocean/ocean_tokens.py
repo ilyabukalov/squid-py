@@ -13,8 +13,7 @@ class OceanTokens:
         :param amount: int number of tokens to request
         :return: bool
         """
-        self._keeper.unlock_account(account)
-        return self._keeper.dispenser.request_tokens(amount, account.address)
+        return self._keeper.dispenser.request_tokens(amount, account)
 
     def transfer(self, receiver_address, amount, sender_account):
         """

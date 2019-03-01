@@ -12,7 +12,7 @@ class Dispenser(ContractBase):
 
     CONTRACT_NAME = 'Dispenser'
 
-    def request_tokens(self, amount, address):
+    def request_tokens(self, amount, account):
         """
         Request an amount of tokens for a particular address.
         This transaction has gas cost
@@ -22,10 +22,13 @@ class Dispenser(ContractBase):
         :raise OceanInvalidTransaction: Transaction failed
         :return: bool
         """
+        address = account.address
         try:
-            tx_hash = self.contract_concise.requestTokens(amount, transact={'from': address,
-                                                                            'gas':
-                                                                                DEFAULT_GAS_LIMIT})
+            account.unlock()
+            tx_hash = self.contract_concise.requestTokens(
+                amount,
+                transact={'from': address, 'gas': DEFAULT_GAS_LIMIT}
+            )
             logging.debug(f'{address} requests {amount} tokens, returning receipt')
             receipt = Web3Provider.get_web3().eth.waitForTransactionReceipt(tx_hash)
             logging.debug(f'requestTokens receipt: {receipt}')

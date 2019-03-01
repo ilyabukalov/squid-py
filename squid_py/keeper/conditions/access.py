@@ -17,6 +17,7 @@ class AccessSecretStoreCondition(ConditionBase):
         :param account: Account instance
         :return: true if the condition was successfully fulfilled, bool
         """
+        account.unlock()
         return ConditionBase.fulfill(
             self,
             agreement_id,

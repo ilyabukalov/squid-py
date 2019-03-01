@@ -12,7 +12,7 @@ class OceanTemplates:
     def __init__(self, keeper, config):
         self._keeper = keeper
         self._config = config
-        self.access_template_id = ACCESS_SERVICE_TEMPLATE_ID
+        self.access_template_id = self._keeper.escrow_access_secretstore_template.address
 
     def propose(self, template_address, account):
         """

@@ -38,6 +38,7 @@ class Token(ContractBase):
         if not Web3Provider.get_web3().isChecksumAddress(spender_address):
             spender_address = Web3Provider.get_web3().toChecksumAddress(spender_address)
 
+        from_account.unlock()
         tx_hash = self.contract_concise.approve(
             spender_address,
             price,

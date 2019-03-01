@@ -15,6 +15,7 @@ class LockRewardCondition(ConditionBase):
         :param account: Account instance
         :return:
         """
+        account.unlock()
         return ConditionBase.fulfill(
             self,
             agreement_id,

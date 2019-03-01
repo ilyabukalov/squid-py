@@ -139,6 +139,13 @@ def wait_for_event(event, arg_filter, wait_iterations=20):
         time.sleep(0.5)
 
 
+def log_event(event_name):
+    def _process_event(event):
+        print(f'Received event {event_name}: {event}')
+
+    return _process_event
+
+
 def verify_signature(_address, _agreement_hash, _signature, expected_match):
     w3 = Web3Provider.get_web3()
     prefixed_hash = prepare_prefixed_hash(_agreement_hash)

@@ -48,6 +48,14 @@ class ServiceAgreement(Service):
                     return p.value
 
     @property
+    def service_endpoint(self):
+        return self._service_endpoint
+
+    @property
+    def consume_endpoint(self):
+        return self._consume_endpoint
+
+    @property
     def agreement(self):
         return Agreement(self.template_id, self.conditions[:])
 

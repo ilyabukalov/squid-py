@@ -21,6 +21,7 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
         :param publisher_account:
         :return:
         """
+        publisher_account.unlock()
         tx_hash = self.contract_concise.createAgreement(
             agreement_id,
             did,

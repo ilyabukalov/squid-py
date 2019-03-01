@@ -1,4 +1,5 @@
 import os
+import time
 
 from secret_store_client.client import RPCError
 
@@ -7,6 +8,7 @@ from squid_py.agreements.service_types import ServiceTypes
 from squid_py.config_provider import ConfigProvider
 from squid_py.ddo.ddo import DDO
 from squid_py.examples.example_config import ExampleConfig
+from squid_py.keeper import Keeper
 from squid_py.keeper.event_listener import EventListener
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.secret_store.secret_store import SecretStore
@@ -14,21 +16,16 @@ from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from tests.resources.helper_functions import (
     get_account_from_config,
     get_registered_ddo,
-    get_publisher_account
-)
-
-
-def _log_event(event_name):
-    def _process_event(event):
-        print(f'Received event {event_name}: {event}')
-
-    return _process_event
+    get_publisher_account,
+    log_event)
 
 
 def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     config = ExampleConfig.get_config()
     ConfigProvider.set_config(config)
-    SecretStoreProvider.set_secret_store_class(SecretStore)
+    keeper = Keeper.get_instance()
+    # :TODO: enable the actual SecretStore
+    # SecretStoreProvider.set_secret_store_class(SecretStore)
     w3 = Web3Provider.get_web3()
     pub_acc = get_publisher_account(config)
 
@@ -57,26 +54,34 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     agreement_id = cons_ocn.assets.order(
         ddo.did, sa.service_definition_id, consumer_account)
 
-    _filter = {'agreementId': w3.toBytes(hexstr=agreement_id)}
+    event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
+        agreement_id,
+        20,
+        log_event(keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
+        (),
+        wait=True
+    )
+    assert event, 'no event for EscrowAccessSecretStoreTemplate.AgreementCreated'
 
-    EventListener('ServiceExecutionAgreement', 'AgreementInitialized', filters=_filter).listen_once(
-        _log_event('AgreementInitialized'),
+    event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
+        agreement_id,
         20,
-        blocking=True
+        log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
+        (),
+        wait=True
     )
-    EventListener('AccessConditions', 'AccessGranted', filters=_filter).listen_once(
-        _log_event('AccessGranted'),
-        20,
-        blocking=True
-    )
-    event = EventListener('ServiceExecutionAgreement', 'AgreementFulfilled', filters=_filter).listen_once(
-        _log_event('AgreementFulfilled'),
-        20,
-        blocking=True
-    )
+    assert event, 'no event for LockRewardCondition.Fulfilled'
 
-    assert event, 'No event received for ServiceAgreement Fulfilled.'
-    assert w3.toHex(event.args['agreementId']) == agreement_id
+    event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        10,
+        log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
+        (),
+        wait=True
+    )
+    assert event, 'no event for EscrowReward.Fulfilled'
+
+    assert w3.toHex(event.args['_agreementId']) == agreement_id
     assert len(os.listdir(config.downloads_path)) == downloads_path_elements + 1
 
     # decrypt the contentUrls using the publisher account instead of consumer account.

@@ -32,8 +32,8 @@ class AssetConsumer:
         files = ddo.metadata['base']['encryptedFiles']
         files = files if isinstance(files, str) else files[0]
         sa = ServiceAgreement.from_ddo(service_definition_id, ddo)
-        service_url = sa.service_endpoint
-        if not service_url:
+        consume_url = sa.consume_endpoint
+        if not consume_url:
             logger.error(
                 'Consume asset failed, service definition is missing the "serviceEndpoint".')
             raise AssertionError(
@@ -65,7 +65,7 @@ class AssetConsumer:
 
         brizo.consume_service(
             service_agreement_id,
-            service_url,
+            consume_url,
             consumer_account.address,
             decrypted_content_urls,
             asset_folder
