@@ -18,7 +18,7 @@ def test_access_secret_store_condition_contract():
 @e2e_test
 def test_check_permissions_not_registered_did():
     consumer_account = get_consumer_account(ConfigProvider.get_config())
-    assert not access_secret_store_condition.check_permissions(consumer_account.address,
-                                                               did_to_id(DID.did()))
+    assert not access_secret_store_condition.check_permissions(did_to_id(DID.did()),
+                                                               consumer_account.address)
 
 # TODO Create test for check permission after access granted.
