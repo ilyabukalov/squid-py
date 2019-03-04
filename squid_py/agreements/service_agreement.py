@@ -167,17 +167,3 @@ class ServiceAgreement(Service):
             agreement_id
         )
         return agreement_hash
-
-    def validate_conditions(self):
-        # TODO: Rewrite this to verify conditions based on the agreement template.
-        return
-        # # conditions_data = (contract_addresses, fingerprints, fulfillment_indices,
-        # conditions_keys)
-        # conditions_data = get_conditions_data_from_keeper_contracts(
-        #     self.conditions, self.template_id
-        # )
-        # if conditions_data[3] != self.conditions_keys:
-        #     raise AssertionError(f'Conditions keys set in this service agreement do not match
-        #     the '
-        #                          f'conditions keys from the keeper\'s agreement template '
-        #                          f'"{self.template_id}".')

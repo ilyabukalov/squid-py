@@ -37,11 +37,6 @@ class OceanAgreements:
         agreement_id = ServiceAgreement.create_new_agreement_id()
         asset = self._asset_resolver.resolve(did)
         service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
-        try:
-            service_agreement.validate_conditions()
-        except AssertionError:
-            raise
-
         if not self._keeper.unlock_account(consumer_account):
             logger.warning(f'Unlock of consumer account failed {consumer_account.address}')
 
@@ -129,11 +124,6 @@ class OceanAgreements:
         asset = self._asset_resolver.resolve(did)
         asset_id = asset.asset_id
         service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
-        try:
-            service_agreement.validate_conditions()
-        except AssertionError:
-            raise
-
         agreement_template = self._keeper.escrow_access_secretstore_template
         # encrypted_files = asset.encrypted_files
 
@@ -230,12 +220,6 @@ class OceanAgreements:
             ddo = self._asset_resolver.resolve(did)
 
         service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
-        try:
-            service_agreement.validate_conditions()
-        except AssertionError:
-            # OceanAgreements._log_conditions_data(service_agreement)
-            raise
-
         agreement_hash = service_agreement.get_service_agreement_hash(
             agreement_id, ddo.asset_id, consumer_address, publisher_account.address, self._keeper)
 
