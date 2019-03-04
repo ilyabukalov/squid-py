@@ -9,8 +9,7 @@ from squid_py import ConfigProvider, Metadata, Ocean
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.examples.example_config import ExampleConfig
 from squid_py.examples.helper_functions import get_account_from_config
-from squid_py.keeper.event_listener import EventListener
-from squid_py.keeper.web3_provider import Web3Provider
+from squid_py.agreements.service_agreement import ServiceAgreement
 
 
 def _log_event(event_name):
@@ -33,14 +32,13 @@ def buy_asset():
     """
     ConfigProvider.set_config(ExampleConfig.get_config())
     config = ConfigProvider.get_config()
-    w3 = Web3Provider.get_web3()
 
     # make ocean instance
     ocn = Ocean()
     acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
 
     # Register ddo
-    ocn.templates.create(ocn.templates.access_template_id, acc)
+    # ocn.templates.create(ocn.templates.access_template_id, acc)
     ddo = ocn.assets.create(Metadata.get_example(), acc)
     logging.info(f'registered ddo: {ddo.did}')
     # ocn here will be used only to publish the asset. Handling the asset by the publisher
@@ -53,33 +51,44 @@ def buy_asset():
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
     cons_ocn.accounts.request_tokens(consumer_account, 100)
+    sa = ServiceAgreement.from_service_dict(service.as_dictionary())
 
     time.sleep(ASYNC_DELAY)
 
-    service_agreement_id = cons_ocn.assets.order(
-        ddo.did, service.service_definition_id, consumer_account)
+    agreement_id = cons_ocn.assets.order(
+        ddo.did, sa.service_definition_id, consumer_account)
 
-    _filter = {'agreementId': w3.toBytes(hexstr=service_agreement_id)}
+    # _filter = {'agreementId': w3.toBytes(hexstr=agreement_id)}
 
-    EventListener('ServiceExecutionAgreement', 'AgreementInitialized', filters=_filter).listen_once(
-        _log_event('AgreementInitialized'),
-        10,
-        blocking=True
+    event = cons_ocn._keeper.escrow_access_secretstore_template.subscribe_agreement_created(
+        agreement_id,
+        20,
+        _log_event(cons_ocn._keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
+        (),
+        wait=True
     )
-    EventListener('AccessConditions', 'AccessGranted', filters=_filter).listen_once(
-        _log_event('AccessGranted'),
-        10,
-        blocking=True
+    assert event, 'no event for EscrowAccessSecretStoreTemplate.AgreementCreated'
+
+    event = cons_ocn._keeper.lock_reward_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        20,
+        _log_event(cons_ocn._keeper.lock_reward_condition.FULFILLED_EVENT),
+        (),
+        wait=True
     )
-    event = EventListener('ServiceExecutionAgreement', 'AgreementFulfilled',
-                          filters=_filter).listen_once(
-        _log_event('AgreementFulfilled'),
+    assert event, 'no event for LockRewardCondition.Fulfilled'
+
+    event = cons_ocn._keeper.escrow_reward_condition.subscribe_condition_fulfilled(
+        agreement_id,
         10,
-        blocking=True
+        _log_event(cons_ocn._keeper.escrow_reward_condition.FULFILLED_EVENT),
+        (),
+        wait=True
     )
+    assert event, 'no event for EscrowReward.Fulfilled'
     time.sleep(10)
 
-    ocn.agreements.is_access_granted(service_agreement_id, ddo.did, consumer_account.address)
+    ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address)
 
     assert event, 'No event received for ServiceAgreement Fulfilled.'
     logging.info('Success buying asset.')

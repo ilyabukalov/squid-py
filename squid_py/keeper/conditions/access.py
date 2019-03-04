@@ -46,4 +46,4 @@ class AccessSecretStoreCondition(ConditionBase):
         :param grantee_address: is the address of the granted user, str
         :return: true if the access was granted, bool
         """
-        return self.contract_concise.checkPermissions(document_id, grantee_address)
+        return self.contract_concise.checkPermissions(grantee_address, document_id)
