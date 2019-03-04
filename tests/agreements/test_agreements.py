@@ -179,12 +179,9 @@ def test_agreement_hash(publisher_ocean_instance):
     This test verifies generating agreement hash using fixed inputs and ddo example.
     This will make it easier to compare the hash generated from different languages.
     """
-    keeper = Keeper.get_instance()
     w3 = Web3Provider.get_web3()
     did = "did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
     template_id = w3.toChecksumAddress("0x00bd138abd70e2f00903268f3db08f2d25677c9e")
-    consumer = w3.toChecksumAddress("0x413c9ba0a05b8a600899b41b0c62dd661e689354")
-    publisher = w3.toChecksumAddress("0x064789569D09b4d40b54383d84A25A840E5D67aD")
     agreement_id = '0xf136d6fadecb48fdb2fc1fb420f5a5d1c32d22d9424e47ab9461556e058fefaa'
     ddo = get_ddo_sample()
 
@@ -192,10 +189,19 @@ def test_agreement_hash(publisher_ocean_instance):
     sa.service_agreement_template.set_template_id(template_id)
     assert template_id == sa.template_id, ''
     assert did == ddo.did
+    # Don't generate condition ids, use fixed ids so we get consistent hash
+    # (access_id, lock_id, escrow_id) = sa.generate_agreement_condition_ids(
+    #     agreement_id, ddo.asset_id, consumer, publisher, keeper)
+    access_id = '0x2d7c1d60dc0c3f52aa9bd71ffdbe434a0e58435571e64c893bc9646fea7f6ec1'
+    lock_id = '0x1e265c434c14e668695dda1555088f0ea4356f596bdecb8058812e7dcba9ee73'
+    escrow_id = '0xe487fa6d435c2f09ef14b65b34521302f1532ac82ba8f6c86116acd8566e2da3'
+    print(f'condition ids: \n'
+          f'{access_id} \n'
+          f'{lock_id} \n'
+          f'{escrow_id}')
     agreement_hash = ServiceAgreement.generate_service_agreement_hash(
         sa.template_id,
-        sa.generate_agreement_condition_ids(
-            agreement_id, ddo.asset_id, consumer, publisher, keeper),
+        (access_id, lock_id, escrow_id),
         sa.conditions_timelocks,
         sa.conditions_timeouts,
         agreement_id
