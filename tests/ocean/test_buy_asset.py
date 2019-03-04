@@ -24,6 +24,9 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     # SecretStoreProvider.set_secret_store_class(SecretStore)
     w3 = Web3Provider.get_web3()
     pub_acc = get_publisher_account(config)
+    # publisher_ocean_instance.templates.propose(keeper.escrow_access_secretstore_template.address,publisher_ocean_instance.main_account)
+    # publisher_ocean_instance.templates.approve(keeper.escrow_access_secretstore_template.address,publisher_ocean_instance.main_account)
+
 
     # Register ddo
     ddo = get_registered_ddo(publisher_ocean_instance, pub_acc)

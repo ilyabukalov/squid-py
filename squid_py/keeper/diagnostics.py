@@ -2,11 +2,11 @@ import logging
 import os
 
 from squid_py import OceanKeeperContractsNotFound
-from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
+# from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
 from squid_py.config_provider import ConfigProvider
 from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
-from tests.resources.helper_functions import get_publisher_account
+# from tests.resources.helper_functions import get_publisher_account
 
 logger = logging.getLogger(__name__)
 
@@ -14,40 +14,40 @@ logger = logging.getLogger(__name__)
 class Diagnostics:
     TEST_CONTRACT_NAME = 'AgreementStoreManager'
 
-    @staticmethod
-    def check_approved_agreement_templates():
-        publisher_acc = get_publisher_account()
-        keeper = Keeper.get_instance()
-        template_values = keeper.template_manager.get_template(keeper.escrow_access_secretstore_template.address)
-        if not template_values:
-            print(f'agreement template does not seem to exist in the current keeper-contracts.')
-
-        state = template_values.state
-        if state == 0:
-            print(f'agreement template is uninitialized')
-            try:
-                keeper.template_manager.propose_template(keeper.escrow_access_secretstore_template.address, publisher_acc)
-                state = keeper.template_manager.get_template(
-                    keeper.escrow_access_secretstore_template.address).state
-            except ValueError as err:
-                print(f'propose template failed, maybe it is already proposed {err}')
-                return None
-
-        if state == 1:
-            print(f'agreement template is in proposed state.')
-            owner_acc = publisher_acc
-            try:
-                approved = keeper.template_manager.approve_template(keeper.escrow_access_secretstore_template.address, owner_acc)
-                state = keeper.template_manager.get_template(
-                    keeper.escrow_access_secretstore_template.address).state
-
-                print('template approve: ', approved)
-            except ValueError as err:
-                print(f'approve template from account {owner_acc.address} failed: {err}')
-
-        assert state == 2, 'Template is not approved.'
-
-        print(f'agreement template is already approved, good.')
+    # @staticmethod
+    # def check_approved_agreement_templates():
+    #     publisher_acc = get_publisher_account()
+    #     keeper = Keeper.get_instance()
+    #     template_values = keeper.template_manager.get_template(keeper.escrow_access_secretstore_template.address)
+    #     if not template_values:
+    #         print(f'agreement template does not seem to exist in the current keeper-contracts.')
+    #
+    #     state = template_values.state
+    #     if state == 0:
+    #         print(f'agreement template is uninitialized')
+    #         try:
+    #             keeper.template_manager.propose_template(keeper.escrow_access_secretstore_template.address, publisher_acc)
+    #             state = keeper.template_manager.get_template(
+    #                 keeper.escrow_access_secretstore_template.address).state
+    #         except ValueError as err:
+    #             print(f'propose template failed, maybe it is already proposed {err}')
+    #             return None
+    #
+    #     if state == 1:
+    #         print(f'agreement template is in proposed state.')
+    #         owner_acc = publisher_acc
+    #         try:
+    #             approved = keeper.template_manager.approve_template(keeper.escrow_access_secretstore_template.address, owner_acc)
+    #             state = keeper.template_manager.get_template(
+    #                 keeper.escrow_access_secretstore_template.address).state
+    #
+    #             print('template approve: ', approved)
+    #         except ValueError as err:
+    #             print(f'approve template from account {owner_acc.address} failed: {err}')
+    #
+    #     assert state == 2, 'Template is not approved.'
+    #
+    #     print(f'agreement template is already approved, good.')
 
     @staticmethod
     def verify_contracts():
