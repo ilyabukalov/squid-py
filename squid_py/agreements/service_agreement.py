@@ -36,6 +36,7 @@ class ServiceAgreement(Service):
 
         }
         values_dict.update(self.service_agreement_template.as_dictionary())
+        del values_dict['id']
 
         Service.__init__(self, service_endpoint,
                          service_type or ServiceTypes.ASSET_ACCESS,
