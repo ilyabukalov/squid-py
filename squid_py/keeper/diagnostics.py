@@ -2,11 +2,9 @@ import logging
 import os
 
 from squid_py import OceanKeeperContractsNotFound
-# from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
 from squid_py.config_provider import ConfigProvider
 from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
-# from tests.resources.helper_functions import get_publisher_account
 
 logger = logging.getLogger(__name__)
 
