@@ -5,9 +5,7 @@ from squid_py.agreements.service_factory import ServiceDescriptor
 class OceanServices:
 
     @staticmethod
-    def create_access_service(
-            price, service_endpoint, consume_endpoint, timeout=None
-    ):
+    def create_access_service(price, service_endpoint, consume_endpoint, timeout=None):
         """
         Publish an asset with an `Access` service according to the supplied attributes.
 

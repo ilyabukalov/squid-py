@@ -61,7 +61,7 @@ class TemplateStoreManager(ContractBase):
         """
         from_account.unlock()
         tx_hash = self.contract_concise.revokeTemplate(
-            template_id, transact={'from': from_account})
+            template_id, transact={'from': from_account.address, 'gas': DEFAULT_GAS_LIMIT})
         return self.get_tx_receipt(tx_hash).status == 1
 
     def is_template_approved(self, template_id):
