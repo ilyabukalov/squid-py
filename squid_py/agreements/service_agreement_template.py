@@ -66,7 +66,6 @@ class ServiceAgreementTemplate(object):
         }
         return {
             # 'type': self.DOCUMENT_TYPE,
-            'id': self.template_id,
             'name': self.name,
             'creator': self.creator,
             'serviceAgreementTemplate': template
