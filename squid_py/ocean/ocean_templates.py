@@ -29,7 +29,8 @@ class OceanTemplates:
                 return False
 
             if template_values.state != 1:
-                logger.warning(f'Propose template failed, current state is set to {template_values.state}')
+                logger.warning(
+                    f'Propose template failed, current state is set to {template_values.state}')
                 return False
 
             return True

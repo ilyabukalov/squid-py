@@ -141,7 +141,7 @@ class Metadata(object):
             section = Metadata.MAIN_SECTIONS[section_key]
             section_metadata = metadata[section_key]
             for subkey in section.REQUIRED_VALUES_KEYS:
-                if subkey not in section_metadata or not section_metadata[subkey]:
+                if subkey not in section_metadata or section_metadata[subkey] is None:
                     return False
 
         return True

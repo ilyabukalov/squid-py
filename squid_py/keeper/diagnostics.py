@@ -16,7 +16,8 @@ class Diagnostics:
     # def check_approved_agreement_templates():
     #     publisher_acc = get_publisher_account()
     #     keeper = Keeper.get_instance()
-    #     template_values = keeper.template_manager.get_template(keeper.escrow_access_secretstore_template.address)
+    #     template_values = keeper.template_manager.get_template(
+    #     keeper.escrow_access_secretstore_template.address)
     #     if not template_values:
     #         print(f'agreement template does not seem to exist in the current keeper-contracts.')
     #
@@ -24,7 +25,8 @@ class Diagnostics:
     #     if state == 0:
     #         print(f'agreement template is uninitialized')
     #         try:
-    #             keeper.template_manager.propose_template(keeper.escrow_access_secretstore_template.address, publisher_acc)
+    #             keeper.template_manager.propose_template(
+    #             keeper.escrow_access_secretstore_template.address, publisher_acc)
     #             state = keeper.template_manager.get_template(
     #                 keeper.escrow_access_secretstore_template.address).state
     #         except ValueError as err:
@@ -35,7 +37,8 @@ class Diagnostics:
     #         print(f'agreement template is in proposed state.')
     #         owner_acc = publisher_acc
     #         try:
-    #             approved = keeper.template_manager.approve_template(keeper.escrow_access_secretstore_template.address, owner_acc)
+    #             approved = keeper.template_manager.approve_template(
+    #             keeper.escrow_access_secretstore_template.address, owner_acc)
     #             state = keeper.template_manager.get_template(
     #                 keeper.escrow_access_secretstore_template.address).state
     #

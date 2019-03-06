@@ -9,10 +9,8 @@ from squid_py.keeper.utils import process_tx_receipt
 logger = logging.getLogger(__name__)
 
 
-def fulfill_access_secret_store_condition(
-    event, agreement_id, did, service_agreement,
-    consumer_address, publisher_account
-):
+def fulfill_access_secret_store_condition(event, agreement_id, did, service_agreement,
+                                          consumer_address, publisher_account):
     logger.debug(f"release reward after event {event}.")
     name_to_parameter = {param.name: param for param in
                          service_agreement.condition_by_name['accessSecretStore'].parameters}

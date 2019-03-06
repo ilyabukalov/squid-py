@@ -8,6 +8,12 @@ from squid_py.utils.utilities import get_public_key_from_address
 
 
 def get_sla_template_path(service_type=ServiceTypes.ASSET_ACCESS):
+    """
+    Get the template for a ServiceType.
+
+    :param service_type: ServiceTypes
+    :return: Path of the template, str
+    """
     if service_type == ServiceTypes.ASSET_ACCESS:
         name = 'access_sla_template.json'
     elif service_type == ServiceTypes.CLOUD_COMPUTE:
@@ -21,6 +27,11 @@ def get_sla_template_path(service_type=ServiceTypes.ASSET_ACCESS):
 
 
 def get_sla_template_dict(path):
+    """
+
+    :param path:
+    :return:
+    """
     with open(path) as template_file:
         return json.load(template_file)
 

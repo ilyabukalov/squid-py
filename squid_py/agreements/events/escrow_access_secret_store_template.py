@@ -6,9 +6,15 @@ from squid_py.keeper.utils import process_tx_receipt
 logger = logging.getLogger(__name__)
 
 
-def fulfill_lock_reward_condition(
-    event, agreement_id, price, consumer_account
-):
+def fulfill_lock_reward_condition(event, agreement_id, price, consumer_account):
+    """
+
+    :param event:
+    :param agreement_id:
+    :param price:
+    :param consumer_account:
+    :return:
+    """
     logger.debug(f"about to lock reward after event {event}.")
     keeper = Keeper.get_instance()
     try:

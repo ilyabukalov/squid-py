@@ -21,7 +21,8 @@ class EventListener(object):
         self.timeout = 60  # seconds
         self.args = args
 
-    def listen_once(self, callback, timeout=None, timeout_callback=None, start_time=None, blocking=False):
+    def listen_once(self, callback, timeout=None, timeout_callback=None, start_time=None,
+                    blocking=False):
         """
 
         :param callback: a callback function that takes one argument the event dict

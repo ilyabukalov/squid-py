@@ -10,7 +10,7 @@ Agreement = namedtuple('Agreement', ('template', 'conditions'))
 
 
 class ServiceAgreement(Service):
-    """"""
+    """Class representing a Service Agreement."""
     SERVICE_DEFINITION_ID = 'serviceDefinitionId'
     AGREEMENT_TEMPLATE = 'serviceAgreementTemplate'
     SERVICE_CONDITIONS = 'conditions'
@@ -42,6 +42,11 @@ class ServiceAgreement(Service):
                          values_dict, consume_endpoint)
 
     def get_price(self):
+        """
+        Return the price from the conditions parameters.
+
+        :return: Int
+        """
         for cond in self.conditions:
             for p in cond.parameters:
                 if p.name == '_amount':
@@ -49,30 +54,58 @@ class ServiceAgreement(Service):
 
     @property
     def service_endpoint(self):
+        """
+
+        :return:
+        """
         return self._service_endpoint
 
     @property
     def consume_endpoint(self):
+        """
+
+        :return:
+        """
         return self._consume_endpoint
 
     @property
     def agreement(self):
+        """
+
+        :return:
+        """
         return Agreement(self.template_id, self.conditions[:])
 
     @property
     def template_id(self):
+        """
+
+        :return:
+        """
         return self.service_agreement_template.template_id
 
     @property
     def conditions(self):
+        """
+
+        :return:
+        """
         return self.service_agreement_template.conditions
 
     @property
     def condition_by_name(self):
+        """
+
+        :return:
+        """
         return {cond.name: cond for cond in self.conditions}
 
     @property
     def conditions_params_value_hashes(self):
+        """
+
+        :return:
+        """
         value_hashes = []
         for cond in self.conditions:
             value_hashes.append(cond.values_hash)
@@ -81,18 +114,36 @@ class ServiceAgreement(Service):
 
     @property
     def conditions_timeouts(self):
+        """
+
+        :return:
+        """
         return [cond.timeout for cond in self.conditions]
 
     @property
     def conditions_timelocks(self):
+        """
+
+        :return:
+        """
         return [cond.timelock for cond in self.conditions]
 
     @property
     def conditions_contracts(self):
+        """
+
+        :return:
+        """
         return [cond.contract_name for cond in self.conditions]
 
     @classmethod
     def from_ddo(cls, service_definition_id, ddo):
+        """
+
+        :param service_definition_id:
+        :param ddo:
+        :return:
+        """
         service_def = ddo.find_service_by_id(service_definition_id).as_dictionary()
         if not service_def:
             raise ValueError(
@@ -102,6 +153,11 @@ class ServiceAgreement(Service):
 
     @classmethod
     def from_service_dict(cls, service_dict):
+        """
+
+        :param service_dict:
+        :return:
+        """
         return cls(
             service_dict[cls.SERVICE_DEFINITION_ID],
             ServiceAgreementTemplate(service_dict),
@@ -111,12 +167,17 @@ class ServiceAgreement(Service):
         )
 
     @staticmethod
-    def generate_service_agreement_hash(
-            template_id,
-            values_hash_list,
-            timelocks,
-            timeouts,
-            agreement_id):
+    def generate_service_agreement_hash(template_id, values_hash_list, timelocks, timeouts,
+                                        agreement_id):
+        """
+
+        :param template_id:
+        :param values_hash_list:
+        :param timelocks:
+        :param timeouts:
+        :param agreement_id:
+        :return:
+        """
         return generate_multi_value_hash(
             ['bytes32', 'bytes32[]', 'uint256[]', 'uint256[]', 'bytes32'],
             [template_id, values_hash_list, timelocks, timeouts, agreement_id]
@@ -124,11 +185,23 @@ class ServiceAgreement(Service):
 
     @staticmethod
     def create_new_agreement_id():
+        """
+
+        :return:
+        """
         return generate_prefixed_id()
 
     def generate_agreement_condition_ids(self, agreement_id, asset_id, consumer_address,
                                          publisher_address, keeper):
+        """
 
+        :param agreement_id:
+        :param asset_id:
+        :param consumer_address:
+        :param publisher_address:
+        :param keeper:
+        :return:
+        """
         lock_cond_id = keeper.lock_reward_condition.generate_id(
             agreement_id,
             self.condition_by_name['lockReward'].param_types,

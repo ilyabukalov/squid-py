@@ -13,10 +13,19 @@ from squid_py.secret_store import SecretStoreProvider
 logger = logging.getLogger(__name__)
 
 
-def fulfill_escrow_reward_condition(
-        event, agreement_id, service_agreement, price,
-        consumer_address, publisher_account, condition_ids
-):
+def fulfill_escrow_reward_condition(event, agreement_id, service_agreement, price, consumer_address,
+                                    publisher_account, condition_ids):
+    """
+
+    :param event:
+    :param agreement_id:
+    :param service_agreement:
+    :param price:
+    :param consumer_address:
+    :param publisher_account:
+    :param condition_ids:
+    :return:
+    """
     logger.debug(f"release reward after event {event}.")
     access_id, lock_id = condition_ids[:2]
     assert price == service_agreement.get_price(), 'price mismatch.'
@@ -41,10 +50,20 @@ def fulfill_escrow_reward_condition(
         raise e
 
 
-def refund_reward(
-        event, agreement_id, did, service_agreement, price,
-        consumer_account, publisher_address, condition_ids
-):
+def refund_reward(event, agreement_id, did, service_agreement, price, consumer_account,
+                  publisher_address, condition_ids):
+    """
+
+    :param event:
+    :param agreement_id:
+    :param did:
+    :param service_agreement:
+    :param price:
+    :param consumer_account:
+    :param publisher_address:
+    :param condition_ids:
+    :return:
+    """
     logger.debug(f"trigger refund after event {event}.")
     access_id, lock_id = condition_ids[:2]
     name_to_parameter = {param.name: param for param in
@@ -53,7 +72,8 @@ def refund_reward(
     asset_id = add_0x_prefix(did_to_id(did))
     assert document_id == asset_id, f'document_id {document_id} <=> asset_id {asset_id} mismatch.'
     assert price == service_agreement.get_price(), 'price mismatch.'
-    # logger.info(f'About to do grantAccess: account {account.address}, saId {service_agreement_id}, '
+    # logger.info(f'About to do grantAccess: account {account.address},
+    # saId {service_agreement_id}, '
     #             f'documentKeyId {document_key_id}')
     try:
         Keeper.get_instance().unlock_account(consumer_account)
@@ -76,9 +96,17 @@ def refund_reward(
         raise e
 
 
-def consume_asset(
-    event, agreement_id, did, service_agreement, consumer_account, consume_callback
-):
+def consume_asset(event, agreement_id, did, service_agreement, consumer_account, consume_callback):
+    """
+    
+    :param event:
+    :param agreement_id:
+    :param did:
+    :param service_agreement:
+    :param consumer_account:
+    :param consume_callback:
+    :return:
+    """
     logger.debug(f"consuming asset after event {event}.")
     if consume_callback:
         config = ConfigProvider.get_config()

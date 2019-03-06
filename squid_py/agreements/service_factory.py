@@ -77,7 +77,8 @@ class ServiceFactory(object):
         Build a list of services.
 
         :param did: DID, str
-        :param service_descriptors: List of tuples of length 2. The first item must be one of ServiceTypes
+        :param service_descriptors: List of tuples of length 2. The first item must be one of
+        ServiceTypes
         and the second item is a dict of parameters and values required by the service
         :return: List of Services
         """

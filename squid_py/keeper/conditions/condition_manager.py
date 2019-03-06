@@ -2,7 +2,6 @@ from collections import namedtuple
 
 from squid_py.keeper import ContractBase
 
-
 ConditionValues = namedtuple(
     'ConditionValues',
     ('type_ref', 'state', 'time_lock', 'time_out',

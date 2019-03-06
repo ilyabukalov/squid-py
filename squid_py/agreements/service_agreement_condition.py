@@ -3,6 +3,7 @@ from web3 import Web3
 
 
 class Parameter:
+    """"""
     def __init__(self, param_json):
         self.name = param_json['name']
         self.type = param_json['type']
@@ -61,6 +62,7 @@ class Event:
 
 
 class ServiceAgreementCondition(object):
+    """"""
     def __init__(self, condition_json=None):
         self.name = ''
         self.timelock = 0
@@ -76,6 +78,11 @@ class ServiceAgreementCondition(object):
             self.init_from_condition_json(condition_json)
 
     def init_from_condition_json(self, condition_json):
+        """
+
+        :param condition_json:
+        :return:
+        """
         self.name = condition_json['name']
         self.timelock = condition_json['timelock']
         self.timeout = condition_json['timeout']
@@ -85,6 +92,10 @@ class ServiceAgreementCondition(object):
         self.events = [Event(e) for e in condition_json['events']]
 
     def as_dictionary(self):
+        """
+
+        :return:
+        """
         condition_dict = {
             "name": self.name,
             "timelock": self.timelock,
@@ -99,14 +110,26 @@ class ServiceAgreementCondition(object):
 
     @property
     def param_types(self):
+        """
+
+        :return:
+        """
         return [parameter.type for parameter in self.parameters]
 
     @property
     def param_values(self):
+        """
+
+        :return:
+        """
         return [parameter.value for parameter in self.parameters]
 
     @property
     def values_hash(self):
+        """
+
+        :return:
+        """
         return Web3.soliditySha3(self.param_types, self.param_values).hex()
 
     @staticmethod
@@ -125,7 +148,7 @@ class ServiceAgreementCondition(object):
                 }, {
                     "name": "_amount",
                     "type": "uint256",
-                    "value": 10
+                    "value": "10"
                 }
             ],
             "events": [{

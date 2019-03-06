@@ -6,7 +6,6 @@ from squid_py.agreements.events import (
     escrow_access_secret_store_template,
     escrow_reward_condition, lock_reward_condition
 )
-
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.keeper import Keeper
 from .storage import get_service_agreements, record_service_agreement
@@ -51,7 +50,7 @@ def register_service_agreement_consumer(storage_path, publisher_address, agreeme
 
 def process_agreement_events_consumer(publisher_address, agreement_id, did, service_agreement,
                                       price, consumer_account, condition_ids,
-                                        consume_callback):
+                                      consume_callback):
     """
 
 
