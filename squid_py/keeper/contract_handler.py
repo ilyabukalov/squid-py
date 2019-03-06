@@ -4,6 +4,7 @@ import os
 
 from web3.contract import ConciseContract
 
+from squid_py.config_provider import ConfigProvider
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 
@@ -83,7 +84,7 @@ class ContractHandler(object):
         for name in os.listdir(_base_path):
             if name.lower() == contract_file_name.lower():
                 contract_file_name = name
-                return os.path.join(Keeper.get_instance().artifacts_path, contract_file_name)
+                return os.path.join(ConfigProvider.get_config().keeper_path, contract_file_name)
         return None
 
     @staticmethod
@@ -95,25 +96,25 @@ class ContractHandler(object):
         :return: the smart contract's definition from the json abi file, dict
         """
 
-        keeper = Keeper.get_instance()
-        network_name = keeper.get_network_name(keeper.get_network_id()).lower()
+        network_name = Keeper.get_network_name(Keeper.get_network_id()).lower()
+        artifacts_path = ConfigProvider.get_config().keeper_path
 
         # file_name = '{}.{}.json'.format(contract_name, network_name)
         # path = os.path.join(keeper.artifacts_path, file_name)
         path = ContractHandler._get_contract_file_path(
-            keeper.artifacts_path, contract_name, network_name)
+            artifacts_path, contract_name, network_name)
         if not (path and os.path.exists(path)):
             path = ContractHandler._get_contract_file_path(
-                keeper.artifacts_path, contract_name, network_name.lower())
+                artifacts_path, contract_name, network_name.lower())
 
         if not (path and os.path.exists(path)):
             path = ContractHandler._get_contract_file_path(
-                keeper.artifacts_path, contract_name, Keeper.DEFAULT_NETWORK_NAME)
+                artifacts_path, contract_name, Keeper.DEFAULT_NETWORK_NAME)
 
         if not (path and os.path.exists(path)):
             raise FileNotFoundError(
                 f'Keeper contract {contract_name} file '
-                f'not found in {keeper.artifacts_path} '
+                f'not found in {artifacts_path} '
                 f'using network name {network_name}'
             )
 

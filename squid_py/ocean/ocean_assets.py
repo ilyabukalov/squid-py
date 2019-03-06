@@ -1,3 +1,4 @@
+"""Ocean module."""
 import copy
 import json
 import logging
@@ -26,6 +27,7 @@ logger = logging.getLogger('ocean')
 
 
 class OceanAssets:
+    """Ocean assets class."""
     def __init__(self, keeper, did_resolver, agreements, asset_consumer, config):
         self._keeper = keeper
         self._did_resolver = did_resolver

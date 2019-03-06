@@ -1,26 +1,26 @@
-"""
-    Keeper module to call keeper-contracts.
-"""
+"""Keeper module to call keeper-contracts."""
 
 import logging
 import os
 
 from squid_py.config_provider import ConfigProvider
-from squid_py.keeper.conditions.access_conditions import AccessConditions
-from squid_py.keeper.conditions.payment_conditions import PaymentConditions
+from squid_py.keeper.agreements.agreement_manager import AgreementStoreManager
+from squid_py.keeper.conditions.access import AccessSecretStoreCondition
+from squid_py.keeper.conditions.condition_manager import ConditionStoreManager
+from squid_py.keeper.conditions.escrow_reward import EscrowRewardCondition
+from squid_py.keeper.conditions.hash_lock import HashLockCondition
+from squid_py.keeper.conditions.lock_reward import LockRewardCondition
+from squid_py.keeper.conditions.sign import SignCondition
 from squid_py.keeper.didregistry import DIDRegistry
 from squid_py.keeper.dispenser import Dispenser
-from squid_py.keeper.service_execution_agreement import ServiceExecutionAgreement
+from squid_py.keeper.templates.access_secret_store_template import EscrowAccessSecretStoreTemplate
+from squid_py.keeper.templates.template_manager import TemplateStoreManager
 from squid_py.keeper.token import Token
 from squid_py.keeper.web3_provider import Web3Provider
 
 
 class Keeper(object):
-    """
-    The Keeper class aggregates all contracts in the Ocean Protocol node.
-    Currently this is implemented as a singleton.
-
-    """
+    """The Keeper class aggregates all contracts in the Ocean Protocol node."""
 
     DEFAULT_NETWORK_NAME = 'development'
     _network_name_map = {
@@ -34,36 +34,29 @@ class Keeper(object):
         8995: 'nile',
         8996: 'spree',
     }
-    _instance = None
-    artifacts_path = None
-    accounts = []
-    dispenser = None
-    auth = None
-    token = None
-    did_registry = None
-    service_agreement = None
-    payment_conditions = None
-    access_conditions = None
+
+    def __init__(self):
+        self.network_name = Keeper.get_network_name(Keeper.get_network_id())
+        self.artifacts_path = ConfigProvider.get_config().keeper_path
+        self.accounts = Web3Provider.get_web3().eth.accounts
+
+        self.dispenser = Dispenser.get_instance()
+        self.token = Token.get_instance()
+        self.did_registry = DIDRegistry.get_instance()
+        self.template_manager = TemplateStoreManager.get_instance()
+        self.escrow_access_secretstore_template = EscrowAccessSecretStoreTemplate.get_instance()
+        self.agreement_manager = AgreementStoreManager.get_instance()
+        self.condition_manager = ConditionStoreManager.get_instance()
+        self.sign_condition = SignCondition.get_instance()
+        self.lock_reward_condition = LockRewardCondition.get_instance()
+        self.escrow_reward_condition = EscrowRewardCondition.get_instance()
+        self.access_secret_store_condition = AccessSecretStoreCondition.get_instance()
+        self.hash_lock_condition = HashLockCondition.get_instance()
 
     @staticmethod
     def get_instance():
         """Return the Keeper instance (singleton)."""
-        if Keeper._instance is None:
-            Keeper._instance = Keeper()
-
-            Keeper.network_name = Keeper.get_network_name(Keeper.get_network_id())
-            Keeper.artifacts_path = ConfigProvider.get_config().keeper_path
-            Keeper.accounts = Web3Provider.get_web3().eth.accounts
-
-            # The contract objects
-            Keeper.dispenser = Dispenser.get_instance()
-            Keeper.token = Token.get_instance()
-            Keeper.did_registry = DIDRegistry.get_instance()
-            Keeper.service_agreement = ServiceExecutionAgreement.get_instance()
-            Keeper.payment_conditions = PaymentConditions.get_instance()
-            Keeper.access_conditions = AccessConditions.get_instance()
-
-        return Keeper._instance
+        return Keeper()
 
     @staticmethod
     def get_network_name(network_id):
@@ -71,6 +64,7 @@ class Keeper(object):
         Return the keeper network name based on the current ethereum network id.
         Return `development` for every network id that is not mapped.
 
+        :param network_id: Network id, int
         :return: Network name, str
         """
         if os.environ.get('KEEPER_NETWORK_NAME'):
@@ -91,16 +85,30 @@ class Keeper(object):
 
     @staticmethod
     def sign_hash(msg_hash, account):
+        """
+
+        :param msg_hash:
+        :param account: Account
+        :return:
+        """
         return Web3Provider.get_web3().eth.sign(account.address, msg_hash).hex()
 
     @staticmethod
     def unlock_account(account):
+        """
+        Unlock the account.
+
+        :param account: Account
+        :return:
+        """
         return Web3Provider.get_web3().personal.unlockAccount(account.address, account.password)
 
     @staticmethod
     def get_ether_balance(address):
-        return Web3Provider.get_web3().eth.getBalance(address, block_identifier='latest')
+        """
+        Get balance of an ethereum address.
 
-    @staticmethod
-    def get_token_balance(address):
-        return Keeper.token.get_token_balance(address)
+        :param address: address, bytes32
+        :return: balance, int
+        """
+        return Web3Provider.get_web3().eth.getBalance(address, block_identifier='latest')

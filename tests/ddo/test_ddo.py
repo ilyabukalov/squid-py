@@ -186,6 +186,8 @@ def test_creating_ddo():
         signature_key_id = '{0}#keys={1}'.format(did, index + 1)
         assert ddo.get_public_key(signature_key_id)
 
+    ddo_text_proof = ''
+    ddo_text_proof_hash = ''
     # test validating static proofs
     for index, private_key in enumerate(private_keys):
         ddo.add_proof(index, private_key)

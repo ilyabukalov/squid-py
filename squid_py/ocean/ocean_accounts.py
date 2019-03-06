@@ -1,3 +1,4 @@
+"""Ocean module."""
 from collections import namedtuple
 
 from squid_py.accounts.account import Account
@@ -6,6 +7,8 @@ Balance = namedtuple('Balance', ('eth', 'ocn'))
 
 
 class OceanAccounts:
+    """Ocean accounts class."""
+
     def __init__(self, keeper, config, ocean_tokens):
         self._keeper = keeper
         self._config = config
@@ -25,12 +28,14 @@ class OceanAccounts:
     def list(self):
         """
         Return list of Account instances available in the current ethereum node
+
         :return: list of Account instances
         """
         return self._accounts[:]
 
     def balance(self, account):
         """
+        Return the balance, a tuple with the eth and ocn balance.
 
         :param account: Account instance to return the balance of
         :return: Balance tuple of (eth, ocn)
@@ -40,6 +45,7 @@ class OceanAccounts:
 
     def request_tokens(self, account, amount):
         """
+        Request an amount of ocean tokens for an account.
 
         :param account: Account instance making the tokens request
         :param amount: int amount of tokens requested

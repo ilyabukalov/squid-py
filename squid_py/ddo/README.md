@@ -5,14 +5,11 @@
 1. Generate a DID
 
 ```python
-import secrets
-from did_ddo_lib import did_generate
+from squid_py.did import DID
 
-did_id = secret.token_hex(32)
-did = did_generate(did_id)
+did = DID.did()
 print(did)
-
-    did:op:03e6764478d61ce1d74945b6a99e870dcfdd6048a7caa435afdf7f0c8b4bf6fd
+# >> did:op:03e6764478d61ce1d74945b6a99e870dcfdd6048a7caa435afdf7f0c8b4bf6fd
 ```
 
 2. Create a DDO

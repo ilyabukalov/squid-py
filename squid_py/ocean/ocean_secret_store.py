@@ -1,3 +1,4 @@
+"""Ocean module."""
 import logging
 
 from squid_py.accounts.account import Account
@@ -7,6 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 class OceanSecretStore:
+    """Ocean SecretStore class."""
     def __init__(self, config):
         self._config = config
         if config.secret_store_url and config.parity_url and config.parity_address:

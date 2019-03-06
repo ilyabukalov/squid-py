@@ -6,11 +6,7 @@ from squid_py.keeper.web3_provider import Web3Provider
 
 class Token(ContractBase):
     """Class representing the Token contract."""
-
-    @staticmethod
-    def get_instance():
-        """Returns a ContractBase instance of the OceanToken contract."""
-        return Token('OceanToken')
+    CONTRACT_NAME = 'OceanToken'
 
     def get_token_balance(self, account_address):
         """
@@ -24,8 +20,8 @@ class Token(ContractBase):
     def get_allowance(self, owner_address, spender_address):
         """
 
-        :param owner_address:
-        :param spender_address:
+        :param owner_address: Address, str
+        :param spender_address: Address, str
         :return:
         """
         return self.contract_concise.allowance(owner_address, spender_address)
@@ -42,15 +38,63 @@ class Token(ContractBase):
         if not Web3Provider.get_web3().isChecksumAddress(spender_address):
             spender_address = Web3Provider.get_web3().toChecksumAddress(spender_address)
 
-        return self.contract_concise.approve(
+        from_account.unlock()
+        tx_hash = self.contract_concise.approve(
             spender_address,
             price,
             transact={'from': from_account.address}
         )
+        return self.get_tx_receipt(tx_hash).status == 1
 
     def transfer(self, receiver_address, amount, from_account):
-        return self.contract_concise.transfer(
+        """
+        Transfer tokens from one account to the receiver address.
+
+        :param receiver_address: Address of the transfer receiver, str
+        :param amount: Amount of tokens, int
+        :param from_account: Sender account, Account
+        :return: bool
+        """
+        tx_hash = self.contract_concise.transfer(
             receiver_address,
             amount,
             transact={'from': from_account.address}
         )
+        return self.get_tx_receipt(tx_hash).status == 1
+
+    def total_supply(self):
+        """
+
+        :return:
+        """
+        return self.contract_concise.totalSupply()
+
+    def increase_allowance(self, spender_address, added_value, owner_account):
+        """
+
+        :param spender_address:
+        :param added_value:
+        :param owner_account:
+        :return:
+        """
+        tx_hash = self.contract_concise.increaseAllowance(
+            spender_address,
+            added_value,
+            transact={'from': owner_account.address}
+        )
+        return self.get_tx_receipt(tx_hash).status == 1
+
+    def decrease_allowance(self, spender_address, subtracted_value, owner_account):
+        """
+
+        :param spender_address:
+        :param subtracted_value:
+        :param owner_account:
+        :return:
+        """
+        tx_hash = self.contract_concise.decreaseAllowance(
+            spender_address,
+            subtracted_value,
+            transact={'from': owner_account.address}
+        )
+        return self.get_tx_receipt(tx_hash).status == 1

@@ -5,10 +5,10 @@ import logging
 from base64 import b64decode, b64encode
 from datetime import datetime
 
-import pytz
 from Cryptodome.Hash import SHA256
 from Cryptodome.PublicKey import RSA
 from Cryptodome.Signature import PKCS1_v1_5
+from eth_utils import add_0x_prefix
 
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.ddo.public_key_hex import PublicKeyHex
@@ -57,7 +57,7 @@ class DDO:
     @property
     def asset_id(self):
         """The asset id part of the DID"""
-        return did_to_id(self._did)
+        return add_0x_prefix(did_to_id(self._did))
 
     @property
     def services(self):
@@ -71,6 +71,7 @@ class DDO:
 
     @property
     def metadata(self):
+        """Get the metadata service."""
         metadata_service = self.find_service_by_type(ServiceTypes.METADATA)
         return metadata_service.values['metadata']
 
@@ -79,7 +80,6 @@ class DDO:
         Add a public key object to the list of public keys.
 
         :param public_key: Public key, PublicKeyHex
-        :return: None
         """
         logger.debug(f'Adding public key {public_key}')
         self._public_keys.append(public_key)
@@ -90,7 +90,6 @@ class DDO:
 
         :param key_id: Key id, Authentication
         :param authentication_type: Authentication type, str
-        :return: None
         """
         if isinstance(key_id, Authentication):
             # adding an authentication object
@@ -153,7 +152,6 @@ class DDO:
         :param service_endpoint: Service endpoint, str
         :param values: Python dict with serviceDefinitionId, templateId, serviceAgreementContract,
         list of conditions and purchase endpoint.
-        :return:
         """
         if isinstance(service_type, Service):
             service = service_type
@@ -163,8 +161,12 @@ class DDO:
         self._services.append(service)
 
     def as_text(self, is_proof=True, is_pretty=False):
-        """return the DDO as a JSON text
-        if is_proof == False then do not include the 'proof' element"""
+        """Return the DDO as a JSON text.
+
+        :param if is_proof: if False then do not include the 'proof' element.
+        :param is_pretty: If True return dictionary in a prettier way, bool
+        :return: str
+        """
         data = self.as_dictionary(is_proof)
         if is_pretty:
             return json.dumps(data, indent=2, separators=(',', ': '))
@@ -172,6 +174,12 @@ class DDO:
         return json.dumps(data)
 
     def as_dictionary(self, is_proof=True):
+        """
+        Return the DDO as a JSON dict.
+
+        :param if is_proof: if False then do not include the 'proof' element.
+        :return: dict
+        """
         if self._created is None:
             self._created = DDO._get_timestamp()
 
@@ -228,19 +236,19 @@ class DDO:
         if 'proof' in values:
             self._proof = values['proof']
 
-    def add_proof(self, authorisation_index, private_key=None, signature_text=None):
+    def add_proof(self, authorization_index, private_key=None, signature_text=None):
         """Add a proof to the DDO, based on the public_key id/index and signed with the private key
         add a static proof to the DDO, based on one of the public keys."""
 
         # find the key using an index, or key name
-        if isinstance(authorisation_index, dict):
-            self._proof = authorisation_index
+        if isinstance(authorization_index, dict):
+            self._proof = authorization_index
             return
 
         if private_key is None:
             raise ValueError
 
-        authentication = self._authentications[authorisation_index]
+        authentication = self._authentications[authorization_index]
         if not authentication:
             raise IndexError
         if authentication.is_public_key():
@@ -349,11 +357,18 @@ class DDO:
         return None
 
     def find_service_by_id(self, service_id):
+        """
+        Get service for a given service_id.
+
+        :param service_id: Service id, str
+        :return: Service
+        """
         service_id_key = 'serviceDefinitionId'
         service_id = str(service_id)
-        for s in self._services:
-            if service_id_key in s.values and str(s.values[service_id_key]) == service_id:
-                return s
+        for service in self._services:
+            if service_id_key in service.values and str(
+                    service.values[service_id_key]) == service_id:
+                return service
 
         try:
             # If service_id is int or can be converted to int then we couldn't find it
@@ -366,10 +381,15 @@ class DDO:
         return self.find_service_by_type(service_id)
 
     def find_service_by_type(self, service_type):
-        for s in self._services:
-            if service_type == s.type:
-                return s
+        """
+        Get service for a given service type.
 
+        :param service_type: Service type, ServiceType
+        :return: Service
+        """
+        for service in self._services:
+            if service_type == service.type:
+                return service
         return None
 
     def validate(self):

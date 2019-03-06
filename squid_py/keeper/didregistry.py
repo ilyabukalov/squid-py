@@ -15,10 +15,7 @@ class DIDRegistry(ContractBase):
     """Class to register and update Ocean DID's."""
     DID_REGISTRY_EVENT_NAME = 'DIDAttributeRegistered'
 
-    @staticmethod
-    def get_instance():
-        """Returns a ContractBase instance of the DIDRegistry contract."""
-        return DIDRegistry('DIDRegistry')
+    CONTRACT_NAME = 'DIDRegistry'
 
     def register(self, did_source, checksum, url=None, account=None):
         """
@@ -47,6 +44,7 @@ class DIDRegistry(ContractBase):
         if account is None:
             raise ValueError('You must provide an account to use to register a DID')
 
+        account.unlock()
         transaction = self.register_attribute(did_source_id, checksum, url,
                                               account.address)
         receipt = self.get_tx_receipt(transaction)
@@ -68,18 +66,18 @@ class DIDRegistry(ContractBase):
             transact={'from': account_address}
         )
 
-    def get_update_at(self, did):
+    def get_block_number_updated(self, did):
         """Return the block number the last did was updated on the block chain."""
-        return self.contract_concise.getUpdateAt(did)
+        return self.contract_concise.getBlockNumberUpdated(did)
 
-    def get_owner(self, did):
+    def get_did_owner(self, did):
         """
         Return the owner of the did.
 
         :param did: Asset did, did
         :return:
         """
-        return self.contract_concise.getOwner(did)
+        return self.contract_concise.getDIDOwner(did)
 
     def get_registered_attribute(self, did_bytes):
         """
@@ -106,7 +104,7 @@ class DIDRegistry(ContractBase):
         """
         result = None
         did = Web3.toHex(did_bytes)
-        block_number = self.get_update_at(did_bytes)
+        block_number = self.get_block_number_updated(did_bytes)
         logger.debug(f'got blockNumber {block_number} for did {did}')
         if block_number == 0:
             raise OceanDIDNotFound(
@@ -121,14 +119,14 @@ class DIDRegistry(ContractBase):
         log_items = block_filter.get_all_entries()
         if log_items:
             log_item = log_items[-1].args
-            value = log_item.value
-            block_number = log_item.updatedAt
+            value = log_item['_value']
+            block_number = log_item['_blockNumberUpdated']
             result = {
-                'checksum': log_item.checksum,
+                'checksum': log_item['_checksum'],
                 'value': value,
                 'block_number': block_number,
-                'did_bytes': log_item.did,
-                'owner': Web3.toChecksumAddress(log_item.owner),
+                'did_bytes': log_item['_did'],
+                'owner': Web3.toChecksumAddress(log_item['_owner']),
             }
         else:
             logger.warning(f'Could not find {DIDRegistry.DID_REGISTRY_EVENT_NAME} event logs for '

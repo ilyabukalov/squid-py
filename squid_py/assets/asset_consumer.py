@@ -14,26 +14,26 @@ class AssetConsumer:
     #   been purchased.
 
     @staticmethod
-    def download(
-            service_agreement_id,
-            service_definition_id,
-            ddo,
-            consumer_account,
-            destination,
-            brizo,
-            secret_store
-    ):
+    def download(service_agreement_id, service_definition_id, ddo, consumer_account, destination,
+                 brizo, secret_store):
         """
-        Download asset data files or result files from a compute job
+        Download asset data files or result files from a compute job.
 
-        :return:
+        :param service_agreement_id: Service agreement id, str
+        :param service_definition_id: identifier of the service inside the asset DDO, str
+        :param ddo: DDO
+        :param consumer_account: Account
+        :param destination: Path, str
+        :param brizo: Brizo instance
+        :param secret_store: SecretStore instance
+        :return: Asset folder path, str
         """
         did = ddo.did
         files = ddo.metadata['base']['encryptedFiles']
         files = files if isinstance(files, str) else files[0]
         sa = ServiceAgreement.from_ddo(service_definition_id, ddo)
-        service_url = sa.service_endpoint
-        if not service_url:
+        consume_url = sa.consume_endpoint
+        if not consume_url:
             logger.error(
                 'Consume asset failed, service definition is missing the "serviceEndpoint".')
             raise AssertionError(
@@ -65,7 +65,7 @@ class AssetConsumer:
 
         brizo.consume_service(
             service_agreement_id,
-            service_url,
+            consume_url,
             consumer_account.address,
             decrypted_content_urls,
             asset_folder

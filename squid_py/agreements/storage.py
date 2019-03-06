@@ -4,7 +4,18 @@ import sqlite3
 def record_service_agreement(storage_path, service_agreement_id, did, service_definition_id, price,
                              files, start_time,
                              status='pending'):
-    """ Records the given pending service agreement.
+    """
+    Records the given pending service agreement.
+
+    :param storage_path:
+    :param service_agreement_id:
+    :param did:
+    :param service_definition_id:
+    :param price:
+    :param files:
+    :param start_time:
+    :param status:
+    :return:
     """
     conn = sqlite3.connect(storage_path)
     try:
@@ -25,6 +36,14 @@ def record_service_agreement(storage_path, service_agreement_id, did, service_de
 
 
 def update_service_agreement_status(storage_path, service_agreement_id, status='pending'):
+    """
+    Update the service agreement status.
+
+    :param storage_path:
+    :param service_agreement_id:
+    :param status:
+    :return:
+    """
     conn = sqlite3.connect(storage_path)
     try:
         cursor = conn.cursor()
@@ -38,6 +57,13 @@ def update_service_agreement_status(storage_path, service_agreement_id, status='
 
 
 def get_service_agreements(storage_path, status='pending'):
+    """
+    Get service agreements pending to be executed.
+
+    :param storage_path:
+    :param status:
+    :return:
+    """
     conn = sqlite3.connect(storage_path)
     try:
         cursor = conn.cursor()

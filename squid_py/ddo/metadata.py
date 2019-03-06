@@ -1,5 +1,8 @@
+"""DID Lib to do DID's and DDO's."""
+
+
 class AdditionalInfoMeta(object):
-    """Attributes that can enhance the discoverability of a resource"""
+    """Attributes that can enhance the discoverability of a resource."""
     KEY = 'additionalInformation'
     VALUES_KEYS = (
         "updateFrequency",
@@ -141,7 +144,7 @@ class Metadata(object):
             section = Metadata.MAIN_SECTIONS[section_key]
             section_metadata = metadata[section_key]
             for subkey in section.REQUIRED_VALUES_KEYS:
-                if subkey not in section_metadata or not section_metadata[subkey]:
+                if subkey not in section_metadata or section_metadata[subkey] is None:
                     return False
 
         return True

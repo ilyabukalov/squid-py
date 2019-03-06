@@ -1,35 +1,91 @@
-from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
-from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
-from squid_py.agreements.utils import get_sla_template_path, register_service_agreement_template
+"""Ocean module."""
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class OceanTemplates:
+    """Ocean templates class."""
 
     def __init__(self, keeper, config):
         self._keeper = keeper
         self._config = config
-        self.access_template_id = ACCESS_SERVICE_TEMPLATE_ID
+        self.access_template_id = self._keeper.escrow_access_secretstore_template.address
 
-    def create(self, template_id, account):
+    def propose(self, template_address, account):
         """
+        Propose a new template.
 
-        :param template_id: hex str id of the template to create on-chain
-        :param account: Account instance to be owner of this template
+        :param template_address: Address of the template contract, str
+        :param account: account proposing the template, Account
         :return: bool
         """
-        if not template_id:
-            template_id = ACCESS_SERVICE_TEMPLATE_ID
+        try:
+            proposed = self._keeper.template_manager.propose_template(template_address, account)
+            return proposed
+        except ValueError as err:
+            template_values = self._keeper.template_manager.get_template(template_address)
+            if not template_values:
+                logger.warning(f'Propose template failed: {err}')
+                return False
 
-        template = ServiceAgreementTemplate.from_json_file(get_sla_template_path())
-        assert template_id == ACCESS_SERVICE_TEMPLATE_ID
-        assert template_id == template.template_id
-        template_owner = self._keeper.service_agreement.get_template_owner(template_id)
-        if not template_owner:
-            template = register_service_agreement_template(
-                self._keeper.service_agreement,
-                account,
-                template,
-                self._keeper.network_name
-            )
+            if template_values.state != 1:
+                logger.warning(
+                    f'Propose template failed, current state is set to {template_values.state}')
+                return False
 
-        return template is not None
+            return True
+
+    def approve(self, template_address, account):
+        """
+        Approve a template already proposed. The account needs to be owner of the templateManager
+        contract to be able of approve the template.
+
+        :param template_address: Address of the template contract, str
+        :param account: account approving the template, Account
+        :return: bool
+        """
+        try:
+            approved = self._keeper.template_manager.approve_template(template_address, account)
+            return approved
+        except ValueError as err:
+            template_values = self._keeper.template_manager.get_template(template_address)
+            if not template_values:
+                logger.warning(f'Approve template failed: {err}')
+                return False
+
+            if template_values.state == 1:
+                logger.warning(f'Approve template failed, this template is '
+                               f'currently in "proposed" state.')
+                return False
+
+            if template_values.state == 3:
+                logger.warning(f'Approve template failed, this template appears to be '
+                               f'revoked.')
+                return False
+
+            if template_values.state == 2:
+                return True
+
+            return False
+
+    def revoke(self, template_address, account):
+        """
+        Revoke a template already approved. The account needs to be owner of the templateManager
+        contract to be able of revoke the template.
+
+        :param template_address: Address of the template contract, str
+        :param account: account revoking the template, Account
+        :return: bool
+        """
+        try:
+            revoked = self._keeper.template_manager.revoke_template(template_address, account)
+            return revoked
+        except ValueError as err:
+            template_values = self._keeper.template_manager.get_template(template_address)
+            if not template_values:
+                logger.warning(f'Cannot revoke template since it does not exist: {err}')
+                return False
+
+            logger.warning(f'Only template admin or owner can revoke a template: {err}')
+            return False

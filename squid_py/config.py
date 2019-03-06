@@ -10,7 +10,7 @@ DEFAULT_KEEPER_HOST = 'localhost'
 DEFAULT_KEEPER_PORT = 8545
 DEFAULT_KEEPER_URL = 'http://localhost:8545'
 DEFAULT_KEEPER_PATH = 'artifacts'
-DEFAULT_GAS_LIMIT = 1000000
+DEFAULT_GAS_LIMIT = 4000000
 DEFAULT_NAME_AQUARIUS_URL = 'http://localhost:5000'
 DEFAULT_STORAGE_PATH = 'squid_py.db'
 
@@ -114,8 +114,9 @@ class Config(configparser.ConfigParser):
         """Path where the keeper-contracts artifacts are allocated."""
         keeper_path_string = self.get(self._section_name, NAME_KEEPER_PATH)
         path = Path(keeper_path_string).expanduser().resolve()
-        #TODO: Handle the default case and make default empty string
-        # assert path.exists(), "Can't find the keeper path: {} ({})"..format(keeper_path_string, path)
+        # TODO: Handle the default case and make default empty string
+        # assert path.exists(), "Can't find the keeper path: {} ({})"..format(keeper_path_string,
+        # path)
         if os.path.exists(path):
             pass
         elif os.getenv('VIRTUAL_ENV'):

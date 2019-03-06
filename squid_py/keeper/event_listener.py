@@ -9,7 +9,8 @@ logger = logging.getLogger(__name__)
 
 
 class EventListener(object):
-    def __init__(self, contract_name, event_name, from_block='latest', to_block='latest',
+    """Class representing an event listener."""
+    def __init__(self, contract_name, event_name, args=None, from_block=0, to_block='latest',
                  filters=None):
         contract = ContractHandler.get(contract_name)
         self.event = getattr(contract.events, event_name)
@@ -19,12 +20,15 @@ class EventListener(object):
         )
         self.event_filter.poll_interval = 0.5
         self.timeout = 60  # seconds
+        self.args = args
 
-    def listen_once(self, callback, timeout=None, start_time=None, blocking=False):
+    def listen_once(self, callback, timeout=None, timeout_callback=None, start_time=None,
+                    blocking=False):
         """
 
         :param callback: a callback function that takes one argument the event dict
         :param timeout: float timeout in seconds
+        :param timeout_callback: a callback function when timeout expires
         :param start_time: float start time in seconds, defaults to current time and is used
             for calculating timeout
         :param blocking: bool blocks this call until the event is detected
@@ -42,7 +46,11 @@ class EventListener(object):
         # TODO Review where to close this threads.
         Thread(
             target=EventListener.watch_one_event,
-            args=(self.event_filter, callback, timeout if timeout is not None else self.timeout,
+            args=(self.event_filter,
+                  callback,
+                  timeout_callback,
+                  timeout if timeout is not None else self.timeout,
+                  self.args,
                   start_time),
             daemon=True,
         ).start()
@@ -55,15 +63,29 @@ class EventListener(object):
         return None
 
     @staticmethod
-    def watch_one_event(event_filter, callback, timeout, start_time=None):
+    def watch_one_event(event_filter, callback, timeout_callback, timeout, args, start_time=None):
+        """
+        Start to watch one event.
+
+        :param event_filter:
+        :param callback:
+        :param timeout_callback:
+        :param timeout:
+        :param args:
+        :param start_time:
+        :return:
+        """
         if timeout and not start_time:
             start_time = int(datetime.now().timestamp())
+
+        if not args:
+            args = []
 
         while True:
             try:
                 events = event_filter.get_all_entries()
                 if events:
-                    callback(events[0])
+                    callback(events[0], *args)
                     return
 
             except ValueError as err:
@@ -71,7 +93,12 @@ class EventListener(object):
                 logger.debug(f'Got error grabbing keeper events: {str(err)}')
 
             time.sleep(0.1)
-            elapsed = int(datetime.now().timestamp()) - start_time
-            if timeout and elapsed > timeout:
-                callback(None)
-                break
+            if timeout:
+                elapsed = int(datetime.now().timestamp()) - start_time
+                if elapsed > timeout:
+                    if timeout_callback:
+                        timeout_callback(*args)
+                    else:
+                        callback(None, *args)
+
+                    break

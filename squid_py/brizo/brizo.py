@@ -37,13 +37,13 @@ class Brizo:
         Send a request to the service provider (purchase_endpoint) to initialize the service
         agreement for the asset identified by `did`.
 
-        :param did: str -- id of the asset includes the `did:op:` prefix
-        :param agreement_id: hex str
-        :param service_definition_id: str -- identifier of the service inside the asset DDO
-        :param signature: hex str -- signed agreement hash
-        :param account_address: hex str -- ethereum address of the consumer signing this agreement
-        :param purchase_endpoint: str -- url of the service provider
-        :return:
+        :param did: id of the asset includes the `did:op:` prefix, str
+        :param agreement_id: id of the agreement, hex str
+        :param service_definition_id: identifier of the service inside the asset DDO, str
+        :param signature: signed agreement hash, hex str
+        :param account_address: ethereum address of the consumer signing this agreement, hex str
+        :param purchase_endpoint: url of the service provider, str
+        :return: bool
         """
         payload = Brizo._prepare_purchase_payload(
             did, agreement_id, service_definition_id, signature, account_address
@@ -76,7 +76,6 @@ class Brizo:
         :param account_address: ethereum address of the consumer signing this agreement, hex-str
         :param files: List containing the files to be consumed, list
         :param destination_folder: Path, str
-        :return:
         """
         for file in files:
             url = file['url']
@@ -115,7 +114,7 @@ class Brizo:
         :param signature: the signed agreement message hash which includes
          conditions and their parameters values and other details of the agreement, str
         :param consumer_address: ethereum address of the consumer signing this agreement, hex-str
-        :return:
+        :return: dict
         """
         return json.dumps({
             'did': did,

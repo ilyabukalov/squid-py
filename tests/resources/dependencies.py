@@ -12,17 +12,17 @@ def inject_dependencies(klass, *args, **kwargs):
 
     to_restore = []
 
-    def patch_provider(object, property, mock):
-        to_restore.append((object, property, getattr(object, property)))
-        setattr(object, property, mock)
+    def patch_provider(_object, _property, mock):
+        to_restore.append((_object, _property, getattr(_object, _property)))
+        setattr(_object, _property, mock)
 
-    def maybe_patch_provider(object, property, name):
+    def maybe_patch_provider(_object, _property, name):
         if name in dependencies:
-            patch_provider(object, property, dependencies[name])
+            patch_provider(_object, _property, dependencies[name])
 
     maybe_patch_provider(Web3Provider, '_web3', 'web3')
     try:
         yield klass(*args, **kwargs)
     finally:
-        for (object, property, value) in to_restore:
-            setattr(object, property, value)
+        for (_object, _property, value) in to_restore:
+            setattr(_object, _property, value)

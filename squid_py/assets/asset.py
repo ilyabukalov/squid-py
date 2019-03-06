@@ -7,6 +7,6 @@ class Asset(DDO):
 
     @property
     def encrypted_files(self):
-        """Return encryptedFiles field in the base metadata. """
+        """Return encryptedFiles field in the base metadata."""
         files = self.metadata['base']['encryptedFiles']
         return files

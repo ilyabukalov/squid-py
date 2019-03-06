@@ -4,7 +4,6 @@ from .contract_base import ContractBase
 from .didregistry import DIDRegistry
 from .dispenser import Dispenser
 from .keeper import Keeper
-from .service_execution_agreement import ServiceExecutionAgreement
 from .token import Token
 from .utils import (
     get_contract_abi_by_address,

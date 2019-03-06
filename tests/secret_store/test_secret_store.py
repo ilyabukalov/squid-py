@@ -10,7 +10,7 @@ from tests.resources.tiers import e2e_test
 
 
 @e2e_test
-def test_secret_store():
+def test_secret_store_encrypt_decrypt():
     test_document = get_resource_path('ddo', 'ddo_sample1.json')
     with open(test_document, 'r') as file_handle:
         metadata = json.load(file_handle)
@@ -27,3 +27,11 @@ def test_secret_store():
     result = SecretStore(*ss_args).encrypt_document(document_id, metadata_json)
     print(result)
     assert SecretStore(*ss_args).decrypt_document(document_id, result) == metadata_json
+
+
+def test_set_secret_store_url():
+    pass
+
+
+def test_set_client():
+    pass

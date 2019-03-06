@@ -1,17 +1,22 @@
-"""Utilities class."""
+"""Utilities class"""
 import uuid
 from collections import namedtuple
 
 from eth_keys import KeyAPI
 from eth_utils import big_endian_to_int
-from web3 import Web3
 
 from squid_py.keeper.utils import generate_multi_value_hash
+from squid_py.keeper.web3_provider import Web3Provider
 
 Signature = namedtuple('Signature', ('v', 'r', 's'))
 
 
 def generate_new_id():
+    """
+    Generate a new id without prefix.
+
+    :return: Id, str
+    """
     return uuid.uuid4().hex + uuid.uuid4().hex
 
 
@@ -43,7 +48,7 @@ def get_public_key_from_address(web3, address):
     :param address:
     :return:
     """
-    _hash = Web3.sha3(text='verify signature.')
+    _hash = Web3Provider.get_web3().sha3(text='verify signature.')
     signature = split_signature(web3, web3.eth.sign(address, _hash))
     signature_vrs = Signature(signature.v % 27,
                               big_endian_to_int(signature.r),

@@ -2,7 +2,6 @@ import logging
 import os
 
 from squid_py import OceanKeeperContractsNotFound
-from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID
 from squid_py.config_provider import ConfigProvider
 from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
@@ -11,21 +10,53 @@ logger = logging.getLogger(__name__)
 
 
 class Diagnostics:
-    @staticmethod
-    def check_deployed_agreement_templates():
-        keeper = Keeper.get_instance()
-        # Check for known service agreement templates
-        template_owner = keeper.service_agreement.get_template_owner(ACCESS_SERVICE_TEMPLATE_ID)
-        if not template_owner or template_owner == 0:
-            logging.info(f'The `Access` Service agreement template {ACCESS_SERVICE_TEMPLATE_ID} is '
-                         f'not deployed to the current keeper network.')
-        else:
-            logging.info(f'Found service agreement template {ACCESS_SERVICE_TEMPLATE_ID} of type '
-                         f'`Access` deployed in the current keeper network published by '
-                         f'{template_owner}.')
+    TEST_CONTRACT_NAME = 'AgreementStoreManager'
+
+    # @staticmethod
+    # def check_approved_agreement_templates():
+    #     publisher_acc = get_publisher_account()
+    #     keeper = Keeper.get_instance()
+    #     template_values = keeper.template_manager.get_template(
+    #     keeper.escrow_access_secretstore_template.address)
+    #     if not template_values:
+    #         print(f'agreement template does not seem to exist in the current keeper-contracts.')
+    #
+    #     state = template_values.state
+    #     if state == 0:
+    #         print(f'agreement template is uninitialized')
+    #         try:
+    #             keeper.template_manager.propose_template(
+    #             keeper.escrow_access_secretstore_template.address, publisher_acc)
+    #             state = keeper.template_manager.get_template(
+    #                 keeper.escrow_access_secretstore_template.address).state
+    #         except ValueError as err:
+    #             print(f'propose template failed, maybe it is already proposed {err}')
+    #             return None
+    #
+    #     if state == 1:
+    #         print(f'agreement template is in proposed state.')
+    #         owner_acc = publisher_acc
+    #         try:
+    #             approved = keeper.template_manager.approve_template(
+    #             keeper.escrow_access_secretstore_template.address, owner_acc)
+    #             state = keeper.template_manager.get_template(
+    #                 keeper.escrow_access_secretstore_template.address).state
+    #
+    #             print('template approve: ', approved)
+    #         except ValueError as err:
+    #             print(f'approve template from account {owner_acc.address} failed: {err}')
+    #
+    #     assert state == 2, 'Template is not approved.'
+    #
+    #     print(f'agreement template is already approved, good.')
 
     @staticmethod
     def verify_contracts():
+        """
+        Verify that the contracts are deployed correctly in the network.
+
+        :raise Exception: raise exception if the contracts are not deployed correctly.
+        """
         artifacts_path = ConfigProvider.get_config().keeper_path
         logger.info(f'Keeper contract artifacts (JSON abi files) at: {artifacts_path}')
 
@@ -34,8 +65,9 @@ class Diagnostics:
                            f'{os.environ.get("KEEPER_NETWORK_NAME")}. '
                            f'This enables the user to override the method of how the network name '
                            f'is inferred from network id.')
+
         # try to find contract with this network name
-        contract_name = 'ServiceExecutionAgreement'
+        contract_name = Diagnostics.TEST_CONTRACT_NAME
         network_id = Keeper.get_network_id()
         network_name = Keeper.get_network_name(network_id)
         logger.info(f'Using keeper contracts from network {network_name}, '
@@ -59,7 +91,11 @@ class Diagnostics:
 
         keeper = Keeper.get_instance()
         contracts = [keeper.dispenser, keeper.token, keeper.did_registry,
-                     keeper.service_agreement, keeper.payment_conditions, keeper.access_conditions]
+                     keeper.agreement_manager, keeper.template_manager, keeper.condition_manager,
+                     keeper.access_secret_store_condition, keeper.sign_condition,
+                     keeper.lock_reward_condition, keeper.escrow_access_secretstore_template,
+                     keeper.escrow_reward_condition, keeper.hash_lock_condition
+                     ]
         addresses = '\n'.join([f'\t{c.name}: {c.address}' for c in contracts])
         logging.info('Finished loading keeper contracts:\n'
                      '%s', addresses)

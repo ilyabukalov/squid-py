@@ -95,7 +95,8 @@
         "curation": {
           "rating": 0.93,
           "numVotes": 123,
-          "schema": "Binary Voting"
+          "schema": "Binary Voting",
+          "isListed": true
         },
         "additionalInformation": {
           "updateFrequency": "yearly",
