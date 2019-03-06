@@ -1,5 +1,8 @@
+"""DID Lib to do DID's and DDO's."""
+
+
 class AdditionalInfoMeta(object):
-    """Attributes that can enhance the discoverability of a resource"""
+    """Attributes that can enhance the discoverability of a resource."""
     KEY = 'additionalInformation'
     VALUES_KEYS = (
         "updateFrequency",

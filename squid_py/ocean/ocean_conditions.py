@@ -4,6 +4,7 @@ from squid_py.did import did_to_id
 
 
 class OceanConditions:
+    """Ocean conditions class."""
     def __init__(self, keeper):
         self._keeper = keeper
 

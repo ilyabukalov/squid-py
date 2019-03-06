@@ -1,3 +1,4 @@
+"""Agreements module."""
 import json
 import os
 
@@ -28,40 +29,13 @@ def get_sla_template_path(service_type=ServiceTypes.ASSET_ACCESS):
 
 def get_sla_template_dict(path):
     """
+    Return a dictionary with the template.
 
-    :param path:
-    :return:
+    :param path: Template path, str
+    :return: dict
     """
     with open(path) as template_file:
         return json.load(template_file)
-
-
-# def get_conditions_data_from_keeper_contracts(conditions, template_id):
-#     """Helper function to generate conditions data that is typically used together in a
-#     service agreement.
-#
-#     :param conditions: list of ServiceAgreementCondition instances
-#     :param template_id:
-#     :return:
-#     """
-#     names = {cond.contract_name for cond in conditions}
-#     name_to_contract = {
-#         name: ContractHandler.get(name)
-#         for name in names
-#     }
-#     contract_addresses = [
-#         Web3Provider.get_web3().toChecksumAddress(name_to_contract[cond.contract_name].address)
-#         for cond in conditions
-#     ]
-#     fingerprints = [
-#         hexstr_to_bytes(Web3Provider.get_web3(), get_fingerprint_by_name(
-#             name_to_contract[cond.contract_name].abi,
-#             cond.function_name
-#         ))
-#         for i, cond in enumerate(conditions)
-#     ]
-#     fulfillment_indices = [i for i, cond in enumerate(conditions) if cond.is_terminal]
-#     return contract_addresses, fingerprints, fulfillment_indices
 
 
 def make_public_key_and_authentication(did, publisher_address, web3):
@@ -70,10 +44,10 @@ def make_public_key_and_authentication(did, publisher_address, web3):
     then using ec recover to extract the public key.
     Alternatively, the public key can be generated from a private key if provided by the publisher.
 
-    :param did:
-    :param publisher_address:
-    :param web3:
-    :return:
+    :param did: DID, str
+    :param publisher_address: Address, str
+    :param web3: Web3 instance
+    :return: Tuple(str, str)
     """
     # set public key
     public_key_value = get_public_key_from_address(web3, publisher_address).to_hex()

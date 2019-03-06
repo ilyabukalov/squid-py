@@ -37,7 +37,7 @@ class ContractBase(object):
         Return an instance for a contract name.
 
         :param dependencies:
-        :return:
+        :return: Contract base instance
         """
         assert cls is not ContractBase, 'ContractBase is not meant to be used directly.'
         assert cls.CONTRACT_NAME, 'CONTRACT_NAME must be set to a valid keeper contract name.'
@@ -71,7 +71,7 @@ class ContractBase(object):
         """
         Validate the address provided.
 
-        :param address:
+        :param address: Address, hex str
         :return:
         """
         return Web3Provider.get_web3().toChecksumAddress(address)
@@ -82,13 +82,24 @@ class ContractBase(object):
         Get the receipt of a tx.
 
         :param tx_hash:
-        :return:
+        :return: Tx receipt
         """
         Web3Provider.get_web3().eth.waitForTransactionReceipt(tx_hash)
         return Web3Provider.get_web3().eth.getTransactionReceipt(tx_hash)
 
     def subscribe_to_event(self, event_name, timeout, event_filter, callback=False,
                            timeout_callback=None, args=None, wait=False):
+        """
+
+        :param event_name:
+        :param timeout:
+        :param event_filter:
+        :param callback:
+        :param timeout_callback:
+        :param args:
+        :param wait:
+        :return:
+        """
         from squid_py.keeper.event_listener import EventListener
         return EventListener(
             self.CONTRACT_NAME,

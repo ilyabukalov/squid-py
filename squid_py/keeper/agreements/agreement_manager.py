@@ -1,3 +1,4 @@
+"""Keeper agreements sub-module."""
 from collections import namedtuple
 
 from eth_utils import add_0x_prefix

@@ -7,6 +7,14 @@ class ConditionBase(ContractBase):
     FULFILLED_EVENT = 'Fulfilled'
 
     def generate_id(self, agreement_id, types, values):
+        """
+        Generate id for the condition.
+
+        :param agreement_id: Agreement id, str
+        :param types: list of types
+        :param values: list of values
+        :return: id, str
+        """
         values_hash = utils.generate_multi_value_hash(types, values)
         return utils.generate_multi_value_hash(
             ['bytes32', 'address', 'bytes32'],
@@ -46,6 +54,17 @@ class ConditionBase(ContractBase):
 
     def subscribe_condition_fulfilled(self, agreement_id, timeout, callback, args,
                                       timeout_callback=None, wait=False):
+        """
+        Subscribe to the condition fullfilled event.
+
+        :param agreement_id: Agreement id, str
+        :param timeout:
+        :param callback:
+        :param args:
+        :param timeout_callback:
+        :param wait:
+        :return:
+        """
         return self.subscribe_to_event(
             self.FULFILLED_EVENT,
             timeout,

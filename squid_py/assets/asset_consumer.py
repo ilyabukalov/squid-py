@@ -14,19 +14,19 @@ class AssetConsumer:
     #   been purchased.
 
     @staticmethod
-    def download(
-            service_agreement_id,
-            service_definition_id,
-            ddo,
-            consumer_account,
-            destination,
-            brizo,
-            secret_store
-    ):
+    def download(service_agreement_id, service_definition_id, ddo, consumer_account, destination,
+                 brizo, secret_store):
         """
-        Download asset data files or result files from a compute job
+        Download asset data files or result files from a compute job.
 
-        :return:
+        :param service_agreement_id: Service agreement id, str
+        :param service_definition_id: identifier of the service inside the asset DDO, str
+        :param ddo: DDO
+        :param consumer_account: Account
+        :param destination: Path, str
+        :param brizo: Brizo instance
+        :param secret_store: SecretStore instance
+        :return: Asset folder path, str
         """
         did = ddo.did
         files = ddo.metadata['base']['encryptedFiles']

@@ -7,7 +7,7 @@ Balance = namedtuple('Balance', ('eth', 'ocn'))
 
 
 class OceanAccounts:
-    """    """
+    """Ocean accounts class."""
 
     def __init__(self, keeper, config, ocean_tokens):
         self._keeper = keeper

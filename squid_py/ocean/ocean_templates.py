@@ -5,7 +5,7 @@ logger = logging.getLogger(__name__)
 
 
 class OceanTemplates:
-    """Class"""
+    """Ocean templates class."""
 
     def __init__(self, keeper, config):
         self._keeper = keeper
@@ -14,10 +14,11 @@ class OceanTemplates:
 
     def propose(self, template_address, account):
         """
+        Propose a new template.
 
-        :param template_address:
-        :param account:
-        :return:
+        :param template_address: Address of the template contract, str
+        :param account: account proposing the template, Account
+        :return: bool
         """
         try:
             proposed = self._keeper.template_manager.propose_template(template_address, account)
@@ -36,6 +37,14 @@ class OceanTemplates:
             return True
 
     def approve(self, template_address, account):
+        """
+        Approve a template already proposed. The account needs to be owner of the templateManager
+        contract to be able of approve the template.
+
+        :param template_address: Address of the template contract, str
+        :param account: account approving the template, Account
+        :return: bool
+        """
         try:
             approved = self._keeper.template_manager.approve_template(template_address, account)
             return approved
@@ -61,6 +70,14 @@ class OceanTemplates:
             return False
 
     def revoke(self, template_address, account):
+        """
+        Revoke a template already approved. The account needs to be owner of the templateManager
+        contract to be able of revoke the template.
+
+        :param template_address: Address of the template contract, str
+        :param account: account revoking the template, Account
+        :return: bool
+        """
         try:
             revoked = self._keeper.template_manager.revoke_template(template_address, account)
             return revoked

@@ -3,6 +3,7 @@ from squid_py.agreements.service_factory import ServiceDescriptor
 
 
 class OceanServices:
+    """Ocean services class."""
 
     @staticmethod
     def create_access_service(price, service_endpoint, consume_endpoint, timeout=None):

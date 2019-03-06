@@ -64,6 +64,7 @@ class Keeper(object):
         Return the keeper network name based on the current ethereum network id.
         Return `development` for every network id that is not mapped.
 
+        :param network_id: Network id, int
         :return: Network name, str
         """
         if os.environ.get('KEEPER_NETWORK_NAME'):
@@ -84,6 +85,12 @@ class Keeper(object):
 
     @staticmethod
     def sign_hash(msg_hash, account):
+        """
+
+        :param msg_hash:
+        :param account: Account
+        :return:
+        """
         return Web3Provider.get_web3().eth.sign(account.address, msg_hash).hex()
 
     @staticmethod

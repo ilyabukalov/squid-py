@@ -9,6 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class EventListener(object):
+    """Class representing an event listener."""
     def __init__(self, contract_name, event_name, args=None, from_block=0, to_block='latest',
                  filters=None):
         contract = ContractHandler.get(contract_name)
@@ -63,6 +64,17 @@ class EventListener(object):
 
     @staticmethod
     def watch_one_event(event_filter, callback, timeout_callback, timeout, args, start_time=None):
+        """
+        Start to watch one event.
+
+        :param event_filter:
+        :param callback:
+        :param timeout_callback:
+        :param timeout:
+        :param args:
+        :param start_time:
+        :return:
+        """
         if timeout and not start_time:
             start_time = int(datetime.now().timestamp())
 

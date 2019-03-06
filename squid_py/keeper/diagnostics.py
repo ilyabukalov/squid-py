@@ -52,6 +52,11 @@ class Diagnostics:
 
     @staticmethod
     def verify_contracts():
+        """
+        Verify that the contracts are deployed correctly in the network.
+
+        :raise Exception: raise exception if the contracts are not deployed correctly.
+        """
         artifacts_path = ConfigProvider.get_config().keeper_path
         logger.info(f'Keeper contract artifacts (JSON abi files) at: {artifacts_path}')
 

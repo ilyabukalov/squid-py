@@ -84,9 +84,6 @@ class Ocean:
             self._config
         )
         self.services = OceanServices()
-
-        self._validate_all_modules()
-
         # Verify keeper contracts
         Diagnostics.verify_contracts()
         # Diagnostics.check_deployed_agreement_templates()
@@ -102,9 +99,6 @@ class Ocean:
             AssetConsumer,
             ConfigProvider.get_config()
         )
-
-    def _validate_all_modules(self):
-        pass
 
     @deprecated("Use ocean.accounts.list")
     def get_accounts(self):

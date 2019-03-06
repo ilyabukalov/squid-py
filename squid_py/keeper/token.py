@@ -20,8 +20,8 @@ class Token(ContractBase):
     def get_allowance(self, owner_address, spender_address):
         """
 
-        :param owner_address:
-        :param spender_address:
+        :param owner_address: Address, str
+        :param spender_address: Address, str
         :return:
         """
         return self.contract_concise.allowance(owner_address, spender_address)
@@ -48,11 +48,12 @@ class Token(ContractBase):
 
     def transfer(self, receiver_address, amount, from_account):
         """
+        Transfer tokens from one account to the receiver address.
 
-        :param receiver_address:
-        :param amount:
-        :param from_account:
-        :return:
+        :param receiver_address: Address of the transfer receiver, str
+        :param amount: Amount of tokens, int
+        :param from_account: Sender account, Account
+        :return: bool
         """
         tx_hash = self.contract_concise.transfer(
             receiver_address,
@@ -67,9 +68,6 @@ class Token(ContractBase):
         :return:
         """
         return self.contract_concise.totalSupply()
-
-    # def transfer_from(self, from_address, to_address, value):
-    #     return self.contract_concise.transferFrom()
 
     def increase_allowance(self, spender_address, added_value, owner_account):
         """
