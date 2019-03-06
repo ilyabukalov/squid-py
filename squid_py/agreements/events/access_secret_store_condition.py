@@ -98,7 +98,8 @@ def refund_reward(event, agreement_id, did, service_agreement, price, consumer_a
 
 def consume_asset(event, agreement_id, did, service_agreement, consumer_account, consume_callback):
     """
-    
+    Consumption of an asset after get the event call.
+
     :param event:
     :param agreement_id:
     :param did:
