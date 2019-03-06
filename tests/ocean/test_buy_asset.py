@@ -6,7 +6,7 @@ from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.config_provider import ConfigProvider
 from squid_py.ddo.ddo import DDO
-from squid_py.examples.example_config import ExampleConfig
+from examples import ExampleConfig
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import (

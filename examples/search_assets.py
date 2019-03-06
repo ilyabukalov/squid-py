@@ -4,7 +4,7 @@ import os
 from time import sleep
 
 from squid_py import ConfigProvider, Metadata, Ocean
-from squid_py.examples.example_config import ExampleConfig
+from examples import ExampleConfig
 
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
     ASYNC_DELAY = 5  # seconds

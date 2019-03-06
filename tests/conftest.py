@@ -2,7 +2,7 @@ import pytest
 from web3 import HTTPProvider, Web3
 
 from squid_py.config_provider import ConfigProvider
-from squid_py.examples.example_config import ExampleConfig
+from examples import ExampleConfig
 from tests.resources.helper_functions import (
     get_consumer_ocean_instance,
     get_publisher_ocean_instance,
