@@ -1,3 +1,5 @@
+import json
+
 import pytest
 
 from squid_py import ConfigProvider
@@ -175,3 +177,17 @@ def test_retire_ddo(asset1):
 def test_retire_not_published_did():
     with pytest.raises(Exception):
         aquarius.retire_asset_ddo('did:op:not_registered')
+
+
+@e2e_test
+def test_validate_metadata():
+    path = get_resource_path('ddo', 'valid_metadata.json')
+    assert path.exists(), f"{path} does not exist!"
+    with open(path, 'r') as file_handle:
+        metadata = file_handle.read()
+    assert aquarius.validate_metadata(json.loads(metadata))
+
+
+@e2e_test
+def test_validate_invalid_metadata():
+    assert not aquarius.validate_metadata({})

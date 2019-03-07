@@ -232,6 +232,24 @@ class Aquarius:
 
         raise AquariusGenericError(f'Unable to remove DID: {response}')
 
+    def validate_metadata(self, metadata):
+        """
+        Validate that the metadata of your ddo is valid.
+
+        :param metadata: Json dict
+        :return: bool
+        """
+        response = requests.post(
+            f'{self.url}/validate',
+            data=json.dumps(metadata),
+            headers=self._headers
+        )
+        if response.content == b'true\n':
+            return True
+        else:
+            logger.info(self._parse_search_response(response.content))
+            return False
+
     @staticmethod
     def _parse_search_response(response):
         if not response:
