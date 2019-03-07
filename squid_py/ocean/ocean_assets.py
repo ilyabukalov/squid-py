@@ -28,6 +28,7 @@ logger = logging.getLogger('ocean')
 
 class OceanAssets:
     """Ocean assets class."""
+
     def __init__(self, keeper, did_resolver, agreements, asset_consumer, config):
         self._keeper = keeper
         self._did_resolver = did_resolver
@@ -176,6 +177,12 @@ class OceanAssets:
         return ddo
 
     def retire(self, did):
+        """
+        Retire this did of Aquarius
+
+        :param did: DID, str
+        :return: bool
+        """
         try:
             ddo = self.resolve(did)
             metadata_service = ddo.find_service_by_type(ServiceTypes.METADATA)
@@ -255,14 +262,8 @@ class OceanAssets:
         self._agreements.send(did, agreement_id, service_definition_id, signature, consumer_account)
         return agreement_id
 
-    def consume(
-            self,
-            service_agreement_id,
-            did,
-            service_definition_id,
-            consumer_account,
-            destination
-    ):
+    def consume(self, service_agreement_id, did, service_definition_id, consumer_account,
+                destination):
         """
         Consume the asset data.
 
@@ -290,3 +291,12 @@ class OceanAssets:
             BrizoProvider.get_brizo(),
             self._get_secret_store(consumer_account)
         )
+
+    def validate(self, metadata):
+        """
+        Validate that the metadata is ok to be stored in aquarius.
+
+        :param metadata: dict conforming to the Metadata accepted by Ocean Protocol.
+        :return: bool
+        """
+        return self._get_aquarius(self._aquarius_url).validate_metadata(metadata)
