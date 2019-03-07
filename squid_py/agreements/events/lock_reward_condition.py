@@ -1,35 +1,35 @@
 import logging
 
-from eth_utils import add_0x_prefix
-
-from squid_py.did import did_to_id
 from squid_py.keeper import Keeper
 from squid_py.keeper.utils import process_tx_receipt
 
 logger = logging.getLogger(__name__)
 
 
-def fulfill_access_secret_store_condition(event, agreement_id, did, service_agreement,
-                                          consumer_address, publisher_account):
-    logger.debug(f"release reward after event {event}.")
-    name_to_parameter = {param.name: param for param in
-                         service_agreement.condition_by_name['accessSecretStore'].parameters}
-    document_id = add_0x_prefix(name_to_parameter['_documentId'].value)
-    asset_id = add_0x_prefix(did_to_id(did))
-    assert document_id == asset_id, f'document_id {document_id} <=> asset_id {asset_id} mismatch.'
+def fulfill_lock_reward_condition(event, agreement_id, price, consumer_account):
+    """
+
+    :param event:
+    :param agreement_id:
+    :param price:
+    :param consumer_account:
+    :return:
+    """
+    logger.debug(f"about to lock reward after event {event}.")
+    keeper = Keeper.get_instance()
     try:
-        Keeper.get_instance().unlock_account(publisher_account)
-        tx_hash = Keeper.get_instance().access_secret_store_condition.fulfill(
-            agreement_id, document_id, consumer_address, publisher_account
+        keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_account)
+        tx_hash = keeper.lock_reward_condition.fulfill(
+            agreement_id, keeper.escrow_reward_condition.address, price, consumer_account
         )
         process_tx_receipt(
             tx_hash,
-            Keeper.get_instance().access_secret_store_condition.FULFILLED_EVENT,
-            'AccessSecretStoreCondition.Fulfilled'
+            keeper.lock_reward_condition.FULFILLED_EVENT,
+            'LockRewardCondition.Fulfilled'
         )
     except Exception as e:
-        # logger.error(f'Error when calling grantAccess condition function: {e}')
+        logger.error(f'error locking reward: {e}')
         raise e
 
 
-fulfillAccessSecretStoreCondition = fulfill_access_secret_store_condition
+fulfillLockRewardCondition = fulfill_lock_reward_condition

@@ -2,9 +2,9 @@ import logging
 from datetime import datetime
 
 from squid_py.agreements.events import (
-    access_secret_store_condition,
-    escrow_access_secret_store_template,
-    escrow_reward_condition, lock_reward_condition
+    escrow_reward_condition,
+    lock_reward_condition,
+    verify_reward_condition, access_secret_store_condition
 )
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.keeper import Keeper
@@ -69,14 +69,14 @@ def process_agreement_events_consumer(publisher_address, agreement_id, did, serv
     keeper.escrow_access_secretstore_template.subscribe_agreement_created(
         agreement_id,
         60,
-        escrow_access_secret_store_template.fulfillLockRewardCondition,
+        lock_reward_condition.fulfillLockRewardCondition,
         (agreement_id, price, consumer_account)
     )
 
     if consume_callback:
         def _refund_callback(_price, _publisher_address, _condition_ids):
             def do_refund(_event, _agreement_id, _did, _service_agreement, _consumer_account, *_):
-                access_secret_store_condition.refund_reward(
+                escrow_reward_condition.refund_reward(
                     _event, _agreement_id, _did, _service_agreement, _price,
                     _consumer_account, _publisher_address, _condition_ids
                 )
@@ -86,7 +86,7 @@ def process_agreement_events_consumer(publisher_address, agreement_id, did, serv
         keeper.access_secret_store_condition.subscribe_condition_fulfilled(
             agreement_id,
             conditions_dict['accessSecretStore'].timeout,
-            access_secret_store_condition.consume_asset,
+            escrow_reward_condition.consume_asset,
             (agreement_id, did, service_agreement, consumer_account, consume_callback),
             _refund_callback(price, publisher_address, condition_ids)
         )
@@ -142,7 +142,7 @@ def process_agreement_events_publisher(publisher_account, agreement_id, did, ser
     keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         conditions_dict['lockReward'].timeout,
-        lock_reward_condition.fulfillAccessSecretStoreCondition,
+        access_secret_store_condition.fulfillAccessSecretStoreCondition,
         (agreement_id, did, service_agreement,
          consumer_address, publisher_account)
     )
@@ -150,7 +150,7 @@ def process_agreement_events_publisher(publisher_account, agreement_id, did, ser
     keeper.access_secret_store_condition.subscribe_condition_fulfilled(
         agreement_id,
         conditions_dict['accessSecretStore'].timeout,
-        access_secret_store_condition.fulfillEscrowRewardCondition,
+        escrow_reward_condition.fulfillEscrowRewardCondition,
         (agreement_id, service_agreement,
          price, consumer_address, publisher_account, condition_ids)
     )
@@ -158,7 +158,7 @@ def process_agreement_events_publisher(publisher_account, agreement_id, did, ser
     keeper.escrow_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         conditions_dict['escrowReward'].timeout,
-        escrow_reward_condition.verifyRewardTokens,
+        verify_reward_condition.verifyRewardTokens,
         (agreement_id, did, service_agreement,
          price, consumer_address, publisher_account)
     )
