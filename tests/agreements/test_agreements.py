@@ -2,7 +2,8 @@ from squid_py import ConfigProvider
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
-from tests.resources.helper_functions import get_ddo_sample, log_event, get_consumer_account, get_publisher_account
+from tests.resources.helper_functions import (get_consumer_account, get_ddo_sample,
+                                              get_publisher_account, log_event)
 from tests.resources.tiers import e2e_test
 
 
@@ -65,7 +66,8 @@ def test_escrow_access_secret_store_template_flow():
     print('creating agreement:'
           'agrId: ', agreement_id,
           'asset_id', asset_id,
-          '[lock_cond_id, access_cond_id, escrow_cond_id]', [lock_cond_id, access_cond_id, escrow_cond_id],
+          '[lock_cond_id, access_cond_id, escrow_cond_id]',
+          [lock_cond_id, access_cond_id, escrow_cond_id],
           'tlocks', service_agreement.conditions_timelocks,
           'touts', service_agreement.conditions_timeouts,
           'consumer', consumer_acc.address,
@@ -73,21 +75,25 @@ def test_escrow_access_secret_store_template_flow():
           )
 
     try:
-        proposed = keeper.template_manager.propose_template(keeper.escrow_access_secretstore_template.address, publisher_acc)
+        proposed = keeper.template_manager.propose_template(
+            keeper.escrow_access_secretstore_template.address, publisher_acc)
         print('template propose: ', proposed)
     except ValueError:
         print('propose template failed, maybe it is already proposed.')
-        template_values = keeper.template_manager.get_template(keeper.escrow_access_secretstore_template.address)
+        template_values = keeper.template_manager.get_template(
+            keeper.escrow_access_secretstore_template.address)
         print('template values: ', template_values)
 
     owner_acc = publisher_acc
     try:
-        approved = keeper.template_manager.approve_template(keeper.escrow_access_secretstore_template.address, owner_acc)
+        approved = keeper.template_manager.approve_template(
+            keeper.escrow_access_secretstore_template.address, owner_acc)
         print('template approve: ', approved)
     except ValueError:
         print(f'approve template from account {owner_acc.address} failed')
 
-    assert keeper.template_manager.is_template_approved(keeper.escrow_access_secretstore_template.address), 'Template is not approved.'
+    assert keeper.template_manager.is_template_approved(
+        keeper.escrow_access_secretstore_template.address), 'Template is not approved.'
     assert keeper.did_registry.get_block_number_updated(asset_id) > 0, 'asset id not registered'
     success = keeper.escrow_access_secretstore_template.create_agreement(
         agreement_id,
@@ -136,8 +142,9 @@ def test_escrow_access_secret_store_template_flow():
     )
     assert event, 'no event for LockRewardCondition.Fulfilled'
     assert keeper.condition_manager.get_condition_state(lock_cond_id) == 2, ''
-    assert keeper.token\
-        .get_token_balance(keeper.escrow_reward_condition.address) == (price + starting_balance), ''
+    assert keeper.token \
+               .get_token_balance(keeper.escrow_reward_condition.address) == (
+                   price + starting_balance), ''
 
     # Fulfill access_secret_store_condition
     keeper.access_secret_store_condition.fulfill(
@@ -167,10 +174,10 @@ def test_escrow_access_secret_store_template_flow():
     )
     assert event, 'no event for EscrowReward.Fulfilled'
     assert keeper.condition_manager.get_condition_state(escrow_cond_id) == 2, ''
-    assert keeper.token\
-        .get_token_balance(keeper.escrow_reward_condition.address) == starting_balance, ''
-    assert keeper.token\
-        .get_token_balance(publisher_acc.address) == (pub_token_balance + price), ''
+    assert keeper.token \
+               .get_token_balance(keeper.escrow_reward_condition.address) == starting_balance, ''
+    assert keeper.token \
+               .get_token_balance(publisher_acc.address) == (pub_token_balance + price), ''
 
 
 @e2e_test
@@ -210,3 +217,26 @@ def test_agreement_hash(publisher_ocean_instance):
     expected = '0x96732b390dacec0f19ad304ac176b3407968a0184d01b3262687fd23a3f0995e'
     print('expected hash: ', expected)
     assert agreement_hash.hex() == expected, 'hash does not match.'
+
+
+def test_agreement():
+    did = "did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
+    templateId = Web3Provider.get_web3().toChecksumAddress(
+        "0x00bd138abd70e2f00903268f3db08f2d25677c9e")
+    agreementId = '0xf136d6fadecb48fdb2fc1fb420f5a5d1c32d22d9424e47ab9461556e058fefaa'
+
+    accessId = '0x2d7c1d60dc0c3f52aa9bd71ffdbe434a0e58435571e64c893bc9646fea7f6ec1'
+    lockId = '0x1e265c434c14e668695dda1555088f0ea4356f596bdecb8058812e7dcba9ee73'
+    escrowId = '0xe487fa6d435c2f09ef14b65b34521302f1532ac82ba8f6c86116acd8566e2da3'
+
+    signature = ServiceAgreement.generate_service_agreement_hash(
+        templateId,
+        [accessId, lockId, escrowId],
+        [0, 0, 0],
+        [0, 0, 0],
+        agreementId
+    )
+
+    print({signature})
+    assert signature == Web3Provider.get_web3().toBytes(hexstr="0x96732b390dacec0f19ad304ac176b3407968a0184d01b3262687fd23a3f0995e"), \
+        "The signatuere is not correct."

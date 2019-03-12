@@ -179,7 +179,7 @@ class ServiceAgreement(Service):
         :return:
         """
         return generate_multi_value_hash(
-            ['bytes32', 'bytes32[]', 'uint256[]', 'uint256[]', 'bytes32'],
+            ['address', 'bytes32[]', 'uint256[]', 'uint256[]', 'bytes32'],
             [template_id, values_hash_list, timelocks, timeouts, agreement_id]
         )
 
@@ -226,8 +226,8 @@ class ServiceAgreement(Service):
 
         :param agreement_id: hex str identifies an executed service agreement on-chain
         :param asset_id:
-        :param consumer_address:
-        :param publisher_address:
+        :param consumer_address: ethereum account address of consumer
+        :param publisher_address: ethereum account address of publisher
         :param keeper:
         :return:
         """

@@ -88,7 +88,7 @@ class OceanAssets:
         ddo.add_authentication(auth, PUBLIC_KEY_TYPE_RSA)
 
         priv_key = ddo.add_signature()
-        ddo.add_proof(1, priv_key)
+        ddo.add_proof(1, publisher_account.address, private_key=priv_key)
 
         # Setup metadata service
         # First replace `files` with encrypted `files`
