@@ -187,7 +187,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -212,6 +212,7 @@ logger = logging.getLogger(__name__)
 
 class OceanSecretStore:
     """Ocean SecretStore class."""
+
     def __init__(self, config):
         self._config = config
         if config.secret_store_url and config.parity_url and config.parity_address:

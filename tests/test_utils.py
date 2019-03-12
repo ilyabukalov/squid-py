@@ -186,7 +186,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -227,7 +227,8 @@ def test_get_publickey_from_address(publisher_ocean_instance):
     from eth_keys.exceptions import BadSignature
     for account in publisher_ocean_instance.accounts.list():
         try:
-            pub_key = utilities.get_public_key_from_address(Web3Provider.get_web3(), account.address)
+            pub_key = utilities.get_public_key_from_address(Web3Provider.get_web3(),
+                                                            account.address)
             assert pub_key.to_checksum_address() == account.address, \
                 'recovered public key address does not match original address.'
         except BadSignature:

@@ -186,7 +186,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -441,5 +441,6 @@ def test_agreement():
     )
 
     print({signature})
-    assert signature == Web3Provider.get_web3().toBytes(hexstr="0x96732b390dacec0f19ad304ac176b3407968a0184d01b3262687fd23a3f0995e"), \
+    assert signature == Web3Provider.get_web3().toBytes(
+        hexstr="0x96732b390dacec0f19ad304ac176b3407968a0184d01b3262687fd23a3f0995e"), \
         "The signatuere is not correct."

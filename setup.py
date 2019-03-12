@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 
 """The setup script."""
-
 #                                   Apache License
 #                             Version 2.0, January 2004
 #                          http://www.apache.org/licenses/
@@ -191,7 +190,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -206,9 +205,10 @@
 #     limitations under the License.
 #
 
-from setuptools import setup
 import os
 from os.path import join
+
+from setuptools import setup
 
 with open('README.md') as readme_file:
     readme = readme_file.read()

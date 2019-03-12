@@ -187,7 +187,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -439,7 +439,8 @@ class DDO:
         if 'proof' in values:
             self._proof = values['proof']
 
-    def add_proof(self, authorization_index, publisher_address, private_key=None, signature_text=None):
+    def add_proof(self, authorization_index, publisher_address, private_key=None,
+                  signature_text=None):
         """Add a proof to the DDO, based on the public_key id/index and signed with the private key
         add a static proof to the DDO, based on one of the public keys."""
 

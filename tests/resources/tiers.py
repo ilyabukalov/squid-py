@@ -186,7 +186,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -208,8 +208,10 @@ import pytest
 
 def unit_test(test):
     """
-    Mark all test (suites) with this decorator that test isolated functions classes optionally with mocked out dependencies.
-    Unit tests should live next to the file there testing with a *_test.py suffix, e.g. `foo_test.py` next to `foo.py`.
+    Mark all test (suites) with this decorator that test isolated functions classes optionally
+    with mocked out dependencies.
+    Unit tests should live next to the file there testing with a *_test.py suffix,
+    e.g. `foo_test.py` next to `foo.py`.
     """
 
     return test  # Always run all unit tests for now
@@ -217,8 +219,10 @@ def unit_test(test):
 
 def integration_test(test):
     """
-    Mark all test (suites) with this decorator that test interactions between multiple classes, but don't touch external services.
-    Integration tests should live in the `squid_py/test/integration` folder and `squid_py/<package>/test` folders of individual sub-packages.
+    Mark all test (suites) with this decorator that test interactions between multiple classes,
+    but don't touch external services.
+    Integration tests should live in the `squid_py/test/integration` folder and
+    `squid_py/<package>/test` folders of individual sub-packages.
     """
 
     return pytest.mark.skip(reason='Integration tests not enabled')(test) if not should_run_test(
@@ -227,7 +231,8 @@ def integration_test(test):
 
 def e2e_test(test):
     """
-    Mark all test (suites) with this decorator that test interactions between multiple classes and external services.
+    Mark all test (suites) with this decorator that test interactions between multiple classes
+    and external services.
     End-to-end tests should live in the `squid_py/test/e2e` and `squid_py/examples` folders.
     """
 

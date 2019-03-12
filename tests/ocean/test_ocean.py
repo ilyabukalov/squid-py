@@ -187,7 +187,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -214,7 +214,7 @@ from squid_py.ddo.metadata import Metadata
 from squid_py.did import DID
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper import Keeper
-from tests.resources.helper_functions import get_resource_path, verify_signature, log_event
+from tests.resources.helper_functions import get_resource_path, log_event, verify_signature
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.tiers import e2e_test
 
@@ -307,7 +307,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     price = service_agreement.get_price()
 
     # Give consumer some tokens
-    keeper.dispenser.request_tokens(price*2, consumer_acc)
+    keeper.dispenser.request_tokens(price * 2, consumer_acc)
 
     agreement_id, signature = consumer_ocean_instance.agreements.prepare(
         did, service_agreement.service_definition_id, consumer_acc)

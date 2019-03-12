@@ -189,7 +189,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -209,15 +209,8 @@ import secrets
 import pytest
 from web3 import Web3
 
-from squid_py.did import (
-    did_parse,
-    is_did_valid,
-    id_to_did,
-    did_to_id,
-    did_to_id_bytes,
-    DID,
-    OCEAN_PREFIX
-)
+from squid_py.did import (DID, did_parse, did_to_id, did_to_id_bytes, id_to_did, is_did_valid,
+                          OCEAN_PREFIX)
 from tests.resources.tiers import e2e_test
 
 TEST_SERVICE_TYPE = 'ocean-meta-storage'
@@ -258,7 +251,6 @@ def test_did_parse():
 
 
 def test_id_to_did():
-
     test_id = '%s' % secrets.token_hex(32)
     valid_did_text = 'did:op:{}'.format(test_id)
     assert id_to_did(test_id) == valid_did_text

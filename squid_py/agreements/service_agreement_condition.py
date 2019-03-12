@@ -186,7 +186,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -207,6 +207,7 @@ from web3 import Web3
 
 class Parameter:
     """"""
+
     def __init__(self, param_json):
         self.name = param_json['name']
         self.type = param_json['type']
@@ -266,6 +267,7 @@ class Event:
 
 class ServiceAgreementCondition(object):
     """"""
+
     def __init__(self, condition_json=None):
         self.name = ''
         self.timelock = 0

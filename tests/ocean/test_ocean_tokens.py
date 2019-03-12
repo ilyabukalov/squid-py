@@ -1,4 +1,3 @@
-
 #                                   Apache License
 #                             Version 2.0, January 2004
 #                          http://www.apache.org/licenses/
@@ -187,7 +186,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -229,7 +228,7 @@ def test_transfer_tokens(publisher_ocean_instance, consumer_ocean_instance):
 
     consumer_ocean_instance.tokens.transfer(receiver_account.address, 500, sender_account)
 
-    assert publisher_ocean_instance.accounts.balance(receiver_account).ocn == receiver_start_balance + 500
-    assert consumer_ocean_instance.accounts.balance(sender_account).ocn == sender_start_balance - 500
-
-
+    assert publisher_ocean_instance.accounts.balance(
+        receiver_account).ocn == receiver_start_balance + 500
+    assert consumer_ocean_instance.accounts.balance(
+        sender_account).ocn == sender_start_balance - 500

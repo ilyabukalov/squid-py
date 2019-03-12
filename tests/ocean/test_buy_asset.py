@@ -186,7 +186,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -205,18 +205,15 @@ import os
 
 from secret_store_client.client import RPCError
 
+from examples import ExampleConfig
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.config_provider import ConfigProvider
 from squid_py.ddo.ddo import DDO
-from examples import ExampleConfig
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
-from tests.resources.helper_functions import (
-    get_account_from_config,
-    get_registered_ddo,
-    get_publisher_account,
-    log_event)
+from tests.resources.helper_functions import (get_account_from_config, get_publisher_account,
+                                              get_registered_ddo, log_event)
 
 
 def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
@@ -227,9 +224,10 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     # SecretStoreProvider.set_secret_store_class(SecretStore)
     w3 = Web3Provider.get_web3()
     pub_acc = get_publisher_account(config)
-    # publisher_ocean_instance.templates.propose(keeper.escrow_access_secretstore_template.address,publisher_ocean_instance.main_account)
-    # publisher_ocean_instance.templates.approve(keeper.escrow_access_secretstore_template.address,publisher_ocean_instance.main_account)
-
+    # publisher_ocean_instance.templates.propose(
+    # keeper.escrow_access_secretstore_template.address,publisher_ocean_instance.main_account)
+    # publisher_ocean_instance.templates.approve(
+    # keeper.escrow_access_secretstore_template.address,publisher_ocean_instance.main_account)
 
     # Register ddo
     ddo = get_registered_ddo(publisher_ocean_instance, pub_acc)

@@ -186,7 +186,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -219,4 +219,6 @@ def test_ocean_secret_store(publisher_ocean_instance):
     encrypt_content = publisher_ocean_instance.secret_store.encrypt(document_id, metadata_json,
                                                                     publisher_account)
 
-    assert metadata_json == publisher_ocean_instance.secret_store.decrypt(document_id, encrypt_content, publisher_account)
+    assert metadata_json == publisher_ocean_instance.secret_store.decrypt(document_id,
+                                                                          encrypt_content,
+                                                                          publisher_account)

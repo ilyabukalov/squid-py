@@ -186,7 +186,7 @@
 #        same "printed page" as the copyright notice for easier
 #        identification within third-party archives.
 #
-#     Copyright [yyyy] [name of copyright owner]
+#   Copyright 2018 BigchainDB GmbH
 #
 #     Licensed under the Apache License, Version 2.0 (the "License");
 #     you may not use this file except in compliance with the License.
@@ -204,11 +204,8 @@
 import logging
 from datetime import datetime
 
-from squid_py.agreements.events import (
-    escrow_reward_condition,
-    lock_reward_condition,
-    verify_reward_condition, access_secret_store_condition
-)
+from squid_py.agreements.events import (access_secret_store_condition, escrow_reward_condition,
+                                        lock_reward_condition, verify_reward_condition)
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.keeper import Keeper
 from .storage import get_service_agreements, record_service_agreement
