@@ -1,3 +1,6 @@
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 from squid_py import ConfigProvider
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.ddo.ddo import DDO

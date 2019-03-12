@@ -1,4 +1,7 @@
 """Exceptions for squid-py."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 class OceanInvalidContractAddress(Exception):
     """Raised when an invalid address is passed to the contract loader."""
 

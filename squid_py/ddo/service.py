@@ -3,6 +3,9 @@
     To handle service items in a DDO record
 """
 
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import json
 import logging
 from collections import namedtuple

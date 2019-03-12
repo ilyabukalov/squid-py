@@ -1,4 +1,7 @@
 """Secret Store module."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 from squid_py.secret_store.secret_store import SecretStore
 
 

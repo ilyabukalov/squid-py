@@ -1,6 +1,9 @@
 """
     Test did_lib
 """
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import json
 
 from squid_py.ddo.ddo import DDO
@@ -11,7 +14,7 @@ from squid_py.ddo.public_key_base import (
     PUBLIC_KEY_STORE_TYPE_PEM
 )
 from squid_py.did import DID
-from tests.resources.helper_functions import get_resource_path
+from tests.resources.helper_functions import get_resource_path, get_publisher_account
 from tests.resources.tiers import unit_test
 
 public_key_store_types = [

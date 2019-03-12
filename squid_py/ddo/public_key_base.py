@@ -7,6 +7,9 @@
 """
 
 
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import json
 import re
 from base64 import b64decode, b64encode, b85decode, b85encode

@@ -1,4 +1,7 @@
 """Ocean module."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 
 from squid_py.agreements.register_service_agreement import (register_service_agreement_consumer,

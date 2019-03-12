@@ -1,4 +1,7 @@
 
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 from collections import namedtuple
 
 from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate

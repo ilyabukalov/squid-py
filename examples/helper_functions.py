@@ -1,3 +1,6 @@
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 from squid_py.accounts.account import Account
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider

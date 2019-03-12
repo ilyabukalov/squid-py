@@ -1,3 +1,6 @@
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 import os
 import time
@@ -82,7 +85,7 @@ def buy_asset():
         wait=True
     )
     assert event, 'no event for EscrowReward.Fulfilled'
-    time.sleep(10)
+    time.sleep(20)
 
     ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address)
 

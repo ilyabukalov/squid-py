@@ -1,4 +1,7 @@
 """Keeper module to call keeper-contracts."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 
 from squid_py.config import DEFAULT_GAS_LIMIT

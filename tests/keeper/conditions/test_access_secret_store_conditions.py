@@ -1,4 +1,7 @@
 """Test AccessConditions contract."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 from squid_py.config_provider import ConfigProvider
 from squid_py.did import DID, did_to_id
 from squid_py.keeper.conditions.access import AccessSecretStoreCondition
