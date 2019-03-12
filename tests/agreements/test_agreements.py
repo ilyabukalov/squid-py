@@ -423,24 +423,21 @@ def test_agreement_hash(publisher_ocean_instance):
 
 
 def test_agreement():
-    did = "did:op:cb36cf78d87f4ce4a784f17c2a4a694f19f3fbf05b814ac6b0b7197163888865"
-    templateId = Web3Provider.get_web3().toChecksumAddress(
-        "0x00bd138abd70e2f00903268f3db08f2d25677c9e")
-    agreementId = '0xf136d6fadecb48fdb2fc1fb420f5a5d1c32d22d9424e47ab9461556e058fefaa'
-
-    accessId = '0x2d7c1d60dc0c3f52aa9bd71ffdbe434a0e58435571e64c893bc9646fea7f6ec1'
-    lockId = '0x1e265c434c14e668695dda1555088f0ea4356f596bdecb8058812e7dcba9ee73'
-    escrowId = '0xe487fa6d435c2f09ef14b65b34521302f1532ac82ba8f6c86116acd8566e2da3'
+    template_id = Web3Provider.get_web3().toChecksumAddress('0x' + ('f'*40))
+    agreement_id = '0x' + ('e'*64)
+    access_id = '0x' + ('a'*64)
+    lock_id = '0x' + ('b'*64)
+    escrow_id = '0x' + ('c'*64)
 
     signature = ServiceAgreement.generate_service_agreement_hash(
-        templateId,
-        [accessId, lockId, escrowId],
+        template_id,
+        [access_id, lock_id, escrow_id],
         [0, 0, 0],
         [0, 0, 0],
-        agreementId
+        agreement_id
     )
 
     print({signature})
     assert signature == Web3Provider.get_web3().toBytes(
-        hexstr="0x96732b390dacec0f19ad304ac176b3407968a0184d01b3262687fd23a3f0995e"), \
+        hexstr="0x67901517c18a3d23e05806fff7f04235cc8ae3b1f82345b8bfb3e4b02b5800c7"), \
         "The signatuere is not correct."
