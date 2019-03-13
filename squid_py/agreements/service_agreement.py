@@ -218,7 +218,7 @@ class ServiceAgreement(Service):
         escrow_cond_id = keeper.escrow_reward_condition.generate_id(
             agreement_id,
             self.condition_by_name['escrowReward'].param_types,
-            [self.get_price(), consumer_address, publisher_address,
+            [self.get_price(), publisher_address, consumer_address,
              lock_cond_id, access_cond_id]).hex()
 
         return access_cond_id, lock_cond_id, escrow_cond_id
