@@ -1,4 +1,6 @@
 """Keeper conditions."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
 
 from .access import AccessSecretStoreCondition
 from .escrow_reward import EscrowRewardCondition

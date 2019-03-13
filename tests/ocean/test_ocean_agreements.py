@@ -1,4 +1,7 @@
-from unittest.mock import Mock, MagicMock
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
+from unittest.mock import MagicMock, Mock
 
 import pytest
 

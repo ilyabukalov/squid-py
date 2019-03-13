@@ -1,4 +1,7 @@
 """Test DIDRegistry contract."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import secrets
 
 from squid_py.keeper.didregistry import DIDRegistry

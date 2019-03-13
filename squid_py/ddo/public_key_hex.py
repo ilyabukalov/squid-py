@@ -3,6 +3,10 @@
 
 """
 
+
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 from .public_key_base import PUBLIC_KEY_STORE_TYPE_HEX, PublicKeyBase
 
 AUTHENTICATION_TYPE_HEX = 'HexVerificationKey'

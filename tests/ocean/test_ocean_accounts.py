@@ -1,3 +1,6 @@
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 def test_accounts(publisher_ocean_instance):
     for account in publisher_ocean_instance.accounts.list():
         print(account)

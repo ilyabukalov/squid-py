@@ -1,3 +1,6 @@
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import hashlib
 import json
 import secrets
@@ -16,4 +19,6 @@ def test_ocean_secret_store(publisher_ocean_instance):
     encrypt_content = publisher_ocean_instance.secret_store.encrypt(document_id, metadata_json,
                                                                     publisher_account)
 
-    assert metadata_json == publisher_ocean_instance.secret_store.decrypt(document_id, encrypt_content, publisher_account)
+    assert metadata_json == publisher_ocean_instance.secret_store.decrypt(document_id,
+                                                                          encrypt_content,
+                                                                          publisher_account)

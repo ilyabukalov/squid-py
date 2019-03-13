@@ -1,8 +1,13 @@
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 from squid_py import ConfigProvider
 from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.ddo.ddo import DDO
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
-from tests.resources.helper_functions import get_ddo_sample, log_event, get_consumer_account, get_publisher_account
+from tests.resources.helper_functions import (get_consumer_account, get_ddo_sample,
+                                              get_publisher_account, log_event)
 from tests.resources.tiers import e2e_test
 
 
@@ -65,7 +70,8 @@ def test_escrow_access_secret_store_template_flow():
     print('creating agreement:'
           'agrId: ', agreement_id,
           'asset_id', asset_id,
-          '[lock_cond_id, access_cond_id, escrow_cond_id]', [lock_cond_id, access_cond_id, escrow_cond_id],
+          '[lock_cond_id, access_cond_id, escrow_cond_id]',
+          [lock_cond_id, access_cond_id, escrow_cond_id],
           'tlocks', service_agreement.conditions_timelocks,
           'touts', service_agreement.conditions_timeouts,
           'consumer', consumer_acc.address,
@@ -73,21 +79,25 @@ def test_escrow_access_secret_store_template_flow():
           )
 
     try:
-        proposed = keeper.template_manager.propose_template(keeper.escrow_access_secretstore_template.address, publisher_acc)
+        proposed = keeper.template_manager.propose_template(
+            keeper.escrow_access_secretstore_template.address, publisher_acc)
         print('template propose: ', proposed)
     except ValueError:
         print('propose template failed, maybe it is already proposed.')
-        template_values = keeper.template_manager.get_template(keeper.escrow_access_secretstore_template.address)
+        template_values = keeper.template_manager.get_template(
+            keeper.escrow_access_secretstore_template.address)
         print('template values: ', template_values)
 
     owner_acc = publisher_acc
     try:
-        approved = keeper.template_manager.approve_template(keeper.escrow_access_secretstore_template.address, owner_acc)
+        approved = keeper.template_manager.approve_template(
+            keeper.escrow_access_secretstore_template.address, owner_acc)
         print('template approve: ', approved)
     except ValueError:
         print(f'approve template from account {owner_acc.address} failed')
 
-    assert keeper.template_manager.is_template_approved(keeper.escrow_access_secretstore_template.address), 'Template is not approved.'
+    assert keeper.template_manager.is_template_approved(
+        keeper.escrow_access_secretstore_template.address), 'Template is not approved.'
     assert keeper.did_registry.get_block_number_updated(asset_id) > 0, 'asset id not registered'
     success = keeper.escrow_access_secretstore_template.create_agreement(
         agreement_id,
@@ -136,8 +146,9 @@ def test_escrow_access_secret_store_template_flow():
     )
     assert event, 'no event for LockRewardCondition.Fulfilled'
     assert keeper.condition_manager.get_condition_state(lock_cond_id) == 2, ''
-    assert keeper.token\
-        .get_token_balance(keeper.escrow_reward_condition.address) == (price + starting_balance), ''
+    assert keeper.token \
+               .get_token_balance(keeper.escrow_reward_condition.address) == (
+                   price + starting_balance), ''
 
     # Fulfill access_secret_store_condition
     keeper.access_secret_store_condition.fulfill(
@@ -167,10 +178,10 @@ def test_escrow_access_secret_store_template_flow():
     )
     assert event, 'no event for EscrowReward.Fulfilled'
     assert keeper.condition_manager.get_condition_state(escrow_cond_id) == 2, ''
-    assert keeper.token\
-        .get_token_balance(keeper.escrow_reward_condition.address) == starting_balance, ''
-    assert keeper.token\
-        .get_token_balance(publisher_acc.address) == (pub_token_balance + price), ''
+    assert keeper.token \
+               .get_token_balance(keeper.escrow_reward_condition.address) == starting_balance, ''
+    assert keeper.token \
+               .get_token_balance(publisher_acc.address) == (pub_token_balance + price), ''
 
 
 @e2e_test
@@ -210,3 +221,70 @@ def test_agreement_hash(publisher_ocean_instance):
     expected = '0x96732b390dacec0f19ad304ac176b3407968a0184d01b3262687fd23a3f0995e'
     print('expected hash: ', expected)
     assert agreement_hash.hex() == expected, 'hash does not match.'
+
+
+def test_agreement():
+    template_id = Web3Provider.get_web3().toChecksumAddress('0x' + ('f' * 40))
+    agreement_id = '0x' + ('e' * 64)
+    access_id = '0x' + ('a' * 64)
+    lock_id = '0x' + ('b' * 64)
+    escrow_id = '0x' + ('c' * 64)
+
+    signature = ServiceAgreement.generate_service_agreement_hash(
+        template_id,
+        [access_id, lock_id, escrow_id],
+        [0, 0, 0],
+        [0, 0, 0],
+        agreement_id
+    )
+
+    print({signature})
+    assert signature == Web3Provider.get_web3().toBytes(
+        hexstr="0x67901517c18a3d23e05806fff7f04235cc8ae3b1f82345b8bfb3e4b02b5800c7"), \
+        "The signatuere is not correct."
+
+
+# def test_agreement_signature():
+#     templates = Keeper.get_instance().templates
+#
+#     did = f'did:op:${"c" * 64}'
+#     templateId = f'0x${"f" * 40}'
+#     agreementId = f'0x${"e" * 64}'
+#     ddoOwner = f'0x${"9" * 40}'
+#     serviceDefinitionId = "0"
+#     amount = "10"
+#
+#     accessId = f'0x${"a" * 64}'
+#     lockId = f'0x${"b" * 64}'
+#
+#     serviceAgreementTemplate = templates.escrowAccessSecretStoreTemplate
+#
+#     ddo = DDO(did,
+#               "service": [
+#         {
+#             "type": "Access",
+#             "purchaseEndpoint": "undefined",
+#             "serviceEndpoint": "undefined",
+#             "serviceDefinitionId": serviceDefinitionId,
+#             templateId,
+#         serviceAgreementTemplate
+#     }]
+#     )
+#
+#
+#     valuesMap = {
+#                     "rewardAddress": ddoOwner,
+#                     amount,
+#                 documentId: ddo.shortId(),
+#                             grantee: consumer.getId(),
+#     receiver: consumer.getId(),
+#     sender: ddoOwner,
+#
+#     lockCondition: lockId,
+#     releaseCondition: accessId,
+#     }
+#
+#     signature = Keeper.get_instance().sign_hash(agreement_hash, consumer_account)
+#
+#     assert signature == \
+#            "0x6bd49301a4a98d4e2ca149d649cc22fa0c5bd69269716d91c5cc17576ec3caef12a0edf611bb318e684683eec77b202bbbe484ceb698aec0e1250b7d1cf874dd1c", "The signatuere is not correct."

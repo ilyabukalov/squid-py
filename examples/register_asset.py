@@ -1,11 +1,13 @@
-#!/usr/bin/env python
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 import os
 from time import sleep
 
+from examples import ExampleConfig
 from squid_py import Metadata, Ocean
 from squid_py.config_provider import ConfigProvider
-from examples import ExampleConfig
 
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
     ASYNC_DELAY = 5  # seconds

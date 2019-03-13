@@ -1,4 +1,7 @@
 """DID Resolver module."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 
 from squid_py.aquarius.aquarius_provider import AquariusProvider

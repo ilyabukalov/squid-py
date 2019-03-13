@@ -1,4 +1,8 @@
 """DID Lib to do DID's and DDO's."""
+
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import hashlib
 import json
 import logging
@@ -15,7 +19,7 @@ from squid_py.ddo.public_key_hex import PublicKeyHex
 from squid_py.did import did_to_id
 from squid_py.keeper.web3_provider import Web3Provider
 from .authentication import Authentication
-from .constants import DID_DDO_CONTEXT_URL, KEY_PAIR_MODULUS_BIT
+from .constants import DID_DDO_CONTEXT_URL, KEY_PAIR_MODULUS_BIT, PROOF_TYPE
 from .public_key_base import PUBLIC_KEY_STORE_TYPE_PEM, PublicKeyBase
 from .public_key_rsa import AUTHENTICATION_TYPE_RSA, PUBLIC_KEY_TYPE_RSA, PublicKeyRSA
 from .service import Service
@@ -236,7 +240,8 @@ class DDO:
         if 'proof' in values:
             self._proof = values['proof']
 
-    def add_proof(self, authorization_index, private_key=None, signature_text=None):
+    def add_proof(self, authorization_index, publisher_address, private_key=None,
+                  signature_text=None):
         """Add a proof to the DDO, based on the public_key id/index and signed with the private key
         add a static proof to the DDO, based on one of the public keys."""
 
@@ -271,9 +276,9 @@ class DDO:
         signature = DDO.sign_text(signature_text, private_key, sign_key.get_type())
 
         self._proof = {
-            'type': sign_key.get_type(),
+            'type': PROOF_TYPE,
             'created': DDO._get_timestamp(),
-            'creator': sign_key.get_id(),
+            'creator': publisher_address,
             'signatureValue': b64encode(signature).decode('utf-8'),
         }
 

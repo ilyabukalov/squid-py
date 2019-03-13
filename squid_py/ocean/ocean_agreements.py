@@ -1,4 +1,7 @@
 """Ocean module."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 
 from squid_py.agreements.register_service_agreement import (register_service_agreement_consumer,
@@ -19,6 +22,7 @@ logger = logging.getLogger('ocean')
 
 class OceanAgreements:
     """Ocean agreements class."""
+
     def __init__(self, keeper, asset_resolver, asset_consumer, config):
         self._keeper = keeper
         self._asset_resolver = asset_resolver

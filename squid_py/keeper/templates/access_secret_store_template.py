@@ -1,3 +1,6 @@
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper import ContractBase
 from squid_py.keeper.web3_provider import Web3Provider

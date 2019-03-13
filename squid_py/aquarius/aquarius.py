@@ -2,6 +2,10 @@
 Aquarius module.
 Help to communicate with the metadata store.
 """
+
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import json
 import logging
 

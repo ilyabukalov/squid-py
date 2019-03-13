@@ -15,4 +15,8 @@ def verify_reward_tokens(event, agreement_id, did, service_agreement, price, con
     pass
 
 
+
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 verifyRewardTokens = verify_reward_tokens

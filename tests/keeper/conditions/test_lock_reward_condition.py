@@ -1,4 +1,7 @@
 """Test PaymentConditions contract."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 from squid_py.keeper.conditions.lock_reward import LockRewardCondition
 from tests.resources.tiers import e2e_test
 

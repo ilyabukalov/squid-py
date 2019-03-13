@@ -1,4 +1,7 @@
 """Ocean module."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 
 from squid_py.accounts.account import Account
@@ -9,6 +12,7 @@ logger = logging.getLogger(__name__)
 
 class OceanSecretStore:
     """Ocean SecretStore class."""
+
     def __init__(self, config):
         self._config = config
         if config.secret_store_url and config.parity_url and config.parity_address:
@@ -29,6 +33,10 @@ class OceanSecretStore:
 
     def encrypt(self, document_id, content, account):
         """
+        Encrypt string data using the DID as an secret store id,
+        if secret store is enabled then return the result from secret store encryption
+
+        None for no encryption performed
 
         :param document_id: hex str id of document to use for encryption session
         :param content: str to be encrypted
@@ -39,6 +47,10 @@ class OceanSecretStore:
 
     def decrypt(self, document_id, encrypted_content, account):
         """
+        Decrypt a previously encrypted content using the secret store keys identified
+        by document_id.
+
+        Note that decryption requires permission already granted to the consumer account.
 
         :param document_id: hex str id of document to use to retrieve the decryption keys
         :param encrypted_content: hex str

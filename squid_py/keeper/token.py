@@ -1,4 +1,6 @@
 """Keeper module to call keeper-contracts."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
 
 from squid_py.keeper.contract_base import ContractBase
 from squid_py.keeper.web3_provider import Web3Provider

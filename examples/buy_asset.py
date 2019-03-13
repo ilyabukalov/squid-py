@@ -1,15 +1,14 @@
-"""
-Example of a buying an asset.
-"""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 import os
 import time
 
+from examples import ExampleConfig, get_account_from_config
 from squid_py import ConfigProvider, Metadata, Ocean
-from squid_py.agreements.service_types import ServiceTypes
-from examples import ExampleConfig
-from examples import get_account_from_config
 from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.service_types import ServiceTypes
 
 
 def _log_event(event_name):
@@ -86,7 +85,7 @@ def buy_asset():
         wait=True
     )
     assert event, 'no event for EscrowReward.Fulfilled'
-    time.sleep(10)
+    time.sleep(20)
 
     ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address)
 

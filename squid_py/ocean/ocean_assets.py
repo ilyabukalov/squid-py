@@ -1,11 +1,14 @@
 """Ocean module."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import copy
 import json
 import logging
 import os
 
 from squid_py.agreements.service_factory import ServiceDescriptor, ServiceFactory
-from squid_py.agreements.service_types import ACCESS_SERVICE_TEMPLATE_ID, ServiceTypes
+from squid_py.agreements.service_types import ServiceTypes
 from squid_py.agreements.utils import (
     make_public_key_and_authentication,
 )
@@ -88,7 +91,7 @@ class OceanAssets:
         ddo.add_authentication(auth, PUBLIC_KEY_TYPE_RSA)
 
         priv_key = ddo.add_signature()
-        ddo.add_proof(1, priv_key)
+        ddo.add_proof(1, publisher_account.address, private_key=priv_key)
 
         # Setup metadata service
         # First replace `files` with encrypted `files`
@@ -126,7 +129,7 @@ class OceanAssets:
                 brizo.get_purchase_endpoint(self._config),
                 brizo.get_service_endpoint(self._config),
                 3600,
-                ACCESS_SERVICE_TEMPLATE_ID
+                self._keeper.escrow_access_secretstore_template.address
             )]
         else:
             service_types = set(map(lambda x: x[0], service_descriptors))
@@ -140,7 +143,7 @@ class OceanAssets:
                     brizo.get_purchase_endpoint(self._config),
                     brizo.get_service_endpoint(self._config),
                     3600,
-                    ACCESS_SERVICE_TEMPLATE_ID
+                    self._keeper.escrow_access_secretstore_template.address
                 )]
 
         # Add all services to ddo

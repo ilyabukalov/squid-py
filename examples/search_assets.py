@@ -1,10 +1,13 @@
 """Example of searching an asset in Ocean."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 import os
 from time import sleep
 
-from squid_py import ConfigProvider, Metadata, Ocean
 from examples import ExampleConfig
+from squid_py import ConfigProvider, Metadata, Ocean
 
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
     ASYNC_DELAY = 5  # seconds

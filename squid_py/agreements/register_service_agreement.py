@@ -1,11 +1,12 @@
+
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 from datetime import datetime
 
-from squid_py.agreements.events import (
-    escrow_reward_condition,
-    lock_reward_condition,
-    verify_reward_condition, access_secret_store_condition
-)
+from squid_py.agreements.events import (access_secret_store_condition, escrow_reward_condition,
+                                        lock_reward_condition, verify_reward_condition)
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.keeper import Keeper
 from .storage import get_service_agreements, record_service_agreement

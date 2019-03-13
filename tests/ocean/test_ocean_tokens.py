@@ -1,3 +1,5 @@
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
 
 def test_token_request(publisher_ocean_instance):
     receiver_account = publisher_ocean_instance.main_account
@@ -26,7 +28,7 @@ def test_transfer_tokens(publisher_ocean_instance, consumer_ocean_instance):
 
     consumer_ocean_instance.tokens.transfer(receiver_account.address, 500, sender_account)
 
-    assert publisher_ocean_instance.accounts.balance(receiver_account).ocn == receiver_start_balance + 500
-    assert consumer_ocean_instance.accounts.balance(sender_account).ocn == sender_start_balance - 500
-
-
+    assert publisher_ocean_instance.accounts.balance(
+        receiver_account).ocn == receiver_start_balance + 500
+    assert consumer_ocean_instance.accounts.balance(
+        sender_account).ocn == sender_start_balance - 500

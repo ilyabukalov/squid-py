@@ -1,10 +1,13 @@
 """Test Token Contract."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import pytest
 
 from squid_py.config_provider import ConfigProvider
 from squid_py.keeper import Keeper
 from squid_py.keeper.token import Token
-from tests.resources.helper_functions import get_publisher_account, get_consumer_account
+from tests.resources.helper_functions import get_consumer_account, get_publisher_account
 from tests.resources.tiers import e2e_test
 
 token = Token('OceanToken')

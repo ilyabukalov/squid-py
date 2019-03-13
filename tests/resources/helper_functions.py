@@ -1,17 +1,20 @@
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
+import json
 import os
 import pathlib
 import time
 
-from squid_py.ddo.ddo import DDO
-from squid_py.ocean.ocean import Ocean
+from examples import ExampleConfig
 from squid_py import ConfigProvider
 from squid_py.accounts.account import Account
 from squid_py.brizo.brizo_provider import BrizoProvider
-
+from squid_py.ddo.ddo import DDO
 from squid_py.ddo.metadata import Metadata
-from examples import ExampleConfig
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
+from squid_py.ocean.ocean import Ocean
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from squid_py.utils.utilities import prepare_prefixed_hash
 from tests.resources.mocks.brizo_mock import BrizoMock
@@ -153,3 +156,11 @@ def verify_signature(_address, _agreement_hash, _signature, expected_match):
           recovered_address1)
     assert _address == (recovered_address0, recovered_address1)[expected_match], \
         'Could not verify signature using address {}'.format(_address)
+
+
+def get_metadata():
+    path = get_resource_path('ddo', 'valid_metadata.json')
+    assert path.exists(), f"{path} does not exist!"
+    with open(path, 'r') as file_handle:
+        metadata = file_handle.read()
+    return json.loads(metadata)

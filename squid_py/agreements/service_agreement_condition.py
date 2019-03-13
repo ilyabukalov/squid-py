@@ -1,9 +1,14 @@
+
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 from eth_utils import add_0x_prefix, remove_0x_prefix
 from web3 import Web3
 
 
 class Parameter:
     """"""
+
     def __init__(self, param_json):
         self.name = param_json['name']
         self.type = param_json['type']
@@ -63,6 +68,7 @@ class Event:
 
 class ServiceAgreementCondition(object):
     """"""
+
     def __init__(self, condition_json=None):
         self.name = ''
         self.timelock = 0

@@ -1,4 +1,7 @@
 """Secret Store module."""
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 
 from eth_utils import remove_0x_prefix
@@ -51,9 +54,9 @@ class SecretStore(object):
 
         None for no encryption performed
 
-        :param document_id:
-        :param content:
-        :param threshold:
+        :param document_id: hex str id of document to use for encryption session
+        :param content: str to be encrypted
+        :param threshold: int
         :return:
             None -- if encryption failed
             hex str -- the encrypted document
@@ -69,7 +72,7 @@ class SecretStore(object):
 
         Note that decryption requires permission already granted to the consumer account.
 
-        :param document_id:
+        :param document_id: hex str id of document to use for encryption session
         :param encrypted_content: hex str -- the encrypted content from a previous
             `encrypt_document` operation
         :return:

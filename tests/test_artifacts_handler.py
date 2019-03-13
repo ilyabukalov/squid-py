@@ -1,3 +1,6 @@
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.ocean.ocean import Ocean
 

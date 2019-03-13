@@ -1,5 +1,8 @@
 """Test Dispenser contract."""
 
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import pytest
 
 from squid_py import Account

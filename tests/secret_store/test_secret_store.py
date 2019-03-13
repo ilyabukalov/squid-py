@@ -1,9 +1,12 @@
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import hashlib
 import json
 import secrets
-from unittest.mock import Mock, MagicMock
+from unittest.mock import MagicMock, Mock
 
-from squid_py import ConfigProvider, Account
+from squid_py import Account, ConfigProvider
 from squid_py.secret_store.secret_store import SecretStore
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import e2e_test

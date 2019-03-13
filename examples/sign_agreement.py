@@ -1,10 +1,13 @@
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
 import logging
 import os
 from time import sleep
 
+from examples import ExampleConfig
 from squid_py import ConfigProvider, Metadata, Ocean
 from squid_py.agreements.service_types import ServiceTypes
-from examples import ExampleConfig
 from tests.resources.helper_functions import get_account_from_config
 
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':

@@ -1,4 +1,5 @@
-import json
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
 
 import pytest
 
@@ -180,12 +181,8 @@ def test_retire_not_published_did():
 
 
 @e2e_test
-def test_validate_metadata():
-    path = get_resource_path('ddo', 'valid_metadata.json')
-    assert path.exists(), f"{path} does not exist!"
-    with open(path, 'r') as file_handle:
-        metadata = file_handle.read()
-    assert aquarius.validate_metadata(json.loads(metadata))
+def test_validate_metadata(metadata):
+    assert aquarius.validate_metadata(metadata)
 
 
 @e2e_test
