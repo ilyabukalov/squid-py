@@ -3,7 +3,6 @@
 
 from squid_py import ConfigProvider
 from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.ddo.ddo import DDO
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import (get_consumer_account, get_ddo_sample,
@@ -77,24 +76,6 @@ def test_escrow_access_secret_store_template_flow():
           'consumer', consumer_acc.address,
           'publisher', publisher_acc.address
           )
-
-    try:
-        proposed = keeper.template_manager.propose_template(
-            keeper.escrow_access_secretstore_template.address, publisher_acc)
-        print('template propose: ', proposed)
-    except ValueError:
-        print('propose template failed, maybe it is already proposed.')
-        template_values = keeper.template_manager.get_template(
-            keeper.escrow_access_secretstore_template.address)
-        print('template values: ', template_values)
-
-    owner_acc = publisher_acc
-    try:
-        approved = keeper.template_manager.approve_template(
-            keeper.escrow_access_secretstore_template.address, owner_acc)
-        print('template approve: ', approved)
-    except ValueError:
-        print(f'approve template from account {owner_acc.address} failed')
 
     assert keeper.template_manager.is_template_approved(
         keeper.escrow_access_secretstore_template.address), 'Template is not approved.'
