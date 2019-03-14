@@ -7,6 +7,7 @@ from urllib.parse import urlparse
 
 from web3 import Web3
 
+from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.did import did_to_id_bytes
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper.contract_base import ContractBase
@@ -66,7 +67,7 @@ class DIDRegistry(ContractBase):
             did_hash,
             checksum,
             value,
-            transact={'from': account_address}
+            transact={'from': account_address, 'gas': DEFAULT_GAS_LIMIT}
         )
 
     def get_block_number_updated(self, did):
