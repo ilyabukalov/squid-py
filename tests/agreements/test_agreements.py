@@ -128,8 +128,8 @@ def test_escrow_access_secret_store_template_flow():
     assert event, 'no event for LockRewardCondition.Fulfilled'
     assert keeper.condition_manager.get_condition_state(lock_cond_id) == 2, ''
     assert keeper.token \
-               .get_token_balance(keeper.escrow_reward_condition.address) == (
-                   price + starting_balance), ''
+        .get_token_balance(keeper.escrow_reward_condition.address) == (
+            price + starting_balance), ''
 
     # Fulfill access_secret_store_condition
     keeper.access_secret_store_condition.fulfill(
@@ -160,9 +160,9 @@ def test_escrow_access_secret_store_template_flow():
     assert event, 'no event for EscrowReward.Fulfilled'
     assert keeper.condition_manager.get_condition_state(escrow_cond_id) == 2, ''
     assert keeper.token \
-               .get_token_balance(keeper.escrow_reward_condition.address) == starting_balance, ''
+        .get_token_balance(keeper.escrow_reward_condition.address) == starting_balance, ''
     assert keeper.token \
-               .get_token_balance(publisher_acc.address) == (pub_token_balance + price), ''
+        .get_token_balance(publisher_acc.address) == (pub_token_balance + price), ''
 
 
 @e2e_test
@@ -223,49 +223,3 @@ def test_agreement():
     assert signature == Web3Provider.get_web3().toBytes(
         hexstr="0x67901517c18a3d23e05806fff7f04235cc8ae3b1f82345b8bfb3e4b02b5800c7"), \
         "The signatuere is not correct."
-
-
-# def test_agreement_signature():
-#     templates = Keeper.get_instance().templates
-#
-#     did = f'did:op:${"c" * 64}'
-#     templateId = f'0x${"f" * 40}'
-#     agreementId = f'0x${"e" * 64}'
-#     ddoOwner = f'0x${"9" * 40}'
-#     serviceDefinitionId = "0"
-#     amount = "10"
-#
-#     accessId = f'0x${"a" * 64}'
-#     lockId = f'0x${"b" * 64}'
-#
-#     serviceAgreementTemplate = templates.escrowAccessSecretStoreTemplate
-#
-#     ddo = DDO(did,
-#               "service": [
-#         {
-#             "type": "Access",
-#             "purchaseEndpoint": "undefined",
-#             "serviceEndpoint": "undefined",
-#             "serviceDefinitionId": serviceDefinitionId,
-#             templateId,
-#         serviceAgreementTemplate
-#     }]
-#     )
-#
-#
-#     valuesMap = {
-#                     "rewardAddress": ddoOwner,
-#                     amount,
-#                 documentId: ddo.shortId(),
-#                             grantee: consumer.getId(),
-#     receiver: consumer.getId(),
-#     sender: ddoOwner,
-#
-#     lockCondition: lockId,
-#     releaseCondition: accessId,
-#     }
-#
-#     signature = Keeper.get_instance().sign_hash(agreement_hash, consumer_account)
-#
-#     assert signature == \
-#            "0x6bd49301a4a98d4e2ca149d649cc22fa0c5bd69269716d91c5cc17576ec3caef12a0edf611bb318e684683eec77b202bbbe484ceb698aec0e1250b7d1cf874dd1c", "The signatuere is not correct."

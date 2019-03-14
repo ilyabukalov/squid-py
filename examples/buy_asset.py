@@ -9,6 +9,7 @@ from examples import ExampleConfig, get_account_from_config
 from squid_py import ConfigProvider, Metadata, Ocean
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
+from squid_py.keeper import Keeper
 
 
 def _log_event(event_name):
@@ -43,6 +44,7 @@ def buy_asset():
     # ocn here will be used only to publish the asset. Handling the asset by the publisher
     # will be performed by the Brizo server running locally
 
+    keeper = Keeper.get_instance()
     cons_ocn = Ocean()
     consumer_account = get_account_from_config(config, 'parity.address1', 'parity.password1')
 
@@ -57,30 +59,28 @@ def buy_asset():
     agreement_id = cons_ocn.assets.order(
         ddo.did, sa.service_definition_id, consumer_account)
 
-    # _filter = {'agreementId': w3.toBytes(hexstr=agreement_id)}
-
-    event = cons_ocn._keeper.escrow_access_secretstore_template.subscribe_agreement_created(
+    event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
         agreement_id,
         20,
-        _log_event(cons_ocn._keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
+        _log_event(keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
         (),
         wait=True
     )
     assert event, 'no event for EscrowAccessSecretStoreTemplate.AgreementCreated'
 
-    event = cons_ocn._keeper.lock_reward_condition.subscribe_condition_fulfilled(
+    event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         20,
-        _log_event(cons_ocn._keeper.lock_reward_condition.FULFILLED_EVENT),
+        _log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
         (),
         wait=True
     )
     assert event, 'no event for LockRewardCondition.Fulfilled'
 
-    event = cons_ocn._keeper.escrow_reward_condition.subscribe_condition_fulfilled(
+    event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         10,
-        _log_event(cons_ocn._keeper.escrow_reward_condition.FULFILLED_EVENT),
+        _log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
         (),
         wait=True
     )
