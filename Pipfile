@@ -47,6 +47,7 @@ pyOpenSSL = "==19.0.0"
 PyYAML = "==4.2b4"
 deprecated = "*"
 pytest = "*"
+tqdm = "*"
 
 [requires]
 python_version = "3.7"
