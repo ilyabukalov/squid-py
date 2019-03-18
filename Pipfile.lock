@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "157e4a4c886bfdfd7ff05496c4bdf3166991944a1f50bcb7551bdafeed7b2d46"
+            "sha256": "28e8f15c2ed3c9ffd446c013401e412176091f09f20c7ec0e1a1fd58c89d3025"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -271,11 +271,11 @@
         },
         "keeper-contracts": {
             "hashes": [
-                "sha256:164c1cfe32cf36cd6d9b6c3d73ed8d60a6ac52dc1d34b35021393b87e51ce618",
-                "sha256:aaf85cff7963f4d5bda4288047563583a2653810bb0eca91e4b0994aee70012e"
+                "sha256:1e13dd35e7e255dda312a944490f85bdf271047e5c3aa87b3a51b917581b686b",
+                "sha256:c77d94590e32d442718faf0bfb6f34dea94f98ba703853d8e28046a0d9ea0a37"
             ],
             "index": "pypi",
-            "version": "==0.8.5"
+            "version": "==0.8.6"
         },
         "lru-dict": {
             "hashes": [
