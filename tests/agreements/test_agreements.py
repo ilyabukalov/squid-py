@@ -136,7 +136,7 @@ def test_escrow_access_secret_store_template_flow():
         agreement_id, asset_id, consumer_acc.address, publisher_acc)
     event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
         agreement_id,
-        10,
+        20,
         log_event(keeper.access_secret_store_condition.FULFILLED_EVENT),
         (),
         wait=True
