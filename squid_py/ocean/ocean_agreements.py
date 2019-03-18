@@ -12,7 +12,7 @@ from squid_py.did import did_to_id
 from squid_py.exceptions import (
     OceanInvalidServiceAgreementSignature,
     OceanServiceAgreementExists,
-)
+    OceanInvalidAgreementTemplate)
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ocean.ocean_conditions import OceanConditions
 from squid_py.utils.utilities import prepare_prefixed_hash
@@ -126,6 +126,16 @@ class OceanAgreements:
             consumer_address), f'Invalid consumer address {consumer_address}'
         assert publisher_account.address in self._keeper.accounts, \
             f'Unrecognized publisher address {publisher_account.address}'
+
+        agreement_template_approved = self._keeper.template_manager.is_template_approved(
+            self._keeper.escrow_access_secretstore_template.address)
+        if not agreement_template_approved:
+            msg = (f'The EscrowAccessSecretStoreTemplate contract at address '
+                   f'{self._keeper.escrow_access_secretstore_template.address} is not '
+                   f'approved and cannot be used for creating service agreements.')
+            logger.warning(msg)
+            raise OceanInvalidAgreementTemplate(msg)
+
         asset = self._asset_resolver.resolve(did)
         asset_id = asset.asset_id
         service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
@@ -134,7 +144,8 @@ class OceanAgreements:
 
         if agreement_template.get_agreement_consumer(agreement_id) is not None:
             raise OceanServiceAgreementExists(
-                f'Service agreement {agreement_id} is already executed.')
+                f'Service agreement {agreement_id} already exists, cannot reuse '
+                f'the same agreement id.')
 
         if not self._verify_service_agreement_signature(
                 did, agreement_id, service_definition_id,
@@ -175,8 +186,35 @@ class OceanAgreements:
             consumer_address,
             publisher_account
         )
-        logger.info(f'Service agreement {agreement_id} executed successfully.')
+        if success:
+            logger.info(f'Service agreement {agreement_id} created successfully.')
+        else:
+            logger.info(f'Create agreement "{agreement_id}" failed.')
+            self._log_agreement_info(
+                asset, service_agreement, agreement_id, service_agreement_signature,
+                consumer_address, publisher_account, condition_ids
+            )
+
         return success
+
+    def _log_agreement_info(self, asset, service_agreement, agreement_id, agreement_signature,
+                            consumer_address, publisher_account, condition_ids):
+        agreement_hash = service_agreement.get_service_agreement_hash(
+            agreement_id, asset.asset_id, consumer_address, publisher_account.address, self._keeper)
+        publisher_ether_balance = self._keeper.get_ether_balance(publisher_account.address)
+        logger.debug(
+            f'Agreement parameters:'
+            f'\n  agreement id: {agreement_id}'
+            f'\n  consumer address: {consumer_address}'
+            f'\n  publisher address: {publisher_account.address}'
+            f'\n  conditions ids: {condition_ids}'
+            f'\n  asset did: {asset.did}'
+            f'\n  agreement signature: {agreement_signature}'
+            f'\n  agreement hash: {agreement_hash}'
+            f'\n  EscrowAccessSecretStoreTemplate: '
+            f'{self._keeper.escrow_access_secretstore_template.address}'
+            f'\n  publisher ether balance: {publisher_ether_balance}'
+        )
 
     def is_access_granted(self, agreement_id, did, consumer_address):
         """

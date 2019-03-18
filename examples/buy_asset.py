@@ -10,6 +10,7 @@ from squid_py import ConfigProvider, Metadata, Ocean
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.keeper import Keeper
+from tests.resources.helper_functions import get_publisher_account
 
 
 def _log_event(event_name):
@@ -35,7 +36,9 @@ def buy_asset():
 
     # make ocean instance
     ocn = Ocean()
-    acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
+    acc = get_publisher_account(config)
+    if not acc:
+        acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
 
     # Register ddo
     # ocn.templates.create(ocn.templates.access_template_id, acc)

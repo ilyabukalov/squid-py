@@ -44,3 +44,7 @@ class OceanInitializeServiceAgreementError(Exception):
 
 class OceanServiceConsumeError(Exception):
     """ Error invoking a consume endpoint"""
+
+
+class OceanInvalidAgreementTemplate(Exception):
+    """ Error when agreement template is not valid or not approved"""
