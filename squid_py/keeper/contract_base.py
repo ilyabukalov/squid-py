@@ -8,6 +8,8 @@
 
 import logging
 
+from web3.utils.threads import Timeout
+
 from squid_py.keeper.web3.contract import SquidContractFunction
 from squid_py.keeper.web3_provider import Web3Provider
 
@@ -87,7 +89,11 @@ class ContractBase(object):
         :param tx_hash:
         :return: Tx receipt
         """
-        Web3Provider.get_web3().eth.waitForTransactionReceipt(tx_hash)
+        try:
+            Web3Provider.get_web3().eth.waitForTransactionReceipt(tx_hash, timeout=20)
+        except Timeout:
+            logger.info('Waiting for transaction receipt timed out.')
+            return
         return Web3Provider.get_web3().eth.getTransactionReceipt(tx_hash)
 
     def subscribe_to_event(self, event_name, timeout, event_filter, callback=False,

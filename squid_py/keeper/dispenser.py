@@ -4,6 +4,8 @@
 
 import logging
 
+from web3.utils.threads import Timeout
+
 from squid_py.exceptions import OceanInvalidTransaction
 from squid_py.keeper.contract_base import ContractBase
 from squid_py.keeper.web3_provider import Web3Provider
@@ -33,8 +35,13 @@ class Dispenser(ContractBase):
                           'passphrase': account.password}
             )
             logging.debug(f'{address} requests {amount} tokens, returning receipt')
-            receipt = Web3Provider.get_web3().eth.waitForTransactionReceipt(tx_hash)
-            logging.debug(f'requestTokens receipt: {receipt}')
+            try:
+                receipt = Web3Provider.get_web3().eth.waitForTransactionReceipt(
+                    tx_hash, timeout=20)
+                logging.debug(f'requestTokens receipt: {receipt}')
+            except Timeout:
+                receipt = None
+
             if not receipt:
                 return False
 
