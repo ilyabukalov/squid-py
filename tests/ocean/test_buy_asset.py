@@ -24,10 +24,6 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     # SecretStoreProvider.set_secret_store_class(SecretStore)
     w3 = Web3Provider.get_web3()
     pub_acc = get_publisher_account(config)
-    # publisher_ocean_instance.templates.propose(
-    # keeper.escrow_access_secretstore_template.address,publisher_ocean_instance.main_account)
-    # publisher_ocean_instance.templates.approve(
-    # keeper.escrow_access_secretstore_template.address,publisher_ocean_instance.main_account)
 
     # Register ddo
     ddo = get_registered_ddo(publisher_ocean_instance, pub_acc)
@@ -52,7 +48,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
     cons_ocn.accounts.request_tokens(consumer_account, 100)
     agreement_id = cons_ocn.assets.order(
-        ddo.did, sa.service_definition_id, consumer_account)
+        ddo.did, sa.service_definition_id, consumer_account, auto_consume=True)
 
     event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
         agreement_id,

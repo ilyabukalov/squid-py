@@ -34,19 +34,16 @@ def test_get_balance_invalid_address():
 
 @e2e_test
 def test_token_approve():
-    Keeper.get_instance().unlock_account(publisher_account)
     assert token.token_approve(consumer_account.address, 100, publisher_account)
 
 
 @e2e_test
 def test_token_approve_invalid_address():
     with pytest.raises(Exception):
-        Keeper.get_instance().unlock_account(publisher_account)
         token.token_approve('10923019', 100, publisher_account)
 
 
 @e2e_test
 def test_token_approve_invalid_tokens():
     with pytest.raises(Exception):
-        Keeper.get_instance().unlock_account(publisher_account)
         token.token_approve(consumer_account.address, -100, publisher_account)

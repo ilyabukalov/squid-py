@@ -34,7 +34,6 @@ def fulfill_escrow_reward_condition(event, agreement_id, service_agreement, pric
     access_id, lock_id = condition_ids[:2]
     assert price == service_agreement.get_price(), 'price mismatch.'
     try:
-        Keeper.get_instance().unlock_account(publisher_account)
         tx_hash = Keeper.get_instance().escrow_reward_condition.fulfill(
             agreement_id,
             price,
@@ -80,7 +79,6 @@ def refund_reward(event, agreement_id, did, service_agreement, price, consumer_a
     # saId {service_agreement_id}, '
     #             f'documentKeyId {document_key_id}')
     try:
-        Keeper.get_instance().unlock_account(consumer_account)
         tx_hash = Keeper.get_instance().escrow_reward_condition.fulfill(
             agreement_id,
             price,

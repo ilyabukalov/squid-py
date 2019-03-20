@@ -40,11 +40,12 @@ class Token(ContractBase):
         if not Web3Provider.get_web3().isChecksumAddress(spender_address):
             spender_address = Web3Provider.get_web3().toChecksumAddress(spender_address)
 
-        from_account.unlock()
-        tx_hash = self.contract_concise.approve(
-            spender_address,
-            price,
-            transact={'from': from_account.address}
+        tx_hash = self.send_transaction(
+            'approve',
+            (spender_address,
+             price),
+            transact={'from': from_account.address,
+                      'passphrase': from_account.password}
         )
         return self.get_tx_receipt(tx_hash).status == 1
 
@@ -57,10 +58,12 @@ class Token(ContractBase):
         :param from_account: Sender account, Account
         :return: bool
         """
-        tx_hash = self.contract_concise.transfer(
-            receiver_address,
-            amount,
-            transact={'from': from_account.address}
+        tx_hash = self.send_transaction(
+            'transfer',
+            (receiver_address,
+             amount),
+            transact={'from': from_account.address,
+                      'passphrase': from_account.password}
         )
         return self.get_tx_receipt(tx_hash).status == 1
 
@@ -79,10 +82,11 @@ class Token(ContractBase):
         :param owner_account:
         :return:
         """
-        tx_hash = self.contract_concise.increaseAllowance(
-            spender_address,
-            added_value,
-            transact={'from': owner_account.address}
+        tx_hash = self.send_transaction(
+            'increaseAllowance',
+            (spender_address,
+             added_value),
+            transact={'from': owner_account.address, 'passphrase': owner_account.password}
         )
         return self.get_tx_receipt(tx_hash).status == 1
 
@@ -94,9 +98,10 @@ class Token(ContractBase):
         :param owner_account:
         :return:
         """
-        tx_hash = self.contract_concise.decreaseAllowance(
-            spender_address,
-            subtracted_value,
-            transact={'from': owner_account.address}
+        tx_hash = self.send_transaction(
+            'decreaseAllowance',
+            (spender_address,
+             subtracted_value),
+            transact={'from': owner_account.address, 'passphrase': owner_account.password}
         )
         return self.get_tx_receipt(tx_hash).status == 1

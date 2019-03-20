@@ -34,7 +34,6 @@ def get_resource_path(dir_name, file_name):
 
 def init_ocn_tokens(ocn, account, amount=100):
     ocn.accounts.request_tokens(account, amount)
-    Keeper.get_instance().unlock_account(account)
     Keeper.get_instance().token.token_approve(
         Keeper.get_instance().dispenser.address,
         amount,

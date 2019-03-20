@@ -7,11 +7,11 @@ import json
 import logging
 import os
 
-import requests
 from tqdm import tqdm
 
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.exceptions import OceanInitializeServiceAgreementError
+from squid_py.http_requests.requests_session import get_requests_session
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,7 @@ class Brizo:
     - run_compute_service (not implemented yet)
 
     """
-    _http_client = requests
+    _http_client = get_requests_session()
 
     @staticmethod
     def set_http_client(http_client):
@@ -64,7 +64,7 @@ class Brizo:
                 logger.error(msg)
                 raise OceanInitializeServiceAgreementError(msg)
 
-            logger.debug(
+            logger.info(
                 f'Service agreement initialized successfully, service agreement id {agreement_id},'
                 f' purchaseEndpoint {purchase_endpoint}')
             return True

@@ -42,20 +42,20 @@ def get_sla_template_dict(path):
         return json.load(template_file)
 
 
-def make_public_key_and_authentication(did, publisher_address, web3):
+def make_public_key_and_authentication(did, publisher_account, web3):
     """Create a public key and authentication sections to include in a DDO (DID document).
     The public key is derived from the ethereum address by signing an arbitrary message
     then using ec recover to extract the public key.
     Alternatively, the public key can be generated from a private key if provided by the publisher.
 
     :param did: DID, str
-    :param publisher_address: Address, str
+    :param publisher_account: Account instance
     :param web3: Web3 instance
     :return: Tuple(str, str)
     """
     # set public key
-    public_key_value = get_public_key_from_address(web3, publisher_address).to_hex()
-    pub_key = PublicKeyHex('keys-1', **{'value': public_key_value, 'owner': publisher_address,
+    public_key_value = get_public_key_from_address(web3, publisher_account).to_hex()
+    pub_key = PublicKeyHex('keys-1', **{'value': public_key_value, 'owner': publisher_account.address,
                                         'type': PUBLIC_KEY_TYPE_HEX})
     pub_key.assign_did(did)
     # set authentication

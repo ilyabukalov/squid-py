@@ -27,8 +27,6 @@ class OceanTokens:
         :param sender_account: Account instance to take the tokens from
         :return: bool
         """
-        self._keeper.unlock_account(sender_account)
         self._keeper.token.token_approve(receiver_address, amount,
                                          sender_account)
-        self._keeper.unlock_account(sender_account)
         self._keeper.token.transfer(receiver_address, amount, sender_account)

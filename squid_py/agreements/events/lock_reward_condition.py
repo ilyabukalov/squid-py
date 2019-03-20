@@ -21,6 +21,7 @@ def fulfill_lock_reward_condition(event, agreement_id, price, consumer_account):
     """
     logger.debug(f"about to lock reward after event {event}.")
     keeper = Keeper.get_instance()
+    tx_hash = None
     try:
         keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_account)
         tx_hash = keeper.lock_reward_condition.fulfill(
@@ -32,8 +33,9 @@ def fulfill_lock_reward_condition(event, agreement_id, price, consumer_account):
             'LockRewardCondition.Fulfilled'
         )
     except Exception as e:
-        logger.error(f'error locking reward: {e}')
-        raise e
+        logger.debug(f'error locking reward: {e}')
+        if not tx_hash:
+            raise e
 
 
 fulfillLockRewardCondition = fulfill_lock_reward_condition

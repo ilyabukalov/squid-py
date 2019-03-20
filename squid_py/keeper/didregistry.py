@@ -7,7 +7,6 @@ from urllib.parse import urlparse
 
 from web3 import Web3
 
-from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.did import did_to_id_bytes
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper.contract_base import ContractBase
@@ -48,13 +47,12 @@ class DIDRegistry(ContractBase):
         if account is None:
             raise ValueError('You must provide an account to use to register a DID')
 
-        account.unlock()
         transaction = self.register_attribute(did_source_id, checksum, url,
-                                              account.address)
+                                              account)
         receipt = self.get_tx_receipt(transaction)
         return receipt
 
-    def register_attribute(self, did_hash, checksum, value, account_address):
+    def register_attribute(self, did_hash, checksum, value, account):
         """Register an DID attribute as an event on the block chain.
 
             did_hash: 32 byte string/hex of the DID
@@ -63,11 +61,13 @@ class DIDRegistry(ContractBase):
             value: string can be anything, probably DDO or URL
             account_address: owner of this DID registration record
         """
-        return self.contract_concise.registerAttribute(
-            did_hash,
-            checksum,
-            value,
-            transact={'from': account_address, 'gas': DEFAULT_GAS_LIMIT}
+        return self.send_transaction(
+            'registerAttribute',
+            (did_hash,
+             checksum,
+             value),
+            transact={'from': account.address,
+                      'passphrase': account.password}
         )
 
     def get_block_number_updated(self, did):

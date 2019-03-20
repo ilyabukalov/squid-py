@@ -1,7 +1,6 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
-from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper.conditions.condition_base import ConditionBase
 
 
@@ -20,7 +19,8 @@ class HashLockCondition(ConditionBase):
         return self._fulfill(
             agreement_id,
             preimage,
-            transact={'from': account.address, 'gas': DEFAULT_GAS_LIMIT}
+            transact={'from': account.address,
+                      'passphrase': account.password}
         )
 
     def hash_values(self, preimage):

@@ -7,9 +7,9 @@ from collections import namedtuple
 
 from eth_keys import KeyAPI
 from eth_utils import big_endian_to_int
+from web3.utils.encoding import to_bytes
 
 from squid_py.keeper.utils import generate_multi_value_hash
-from squid_py.keeper.web3_provider import Web3Provider
 
 Signature = namedtuple('Signature', ('v', 'r', 's'))
 
@@ -44,23 +44,24 @@ def prepare_prefixed_hash(msg_hash):
     )
 
 
-def get_public_key_from_address(web3, address):
+def get_public_key_from_address(web3, account):
     """
 
     :param web3:
-    :param address:
+    :param account:
     :return:
     """
-    _hash = Web3Provider.get_web3().sha3(text='verify signature.')
-    signature = split_signature(web3, web3.eth.sign(address, _hash))
+    _hash = web3.sha3(text='verify signature.')
+    signature = web3.personal.sign(_hash, account.address, account.password)
+    signature = split_signature(web3, to_bytes(hexstr=signature))
     signature_vrs = Signature(signature.v % 27,
                               big_endian_to_int(signature.r),
                               big_endian_to_int(signature.s))
     prefixed_hash = prepare_prefixed_hash(_hash)
     pub_key = KeyAPI.PublicKey.recover_from_msg_hash(prefixed_hash,
                                                      KeyAPI.Signature(vrs=signature_vrs))
-    assert pub_key.to_checksum_address() == address, 'recovered address does not match signing ' \
-                                                     'address.'
+    assert pub_key.to_checksum_address() == account.address, \
+        'recovered address does not match signing address.'
     return pub_key
 
 

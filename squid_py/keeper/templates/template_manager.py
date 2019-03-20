@@ -36,9 +36,11 @@ class TemplateStoreManager(ContractBase):
         :param from_account: Account
         :return:
         """
-        from_account.unlock()
-        tx_hash = self.contract_concise.proposeTemplate(
-            template_id, transact={'from': from_account.address, 'gas': DEFAULT_GAS_LIMIT})
+        tx_hash = self.send_transaction(
+            'proposeTemplate',
+            (template_id,),
+            transact={'from': from_account.address,
+                      'passphrase': from_account.password})
         return self.get_tx_receipt(tx_hash).status == 1
 
     def approve_template(self, template_id, from_account):
@@ -49,9 +51,11 @@ class TemplateStoreManager(ContractBase):
         :param from_account: Account
         :return:
         """
-        from_account.unlock()
-        tx_hash = self.contract_concise.approveTemplate(
-            template_id, transact={'from': from_account.address, 'gas': DEFAULT_GAS_LIMIT})
+        tx_hash = self.send_transaction(
+            'approveTemplate',
+            (template_id,),
+            transact={'from': from_account.address,
+                      'passphrase': from_account.password})
         return self.get_tx_receipt(tx_hash).status == 1
 
     def revoke_template(self, template_id, from_account):
@@ -62,9 +66,11 @@ class TemplateStoreManager(ContractBase):
         :param from_account: Account
         :return:
         """
-        from_account.unlock()
-        tx_hash = self.contract_concise.revokeTemplate(
-            template_id, transact={'from': from_account.address, 'gas': DEFAULT_GAS_LIMIT})
+        tx_hash = self.send_transaction(
+            'revokeTemplate',
+            (template_id,),
+            transact={'from': from_account.address,
+                      'passphrase': from_account.password})
         return self.get_tx_receipt(tx_hash).status == 1
 
     def is_template_approved(self, template_id):

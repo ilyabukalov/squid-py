@@ -1,7 +1,6 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
-from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper.conditions.condition_base import ConditionBase
 
 
@@ -29,7 +28,6 @@ class EscrowRewardCondition(ConditionBase):
         :param account: Account instance
         :return:
         """
-        account.unlock()
         return self._fulfill(
             agreement_id,
             amount,
@@ -37,7 +35,8 @@ class EscrowRewardCondition(ConditionBase):
             sender_address,
             lock_condition_id,
             release_condition_id,
-            transact={'from': account.address, 'gas': DEFAULT_GAS_LIMIT}
+            transact={'from': account.address,
+                      'passphrase': account.password}
         )
 
     def hash_values(self, amount, receiver_address, sender_address, lock_condition_id,
