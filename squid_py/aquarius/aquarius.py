@@ -9,10 +9,9 @@ Help to communicate with the metadata store.
 import json
 import logging
 
-import requests
-
 from squid_py.aquarius.exceptions import AquariusGenericError
 from squid_py.assets.asset import Asset
+from squid_py.http_requests.requests_session import get_requests_session
 
 logger = logging.getLogger('aquarius')
 
@@ -37,6 +36,8 @@ class Aquarius:
         logging.debug(f'Metadata Store API documentation at {aquarius_url}/api/v1/docs')
         logging.debug(f'Metadata assets at {self._base_url}')
 
+        self.requests_session = get_requests_session()
+
     @property
     def url(self):
         """Base URL of the aquarius instance."""
@@ -57,7 +58,7 @@ class Aquarius:
 
         :return: List of DID string
         """
-        response = requests.get(self._base_url).content
+        response = self.requests_session.get(self._base_url).content
         if not response:
             return {}
 
@@ -82,7 +83,7 @@ class Aquarius:
         :param did: Asset DID string
         :return: DDO instance
         """
-        response = requests.get(f'{self.url}/{did}').content
+        response = self.requests_session.get(f'{self.url}/{did}').content
         if not response:
             return {}
         try:
@@ -102,7 +103,7 @@ class Aquarius:
         :param did: Asset DID string
         :return: metadata key of the DDO instance
         """
-        response = requests.get(f'{self._base_url}/metadata/{did}').content
+        response = self.requests_session.get(f'{self._base_url}/metadata/{did}').content
         if not response:
             return {}
         try:
@@ -121,7 +122,7 @@ class Aquarius:
 
         :return: List of DDO instance
         """
-        return json.loads(requests.get(self.url).content)
+        return json.loads(self.requests_session.get(self.url).content)
 
     def publish_asset_ddo(self, ddo):
         """
@@ -132,8 +133,8 @@ class Aquarius:
         """
         try:
             asset_did = ddo.did
-            response = requests.post(self.url, data=ddo.as_text(),
-                                     headers=self._headers)
+            response = self.requests_session.post(self.url, data=ddo.as_text(),
+                                                  headers=self._headers)
         except AttributeError:
             raise AttributeError('DDO invalid. Review that all the required parameters are filled.')
         if response.status_code == 500:
@@ -157,8 +158,8 @@ class Aquarius:
         :param ddo: DDO instance
         :return: API response (depends on implementation)
         """
-        response = requests.put(f'{self.url}/{did}', data=ddo.as_text(),
-                                headers=self._headers)
+        response = self.requests_session.put(f'{self.url}/{did}', data=ddo.as_text(),
+                                             headers=self._headers)
         if response.status_code == 200 or response.status_code == 201:
             return json.loads(response.content)
         else:
@@ -187,7 +188,7 @@ class Aquarius:
         :return: List of DDO instance
         """
         payload = {"text": text, "sort": sort, "offset": offset, "page": page}
-        response = requests.get(
+        response = self.requests_session.get(
             f'{self.url}/query',
             params=payload,
             headers=self._headers
@@ -212,7 +213,7 @@ class Aquarius:
         :param search_query: Python dictionary, query following mongodb syntax
         :return: List of DDO instance
         """
-        response = requests.post(
+        response = self.requests_session.post(
             f'{self.url}/query',
             data=json.dumps(search_query),
             headers=self._headers
@@ -229,7 +230,7 @@ class Aquarius:
         :param did: Asset DID string
         :return: API response (depends on implementation)
         """
-        response = requests.delete(f'{self.url}/{did}', headers=self._headers)
+        response = self.requests_session.delete(f'{self.url}/{did}', headers=self._headers)
         if response.status_code == 200:
             logging.debug(f'Removed asset DID: {did} from metadata store')
             return response
@@ -243,7 +244,7 @@ class Aquarius:
         :param metadata: Json dict
         :return: bool
         """
-        response = requests.post(
+        response = self.requests_session.post(
             f'{self.url}/validate',
             data=json.dumps(metadata),
             headers=self._headers

@@ -1,7 +1,6 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
-from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper import ContractBase
 from squid_py.keeper.web3_provider import Web3Provider
 
@@ -24,15 +23,16 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
         :param publisher_account:
         :return:
         """
-        publisher_account.unlock()
-        tx_hash = self.contract_concise.createAgreement(
-            agreement_id,
-            did,
-            condition_ids,
-            time_locks,
-            time_outs,
-            consumer_address,
-            transact={'from': publisher_account.address, 'gas': DEFAULT_GAS_LIMIT}
+        tx_hash = self.send_transaction(
+            'createAgreement',
+            (agreement_id,
+             did,
+             condition_ids,
+             time_locks,
+             time_outs,
+             consumer_address),
+            transact={'from': publisher_account.address,
+                      'passphrase': publisher_account.password}
         )
         return self.get_tx_receipt(tx_hash).status == 1
 

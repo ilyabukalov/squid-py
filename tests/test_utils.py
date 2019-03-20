@@ -28,7 +28,7 @@ def test_get_publickey_from_address(publisher_ocean_instance):
     for account in publisher_ocean_instance.accounts.list():
         try:
             pub_key = utilities.get_public_key_from_address(Web3Provider.get_web3(),
-                                                            account.address)
+                                                            account)
             assert pub_key.to_checksum_address() == account.address, \
                 'recovered public key address does not match original address.'
         except BadSignature:

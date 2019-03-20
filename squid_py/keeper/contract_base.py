@@ -8,6 +8,7 @@
 
 import logging
 
+from squid_py.keeper.web3.contract import SquidContractFunction
 from squid_py.keeper.web3_provider import Web3Provider
 
 logger = logging.getLogger('keeper')
@@ -114,6 +115,21 @@ class ContractBase(object):
             timeout=timeout,
             blocking=wait
         )
+
+    def send_transaction(self, fn_name, fn_args, transact=None):
+        """Calls a smart contract function using either `personal_sendTransaction` (if
+        passphrase is available) or `ether_sendTransaction`.
+
+        :param fn_name: str the smart contract function name
+        :param fn_args: tuple arguments to pass to function above
+        :param transact: dict arguments for the transaction such as from, gas, etc.
+        :return:
+        """
+        contract_fn = getattr(self.contract.functions, fn_name)(*fn_args)
+        contract_function = SquidContractFunction(
+            contract_fn
+        )
+        return contract_function.transact(transact)
 
     def __str__(self):
         return f'{self.name} at {self.address}'

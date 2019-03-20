@@ -4,7 +4,6 @@
 
 import logging
 
-from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.exceptions import OceanInvalidTransaction
 from squid_py.keeper.contract_base import ContractBase
 from squid_py.keeper.web3_provider import Web3Provider
@@ -27,10 +26,11 @@ class Dispenser(ContractBase):
         """
         address = account.address
         try:
-            account.unlock()
-            tx_hash = self.contract_concise.requestTokens(
-                amount,
-                transact={'from': address, 'gas': DEFAULT_GAS_LIMIT}
+            tx_hash = self.send_transaction(
+                'requestTokens',
+                (amount,),
+                transact={'from': address,
+                          'passphrase': account.password}
             )
             logging.debug(f'{address} requests {amount} tokens, returning receipt')
             receipt = Web3Provider.get_web3().eth.waitForTransactionReceipt(tx_hash)

@@ -42,8 +42,6 @@ class OceanAgreements:
         agreement_id = ServiceAgreement.create_new_agreement_id()
         asset = self._asset_resolver.resolve(did)
         service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
-        if not self._keeper.unlock_account(consumer_account):
-            logger.warning(f'Unlock of consumer account failed {consumer_account.address}')
 
         publisher_address = self._keeper.did_registry.get_did_owner(asset.asset_id)
         agreement_hash = service_agreement.get_service_agreement_hash(
@@ -53,7 +51,8 @@ class OceanAgreements:
 
         return agreement_id, signature
 
-    def send(self, did, agreement_id, service_definition_id, signature, consumer_account):
+    def send(self, did, agreement_id, service_definition_id, signature,
+             consumer_account, auto_consume=False):
         """
         Send a signed service agreement to the publisher Brizo instance to
         purchase/access the service.
@@ -66,6 +65,8 @@ class OceanAgreements:
         :param signature: str the signed agreement message hash which includes
          conditions and their parameters values and other details of the agreement.
         :param consumer_account: ethereum account address of consumer
+        :param auto_consume: boolean tells this function wether to automatically trigger
+            consuming the asset upon receiving access permission
         :raises OceanInitializeServiceAgreementError: on failure
         :return: bool
         """
@@ -88,7 +89,7 @@ class OceanAgreements:
             asset.encrypted_files,
             consumer_account,
             condition_ids,
-            self._asset_consumer.download,
+            self._asset_consumer.download if auto_consume else None,
         )
 
         return BrizoProvider.get_brizo().initialize_service_agreement(
@@ -176,7 +177,6 @@ class OceanAgreements:
 
         time_locks = service_agreement.conditions_timelocks
         time_outs = service_agreement.conditions_timeouts
-        self._keeper.unlock_account(publisher_account)
         success = agreement_template.create_agreement(
             agreement_id,
             asset_id,
@@ -282,6 +282,5 @@ class OceanAgreements:
                 f'Account {consumer_account.address} does not have sufficient tokens '
                 f'to approve for transfer.')
 
-        self._keeper.unlock_account(consumer_account)
         self._keeper.token.token_approve(self._keeper.payment_conditions.address, amount,
                                          consumer_account)

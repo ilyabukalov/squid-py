@@ -22,7 +22,6 @@ def fulfill_access_secret_store_condition(event, agreement_id, did, service_agre
     asset_id = add_0x_prefix(did_to_id(did))
     assert document_id == asset_id, f'document_id {document_id} <=> asset_id {asset_id} mismatch.'
     try:
-        Keeper.get_instance().unlock_account(publisher_account)
         tx_hash = Keeper.get_instance().access_secret_store_condition.fulfill(
             agreement_id, document_id, consumer_address, publisher_account
         )

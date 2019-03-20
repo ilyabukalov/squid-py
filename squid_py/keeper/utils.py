@@ -4,6 +4,8 @@
 
 import logging
 
+from web3.utils.threads import Timeout
+
 from squid_py.keeper.web3_provider import Web3Provider
 
 logger = logging.getLogger(__name__)
@@ -36,7 +38,12 @@ def process_tx_receipt(tx_hash, event, event_name):
     :return:
     """
     web3 = Web3Provider.get_web3()
-    web3.eth.waitForTransactionReceipt(tx_hash)
+    try:
+        web3.eth.waitForTransactionReceipt(tx_hash, timeout=20)
+    except Timeout:
+        logger.info('Waiting for transaction receipt timed out. Cannot verify receipt and event.')
+        return
+
     receipt = web3.eth.getTransactionReceipt(tx_hash)
     event = event().processReceipt(receipt)
     if event:

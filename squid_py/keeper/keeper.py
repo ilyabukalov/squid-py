@@ -93,7 +93,9 @@ class Keeper(object):
         :param account: Account
         :return:
         """
-        return Web3Provider.get_web3().eth.sign(account.address, msg_hash).hex()
+        return Web3Provider.get_web3().personal.sign(
+            msg_hash, account.address, account.password
+        )
 
     @staticmethod
     def unlock_account(account):

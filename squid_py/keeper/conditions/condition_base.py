@@ -32,7 +32,7 @@ class ConditionBase(ContractBase):
         :param kwargs:
         :return: true if the condition was successfully fulfilled, bool
         """
-        tx_hash = self.contract_concise.fulfill(*args, **kwargs)
+        tx_hash = self.send_transaction('fulfill', args, **kwargs)
         receipt = self.get_tx_receipt(tx_hash)
         return receipt.status == 1
 

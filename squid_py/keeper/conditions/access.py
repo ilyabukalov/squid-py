@@ -1,7 +1,6 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
-from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper.conditions.condition_base import ConditionBase
 
 
@@ -20,12 +19,12 @@ class AccessSecretStoreCondition(ConditionBase):
         :param account: Account instance
         :return: true if the condition was successfully fulfilled, bool
         """
-        account.unlock()
         return self._fulfill(
             agreement_id,
             document_id,
             grantee_address,
-            transact={'from': account.address, 'gas': DEFAULT_GAS_LIMIT}
+            transact={'from': account.address,
+                      'passphrase': account.password}
         )
 
     def hash_values(self, document_id, grantee_address):

@@ -84,8 +84,7 @@ class OceanAssets:
         ddo = DDO(did)
 
         # Add public key and authentication
-        self._keeper.unlock_account(publisher_account)
-        pub_key, auth = make_public_key_and_authentication(did, publisher_account.address,
+        pub_key, auth = make_public_key_and_authentication(did, publisher_account,
                                                            Web3Provider.get_web3())
         ddo.add_public_key(pub_key)
         ddo.add_authentication(auth, PUBLIC_KEY_TYPE_RSA)
@@ -169,7 +168,6 @@ class OceanAssets:
             return None
 
         # register on-chain
-        self._keeper.unlock_account(publisher_account)
         self._keeper.did_registry.register(
             did,
             checksum=Web3Provider.get_web3().sha3(text=metadata_copy['base']['checksum']),
@@ -239,7 +237,7 @@ class OceanAssets:
         aquarius = self._get_aquarius(aquarius_url)
         return [DDO(dictionary=ddo_dict) for ddo_dict in aquarius.query_search(query)]
 
-    def order(self, did, service_definition_id, consumer_account):
+    def order(self, did, service_definition_id, consumer_account, auto_consume=False):
         """
         Sign service agreement.
 
@@ -253,6 +251,7 @@ class OceanAssets:
         service in the DDO (DID document)
         :param consumer_account: ethereum address of consumer signing the agreement and
         initiating a purchase/access transaction
+        :param auto_consume: boolean
         :return: tuple(agreement_id, signature) the service agreement id (can be used to query
             the keeper-contracts for the status of the service agreement) and signed agreement hash
         """
@@ -262,7 +261,15 @@ class OceanAssets:
         agreement_id, signature = self._agreements.prepare(
             did, service_definition_id, consumer_account
         )
-        self._agreements.send(did, agreement_id, service_definition_id, signature, consumer_account)
+        logger.debug(f'about to request create agreement: {agreement_id}')
+        self._agreements.send(
+            did,
+            agreement_id,
+            service_definition_id,
+            signature,
+            consumer_account,
+            auto_consume=auto_consume
+        )
         return agreement_id
 
     def consume(self, service_agreement_id, did, service_definition_id, consumer_account,

@@ -143,9 +143,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     access_cond_id, lock_cond_id, escrow_cond_id = agreement_values.condition_ids
     # Fulfill lock_reward_condition
     starting_balance = keeper.token.get_token_balance(keeper.escrow_reward_condition.address)
-    keeper.unlock_account(consumer_acc)
     keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_acc)
-    keeper.unlock_account(consumer_acc)
     keeper.lock_reward_condition.fulfill(agreement_id, keeper.escrow_reward_condition.address,
                                          price, consumer_acc)
     assert keeper.token.get_token_balance(keeper.escrow_reward_condition.address) == (
@@ -161,7 +159,6 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     assert event, 'no event for LockRewardCondition.Fulfilled'
 
     # Fulfill access_secret_store_condition
-    keeper.unlock_account(publisher_acc)
     keeper.access_secret_store_condition.fulfill(
         agreement_id, asset_id, consumer_acc.address, publisher_acc)
     assert keeper.condition_manager.get_condition_state(access_cond_id) == 2, ''
@@ -175,7 +172,6 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     assert event, 'no event for AccessSecretStoreCondition.Fulfilled'
 
     # Fulfill escrow_reward_condition
-    keeper.unlock_account(publisher_acc)
     keeper.escrow_reward_condition.fulfill(
         agreement_id, price, publisher_acc.address,
         consumer_acc.address, lock_cond_id,
