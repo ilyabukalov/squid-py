@@ -77,7 +77,7 @@ class ContractBase(object):
         Validate the address provided.
 
         :param address: Address, hex str
-        :return:
+        :return: address, hex str
         """
         return Web3Provider.get_web3().toChecksumAddress(address)
 
@@ -86,7 +86,7 @@ class ContractBase(object):
         """
         Get the receipt of a tx.
 
-        :param tx_hash:
+        :param tx_hash: hash of the transaction
         :return: Tx receipt
         """
         try:
@@ -99,14 +99,15 @@ class ContractBase(object):
     def subscribe_to_event(self, event_name, timeout, event_filter, callback=False,
                            timeout_callback=None, args=None, wait=False):
         """
+        Create a listener for the event choose.
 
-        :param event_name:
+        :param event_name: name of the event to subscribe, str
         :param timeout:
         :param event_filter:
         :param callback:
         :param timeout_callback:
         :param args:
-        :param wait:
+        :param wait: if true block the listener until get the event, bool
         :return:
         """
         from squid_py.keeper.event_listener import EventListener

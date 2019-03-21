@@ -21,11 +21,11 @@ class PublicKeyRSA(PublicKeyBase):
         self._type = PUBLIC_KEY_TYPE_RSA
 
     def get_authentication_type(self):
-        """return the type of authentication supported by this class"""
+        """Return the type of authentication supported by this class."""
         return AUTHENTICATION_TYPE_RSA
 
     def set_encode_key_value(self, value, store_type=PUBLIC_KEY_STORE_TYPE_BASE64):
-        """set the value based on the type of encoding supported by RSA"""
+        """Set the value based on the type of encoding supported by RSA."""
         if store_type == PUBLIC_KEY_STORE_TYPE_PEM:
             PublicKeyBase.set_encode_key_value(self, value.exportKey('PEM').decode(), store_type)
         else:

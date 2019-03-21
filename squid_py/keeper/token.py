@@ -33,9 +33,9 @@ class Token(ContractBase):
         Approve the passed address to spend the specified amount of tokens.
 
         :param spender_address: Account address, str
-        :param price: Price, int
+        :param price: Asset price, int
         :param from_account: Account address, str
-        :return:
+        :return: bool
         """
         if not Web3Provider.get_web3().isChecksumAddress(spender_address):
             spender_address = Web3Provider.get_web3().toChecksumAddress(spender_address)
@@ -69,8 +69,9 @@ class Token(ContractBase):
 
     def total_supply(self):
         """
+        Return the total supply
 
-        :return:
+        :return: int
         """
         return self.contract_concise.totalSupply()
 
@@ -80,7 +81,7 @@ class Token(ContractBase):
         :param spender_address:
         :param added_value:
         :param owner_account:
-        :return:
+        :return: bool
         """
         tx_hash = self.send_transaction(
             'increaseAllowance',
@@ -96,7 +97,7 @@ class Token(ContractBase):
         :param spender_address:
         :param subtracted_value:
         :param owner_account:
-        :return:
+        :return: bool
         """
         tx_hash = self.send_transaction(
             'decreaseAllowance',

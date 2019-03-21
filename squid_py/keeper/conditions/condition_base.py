@@ -17,7 +17,7 @@ class ConditionBase(ContractBase):
         """
         Generate id for the condition.
 
-        :param agreement_id: Agreement id, str
+        :param agreement_id: id of the agreement, hex str
         :param types: list of types
         :param values: list of values
         :return: id, str
@@ -43,7 +43,7 @@ class ConditionBase(ContractBase):
     def abort_by_timeout(self, condition_id):
         """
 
-        :param condition_id:
+        :param condition_id: id of the condition, str
         :return:
         """
         tx_hash = self.contract_concise.abortByTimeOut(condition_id)
@@ -64,12 +64,12 @@ class ConditionBase(ContractBase):
         """
         Subscribe to the condition fullfilled event.
 
-        :param agreement_id: Agreement id, str
+        :param agreement_id: id of the agreement, hex str
         :param timeout:
         :param callback:
         :param args:
         :param timeout_callback:
-        :param wait:
+        :param wait: if true block the listener until get the event, bool
         :return:
         """
         logger.info(

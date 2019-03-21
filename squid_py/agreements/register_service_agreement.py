@@ -22,19 +22,18 @@ def register_service_agreement_consumer(storage_path, publisher_address, agreeme
     Registers the given service agreement in the local storage.
     Subscribes to the service agreement events.
 
-    :param storage_path:
-    :param publisher_address:
-    :param agreement_id:
-    :param did:
-    :param service_agreement:
-    :param service_definition_id:
-    :param price:
-    :param encrypted_files:
-    :param consumer_account:
-    :param condition_ids:
+    :param storage_path: storage path for the internal db, str
+    :param publisher_address: ethereum account address of publisher, hex str
+    :param agreement_id: id of the agreement, hex str
+    :param did: DID, str
+    :param service_agreement: ServiceAgreement instance
+    :param service_definition_id: identifier of the service inside the asset DDO, str
+    :param price: Asset price, int
+    :param encrypted_files: resutl of the files encrypted by the secret store, hex str
+    :param consumer_account: Account instance of the consumer
+    :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :param consume_callback:
-    :param start_time:
-    :return:
+    :param start_time: start time, int
     """
     if start_time is None:
         start_time = int(datetime.now().timestamp())
@@ -53,15 +52,15 @@ def process_agreement_events_consumer(publisher_address, agreement_id, did, serv
                                       price, consumer_account, condition_ids,
                                       consume_callback):
     """
+    Process the agreement events during the register of the service agreement for the consumer side.
 
-
-    :param publisher_address:
-    :param agreement_id:
-    :param did:
-    :param service_agreement:
-    :param price:
-    :param consumer_account:
-    :param condition_ids:
+    :param publisher_address: ethereum account address of publisher, hex str
+    :param agreement_id: id of the agreement, hex str
+    :param did: DID, str
+    :param service_agreement: ServiceAgreement instance
+    :param price: Asset price, int
+    :param consumer_account: Account instance of the consumer
+    :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :param consume_callback:
     :return:
     """
@@ -100,15 +99,15 @@ def register_service_agreement_publisher(storage_path, consumer_address, agreeme
     Registers the given service agreement in the local storage.
     Subscribes to the service agreement events.
 
-    :param storage_path:
-    :param consumer_address:
-    :param agreement_id:
-    :param did:
-    :param service_agreement:
-    :param service_definition_id:
-    :param price:
-    :param publisher_account:
-    :param condition_ids:
+    :param storage_path:storage path for the internal db, str
+    :param consumer_address: ethereum account address of consumer, hex str
+    :param agreement_id: id of the agreement, hex str
+    :param did: DID, str
+    :param service_agreement: ServiceAgreement instance
+    :param service_definition_id: identifier of the service inside the asset DDO, str
+    :param price: Asset price, int
+    :param publisher_account: Account instance of the publisher
+    :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :param start_time:
     :return:
     """
@@ -128,14 +127,15 @@ def process_agreement_events_publisher(publisher_account, agreement_id, did, ser
                                        price, consumer_address,
                                        condition_ids):
     """
+    Process the agreement events during the register of the service agreement for the publisher side
 
-    :param publisher_account:
-    :param agreement_id:
-    :param did:
-    :param service_agreement:
-    :param price:
-    :param consumer_address:
-    :param condition_ids:
+    :param publisher_account: Account instance of the publisher
+    :param agreement_id: id of the agreement, hex str
+    :param did: DID, str
+    :param service_agreement: ServiceAgreement instance
+    :param price: Asset price, int
+    :param consumer_address: ethereum account address of consumer, hex str
+    :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :return:
     """
     conditions_dict = service_agreement.condition_by_name
@@ -170,7 +170,7 @@ def execute_pending_service_agreements(storage_path, account, actor_type, did_re
      Iterates over pending service agreements recorded in the local storage,
     fetches their service definitions, and subscribes to service agreement events.
 
-    :param storage_path:
+    :param storage_path: storage path for the internal db, str
     :param account:
     :param actor_type:
     :param did_resolver_fn:

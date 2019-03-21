@@ -25,7 +25,7 @@ class AssetConsumer:
         :param service_agreement_id: Service agreement id, str
         :param service_definition_id: identifier of the service inside the asset DDO, str
         :param ddo: DDO
-        :param consumer_account: Account
+        :param consumer_account: Account instance of the consumer
         :param destination: Path, str
         :param brizo: Brizo instance
         :param secret_store: SecretStore instance

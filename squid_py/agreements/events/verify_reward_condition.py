@@ -2,14 +2,13 @@ def verify_reward_tokens(event, agreement_id, did, service_agreement, price, con
                          publisher_account):
     """
 
-    :param event:
-    :param agreement_id:
-    :param did:
-    :param service_agreement:
-    :param price:
-    :param consumer_address:
-    :param publisher_account:
-    :return:
+    :param event: AttributeDict with the event data.
+    :param agreement_id: id of the agreement, hex str
+    :param did: DID, str
+    :param service_agreement: ServiceAgreement instance
+    :param price: Asset price, int
+    :param consumer_address: ethereum account address of consumer, hex str
+    :param publisher_account: Account instance of the publisher
     """
     # :TODO: verify that tokens were transfered to publisher
     pass

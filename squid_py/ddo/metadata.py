@@ -135,7 +135,7 @@ class Metadata(object):
     def validate(metadata):
         """Validator of the metadata composition
 
-        :param metadata: Metadata
+        :param metadata: conforming to the Metadata accepted by Ocean Protocol, dict
         :return: bool
         """
         # validate required sections and their sub items

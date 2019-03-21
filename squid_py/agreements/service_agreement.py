@@ -143,7 +143,7 @@ class ServiceAgreement(Service):
     def from_ddo(cls, service_definition_id, ddo):
         """
 
-        :param service_definition_id:
+        :param service_definition_id: identifier of the service inside the asset DDO, str
         :param ddo:
         :return:
         """
@@ -178,7 +178,7 @@ class ServiceAgreement(Service):
         :param values_hash_list:
         :param timelocks:
         :param timeouts:
-        :param agreement_id:
+        :param agreement_id: id of the agreement, hex str
         :return:
         """
         return generate_multi_value_hash(
@@ -198,10 +198,10 @@ class ServiceAgreement(Service):
                                          publisher_address, keeper):
         """
 
-        :param agreement_id:
+        :param agreement_id: id of the agreement, hex str
         :param asset_id:
-        :param consumer_address:
-        :param publisher_address:
+        :param consumer_address: ethereum account address of consumer, hex str
+        :param publisher_address: ethereum account address of publisher, hex str
         :param keeper:
         :return:
         """
@@ -227,10 +227,10 @@ class ServiceAgreement(Service):
             self, agreement_id, asset_id, consumer_address, publisher_address, keeper):
         """Return the hash of the service agreement values to be signed by a consumer.
 
-        :param agreement_id: hex str identifies an executed service agreement on-chain
+        :param agreement_id:id of the agreement, hex str
         :param asset_id:
-        :param consumer_address: ethereum account address of consumer
-        :param publisher_address: ethereum account address of publisher
+        :param consumer_address: ethereum account address of consumer, hex str
+        :param publisher_address: ethereum account address of publisher, hex str
         :param keeper:
         :return:
         """

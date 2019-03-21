@@ -32,9 +32,9 @@ class OceanAgreements:
         """
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: str identifies the specific service in
+        :param service_definition_id: identifier of the service inside the asset DDO, str
          the ddo to use in this agreement.
-        :param consumer_account: ethereum account address of publisher
+        :param consumer_account: Account instance of the consumer
         :return: tuple (agreement_id: str, signature: hex str)
         """
         agreement_id = ServiceAgreement.create_new_agreement_id()
@@ -62,7 +62,7 @@ class OceanAgreements:
          the ddo to use in this agreement.
         :param signature: str the signed agreement message hash which includes
          conditions and their parameters values and other details of the agreement.
-        :param consumer_account: ethereum account address of consumer
+        :param consumer_account: Account instance of the consumer
         :param auto_consume: boolean tells this function wether to automatically trigger
             consuming the asset upon receiving access permission
         :raises OceanInitializeServiceAgreementError: on failure
@@ -117,7 +117,7 @@ class OceanAgreements:
          on-chain for the executed agreement.
         :param service_agreement_signature: str the signed agreement message hash which includes
          conditions and their parameters values and other details of the agreement.
-        :param consumer_address: ethereum account address of consumer
+        :param consumer_address: ethereum account address of consumer, hex str
         :param publisher_account: ethereum account address of publisher
         :return: dict the `executeAgreement` transaction receipt
         """
@@ -149,7 +149,7 @@ class OceanAgreements:
         if not self._verify_service_agreement_signature(
                 did, agreement_id, service_definition_id,
                 consumer_address, service_agreement_signature,
-                publisher_account, ddo=asset
+                ddo=asset
         ):
             raise OceanInvalidServiceAgreementSignature(
                 f'Verifying consumer signature failed: '
@@ -221,9 +221,9 @@ class OceanAgreements:
         Verify on-chain that the `consumer_address` has permission to access the given asset `did`
         according to the `agreement_id`.
 
-        :param agreement_id: str
+        :param agreement_id: id of the agreement, hex str
         :param did: DID, str
-        :param consumer_address: Account address, str
+        :param consumer_address: ethereum account address of consumer, hex str
         :return: bool True if user has permission
         """
         agreement_consumer = self._keeper.escrow_access_secretstore_template.get_agreement_consumer(
@@ -239,8 +239,7 @@ class OceanAgreements:
         )
 
     def _verify_service_agreement_signature(self, did, agreement_id, service_definition_id,
-                                            consumer_address, signature, publisher_account,
-                                            ddo=None):
+                                            consumer_address, signature, ddo=None):
         """
         Verify service agreement signature.
 
@@ -248,9 +247,9 @@ class OceanAgreements:
         and represents this did's service agreement..
 
         :param did: DID, str
-        :param agreement_id: str
-        :param service_definition_id: str
-        :param consumer_address: Account address, str
+        :param agreement_id: id of the agreement, hex str
+        :param service_definition_id: identifier of the service inside the asset DDO, str
+        :param consumer_address: ethereum account address of consumer, hex str
         :param signature: Signature, str
         :param ddo: DDO instance
         :return: True if signature is legitimate, False otherwise

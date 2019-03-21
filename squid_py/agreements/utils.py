@@ -49,7 +49,7 @@ def make_public_key_and_authentication(did, publisher_account, web3):
     Alternatively, the public key can be generated from a private key if provided by the publisher.
 
     :param did: DID, str
-    :param publisher_account: Account instance
+    :param publisher_account: Account instance of the publisher
     :param web3: Web3 instance
     :return: Tuple(str, str)
     """

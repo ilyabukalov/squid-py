@@ -10,10 +10,11 @@ class LockRewardCondition(ConditionBase):
 
     def fulfill(self, agreement_id, reward_address, amount, account):
         """
+        Fulfill the lock reward condition.
 
-        :param agreement_id:
-        :param reward_address:
-        :param amount:
+        :param agreement_id: id of the agreement, hex str
+        :param reward_address: ethereum account address, hex str
+        :param amount: Amount of tokens, int
         :param account: Account instance
         :return:
         """
@@ -27,9 +28,10 @@ class LockRewardCondition(ConditionBase):
 
     def hash_values(self, reward_address, amount):
         """
+        Hash of the values of the lock reward condition.
 
-        :param reward_address:
-        :param amount:
-        :return:
+        :param reward_address: ethereum account address, hex str
+        :param amount: Amount of tokens, int
+        :return: hex str
         """
         return self._hash_values(reward_address, amount)

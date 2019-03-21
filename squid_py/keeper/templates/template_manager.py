@@ -34,7 +34,7 @@ class TemplateStoreManager(ContractBase):
 
         :param template_id: id of the template, str
         :param from_account: Account
-        :return:
+        :return: bool
         """
         tx_hash = self.send_transaction(
             'proposeTemplate',
@@ -64,7 +64,7 @@ class TemplateStoreManager(ContractBase):
 
         :param template_id: id of the template, str
         :param from_account: Account
-        :return:
+        :return: bool
         """
         tx_hash = self.send_transaction(
             'revokeTemplate',

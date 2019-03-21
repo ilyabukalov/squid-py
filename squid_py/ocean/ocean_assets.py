@@ -249,8 +249,7 @@ class OceanAssets:
         a hex str
         :param service_definition_id: str the service definition id identifying a specific
         service in the DDO (DID document)
-        :param consumer_account: ethereum address of consumer signing the agreement and
-        initiating a purchase/access transaction
+        :param consumer_account: Account instance of the consumer
         :param auto_consume: boolean
         :return: tuple(agreement_id, signature) the service agreement id (can be used to query
             the keeper-contracts for the status of the service agreement) and signed agreement hash
@@ -286,8 +285,8 @@ class OceanAssets:
 
         :param service_agreement_id: str
         :param did: DID, str
-        :param service_definition_id: str
-        :param consumer_account: Account address, str
+        :param service_definition_id: identifier of the service inside the asset DDO, str
+        :param consumer_account: Account instance of the consumer
         :param destination: str path
         :return: str path to saved files
         """

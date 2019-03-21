@@ -1,4 +1,3 @@
-
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +6,10 @@ from web3 import Web3
 
 
 class Parameter:
-    """"""
+    """
+    Parameter of the condition.
+    Form by a parameter name, a type and a value.
+    """
 
     def __init__(self, param_json):
         self.name = param_json['name']
@@ -17,6 +19,11 @@ class Parameter:
             self.value = add_0x_prefix(self.value)
 
     def as_dictionary(self):
+        """
+        Return the parameter as a dictionary.
+
+        :return: dict
+        """
         return {
             "name": self.name,
             "type": self.type,
@@ -67,7 +74,7 @@ class Event:
 
 
 class ServiceAgreementCondition(object):
-    """"""
+    """Class representing the Service Agreement Conditions."""
 
     def __init__(self, condition_json=None):
         self.name = ''
@@ -85,9 +92,9 @@ class ServiceAgreementCondition(object):
 
     def init_from_condition_json(self, condition_json):
         """
+        Init the condition values from a condition json.
 
-        :param condition_json:
-        :return:
+        :param condition_json: dict
         """
         self.name = condition_json['name']
         self.timelock = condition_json['timelock']
@@ -99,8 +106,9 @@ class ServiceAgreementCondition(object):
 
     def as_dictionary(self):
         """
+        Return the condition as a dictionary.
 
-        :return:
+        :return: dict
         """
         condition_dict = {
             "name": self.name,
@@ -117,22 +125,25 @@ class ServiceAgreementCondition(object):
     @property
     def param_types(self):
         """
+        Type of the conditions.
 
-        :return:
+        :return: list of types.
         """
         return [parameter.type for parameter in self.parameters]
 
     @property
     def param_values(self):
         """
+        Values of the conditions.
 
-        :return:
+        :return: list of values.
         """
         return [parameter.value for parameter in self.parameters]
 
     @property
     def values_hash(self):
         """
+        Value hashes
 
         :return:
         """

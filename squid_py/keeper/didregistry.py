@@ -55,11 +55,10 @@ class DIDRegistry(ContractBase):
     def register_attribute(self, did_hash, checksum, value, account):
         """Register an DID attribute as an event on the block chain.
 
-            did_hash: 32 byte string/hex of the DID
-            value_type: 0 = DID, 1 = DIDREf, 2 = URL, 3 = DDO
-            key: 32 byte string/hex free format
-            value: string can be anything, probably DDO or URL
-            account_address: owner of this DID registration record
+        :param did_hash: 32 byte string/hex of the DID
+        :param checksum: checksum of the ddo, hex str
+        :param value: url for resolve the did, str
+        :param account: account owner of this DID registration record
         """
         return self.send_transaction(
             'registerAttribute',
@@ -79,7 +78,7 @@ class DIDRegistry(ContractBase):
         Return the owner of the did.
 
         :param did: Asset did, did
-        :return:
+        :return: ethereum address, hex str
         """
         return self.contract_concise.getDIDOwner(did)
 

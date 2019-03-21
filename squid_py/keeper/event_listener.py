@@ -27,6 +27,7 @@ class EventListener(object):
         self.args = args
 
     def make_event_filter(self):
+        """Create a new event filter."""
         event_filter = self.event().createFilter(
             fromBlock=self.from_block, toBlock=self.to_block, argument_filters=self.filters
         )

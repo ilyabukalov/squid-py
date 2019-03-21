@@ -12,7 +12,7 @@ class AccessSecretStoreCondition(ConditionBase):
         """
         Fulfill the access secret store condition.
 
-        :param agreement_id: id of the agreement, str
+        :param agreement_id: id of the agreement, hex str
         :param document_id: refers to the DID in which secret store will issue the decryption
         keys, DID
         :param grantee_address: is the address of the granted user, str
@@ -29,12 +29,12 @@ class AccessSecretStoreCondition(ConditionBase):
 
     def hash_values(self, document_id, grantee_address):
         """
-
+        Hast the values of the document_id with the grantee address.
 
         :param document_id: refers to the DID in which secret store will issue the decryption
         keys, DID
         :param grantee_address: is the address of the granted user, str
-        :return:
+        :return: hex str
         """
         return self._hash_values(document_id, grantee_address)
 

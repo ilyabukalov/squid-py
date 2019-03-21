@@ -32,9 +32,9 @@ def process_tx_receipt(tx_hash, event, event_name):
     """
     Wait until the tx receipt is processed.
 
-    :param tx_hash:
-    :param event:
-    :param event_name:
+    :param tx_hash: hash of the transaction
+    :param event: AttributeDict with the event data.
+    :param event_name: name of the event to subscribe, str
     :return:
     """
     web3 = Web3Provider.get_web3()
