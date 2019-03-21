@@ -19,12 +19,19 @@ class EventListener(object):
         contract = ContractHandler.get(contract_name)
         self.event = getattr(contract.events, event_name)
         self.filters = filters if filters else {}
-        self.event_filter = self.event().createFilter(
-            fromBlock=from_block, toBlock=to_block, argument_filters=self.filters
-        )
+        self.from_block = from_block
+        self.to_block = to_block
+        self.event_filter = self.make_event_filter()
         self.event_filter.poll_interval = 0.5
         self.timeout = 60  # seconds
         self.args = args
+
+    def make_event_filter(self):
+        event_filter = self.event().createFilter(
+            fromBlock=self.from_block, toBlock=self.to_block, argument_filters=self.filters
+        )
+        event_filter.poll_interval = 0.5
+        return event_filter
 
     def listen_once(self, callback, timeout=None, timeout_callback=None, start_time=None,
                     blocking=False):
@@ -49,7 +56,7 @@ class EventListener(object):
             callback = _callback
         # TODO Review where to close this threads.
         Thread(
-            target=EventListener.watch_one_event,
+            target=self.watch_one_event,
             args=(self.event_filter,
                   callback,
                   timeout_callback,
@@ -66,8 +73,9 @@ class EventListener(object):
 
         return None
 
-    @staticmethod
-    def watch_one_event(event_filter, callback, timeout_callback, timeout, args, start_time=None):
+    # @staticmethod
+    def watch_one_event(self, event_filter, callback, timeout_callback, timeout, args,
+                        start_time=None):
         """
         Start to watch one event.
 
@@ -92,9 +100,11 @@ class EventListener(object):
                     callback(events[0], *args)
                     return
 
-            except ValueError as err:
+            except (ValueError, Exception) as err:
                 # ignore error, but log it
                 logger.debug(f'Got error grabbing keeper events: {str(err)}')
+                if 'Filter not found' in str(err):
+                    event_filter = self.make_event_filter()
 
             time.sleep(0.1)
             if timeout:
@@ -104,5 +114,4 @@ class EventListener(object):
                         timeout_callback(*args)
                     else:
                         callback(None, *args)
-
                     break

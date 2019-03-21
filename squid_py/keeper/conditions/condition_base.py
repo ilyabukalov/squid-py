@@ -1,8 +1,12 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
+import logging
+
 from squid_py.keeper import ContractBase, utils
 from squid_py.keeper.web3_provider import Web3Provider
+
+logger = logging.getLogger('escrowAccessSecretStoreTemplate')
 
 
 class ConditionBase(ContractBase):
@@ -68,6 +72,8 @@ class ConditionBase(ContractBase):
         :param wait:
         :return:
         """
+        logger.info(
+            f'Subscribing {self.FULFILLED_EVENT} event with agreement id {agreement_id}.')
         return self.subscribe_to_event(
             self.FULFILLED_EVENT,
             timeout,

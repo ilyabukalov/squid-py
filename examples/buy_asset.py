@@ -3,6 +3,7 @@
 
 import logging
 import os
+import time
 
 from examples import ExampleConfig, get_account_from_config
 from squid_py import ConfigProvider, Metadata, Ocean
@@ -40,7 +41,6 @@ def buy_asset():
         acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
 
     # Register ddo
-    # ocn.templates.create(ocn.templates.access_template_id, acc)
     ddo = ocn.assets.create(Metadata.get_example(), acc)
     logging.info(f'registered ddo: {ddo.did}')
     # ocn here will be used only to publish the asset. Handling the asset by the publisher
@@ -60,41 +60,9 @@ def buy_asset():
         ddo.did, sa.service_definition_id, consumer_account)
     logging.info('placed order: %s, %s', ddo.did, agreement_id)
 
-    event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
-        agreement_id,
-        30,
-        _log_event(keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
-        (),
-        wait=True
-    )
-    assert event, 'no event for EscrowAccessSecretStoreTemplate.AgreementCreated'
+    while ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address) is not True:
+         time.sleep(10)
 
-    event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
-        agreement_id,
-        30,
-        _log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
-        (),
-        wait=True
-    )
-    assert event, 'no event for LockRewardCondition.Fulfilled'
-
-    event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
-        agreement_id,
-        30,
-        _log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
-        (),
-        wait=True
-    )
-    assert event, 'no event for AccessSecretStoreCondition.Fulfilled'
-
-    event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
-        agreement_id,
-        30,
-        _log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
-        (),
-        wait=True
-    )
-    assert event, 'no event for EscrowReward.Fulfilled'
     assert ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address)
 
     ocn.assets.consume(
