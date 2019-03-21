@@ -127,15 +127,6 @@ def get_registered_ddo(ocean_instance, account):
     return ddo
 
 
-def wait_for_event(event, arg_filter, wait_iterations=20):
-    _filter = event.createFilter(fromBlock=0, argument_filters=arg_filter)
-    for check in range(wait_iterations):
-        events = _filter.get_all_entries()
-        if events:
-            return events[0]
-        time.sleep(0.5)
-
-
 def log_event(event_name):
     def _process_event(event):
         print(f'Received event {event_name}: {event}')

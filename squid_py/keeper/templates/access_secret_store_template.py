@@ -1,8 +1,12 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
+import logging
+
 from squid_py.keeper import ContractBase
 from squid_py.keeper.web3_provider import Web3Provider
+
+logger = logging.getLogger('escrowAccessSecretStoreTemplate')
 
 
 class EscrowAccessSecretStoreTemplate(ContractBase):
@@ -23,6 +27,8 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
         :param publisher_account:
         :return:
         """
+        logger.info(
+            f'Creating agreement {agreement_id} with did={did}, consumer={consumer_address}.')
         tx_hash = self.send_transaction(
             'createAgreement',
             (agreement_id,
@@ -72,6 +78,8 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
         :param wait:
         :return:
         """
+        logger.info(
+            f'Subscribing {self.AGREEMENT_CREATED_EVENT} event with agreement id {agreement_id}.')
         return self.subscribe_to_event(
             self.AGREEMENT_CREATED_EVENT,
             timeout,

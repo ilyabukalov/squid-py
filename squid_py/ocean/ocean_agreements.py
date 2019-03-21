@@ -9,10 +9,8 @@ from squid_py.agreements.register_service_agreement import (register_service_agr
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.did import did_to_id
-from squid_py.exceptions import (
-    OceanInvalidServiceAgreementSignature,
-    OceanServiceAgreementExists,
-    OceanInvalidAgreementTemplate)
+from squid_py.exceptions import (OceanInvalidAgreementTemplate,
+                                 OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists)
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ocean.ocean_conditions import OceanConditions
 from squid_py.utils.utilities import prepare_prefixed_hash
@@ -264,7 +262,8 @@ class OceanAgreements:
 
         service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
         agreement_hash = service_agreement.get_service_agreement_hash(
-            agreement_id, ddo.asset_id, consumer_address, publisher_account.address, self._keeper)
+            agreement_id, ddo.asset_id, consumer_address,
+            Web3Provider.get_web3().toChecksumAddress(ddo.proof['creator']), self._keeper)
 
         prefixed_hash = prepare_prefixed_hash(agreement_hash)
         recovered_address = Web3Provider.get_web3().eth.account.recoverHash(
