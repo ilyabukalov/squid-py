@@ -21,13 +21,13 @@ def fulfill_escrow_reward_condition(event, agreement_id, service_agreement, pric
                                     publisher_account, condition_ids):
     """
 
-    :param event:
-    :param agreement_id:
-    :param service_agreement:
-    :param price:
-    :param consumer_address:
-    :param publisher_account:
-    :param condition_ids:
+    :param event: AttributeDict with the event data.
+    :param agreement_id: id of the agreement, hex str
+    :param service_agreement: ServiceAgreement instance
+    :param price: Asset price, int
+    :param consumer_address: ethereum account address of consumer, hex str
+    :param publisher_account: Account instance of the publisher
+    :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :return:
     """
     logger.debug(f"release reward after event {event}.")
@@ -56,16 +56,16 @@ def fulfill_escrow_reward_condition(event, agreement_id, service_agreement, pric
 def refund_reward(event, agreement_id, did, service_agreement, price, consumer_account,
                   publisher_address, condition_ids):
     """
+    Refund the reward to the publisher address.
 
-    :param event:
-    :param agreement_id:
-    :param did:
-    :param service_agreement:
-    :param price:
-    :param consumer_account:
-    :param publisher_address:
-    :param condition_ids:
-    :return:
+    :param event: AttributeDict with the event data.
+    :param agreement_id: id of the agreement, hex str
+    :param did: DID, str
+    :param service_agreement: ServiceAgreement instance
+    :param price: Asset price, int
+    :param consumer_account: Account instance of the consumer
+    :param publisher_address: ethereum account address of publisher, hex str
+    :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     """
     logger.debug(f"trigger refund after event {event}.")
     access_id, lock_id = condition_ids[:2]
@@ -102,13 +102,12 @@ def consume_asset(event, agreement_id, did, service_agreement, consumer_account,
     """
     Consumption of an asset after get the event call.
 
-    :param event:
-    :param agreement_id:
-    :param did:
-    :param service_agreement:
-    :param consumer_account:
+    :param event: AttributeDict with the event data.
+    :param agreement_id: id of the agreement, hex str
+    :param did: DID, str
+    :param service_agreement: ServiceAgreement instance
+    :param consumer_account: Account instance of the consumer
     :param consume_callback:
-    :return:
     """
     logger.debug(f"consuming asset after event {event}.")
     if consume_callback:

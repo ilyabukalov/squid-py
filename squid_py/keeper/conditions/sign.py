@@ -10,12 +10,13 @@ class SignCondition(ConditionBase):
 
     def fulfill(self, agreement_id, message, account_address, signature, from_account):
         """
+        Fulfill the sign conditon.
 
-        :param agreement_id:
+        :param agreement_id: id of the agreement, hex str
         :param message:
-        :param account_address:
-        :param signature:
-        :param from_account:
+        :param account_address: ethereum account address, hex str
+        :param signature: signed agreement hash, hex str
+        :param from_account: Account doing the transaction
         :return:
         """
         return self._fulfill(
@@ -29,6 +30,7 @@ class SignCondition(ConditionBase):
 
     def hash_values(self, message, account_address):
         """
+        Hash the values of the sign condition.
 
         :param message:
         :param account_address:

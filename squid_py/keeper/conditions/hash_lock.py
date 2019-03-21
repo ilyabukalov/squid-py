@@ -11,7 +11,7 @@ class HashLockCondition(ConditionBase):
     def fulfill(self, agreement_id, preimage, account):
         """
 
-        :param agreement_id:
+        :param agreement_id: id of the agreement, hex str
         :param preimage:
         :param account: Account instance
         :return:
@@ -25,6 +25,8 @@ class HashLockCondition(ConditionBase):
 
     def hash_values(self, preimage):
         """
+        Hash the values of the hash lock condition.
+
 
         :param preimage:
         :return:

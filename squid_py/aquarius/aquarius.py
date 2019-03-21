@@ -241,7 +241,7 @@ class Aquarius:
         """
         Validate that the metadata of your ddo is valid.
 
-        :param metadata: Json dict
+        :param metadata: conforming to the Metadata accepted by Ocean Protocol, dict
         :return: bool
         """
         response = self.requests_session.post(

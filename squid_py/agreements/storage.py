@@ -11,11 +11,11 @@ def record_service_agreement(storage_path, service_agreement_id, did, service_de
     """
     Records the given pending service agreement.
 
-    :param storage_path:
+    :param storage_path: storage path for the internal db, str
     :param service_agreement_id:
-    :param did:
-    :param service_definition_id:
-    :param price:
+    :param did: DID, str
+    :param service_definition_id: identifier of the service inside the asset DDO, str
+    :param price: Asset price, int
     :param files:
     :param start_time:
     :param status:
@@ -43,7 +43,7 @@ def update_service_agreement_status(storage_path, service_agreement_id, status='
     """
     Update the service agreement status.
 
-    :param storage_path:
+    :param storage_path: storage path for the internal db, str
     :param service_agreement_id:
     :param status:
     :return:
@@ -64,7 +64,7 @@ def get_service_agreements(storage_path, status='pending'):
     """
     Get service agreements pending to be executed.
 
-    :param storage_path:
+    :param storage_path: storage path for the internal db, str
     :param status:
     :return:
     """

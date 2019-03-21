@@ -17,15 +17,16 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
     def create_agreement(self, agreement_id, did, condition_ids, time_locks, time_outs,
                          consumer_address, publisher_account):
         """
+        Create the service agreement. Return true if it is created successfully.
 
-        :param agreement_id:
-        :param did:
-        :param condition_ids:
-        :param time_locks:
-        :param time_outs:
-        :param consumer_address:
-        :param publisher_account:
-        :return:
+        :param agreement_id: id of the agreement, hex str
+        :param did: DID, str
+        :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
+        :param time_locks: is a list of uint time lock values associated to each Condition, int
+        :param time_outs: is a list of uint time out values associated to each Condition, int
+        :param consumer_address: ethereum account address of consumer, hex str
+        :param publisher_account: Account instance of the publisher
+        :return: bool
         """
         logger.info(
             f'Creating agreement {agreement_id} with did={did}, consumer={consumer_address}.')
@@ -52,7 +53,7 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
     def get_agreement_data(self, agreement_id):
         """
 
-        :param agreement_id:
+        :param agreement_id: id of the agreement, hex str
         :return:
         """
         consumer, provider = self.contract_concise.getAgreementData(agreement_id)
@@ -61,7 +62,7 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
     def get_agreement_consumer(self, agreement_id):
         """
 
-        :param agreement_id:
+        :param agreement_id: id of the agreement, hex str
         :return:
         """
         data = self.get_agreement_data(agreement_id)
@@ -71,11 +72,11 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
         """
         Subscribe to an agreement created.
 
-        :param agreement_id:
+        :param agreement_id: id of the agreement, hex str
         :param timeout:
         :param callback:
         :param args:
-        :param wait:
+        :param wait: if true block the listener until get the event, bool
         :return:
         """
         logger.info(

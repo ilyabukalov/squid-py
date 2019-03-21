@@ -113,7 +113,7 @@ class Brizo:
 
         :param did: DID, str
         :param service_agreement_id: Service Agreement Id, str
-        :param service_definition_id: str the service definition id identifying a specific
+        :param service_definition_id: identifier of the service inside the asset DDO, str
         service in the DDO (DID document)
         :param signature: the signed agreement message hash which includes
          conditions and their parameters values and other details of the agreement, str

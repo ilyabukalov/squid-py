@@ -109,7 +109,7 @@ def split_signature(web3, signature):
     """
 
     :param web3:
-    :param signature:
+    :param signature: signed agreement hash, hex str
     :return:
     """
     assert len(signature) == 65, f'invalid signature, ' \

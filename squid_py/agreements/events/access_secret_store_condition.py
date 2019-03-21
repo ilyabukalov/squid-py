@@ -15,6 +15,16 @@ logger = logging.getLogger(__name__)
 
 def fulfill_access_secret_store_condition(event, agreement_id, did, service_agreement,
                                           consumer_address, publisher_account):
+    """
+    Fulfill the access condition.
+
+    :param event: AttributeDict with the event data.
+    :param agreement_id: id of the agreement, hex str
+    :param did: DID, str
+    :param service_agreement: ServiceAgreement instance
+    :param consumer_address: ethereum account address of consumer, hex str
+    :param publisher_account: Account instance of the publisher
+    """
     logger.debug(f"release reward after event {event}.")
     name_to_parameter = {param.name: param for param in
                          service_agreement.condition_by_name['accessSecretStore'].parameters}

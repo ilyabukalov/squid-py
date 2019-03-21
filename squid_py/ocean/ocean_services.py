@@ -13,7 +13,7 @@ class OceanServices:
         """
         Publish an asset with an `Access` service according to the supplied attributes.
 
-        :param price: int price of service in ocean tokendids
+        :param price: Asset price, int
         :param service_endpoint: str URL for initiating service access request
         :param consume_endpoint: str URL to consume service
         :param timeout: int amount of time in seconds before the agreement expires

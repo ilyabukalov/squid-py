@@ -23,9 +23,10 @@ class ServiceAgreementTemplate(object):
     @classmethod
     def from_json_file(cls, path):
         """
+        Return a template from a json allocated in a path.
 
-        :param path:
-        :return:
+        :param path: string
+        :return: ServiceAgreementTemplate
         """
         with open(path) as jsf:
             template_json = json.load(jsf)
@@ -33,9 +34,9 @@ class ServiceAgreementTemplate(object):
 
     def parse_template_json(self, template_json):
         """
+        Parse a template from a json.
 
-        :param template_json:
-        :return:
+        :param template_json: json dict
         """
         assert template_json['type'] == self.DOCUMENT_TYPE, ''
         self.template_id = template_json['templateId']
@@ -45,49 +46,54 @@ class ServiceAgreementTemplate(object):
 
     def set_template_id(self, template_id):
         """
+        Assign the template id to the template.
 
-        :param template_id:
-        :return:
+        :param template_id: string
         """
         self.template_id = template_id
 
     @property
     def fulfillment_order(self):
         """
+        List with the fulfillment order.
 
-        :return:
+        :return: list
         """
         return self.template['fulfillmentOrder']
 
     @property
     def condition_dependency(self):
         """
+        Dictionary with the dependencies of the conditions.
 
-        :return:
+        :return: dict
         """
         return self.template['conditionDependency']
 
     @property
     def contract_name(self):
         """
+        Contract name of the template.
 
-        :return:
+        :return: string
         """
         return self.template['contractName']
 
     @property
     def agreement_events(self):
         """
+        List of agreements events.
 
-        :return:
+        :return: list
         """
         return [Event(e) for e in self.template['events']]
 
     @property
     def conditions(self):
         """
+        List of conditions.
 
-        :return:
+        :return: list
         """
         return [
             ServiceAgreementCondition(cond_json) for cond_json in self.template['conditions']
@@ -95,16 +101,17 @@ class ServiceAgreementTemplate(object):
 
     def set_conditions(self, conditions):
         """
+        Set the conditions of the template.
 
-        :param conditions:
-        :return:
+        :param conditions: list of conditions.
         """
         self.template['conditions'] = [cond.as_dictionary() for cond in conditions]
 
     def as_dictionary(self):
         """
+        Return the service agreement template as a dictionary.
 
-        :return:
+        :return: dict
         """
         template = {
             'contractName': self.contract_name,

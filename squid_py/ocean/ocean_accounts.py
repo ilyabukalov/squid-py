@@ -26,6 +26,11 @@ class OceanAccounts:
 
     @property
     def accounts_addresses(self):
+        """
+        Return a list with the account addresses.
+
+        :return: list
+        """
         return [a.address for a in self._accounts]
 
     def list(self):

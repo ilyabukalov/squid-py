@@ -12,12 +12,12 @@ logger = logging.getLogger(__name__)
 
 def fulfill_lock_reward_condition(event, agreement_id, price, consumer_account):
     """
+    Fulfill the lock reward condition.
 
-    :param event:
-    :param agreement_id:
-    :param price:
-    :param consumer_account:
-    :return:
+    :param event: AttributeDict with the event data.
+    :param agreement_id: id of the agreement, hex str
+    :param price: Asset price, int
+    :param consumer_account: Account instance of the consumer
     """
     logger.debug(f"about to lock reward after event {event}.")
     keeper = Keeper.get_instance()

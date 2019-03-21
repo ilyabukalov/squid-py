@@ -548,6 +548,13 @@ class DDO:
 
     @staticmethod
     def generate_checksum(did, metadata):
+        """
+        Generation of the hash for integrity checksum.
+
+        :param did: DID, str
+        :param metadata: conforming to the Metadata accepted by Ocean Protocol, dict
+        :return: hex str
+        """
         files_checksum = ''
         for file in metadata['base']['files']:
             if 'checksum' in file:

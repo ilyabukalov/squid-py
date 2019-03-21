@@ -40,14 +40,29 @@ class Service:
 
     @property
     def did(self):
+        """
+        Id of the asset includes the `did:op:` prefix.
+
+        :return: DID, str
+        """
         return self._did
 
     @property
     def type(self):
+        """
+        Type of the service.
+
+        :return: str
+        """
         return self._type
 
     @property
     def service_definition_id(self):
+        """
+        Identifier of the service inside the asset DDO
+
+        :return: str
+        """
         return self._values.get('serviceDefinitionId')
 
     # @property
@@ -59,10 +74,19 @@ class Service:
 
     @property
     def endpoints(self):
+        """
+        Tuple with the service and consume endpoints.
+
+        :return: Tuple
+        """
         return Endpoints(self._service_endpoint, self._consume_endpoint)
 
     @property
     def values(self):
+        """
+
+        :return: array of values
+        """
         return self._values.copy()
 
     def update_value(self, name, value):
@@ -77,6 +101,11 @@ class Service:
             self._values[name] = value
 
     def set_did(self, did):
+        """
+        Update the did.
+
+        :param did: DID, str
+        """
         assert self._did is None, 'service did already set.'
         self._did = did
 

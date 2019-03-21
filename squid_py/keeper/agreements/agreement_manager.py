@@ -24,7 +24,7 @@ class AgreementStoreManager(ContractBase):
         Create a new agreement.
         The agreement will create conditions of conditionType with conditionId.
         Only "approved" templates can access this function.
-        :param agreement_id: is the ID of the new agreement, bytes32
+        :param agreement_id:id of the agreement, hex str
         :param did: DID of the asset. The DID must be registered beforehand, bytes32
         :param condition_types: is a list of addresses that point to Condition contracts,
                                 list(address)
@@ -49,7 +49,7 @@ class AgreementStoreManager(ContractBase):
         """
         Retrieve the agreement for a agreement_id.
 
-        :param agreement_id: ID of the agreement, bytes32
+        :param agreement_id: id of the agreement, hex str
         :return: the agreement attributes.
         """
         agreement = self.contract_concise.getAgreement(agreement_id)
@@ -72,7 +72,7 @@ class AgreementStoreManager(ContractBase):
     def get_agreement_did_owner(self, agreement_id):
         """Get the DID owner for this agreement with _id.
 
-        :param agreement_id: ID of the agreement, bytes32
+        :param agreement_id: id of the agreement, hex str
         :return: the DID owner associated with agreement.did from the DID registry.
         """
         return self.contract_concise.getAgreementDidOwner(agreement_id)

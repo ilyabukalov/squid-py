@@ -18,7 +18,7 @@ class ExampleConfig:
                 "parity.url": "https://nile.dev-ocean.com",
                 "parity.address": "0x413c9ba0a05b8a600899b41b0c62dd661e689354",
                 "parity.password": "ocean_secret",
-                "parity.address1": "0x1322A6ef2c560107733bFc622Fe556961Cb430a5",
+                "parity.address1": "0x06C0035fE67Cce2B8862D63Dc315D8C8c72207cA",
                 "parity.password1": "ocean_secret"
             },
             "resources": {

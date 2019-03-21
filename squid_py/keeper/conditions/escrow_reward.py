@@ -19,12 +19,12 @@ class EscrowRewardCondition(ConditionBase):
         """
         Fulfill the escrow reward condition.
 
-        :param agreement_id:
-        :param amount:
-        :param receiver_address:
-        :param sender_address:
-        :param lock_condition_id:
-        :param release_condition_id:
+        :param agreement_id: id of the agreement, hex str
+        :param amount: Amount of tokens, int
+        :param receiver_address: ethereum address of the receiver, hex str
+        :param sender_address: ethereum address of the sender, hex str
+        :param lock_condition_id: id of the condition, str
+        :param release_condition_id: id of the condition, str
         :param account: Account instance
         :return:
         """
@@ -42,13 +42,14 @@ class EscrowRewardCondition(ConditionBase):
     def hash_values(self, amount, receiver_address, sender_address, lock_condition_id,
                     release_condition_id):
         """
+        Hash the values of the escrow reward condition.
 
-        :param amount:
-        :param receiver_address:
-        :param sender_address:
-        :param lock_condition_id:
-        :param release_condition_id:
-        :return:
+        :param amount: Amount of tokens, int
+        :param receiver_address: ethereum address of the receiver, hex str
+        :param sender_address: ethereum address of the sender, hex str
+        :param lock_condition_id: id of the condition, str
+        :param release_condition_id: id of the condition, str
+        :return: hex str
         """
         return self._hash_values(
             amount,
