@@ -71,7 +71,6 @@ class DIDRegistry(ContractBase):
         :param providers: list of providers addresses
         """
         assert isinstance(providers, list), ''
-        assert did and did.startswith('0x') and len(did) == 65, f'Invalid did {did}'
         return self.send_transaction(
             'registerAttribute',
             (did,
