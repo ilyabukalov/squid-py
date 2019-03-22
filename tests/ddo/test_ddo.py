@@ -141,7 +141,7 @@ def generate_sample_ddo():
     assert did
     ddo = DDO(did)
     assert ddo
-    private_key = ddo.add_signature()
+    private_key = ddo.get_private_key()
 
     # add a proof signed with the private key
     ddo.add_proof('checksum', '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_key)
@@ -170,7 +170,7 @@ def test_creating_ddo():
     assert ddo
     private_keys = []
     for i in public_key_store_types:
-        private_keys.append(ddo.add_signature())
+        private_keys.append(ddo.get_private_key())
 
     assert len(private_keys) == len(public_key_store_types)
     ddo.add_service(TEST_SERVICE_TYPE, TEST_SERVICE_URL)
@@ -200,7 +200,7 @@ def test_creating_ddo_embedded_public_key():
     assert ddo
     private_keys = []
     for i in public_key_store_types:
-        private_keys.append(ddo.add_signature())
+        private_keys.append(ddo.get_private_key())
 
     assert len(private_keys) == len(public_key_store_types)
     ddo.add_service(TEST_SERVICE_TYPE, TEST_SERVICE_URL)
@@ -218,7 +218,7 @@ def test_creating_did_using_ddo():
     assert ddo
     private_keys = []
     for i in public_key_store_types:
-        private_keys.append(ddo.add_signature())
+        private_keys.append(ddo.get_private_key())
     assert len(private_keys) == len(public_key_store_types)
     ddo.add_service(TEST_SERVICE_TYPE, TEST_SERVICE_URL)
     # add a proof to the first public_key/authentication

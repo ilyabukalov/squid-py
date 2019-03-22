@@ -101,9 +101,9 @@ class DDO:
         self._authentications.append(authentication)
 
     @staticmethod
-    def add_signature():
+    def get_private_key():
         """
-        Add signature.
+        Get your private key.
 
         Add a signature with a public key and authentication entry for validating this DDO
         returns the private key as part of the private/public key pair.
