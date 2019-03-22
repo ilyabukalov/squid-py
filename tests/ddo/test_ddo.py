@@ -14,7 +14,7 @@ from squid_py.ddo.public_key_base import (
     PUBLIC_KEY_STORE_TYPE_PEM
 )
 from squid_py.did import DID
-from tests.resources.helper_functions import get_resource_path, get_publisher_account
+from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import unit_test
 
 public_key_store_types = [
@@ -144,7 +144,7 @@ def generate_sample_ddo():
     private_key = ddo.add_signature()
 
     # add a proof signed with the private key
-    ddo.add_proof(0, '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_key)
+    ddo.add_proof('checksum', '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_key)
 
     metadata = json.loads(TEST_METADATA)
     ddo.add_service("Metadata", "http://myaquarius.org/api/v1/provider/assets/metadata/{did}",
@@ -169,47 +169,27 @@ def test_creating_ddo():
     ddo = DDO(did)
     assert ddo
     private_keys = []
-    for public_key_store_type in public_key_store_types:
-        private_keys.append(ddo.add_signature(public_key_store_type))
+    for i in public_key_store_types:
+        private_keys.append(ddo.add_signature())
 
     assert len(private_keys) == len(public_key_store_types)
     ddo.add_service(TEST_SERVICE_TYPE, TEST_SERVICE_URL)
 
-    assert len(ddo.public_keys) == len(public_key_store_types)
-    assert len(ddo.authentications) == len(public_key_store_types)
     assert len(ddo.services) == 1
 
     ddo_text_no_proof = ddo.as_text()
     assert ddo_text_no_proof
-    ddo_text_no_proof_hash = ddo.calculate_hash()
-
-    # test getting public keys in the DDO record
-    for index, private_key in enumerate(private_keys):
-        assert ddo.get_public_key(index)
-        signature_key_id = '{0}#keys={1}'.format(did, index + 1)
-        assert ddo.get_public_key(signature_key_id)
 
     ddo_text_proof = ''
-    ddo_text_proof_hash = ''
-    # test validating static proofs
-    for index, private_key in enumerate(private_keys):
-        ddo.add_proof(index, '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_key)
+    for private_key in enumerate(private_keys):
+        ddo.add_proof('checksum', '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_key[1])
         ddo_text_proof = ddo.as_text()
-        # assert ddo.validate_proof()
-        ddo_text_proof_hash = ddo.calculate_hash()
 
     ddo = DDO(json_text=ddo_text_proof)
-    assert ddo.validate()
     assert ddo.is_proof_defined()
-    # assert ddo.validate_proof()
-    assert ddo.calculate_hash() == ddo_text_proof_hash
 
     ddo = DDO(json_text=ddo_text_no_proof)
-    assert ddo.validate()
-    # valid proof should be false since no static proof provided
     assert not ddo.is_proof_defined()
-    # assert not ddo.validate_proof()
-    assert ddo.calculate_hash() == ddo_text_no_proof_hash
 
 
 @unit_test
@@ -219,19 +199,16 @@ def test_creating_ddo_embedded_public_key():
     ddo = DDO(did)
     assert ddo
     private_keys = []
-    for public_key_store_type in public_key_store_types:
-        private_keys.append(ddo.add_signature(public_key_store_type, is_embedded=True))
+    for i in public_key_store_types:
+        private_keys.append(ddo.add_signature())
 
     assert len(private_keys) == len(public_key_store_types)
     ddo.add_service(TEST_SERVICE_TYPE, TEST_SERVICE_URL)
     # test validating static proofs
-    for index, private_key in enumerate(private_keys):
-        ddo.add_proof(index, '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_key)
+    for private_key in enumerate(private_keys):
+        ddo.add_proof('checksum', '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_key[1])
         ddo_text_proof = ddo.as_text()
         assert ddo_text_proof
-        # assert ddo.validate_proof()
-        ddo_text_proof_hash = ddo.calculate_hash()
-        assert ddo_text_proof_hash
 
 
 @unit_test
@@ -240,12 +217,12 @@ def test_creating_did_using_ddo():
     ddo = DDO()
     assert ddo
     private_keys = []
-    for public_key_store_type in public_key_store_types:
-        private_keys.append(ddo.add_signature(public_key_store_type, is_embedded=True))
+    for i in public_key_store_types:
+        private_keys.append(ddo.add_signature())
     assert len(private_keys) == len(public_key_store_types)
     ddo.add_service(TEST_SERVICE_TYPE, TEST_SERVICE_URL)
     # add a proof to the first public_key/authentication
-    ddo.add_proof(0, '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_keys[0])
+    ddo.add_proof('checksum', '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_keys[0])
     ddo_text_proof = ddo.as_text()
     assert ddo_text_proof
     # assert ddo.validate_proof()
@@ -274,7 +251,6 @@ def test_ddo_dict():
     assert sample_ddo_path.exists(), f'{sample_ddo_path} does not exist!'
 
     ddo1 = DDO(json_filename=sample_ddo_path)
-    assert ddo1.is_valid
     assert len(ddo1.public_keys) == 3
     assert ddo1.did == 'did:op:3597a39818d598e5d60b83eabe29e337d37d9ed5af218b4af5e94df9f7d9783a'
 

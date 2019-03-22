@@ -9,9 +9,6 @@ import os
 
 from squid_py.agreements.service_factory import ServiceDescriptor, ServiceFactory
 from squid_py.agreements.service_types import ServiceTypes
-from squid_py.agreements.utils import (
-    make_public_key_and_authentication,
-)
 from squid_py.aquarius.aquarius_provider import AquariusProvider
 from squid_py.aquarius.exceptions import AquariusGenericError
 from squid_py.brizo.brizo_provider import BrizoProvider
@@ -84,13 +81,10 @@ class OceanAssets:
         ddo = DDO(did)
 
         # Add public key and authentication
-        pub_key, auth = make_public_key_and_authentication(did, publisher_account,
-                                                           Web3Provider.get_web3())
-        ddo.add_public_key(pub_key)
-        ddo.add_authentication(auth, PUBLIC_KEY_TYPE_RSA)
+        ddo.add_public_key(did)
+        ddo.add_authentication(did, PUBLIC_KEY_TYPE_RSA)
 
         priv_key = ddo.add_signature()
-        ddo.add_proof(1, publisher_account.address, private_key=priv_key)
 
         # Setup metadata service
         # First replace `files` with encrypted `files`
@@ -105,6 +99,8 @@ class OceanAssets:
         )
 
         metadata_copy['base']['checksum'] = ddo.generate_checksum(did, metadata)
+        ddo.add_proof(metadata_copy['base']['checksum'], publisher_account.address, private_key=priv_key)
+
 
         # only assign if the encryption worked
         if files_encrypted:
