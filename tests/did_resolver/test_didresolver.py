@@ -53,11 +53,11 @@ def test_did_registry_no_account_provided():
         did_registry.register(did_test, url=value_test)
     # No account provided
     with pytest.raises(ValueError):
-        did_registry.register(did_test, did_test, url=value_test)
+        did_registry.register(did_test, did_test, url=value_test, account=None)
 
     # Invalide key field provided
     with pytest.raises(ValueError):
-        did_registry.register(did_test, checksum_test, url=value_test)
+        did_registry.register(did_test, checksum_test, url=value_test, account=None)
 
 
 @e2e_test

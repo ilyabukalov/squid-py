@@ -74,7 +74,6 @@ class EventListener(object):
 
         return None
 
-    # @staticmethod
     def watch_one_event(self, event_filter, callback, timeout_callback, timeout, args,
                         start_time=None):
         """

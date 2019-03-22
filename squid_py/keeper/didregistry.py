@@ -3,6 +3,7 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 import logging
+from collections import namedtuple
 from urllib.parse import urlparse
 
 from web3 import Web3
@@ -13,6 +14,11 @@ from squid_py.keeper.contract_base import ContractBase
 
 logger = logging.getLogger(__name__)
 
+DIDRegisterValues = namedtuple(
+    'DIDRegisterValues',
+    ('owner', 'last_checksum', 'last_updated_by', 'block_number_updated', 'providers')
+)
+
 
 class DIDRegistry(ContractBase):
     """Class to register and update Ocean DID's."""
@@ -20,23 +26,25 @@ class DIDRegistry(ContractBase):
 
     CONTRACT_NAME = 'DIDRegistry'
 
-    def register(self, did_source, checksum, url=None, account=None):
+    def register(self, did, checksum, url, account, providers=None):
         """
         Register or update a DID on the block chain using the DIDRegistry smart contract.
 
-        :param did_source: DID to register/update, can be a 32 byte or hexstring
+        :param did: DID to register/update, can be a 32 byte or hexstring
         :param checksum: hex str hash of TODO
         :param url: URL of the resolved DID
         :param account: instance of Account to use to register/update the DID
+        :param providers: list of addresses of providers to be allowed to serve the asset and play
+            a part in creating and fulfilling service agreements
         :return: Receipt
         """
 
-        did_source_id = did_to_id_bytes(did_source)
+        did_source_id = did_to_id_bytes(did)
         if not did_source_id:
-            raise ValueError(f'{did_source} must be a valid DID to register')
+            raise ValueError(f'{did} must be a valid DID to register')
 
         if not urlparse(url):
-            raise ValueError(f'Invalid URL {url} to register for DID {did_source}')
+            raise ValueError(f'Invalid URL {url} to register for DID {did}')
 
         if checksum is None:
             checksum = Web3.toBytes(0)
@@ -47,23 +55,27 @@ class DIDRegistry(ContractBase):
         if account is None:
             raise ValueError('You must provide an account to use to register a DID')
 
-        transaction = self.register_attribute(did_source_id, checksum, url,
-                                              account)
+        transaction = self._register_attribute(
+            did_source_id, checksum, url, account, providers or []
+        )
         receipt = self.get_tx_receipt(transaction)
         return receipt
 
-    def register_attribute(self, did_hash, checksum, value, account):
+    def _register_attribute(self, did, checksum, value, account, providers):
         """Register an DID attribute as an event on the block chain.
 
-        :param did_hash: 32 byte string/hex of the DID
+        :param did: 32 byte string/hex of the DID
         :param checksum: checksum of the ddo, hex str
         :param value: url for resolve the did, str
         :param account: account owner of this DID registration record
+        :param providers: list of providers addresses
         """
+        assert isinstance(providers, list), ''
         return self.send_transaction(
             'registerAttribute',
-            (did_hash,
+            (did,
              checksum,
+             providers,
              value),
             transact={'from': account.address,
                       'passphrase': account.password}
@@ -81,6 +93,41 @@ class DIDRegistry(ContractBase):
         :return: ethereum address, hex str
         """
         return self.contract_concise.getDIDOwner(did)
+
+    def add_provider(self, did, provider_address, account):
+        tx_hash = self.send_transaction(
+            'addDIDProvider',
+            (did,
+             provider_address),
+            transact={'from': account.address,
+                      'passphrase': account.password}
+        )
+        return self.get_tx_receipt(tx_hash)
+
+    def remove_provider(self, did, provider_address, account):
+        tx_hash = self.send_transaction(
+            'removeDIDProvider',
+            (did,
+             provider_address),
+            transact={'from': account.address,
+                      'passphrase': account.password}
+        )
+        return self.get_tx_receipt(tx_hash)
+
+    def get_did_providers(self, did):
+        """
+        Return the list providers registered on-chain for the given did.
+
+        :param did: hex str the id of an asset on-chain
+        :return:
+            list of addresses
+            None if asset has no registerd providers
+        """
+        register_values = self.contract_concise.getDIDRegister(did)
+        if register_values and len(register_values) == 5:
+            return DIDRegisterValues(*register_values).providers
+
+        return None
 
     def get_registered_attribute(self, did_bytes):
         """
