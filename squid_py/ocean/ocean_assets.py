@@ -53,7 +53,7 @@ class OceanAssets:
             self._config.secret_store_url, self._config.parity_url, account
         )
 
-    def create(self, metadata, publisher_account, service_descriptors=None):
+    def create(self, metadata, publisher_account, service_descriptors=None, providers=None):
         """
         Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (
         Aquarius).
@@ -63,6 +63,8 @@ class OceanAssets:
         :param service_descriptors: list of ServiceDescriptor tuples of length 2.
             The first item must be one of ServiceTypes and the second
             item is a dict of parameters and values required by the service
+        :param providers: list of addresses of providers of this asset (a provider is
+            an ethereum account that is authorized to provide asset services)
         :return: DDO instance
         """
         assert isinstance(metadata, dict), f'Expected metadata of type dict, got {type(metadata)}'
@@ -172,7 +174,8 @@ class OceanAssets:
             did,
             checksum=Web3Provider.get_web3().sha3(text=metadata_copy['base']['checksum']),
             url=ddo_service_endpoint,
-            account=publisher_account
+            account=publisher_account,
+            providers=providers
         )
         logger.info(f'DDO with DID {did} successfully registered on chain.')
         return ddo

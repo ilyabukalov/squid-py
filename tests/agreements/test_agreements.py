@@ -23,7 +23,8 @@ def setup_things():
         ddo.did,
         checksum=Web3Provider.get_web3().sha3(text=ddo.metadata['base']['checksum']),
         url='aquarius:5000',
-        account=publisher_acc
+        account=publisher_acc,
+        providers=None
     )
 
     registered_ddo = ddo
