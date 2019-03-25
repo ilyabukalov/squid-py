@@ -77,15 +77,15 @@ class DDO:
         metadata_service = self.find_service_by_type(ServiceTypes.METADATA)
         return metadata_service.values['metadata']
 
-    def add_public_key(self, public_key):
+    def add_public_key(self, did, public_key):
         """
         Add a public key object to the list of public keys.
 
         :param public_key: Public key, PublicKeyHex
         """
-        logger.debug(f'Adding public key {public_key}')
+        logger.debug(f'Adding public key {public_key} to the did {did}')
         self._public_keys.append(
-            PublicKeyBase(public_key, **{"owner": public_key, "type": "EthereumECDSAKey"}))
+            PublicKeyBase(did, **{"owner": public_key, "type": "EthereumECDSAKey"}))
 
     def add_authentication(self, public_key, authentication_type=None):
         """

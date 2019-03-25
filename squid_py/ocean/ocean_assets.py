@@ -83,7 +83,7 @@ class OceanAssets:
         ddo = DDO(did)
 
         # Add public key and authentication
-        ddo.add_public_key(did)
+        ddo.add_public_key(did, publisher_account.address)
         ddo.add_authentication(did, PUBLIC_KEY_TYPE_RSA)
 
         priv_key = ddo.get_private_key()
