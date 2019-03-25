@@ -169,7 +169,7 @@ def test_creating_ddo():
     ddo = DDO(did)
     assert ddo
     private_keys = []
-    for i in public_key_store_types:
+    for _ in public_key_store_types:
         private_keys.append(ddo.get_private_key())
 
     assert len(private_keys) == len(public_key_store_types)
@@ -199,7 +199,7 @@ def test_creating_ddo_embedded_public_key():
     ddo = DDO(did)
     assert ddo
     private_keys = []
-    for i in public_key_store_types:
+    for _ in public_key_store_types:
         private_keys.append(ddo.get_private_key())
 
     assert len(private_keys) == len(public_key_store_types)
@@ -217,7 +217,7 @@ def test_creating_did_using_ddo():
     ddo = DDO()
     assert ddo
     private_keys = []
-    for i in public_key_store_types:
+    for _ in public_key_store_types:
         private_keys.append(ddo.get_private_key())
     assert len(private_keys) == len(public_key_store_types)
     ddo.add_service(TEST_SERVICE_TYPE, TEST_SERVICE_URL)
