@@ -23,7 +23,6 @@ def test_create_asset_ddo_file():
     asset1 = DDO(json_filename=sample_ddo_path)
 
     assert isinstance(asset1, DDO)
-    assert asset1.is_valid
 
     assert asset1.metadata
 

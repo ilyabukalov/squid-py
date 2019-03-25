@@ -26,8 +26,6 @@ class PublicKeyBase:
 
     def __init__(self, key_id, **kwargs):
         self._id = key_id
-        self._store_type = kwargs.get('store_type', None)
-        self._value = kwargs.get('value', None)
         self._owner = kwargs.get('owner', None)
         self._type = kwargs.get('type', None)
 
@@ -116,7 +114,7 @@ class PublicKeyBase:
 
     def as_text(self, is_pretty=False):
         """Return the key as JSON text."""
-        values = {'id': self._id, 'type': self._type, self._store_type: self._value}
+        values = {'id': self._id, 'type': self._type}
         if self._owner:
             values['owner'] = self._owner
 
@@ -129,8 +127,7 @@ class PublicKeyBase:
         """Return the key as a python dictionary."""
         values = {
             'id': self._id,
-            'type': self._type,
-            self._store_type: self._value
+            'type': self._type
         }
 
         if self._owner:
