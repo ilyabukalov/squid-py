@@ -164,7 +164,7 @@ class DIDRegistry(ContractBase):
 
         event = getattr(self.events, DIDRegistry.DID_REGISTRY_EVENT_NAME)
         block_filter = event().createFilter(
-            fromBlock=block_number, toBlock=block_number, argument_filters={'did': did_bytes}
+            fromBlock=block_number, toBlock=block_number, argument_filters={'_did': did_bytes}
         )
         log_items = block_filter.get_all_entries()
         if log_items:
