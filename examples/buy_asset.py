@@ -46,7 +46,7 @@ def buy_asset():
     # ocn here will be used only to publish the asset. Handling the asset by the publisher
     # will be performed by the Brizo server running locally
     keeper = Keeper.get_instance()
-    if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
+    if 'TEST_LOCAL_NILE' in os.environ and os.environ['TEST_LOCAL_NILE'] == '1':
         provider = keeper.did_registry.to_checksum_address(
             '0x413c9ba0a05b8a600899b41b0c62dd661e689354'
         )
