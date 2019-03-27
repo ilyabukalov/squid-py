@@ -50,6 +50,9 @@ class OceanAssets:
             self._config.secret_store_url, self._config.parity_url, account
         )
 
+    def get_my_assets(self, publisher_address):
+        self._keeper.did_registry.get_owner_asset_ids(publisher_address)
+
     def create(self, metadata, publisher_account, service_descriptors=None, providers=None):
         """
         Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (

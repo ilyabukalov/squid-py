@@ -28,6 +28,28 @@ class ExampleConfig:
                 "downloads.path": "consume-downloads"
             }
         }
+    elif 'TEST_LOCAL_NILE' in os.environ and os.environ['TEST_LOCAL_NILE'] == '1':
+        # As above, but uses local nile node instead of connecting directly to the remote node.
+        # This is actually the recommended method in practical use cases.
+        environment = 'TEST_LOCAL_NILE'
+        config_dict = {
+            "keeper-contracts": {
+                "keeper.url": "http://localhost:8545",
+                "keeper.path": "artifacts",
+                "secret_store.url": "https://secret-store.dev-ocean.com",
+                "parity.url": "http://localhost:8545",
+                "parity.address": "0x00bd138abd70e2f00903268f3db08f2d25677c9e",
+                "parity.password": "node0",
+                "parity.address1": "0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0",
+                "parity.password1": "secret"
+            },
+            "resources": {
+                "aquarius.url": "https://nginx-aquarius.dev-ocean.com/",
+                "brizo.url": "https://nginx-brizo.dev-ocean.com/",
+                "storage.path": "squid_py.db",
+                "downloads.path": "consume-downloads"
+            }
+        }
     else:
         environment = 'TEST_LOCAL_SPREE'
         config_dict = {

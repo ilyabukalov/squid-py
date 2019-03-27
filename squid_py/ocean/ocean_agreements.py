@@ -230,7 +230,8 @@ class OceanAgreements:
             agreement_id)
         if agreement_consumer != consumer_address:
             logger.warning(f'Invalid consumer address {consumer_address} and/or '
-                           f'service agreement id {agreement_id} (did {did})')
+                           f'service agreement id {agreement_id} (did {did})'
+                           f', agreement consumer is {agreement_consumer}')
             return False
 
         document_id = did_to_id(did)

@@ -45,8 +45,15 @@ def buy_asset():
     logging.info(f'registered ddo: {ddo.did}')
     # ocn here will be used only to publish the asset. Handling the asset by the publisher
     # will be performed by the Brizo server running locally
-
     keeper = Keeper.get_instance()
+    if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
+        provider = keeper.did_registry.to_checksum_address(
+            '0x413c9ba0a05b8a600899b41b0c62dd661e689354'
+        )
+        keeper.did_registry.add_provider(ddo.asset_id, provider, acc)
+        logging.debug(f'is did provider: '
+                      f'{keeper.did_registry.is_did_provider(ddo.asset_id, provider)}')
+
     cons_ocn = Ocean()
     consumer_account = get_account_from_config(config, 'parity.address1', 'parity.password1')
 
@@ -59,9 +66,11 @@ def buy_asset():
     agreement_id = cons_ocn.assets.order(
         ddo.did, sa.service_definition_id, consumer_account)
     logging.info('placed order: %s, %s', ddo.did, agreement_id)
-
-    while ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address) is not True:
-         time.sleep(10)
+    i = 0
+    while ocn.agreements.is_access_granted(
+            agreement_id, ddo.did, consumer_account.address) is not True and i < 30:
+        time.sleep(1)
+        i += 1
 
     assert ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address)
 

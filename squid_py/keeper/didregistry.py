@@ -6,11 +6,10 @@ import logging
 from collections import namedtuple
 from urllib.parse import urlparse
 
-from web3 import Web3
-
 from squid_py.did import did_to_id_bytes
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper.contract_base import ContractBase
+from squid_py.keeper.web3_provider import Web3Provider
 
 logger = logging.getLogger(__name__)
 
@@ -47,7 +46,7 @@ class DIDRegistry(ContractBase):
             raise ValueError(f'Invalid URL {url} to register for DID {did}')
 
         if checksum is None:
-            checksum = Web3.toBytes(0)
+            checksum = Web3Provider.get_web3().toBytes(0)
 
         if not isinstance(checksum, bytes):
             raise ValueError(f'Invalid checksum value {checksum}, must be bytes or string')
@@ -114,6 +113,9 @@ class DIDRegistry(ContractBase):
         )
         return self.get_tx_receipt(tx_hash)
 
+    def is_did_provider(self, did, address):
+        return self.contract_concise.isDIDProvider(did, address)
+
     def get_did_providers(self, did):
         """
         Return the list providers registered on-chain for the given did.
@@ -128,6 +130,20 @@ class DIDRegistry(ContractBase):
             return DIDRegisterValues(*register_values).providers
 
         return None
+
+    def get_owner_asset_ids(self, address):
+        event = getattr(self.events, DIDRegistry.DID_REGISTRY_EVENT_NAME)
+        block_filter = event().createFilter(
+            fromBlock=0,
+            toBlock='latest',
+            argument_filters={'_owner': Web3Provider.get_web3().toBytes(hexstr=address)}
+        )
+        log_items = block_filter.get_all_entries()
+        did_list = []
+        for log_i in log_items:
+            did_list.append(log_i.args['_did'])
+
+        return did_list
 
     def get_registered_attribute(self, did_bytes):
         """
@@ -153,7 +169,7 @@ class DIDRegistry(ContractBase):
 
         """
         result = None
-        did = Web3.toHex(did_bytes)
+        did = Web3Provider.get_web3().toHex(did_bytes)
         block_number = self.get_block_number_updated(did_bytes)
         logger.debug(f'got blockNumber {block_number} for did {did}')
         if block_number == 0:
@@ -176,7 +192,7 @@ class DIDRegistry(ContractBase):
                 'value': value,
                 'block_number': block_number,
                 'did_bytes': log_item['_did'],
-                'owner': Web3.toChecksumAddress(log_item['_owner']),
+                'owner': Web3Provider.get_web3().toChecksumAddress(log_item['_owner']),
             }
         else:
             logger.warning(f'Could not find {DIDRegistry.DID_REGISTRY_EVENT_NAME} event logs for '

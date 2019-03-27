@@ -3,6 +3,7 @@
 
 from squid_py import ConfigProvider
 from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.did import DID
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import (get_consumer_account, get_ddo_sample,
@@ -19,6 +20,7 @@ def setup_things():
     service_definition_id = 'Access'
 
     ddo = get_ddo_sample()
+    ddo._did = DID.did()
     keeper.did_registry.register(
         ddo.did,
         checksum=Web3Provider.get_web3().sha3(text=ddo.metadata['base']['checksum']),
