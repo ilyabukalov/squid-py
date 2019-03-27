@@ -9,6 +9,7 @@ from urllib.parse import urlparse
 from squid_py.did import did_to_id_bytes
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper.contract_base import ContractBase
+from squid_py.keeper.event_filter import EventFilter
 from squid_py.keeper.web3_provider import Web3Provider
 
 logger = logging.getLogger(__name__)
@@ -132,18 +133,29 @@ class DIDRegistry(ContractBase):
         return None
 
     def get_owner_asset_ids(self, address):
-        event = getattr(self.events, DIDRegistry.DID_REGISTRY_EVENT_NAME)
-        block_filter = event().createFilter(
-            fromBlock=0,
-            toBlock='latest',
-            argument_filters={'_owner': Web3Provider.get_web3().toBytes(hexstr=address)}
-        )
-        log_items = block_filter.get_all_entries()
+        block_filter = self._get_event_filter(owner=address)
+        log_items = block_filter.get_all_entries(max_tries=5)
         did_list = []
         for log_i in log_items:
             did_list.append(log_i.args['_did'])
 
         return did_list
+
+    def _get_event_filter(self, did=None, owner=None, from_block=0, to_block='latest'):
+        _filters = {}
+        if did is not None:
+            _filters['_did'] = Web3Provider.get_web3().toBytes(hexstr=did)
+        if owner is not None:
+            _filters['_owner'] = Web3Provider.get_web3().toBytes(hexstr=owner)
+
+        block_filter = EventFilter(
+            DIDRegistry.DID_REGISTRY_EVENT_NAME,
+            getattr(self.events, DIDRegistry.DID_REGISTRY_EVENT_NAME),
+            from_block=from_block,
+            to_block=to_block,
+            argument_filters=_filters
+        )
+        return block_filter
 
     def get_registered_attribute(self, did_bytes):
         """
@@ -178,11 +190,8 @@ class DIDRegistry(ContractBase):
                 f'Please ensure assets are registered in the correct keeper contracts. '
                 f'The keeper-contracts DIDRegistry address is {self.address}')
 
-        event = getattr(self.events, DIDRegistry.DID_REGISTRY_EVENT_NAME)
-        block_filter = event().createFilter(
-            fromBlock=block_number, toBlock=block_number, argument_filters={'_did': did_bytes}
-        )
-        log_items = block_filter.get_all_entries()
+        block_filter = self._get_event_filter(did=did, from_block=block_number, to_block=block_number)
+        log_items = block_filter.get_all_entries(max_tries=5)
         if log_items:
             log_item = log_items[-1].args
             value = log_item['_value']

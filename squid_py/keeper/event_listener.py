@@ -7,6 +7,7 @@ from datetime import datetime
 from threading import Thread
 
 from squid_py.keeper.contract_handler import ContractHandler
+from squid_py.keeper.event_filter import EventFilter
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class EventListener(object):
     def __init__(self, contract_name, event_name, args=None, from_block=0, to_block='latest',
                  filters=None):
         contract = ContractHandler.get(contract_name)
+        self.event_name = event_name
         self.event = getattr(contract.events, event_name)
         self.filters = filters if filters else {}
         self.from_block = from_block
@@ -28,10 +30,14 @@ class EventListener(object):
 
     def make_event_filter(self):
         """Create a new event filter."""
-        event_filter = self.event().createFilter(
-            fromBlock=self.from_block, toBlock=self.to_block, argument_filters=self.filters
+        event_filter = EventFilter(
+            self.event_name,
+            self.event,
+            self.filters,
+            from_block=self.from_block,
+            to_block=self.to_block
         )
-        event_filter.poll_interval = 0.5
+        event_filter.set_poll_interval(0.5)
         return event_filter
 
     def listen_once(self, callback, timeout=None, timeout_callback=None, start_time=None,
@@ -103,8 +109,6 @@ class EventListener(object):
             except (ValueError, Exception) as err:
                 # ignore error, but log it
                 logger.debug(f'Got error grabbing keeper events: {str(err)}')
-                if 'Filter not found' in str(err):
-                    event_filter = self.make_event_filter()
 
             time.sleep(0.1)
             if timeout:
