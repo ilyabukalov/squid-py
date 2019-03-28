@@ -110,7 +110,8 @@ class OceanAssets:
         # only assign if the encryption worked
         if files_encrypted:
             logger.info(f'Content urls encrypted successfully {files_encrypted}')
-            del metadata_copy['base']['files']
+            for file in metadata_copy['base']['files']:
+                del file['url']
             metadata_copy['base']['encryptedFiles'] = files_encrypted
         else:
             raise AssertionError('Encrypting the files failed. Make sure the secret store is'
