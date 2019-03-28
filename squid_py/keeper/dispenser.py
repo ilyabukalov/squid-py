@@ -8,6 +8,7 @@ from web3.utils.threads import Timeout
 
 from squid_py.exceptions import OceanInvalidTransaction
 from squid_py.keeper.contract_base import ContractBase
+from squid_py.keeper.event_filter import EventFilter
 from squid_py.keeper.web3_provider import Web3Provider
 
 
@@ -51,19 +52,27 @@ class Dispenser(ContractBase):
                 return False
 
             # check for emitted events:
-            rfe = self.events.RequestFrequencyExceeded().createFilter(
-                fromBlock='latest', toBlock='latest', argument_filters={'requester': address}
+            rfe = EventFilter(
+                'RequestFrequencyExceeded',
+                self.events.RequestFrequencyExceeded,
+                argument_filters={'requester': Web3Provider.get_web3().toBytes(hexstr=address)},
+                from_block='latest',
+                to_block='latest',
             )
-            logs = rfe.get_all_entries()
+            logs = rfe.get_all_entries(max_tries=5)
             if logs:
                 logging.warning(f'request tokens failed RequestFrequencyExceeded')
                 logging.info(f'RequestFrequencyExceeded event logs: {logs}')
                 return False
 
-            rle = self.events.RequestLimitExceeded().createFilter(
-                fromBlock='latest', toBlock='latest', argument_filters={'requester': address}
+            rle = EventFilter(
+                'RequestLimitExceeded',
+                self.events.RequestLimitExceeded,
+                argument_filters={'requester': Web3Provider.get_web3().toBytes(hexstr=address)},
+                from_block='latest',
+                to_block='latest',
             )
-            logs = rle.get_all_entries()
+            logs = rle.get_all_entries(max_tries=5)
             if logs:
                 logging.warning(f'request tokens failed RequestLimitExceeded')
                 logging.info(f'RequestLimitExceeded event logs: {logs}')
