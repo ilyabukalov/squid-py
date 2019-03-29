@@ -36,7 +36,7 @@ def test_create_data_asset(publisher_ocean_instance, consumer_ocean_instance):
     cons_ocn = consumer_ocean_instance
 
     logging.debug("".format())
-    sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sa_sample.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
     ##########################################################
@@ -89,7 +89,7 @@ def test_create_data_asset(publisher_ocean_instance, consumer_ocean_instance):
 def test_create_asset_with_different_secret_store(publisher_ocean_instance):
     ocn = publisher_ocean_instance
 
-    sample_ddo_path = get_resource_path('ddo', 'ddo_sample1.json')
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sa_sample.json')
     assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
 
     acct = ocn.main_account

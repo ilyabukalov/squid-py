@@ -48,14 +48,11 @@ class MetadataBase(object):
         'name',
         'type',
         'description',
-        'size',
         'dateCreated',
         'author',
         'license',
         'copyrightHolder',
-        'encoding',
         'compression',
-        'contentType',
         'workExample',
         'links',
         'inLanguage',
@@ -65,21 +62,17 @@ class MetadataBase(object):
         'files',
         'categories'
     }
-    REQUIRED_VALUES_KEYS = {'name', 'dateCreated', 'author', 'license', 'contentType', 'price',
-                            'files'}
+    REQUIRED_VALUES_KEYS = {'name', 'dateCreated', 'author', 'license', 'price', 'files'}
 
     EXAMPLE = {
         'name': "Ocean protocol white paper",
         'type': "dataset",
         'description': "Introduce the main concepts and vision behind ocean protocol",
-        'size': "1mb",
         'dateCreated': "2012-10-10T17:00:000Z",
         'author': "Ocean Protocol Foundation Ltd.",
         'license': "CC-BY",
         'copyrightHolder': "Ocean Protocol Foundation Ltd.",
-        'encoding': "UTF-8",
         'compression': "",
-        'contentType': "text/csv",
         'workExample': "Text PDF",
         'inLanguage': "en",
         'categories': ["white-papers"],

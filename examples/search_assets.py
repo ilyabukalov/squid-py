@@ -32,7 +32,7 @@ def search_assets():
     ddo_list = ocn.assets.search('bonding curve')
     logging.info(f'found {len(ddo_list)} assets that contain `bonding curve` in their metadata.')
     ddo_list = ocn.assets.query(
-        {"query": {"service.metadata.base.name": 'Ocean protocol white paper'}})
+        {"query": {"text": ['Ocean protocol white paper']}})
     logging.info(
         f'found {len(ddo_list)} assets with name that contains `Ocean protocol white paper`')
 
