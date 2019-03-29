@@ -225,7 +225,6 @@ def test_creating_did_using_ddo():
     ddo.add_proof('checksum', '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_keys[0])
     ddo_text_proof = ddo.as_text()
     assert ddo_text_proof
-    # assert ddo.validate_proof()
 
 
 @unit_test
