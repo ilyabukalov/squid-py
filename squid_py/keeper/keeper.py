@@ -98,6 +98,10 @@ class Keeper(object):
         )
 
     @staticmethod
+    def ec_recover(message, signed_message):
+        return Web3Provider.get_web3().personal.ecRecover(message, signed_message)
+
+    @staticmethod
     def unlock_account(account):
         """
         Unlock the account.

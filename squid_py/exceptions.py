@@ -42,6 +42,10 @@ class OceanInitializeServiceAgreementError(Exception):
     """Error on invoking purchase endpoint"""
 
 
+class OceanEncryptAssetUrlsError(Exception):
+    """Error invoking the encrypt endpoint"""
+
+
 class OceanServiceConsumeError(Exception):
     """ Error invoking a consume endpoint"""
 

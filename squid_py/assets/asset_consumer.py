@@ -32,8 +32,11 @@ class AssetConsumer:
         :return: Asset folder path, str
         """
         did = ddo.did
-        files = ddo.metadata['base']['encryptedFiles']
-        files = files if isinstance(files, str) else files[0]
+        encrypted_files = ddo.metadata['base']['encryptedFiles']
+        encrypted_files = (
+            encrypted_files if isinstance(encrypted_files, str)
+            else encrypted_files[0]
+        )
         sa = ServiceAgreement.from_ddo(service_definition_id, ddo)
         consume_url = sa.consume_endpoint
         if not consume_url:
@@ -49,7 +52,7 @@ class AssetConsumer:
 
         # decrypt the contentUrls
         decrypted_content_urls = json.loads(
-            secret_store.decrypt_document(did_to_id(did), files)
+            secret_store.decrypt_document(did_to_id(did), encrypted_files)
         )
 
         if isinstance(decrypted_content_urls, str):
@@ -69,7 +72,7 @@ class AssetConsumer:
         brizo.consume_service(
             service_agreement_id,
             consume_url,
-            consumer_account.address,
+            consumer_account,
             decrypted_content_urls,
             asset_folder
         )
