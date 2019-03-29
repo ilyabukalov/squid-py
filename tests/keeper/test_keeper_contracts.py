@@ -33,3 +33,15 @@ def test_keeper_networks():
     assert keeper.get_network_name(8995) == Keeper._network_name_map.get(8995)
     assert keeper.get_network_name(8996) == Keeper._network_name_map.get(8996)
     assert keeper.get_network_name(0) == 'development'
+
+
+def test_ec_recover():
+    expected_address = '0xe2DD09d719Da89e5a3D0F2549c7E24566e947260'
+    document_id = 'c80996119e884cb38599bcd96a22ad3eea3a4734bcfb47959a5d41ecdcbdfe67'
+    signed_document_id = '0xa50427a9d5beccdea3eeabecfc1014096b35cd05965e772e8ea32477' \
+                         'd2f217c30d0ec5dbf6b14de1d6eeff45011d17490fe5126576b20d2cba' \
+                         'da828cb068c9f801'
+
+    rec_address = Keeper.get_instance().ec_recover(document_id, signed_document_id)
+    print(f'recovered address: {rec_address}, original address {expected_address}')
+    assert expected_address.lower() == rec_address.lower()
