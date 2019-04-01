@@ -5,6 +5,8 @@
 import logging
 import os
 
+from eth_utils import big_endian_to_int
+
 from squid_py.config_provider import ConfigProvider
 from squid_py.keeper.agreements.agreement_manager import AgreementStoreManager
 from squid_py.keeper.conditions.access import AccessSecretStoreCondition
@@ -18,7 +20,9 @@ from squid_py.keeper.dispenser import Dispenser
 from squid_py.keeper.templates.access_secret_store_template import EscrowAccessSecretStoreTemplate
 from squid_py.keeper.templates.template_manager import TemplateStoreManager
 from squid_py.keeper.token import Token
+from squid_py.keeper.web3.signature import SignatureFix
 from squid_py.keeper.web3_provider import Web3Provider
+from squid_py.utils.utilities import split_signature
 
 
 class Keeper(object):
@@ -99,7 +103,12 @@ class Keeper(object):
 
     @staticmethod
     def ec_recover(message, signed_message):
-        return Web3Provider.get_web3().personal.ecRecover(message, signed_message)
+        w3 = Web3Provider.get_web3()
+        v, r, s = split_signature(w3, w3.toBytes(hexstr=signed_message))
+        signature_object = SignatureFix(vrs=(v, big_endian_to_int(r), big_endian_to_int(s)))
+        return Web3Provider.get_web3().personal.ecRecover(
+            message,
+            signature_object.to_hex_v_hacked())
 
     @staticmethod
     def unlock_account(account):

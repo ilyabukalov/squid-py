@@ -4,7 +4,6 @@
     "dateCreated": "2012-02-01T10:55:11Z",
     "author": "Mario",
     "license": "CC0: Public Domain",
-    "contentType": "jpg/txt",
     "price": 10,
     "files": [
       {
@@ -34,10 +33,7 @@
     ],
     "type": "dataset",
     "description": "EXAMPLE ONLY ",
-    "size": "3.1gb",
     "copyrightHolder": "Unknown",
-    "encoding": "UTF-8",
-    "compression": "zip",
     "workExample": "image path, id, label",
     "links": [
       {
