@@ -33,7 +33,10 @@ def test_secret_store_encrypt_decrypt():
 
 
 def test_set_secret_store_url():
-    pass
+    ss_client = Mock
+    SecretStore.set_client(ss_client)
+    SecretStore.set_secret_store_url(ss_client, url='http://secret-store-changed-url')
+    assert ss_client._secret_store_url == 'http://secret-store-changed-url'
 
 
 def test_set_client():

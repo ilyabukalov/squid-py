@@ -10,8 +10,12 @@ import os
 from tqdm import tqdm
 
 from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.exceptions import OceanInitializeServiceAgreementError
+from squid_py.exceptions import (
+    OceanInitializeServiceAgreementError,
+    OceanEncryptAssetUrlsError
+)
 from squid_py.http_requests.requests_session import get_requests_session
+from squid_py.keeper import Keeper
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +36,32 @@ class Brizo:
     def set_http_client(http_client):
         """Set the http client to something other than the default `requests`"""
         Brizo._http_client = http_client
+
+    @staticmethod
+    def encrypt_files_dict(files_dict, encrypt_endpoint, asset_id, account_address, signed_did):
+        payload = json.dumps({
+            'documentId': asset_id,
+            'signedDocumentId': signed_did,
+            'document': json.dumps(files_dict),
+            'publisherAddress': account_address
+        })
+        response = Brizo._http_client.post(
+            encrypt_endpoint, data=payload,
+            headers={'content-type': 'application/json'}
+        )
+        if response and hasattr(response, 'status_code'):
+            if response.status_code != 201:
+                msg = (f'Encrypt file urls failed at the encryptEndpoint '
+                       f'{encrypt_endpoint}, reason {response.text}, status {response.status_code}'
+                       )
+                logger.error(msg)
+                raise OceanEncryptAssetUrlsError(msg)
+
+            logger.info(
+                f'Asset urls encrypted successfully, encrypted urls str: {response.text},'
+                f' encryptedEndpoint {encrypt_endpoint}')
+
+            return response.text
 
     @staticmethod
     def initialize_service_agreement(did, agreement_id, service_definition_id, signature,
@@ -70,29 +100,42 @@ class Brizo:
             return True
 
     @staticmethod
-    def consume_service(service_agreement_id, service_endpoint, account_address, files,
+    def consume_service(service_agreement_id, service_endpoint, account, files,
                         destination_folder):
         """
         Call the brizo endpoint to get access to the different files that form the asset.
 
         :param service_agreement_id: Service Agreement Id, str
         :param service_endpoint: Url to consume, str
-        :param account_address: ethereum address of the consumer signing this agreement, hex-str
+        :param account: Account instance of the consumer signing this agreement, hex-str
         :param files: List containing the files to be consumed, list
         :param destination_folder: Path, str
         """
-        for file in files:
-            url = file['url']
-            if url.startswith('"') or url.startswith("'"):
-                url = url[1:-1]
+        signature = Keeper.get_instance().sign_hash(service_agreement_id, account)
+        for i, _file in enumerate(files):
+            if 'url' in _file:
+                url = _file['url']
+                if url.startswith('"') or url.startswith("'"):
+                    url = url[1:-1]
 
-            consume_url = (f'{service_endpoint}?url={url}&serviceAgreementId='
-                           f'{service_agreement_id}&consumerAddress={account_address}'
-                           )
+                file_name = os.path.basename(url)
+                consume_url = (f'{service_endpoint}'
+                               f'?url={url}'
+                               f'&serviceAgreementId={service_agreement_id}'
+                               f'&consumerAddress={account.address}'
+                               )
+            else:
+                file_name = f'file.{i}'
+                consume_url = (f'{service_endpoint}'
+                               f'?signature={signature}'
+                               f'&serviceAgreementId={service_agreement_id}'
+                               f'&consumerAddress={account.address}'
+                               f'&index={i}'
+                               )
+
             logger.info(f'invoke consume endpoint with this url: {consume_url}')
             response = Brizo._http_client.get(consume_url, stream=True)
 
-            file_name = os.path.basename(url)
             total_size = response.headers.get('content-length', 0)
 
             logger.info(f'Total size of {file_name}: {total_size} bytes.')
@@ -162,3 +205,7 @@ class Brizo:
         :return: Url, str
         """
         return f'{Brizo.get_brizo_url(config)}/services/consume'
+
+    @staticmethod
+    def get_encrypt_endpoint(config):
+        return f'{Brizo.get_brizo_url(config)}/services/publish'

@@ -28,6 +28,23 @@ class OceanAgreements:
         self._config = config
         self.conditions = OceanConditions(self._keeper)
 
+    def get(self, agreement_id):
+        """
+        Retrieve the agreement data of agreement_id.
+
+        :param agreement_id: id of the agreement, hex str
+        :return: AgreementValues instance -- a namedtuple with the following attributes:
+
+            did,
+            owner,
+            template_id,
+            condition_ids,
+            updated_by,
+            block_number_updated
+
+        """
+        return self._keeper.agreement_manager.get_agreement(agreement_id)
+
     def prepare(self, did, service_definition_id, consumer_account):
         """
 

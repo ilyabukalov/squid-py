@@ -53,7 +53,9 @@ class OceanAssets:
     def get_my_assets(self, publisher_address):
         self._keeper.did_registry.get_owner_asset_ids(publisher_address)
 
-    def create(self, metadata, publisher_account, service_descriptors=None, providers=None):
+    def create(self, metadata, publisher_account,
+               service_descriptors=None, providers=None,
+               use_secret_store=True):
         """
         Register an asset in both the keeper's DIDRegistry (on-chain) and in the Metadata store (
         Aquarius).
@@ -97,20 +99,33 @@ class OceanAssets:
             'files'], 'files is required in the metadata base attributes.'
         assert Metadata.validate(metadata), 'metadata seems invalid.'
         logger.debug('Encrypting content urls in the metadata.')
-        files_encrypted = self._get_secret_store(publisher_account) \
-            .encrypt_document(
-            did_to_id(did),
-            json.dumps(metadata_copy['base']['files']),
-        )
+        brizo = BrizoProvider.get_brizo()
+        if not use_secret_store:
+            encrypt_endpoint = brizo.get_encrypt_endpoint(self._config)
+            files_encrypted = brizo.encrypt_files_dict(
+                metadata_copy['base']['files'],
+                encrypt_endpoint,
+                ddo.asset_id,
+                publisher_account.address,
+                self._keeper.sign_hash(ddo.asset_id, publisher_account)
+            )
+        else:
+            files_encrypted = self._get_secret_store(publisher_account) \
+                .encrypt_document(
+                did_to_id(did),
+                json.dumps(metadata_copy['base']['files']),
+            )
 
         metadata_copy['base']['checksum'] = ddo.generate_checksum(did, metadata)
         ddo.add_proof(metadata_copy['base']['checksum'], publisher_account.address, private_key=priv_key)
 
-
         # only assign if the encryption worked
         if files_encrypted:
             logger.info(f'Content urls encrypted successfully {files_encrypted}')
+            index = 0
             for file in metadata_copy['base']['files']:
+                file['index'] = index
+                index = index + 1
                 del file['url']
             metadata_copy['base']['encryptedFiles'] = files_encrypted
         else:
