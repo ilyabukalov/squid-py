@@ -112,9 +112,9 @@ class Brizo:
         :param destination_folder: Path, str
         """
         signature = Keeper.get_instance().sign_hash(service_agreement_id, account)
-        for i, file in enumerate(files):
-            if 'url' in file:
-                url = file['url']
+        for i, _file in enumerate(files):
+            if 'url' in _file:
+                url = _file['url']
                 if url.startswith('"') or url.startswith("'"):
                     url = url[1:-1]
 

@@ -24,7 +24,6 @@ def _get_asset(file_name):
 def asset1():
     asset = _get_asset('ddo_sample1.json')
     asset._did = DID.did()
-    del asset.metadata['base']['files'][0]['url']
     return asset
 
 
@@ -32,7 +31,6 @@ def asset1():
 def asset2():
     asset = _get_asset('ddo_sample2.json')
     asset._did = DID.did()
-    del asset.metadata['base']['files'][0]['url']
     return asset
 
 
@@ -182,9 +180,9 @@ def test_retire_not_published_did():
         aquarius.retire_asset_ddo('did:op:not_registered')
 
 
-@e2e_test
-def test_validate_metadata(metadata):
-    assert aquarius.validate_metadata(metadata)
+# @e2e_test
+# def test_validate_metadata(metadata):
+#     assert aquarius.validate_metadata(metadata)
 
 
 @e2e_test
