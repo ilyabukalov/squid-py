@@ -122,7 +122,10 @@ class OceanAssets:
         # only assign if the encryption worked
         if files_encrypted:
             logger.info(f'Content urls encrypted successfully {files_encrypted}')
+            index = 0
             for file in metadata_copy['base']['files']:
+                file['index'] = index
+                index = index + 1
                 del file['url']
             metadata_copy['base']['encryptedFiles'] = files_encrypted
         else:

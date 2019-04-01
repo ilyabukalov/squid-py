@@ -24,6 +24,7 @@ def _get_asset(file_name):
 def asset1():
     asset = _get_asset('ddo_sample1.json')
     asset._did = DID.did()
+    del asset.metadata['base']['files'][0]['url']
     return asset
 
 
@@ -31,6 +32,7 @@ def asset1():
 def asset2():
     asset = _get_asset('ddo_sample2.json')
     asset._did = DID.did()
+    del asset.metadata['base']['files'][0]['url']
     return asset
 
 
