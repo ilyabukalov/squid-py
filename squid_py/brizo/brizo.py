@@ -1,0 +1,211 @@
+"""Brizo module."""
+
+#  Copyright 2018 Ocean Protocol Foundation
+#  SPDX-License-Identifier: Apache-2.0
+
+import json
+import logging
+import os
+
+from tqdm import tqdm
+
+from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.exceptions import (
+    OceanInitializeServiceAgreementError,
+    OceanEncryptAssetUrlsError
+)
+from squid_py.http_requests.requests_session import get_requests_session
+from squid_py.keeper import Keeper
+
+logger = logging.getLogger(__name__)
+
+
+class Brizo:
+    """
+    `Brizo` is the name chosen for the asset service provider.
+
+    The main functions available are:
+    - initialize_service_agreement
+    - consume_service
+    - run_compute_service (not implemented yet)
+
+    """
+    _http_client = get_requests_session()
+
+    @staticmethod
+    def set_http_client(http_client):
+        """Set the http client to something other than the default `requests`"""
+        Brizo._http_client = http_client
+
+    @staticmethod
+    def encrypt_files_dict(files_dict, encrypt_endpoint, asset_id, account_address, signed_did):
+        payload = json.dumps({
+            'documentId': asset_id,
+            'signedDocumentId': signed_did,
+            'document': json.dumps(files_dict),
+            'publisherAddress': account_address
+        })
+        response = Brizo._http_client.post(
+            encrypt_endpoint, data=payload,
+            headers={'content-type': 'application/json'}
+        )
+        if response and hasattr(response, 'status_code'):
+            if response.status_code != 201:
+                msg = (f'Encrypt file urls failed at the encryptEndpoint '
+                       f'{encrypt_endpoint}, reason {response.text}, status {response.status_code}'
+                       )
+                logger.error(msg)
+                raise OceanEncryptAssetUrlsError(msg)
+
+            logger.info(
+                f'Asset urls encrypted successfully, encrypted urls str: {response.text},'
+                f' encryptedEndpoint {encrypt_endpoint}')
+
+            return response.text
+
+    @staticmethod
+    def initialize_service_agreement(did, agreement_id, service_definition_id, signature,
+                                     account_address,
+                                     purchase_endpoint):
+        """
+        Send a request to the service provider (purchase_endpoint) to initialize the service
+        agreement for the asset identified by `did`.
+
+        :param did: id of the asset includes the `did:op:` prefix, str
+        :param agreement_id: id of the agreement, hex str
+        :param service_definition_id: identifier of the service inside the asset DDO, str
+        :param signature: signed agreement hash, hex str
+        :param account_address: ethereum address of the consumer signing this agreement, hex str
+        :param purchase_endpoint: url of the service provider, str
+        :return: bool
+        """
+        payload = Brizo._prepare_purchase_payload(
+            did, agreement_id, service_definition_id, signature, account_address
+        )
+        response = Brizo._http_client.post(
+            purchase_endpoint, data=payload,
+            headers={'content-type': 'application/json'}
+        )
+        if response and hasattr(response, 'status_code'):
+            if response.status_code != 201:
+                msg = (f'Initialize service agreement failed at the purchaseEndpoint '
+                       f'{purchase_endpoint}, reason {response.text}, status {response.status_code}'
+                       )
+                logger.error(msg)
+                raise OceanInitializeServiceAgreementError(msg)
+
+            logger.info(
+                f'Service agreement initialized successfully, service agreement id {agreement_id},'
+                f' purchaseEndpoint {purchase_endpoint}')
+            return True
+
+    @staticmethod
+    def consume_service(service_agreement_id, service_endpoint, account, files,
+                        destination_folder):
+        """
+        Call the brizo endpoint to get access to the different files that form the asset.
+
+        :param service_agreement_id: Service Agreement Id, str
+        :param service_endpoint: Url to consume, str
+        :param account: Account instance of the consumer signing this agreement, hex-str
+        :param files: List containing the files to be consumed, list
+        :param destination_folder: Path, str
+        """
+        signature = Keeper.get_instance().sign_hash(service_agreement_id, account)
+        for i, _file in enumerate(files):
+            if 'url' in _file:
+                url = _file['url']
+                if url.startswith('"') or url.startswith("'"):
+                    url = url[1:-1]
+
+                file_name = os.path.basename(url)
+                consume_url = (f'{service_endpoint}'
+                               f'?url={url}'
+                               f'&serviceAgreementId={service_agreement_id}'
+                               f'&consumerAddress={account.address}'
+                               )
+            else:
+                file_name = f'file.{i}'
+                consume_url = (f'{service_endpoint}'
+                               f'?signature={signature}'
+                               f'&serviceAgreementId={service_agreement_id}'
+                               f'&consumerAddress={account.address}'
+                               f'&index={i}'
+                               )
+
+            logger.info(f'invoke consume endpoint with this url: {consume_url}')
+            response = Brizo._http_client.get(consume_url, stream=True)
+
+            total_size = response.headers.get('content-length', 0)
+
+            logger.info(f'Total size of {file_name}: {total_size} bytes.')
+            bar = tqdm(total=int(total_size), unit='KB', leave=False, smoothing=0.1)
+            if response.status_code == 200:
+                with open(os.path.join(destination_folder, file_name), 'wb') as f:
+                    for chunk in response.iter_content():
+                        f.write(chunk)
+                        bar.update(len(chunk))
+                logger.info(f'Saved downloaded file in {f.name}')
+            else:
+                logger.warning(f'consume failed: {response.reason}')
+
+    @staticmethod
+    def _prepare_purchase_payload(did, service_agreement_id, service_definition_id, signature,
+                                  consumer_address):
+        """Prepare a payload to send to `Brizo`.
+
+        :param did: DID, str
+        :param service_agreement_id: Service Agreement Id, str
+        :param service_definition_id: identifier of the service inside the asset DDO, str
+        service in the DDO (DID document)
+        :param signature: the signed agreement message hash which includes
+         conditions and their parameters values and other details of the agreement, str
+        :param consumer_address: ethereum address of the consumer signing this agreement, hex-str
+        :return: dict
+        """
+        return json.dumps({
+            'did': did,
+            'serviceAgreementId': service_agreement_id,
+            ServiceAgreement.SERVICE_DEFINITION_ID: service_definition_id,
+            'signature': signature,
+            'consumerAddress': consumer_address
+        })
+
+    @staticmethod
+    def get_brizo_url(config):
+        """
+        Return the Brizo component url.
+
+        :param config: Config
+        :return: Url, str
+        """
+        brizo_url = 'http://localhost:8030'
+        if config.has_option('resources', 'brizo.url'):
+            brizo_url = config.get('resources', 'brizo.url') or brizo_url
+
+        brizo_path = '/api/v1/brizo'
+        return f'{brizo_url}{brizo_path}'
+
+    @staticmethod
+    def get_purchase_endpoint(config):
+        """
+        Return the endpoint to purchase the asset.
+
+        :param config:Config
+        :return: Url, str
+        """
+        return f'{Brizo.get_brizo_url(config)}/services/access/initialize'
+
+    @staticmethod
+    def get_service_endpoint(config):
+        """
+        Return the url to consume the asset.
+
+        :param config: Config
+        :return: Url, str
+        """
+        return f'{Brizo.get_brizo_url(config)}/services/consume'
+
+    @staticmethod
+    def get_encrypt_endpoint(config):
+        return f'{Brizo.get_brizo_url(config)}/services/publish'

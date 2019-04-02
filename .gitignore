@@ -46,6 +46,7 @@ coverage.xml
 *.cover
 .hypothesis/
 .pytest_cache/
+tests/resources/ddo/ddo_sample_generated_*
 
 # Translations
 *.mo
@@ -64,7 +65,8 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+docs/build/
+docs/source/api
 
 # PyBuilder
 target/
@@ -105,3 +107,10 @@ venv.bak/
 .idea
 docker/docs
 /config_local.ini
+/artifacts
+squid_py.db
+consume-downloads
+.log
+start_ocean.log
+errors.log.*
+info.log.*
