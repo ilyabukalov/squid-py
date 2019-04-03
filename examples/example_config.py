@@ -6,20 +6,30 @@ import os
 
 from squid_py import Config
 
+def get_variable_value(variable):
+    if os.getenv(variable) is None:
+        logging.error(f'you should provide a {variable}')
+        os._exit(1)
+    else:
+        return os.getenv(variable)
 
 class ExampleConfig:
     if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
         environment = 'TEST_NILE'
+        parity_address = get_variable_value('PARITY_ADDRESS')
+        parity_password = get_variable_value('PARITY_PASSWORD')
+        parity_address1 = get_variable_value('PARITY_ADDRESS1')
+        parity_password1 = get_variable_value('PARITY_PASSWORD1')
         config_dict = {
             "keeper-contracts": {
                 "keeper.url": "https://nile.dev-ocean.com",
                 "keeper.path": "artifacts",
                 "secret_store.url": "https://secret-store.dev-ocean.com",
                 "parity.url": "https://nile.dev-ocean.com",
-                "parity.address": "0x413c9ba0a05b8a600899b41b0c62dd661e689354",
-                "parity.password": "ocean_secret",
-                "parity.address1": "0x06C0035fE67Cce2B8862D63Dc315D8C8c72207cA",
-                "parity.password1": "ocean_secret"
+                "parity.address": parity_address,
+                "parity.password": parity_password,
+                "parity.address1": parity_address1,
+                "parity.password1": parity_password1
             },
             "resources": {
                 "aquarius.url": "https://nginx-aquarius.dev-ocean.com/",
@@ -75,3 +85,5 @@ class ExampleConfig:
     def get_config():
         logging.info("Configuration loaded for environment '{}'".format(ExampleConfig.environment))
         return Config(options_dict=ExampleConfig.config_dict)
+
+
