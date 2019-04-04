@@ -13,6 +13,7 @@ from .storage import get_service_agreements, record_service_agreement
 
 logger = logging.getLogger(__name__)
 
+EVENT_WAIT_TIMEOUT = 60
 
 def register_service_agreement_consumer(storage_path, publisher_address, agreement_id, did,
                                         service_agreement, service_definition_id, price,
@@ -68,7 +69,7 @@ def process_agreement_events_consumer(publisher_address, agreement_id, did, serv
     keeper = Keeper.get_instance()
     keeper.escrow_access_secretstore_template.subscribe_agreement_created(
         agreement_id,
-        60,
+        EVENT_WAIT_TIMEOUT,
         lock_reward_condition.fulfillLockRewardCondition,
         (agreement_id, price, consumer_account)
     )

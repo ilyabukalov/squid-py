@@ -9,6 +9,6 @@ def get_requests_session():
     :return: requests session
     """
     session = requests.sessions.Session()
-    session.mount('http://', HTTPAdapter(pool_maxsize=25, pool_block=True))
-    session.mount('https://', HTTPAdapter(pool_maxsize=25, pool_block=True))
+    session.mount('http://', HTTPAdapter(pool_connections=25, pool_maxsize=25, pool_block=True))
+    session.mount('https://', HTTPAdapter(pool_connections=25, pool_maxsize=25, pool_block=True))
     return session
