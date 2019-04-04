@@ -180,9 +180,9 @@ def test_retire_not_published_did():
         aquarius.retire_asset_ddo('did:op:not_registered')
 
 
-# @e2e_test
-# def test_validate_metadata(metadata):
-#     assert aquarius.validate_metadata(metadata)
+@e2e_test
+def test_validate_metadata(metadata):
+    assert aquarius.validate_metadata(metadata)
 
 
 @e2e_test

@@ -41,7 +41,7 @@ def buy_asset():
         acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
 
     # Register ddo
-    ddo = ocn.assets.create(Metadata.get_example(), acc, providers=[acc.address])
+    ddo = ocn.assets.create(Metadata.get_example(), acc, providers=[acc.address], use_secret_store=False)
     logging.info(f'registered ddo: {ddo.did}')
     # ocn here will be used only to publish the asset. Handling the asset by the publisher
     # will be performed by the Brizo server running locally
