@@ -123,7 +123,7 @@ class Ocean:
 
         :return: List of assets that match with the query
         """
-        return self.assets.search(*args, **kwargs)
+        return self.assets.search(*args, **kwargs)['results']
 
     @deprecated("Use ocean.assets.query")
     def search_assets(self, *args, **kwargs):
