@@ -266,6 +266,8 @@ class Aquarius:
 
         if parsed_response is None:
             return []
+        elif isinstance(parsed_response, dict):
+            return parsed_response
         elif isinstance(parsed_response, list):
             return parsed_response
         else:
