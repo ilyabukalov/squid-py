@@ -135,16 +135,16 @@ class Brizo:
 
             logger.info(f'invoke consume endpoint with this url: {consume_url}')
             response = Brizo._http_client.get(consume_url, stream=True)
+            # total_size = response.headers.get('content-length', 0)
+            # logger.info(f'Total size of {file_name}: {total_size} bytes.')
 
-            total_size = response.headers.get('content-length', 0)
 
-            logger.info(f'Total size of {file_name}: {total_size} bytes.')
-            bar = tqdm(total=int(total_size), unit='KB', leave=False, smoothing=0.1)
+            # bar = tqdm(total=int(total_size), unit='KB', leave=False, smoothing=0.1)
             if response.status_code == 200:
                 with open(os.path.join(destination_folder, file_name), 'wb') as f:
                     for chunk in response.iter_content():
                         f.write(chunk)
-                        bar.update(len(chunk))
+                        # bar.update(len(chunk))
                 logger.info(f'Saved downloaded file in {f.name}')
             else:
                 logger.warning(f'consume failed: {response.reason}')
