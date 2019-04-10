@@ -142,7 +142,7 @@ class Brizo:
             # bar = tqdm(total=int(total_size), unit='KB', leave=False, smoothing=0.1)
             if response.status_code == 200:
                 with open(os.path.join(destination_folder, file_name), 'wb') as f:
-                    for chunk in response.iter_content():
+                    for chunk in response.iter_content(chunk_size=None):
                         f.write(chunk)
                         # bar.update(len(chunk))
                 logger.info(f'Saved downloaded file in {f.name}')
