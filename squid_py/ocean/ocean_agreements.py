@@ -177,19 +177,6 @@ class OceanAgreements:
         condition_ids = service_agreement.generate_agreement_condition_ids(
             agreement_id, asset_id, consumer_address, publisher_account.address, self._keeper)
 
-        # subscribe to events related to this agreement_id
-        register_service_agreement_publisher(
-            self._config.storage_path,
-            consumer_address,
-            agreement_id,
-            did,
-            service_agreement,
-            service_definition_id,
-            service_agreement.get_price(),
-            publisher_account,
-            condition_ids
-        )
-
         time_locks = service_agreement.conditions_timelocks
         time_outs = service_agreement.conditions_timeouts
         success = agreement_template.create_agreement(
@@ -201,6 +188,19 @@ class OceanAgreements:
             consumer_address,
             publisher_account
         )
+
+        if not success:
+            # success is based on tx receipt which is not reliable.
+            # So we check on-chain directly to see if agreement_id is there
+            consumer = self._keeper.escrow_access_secretstore_template.get_agreement_consumer(agreement_id)
+            if consumer:
+                success = True
+            else:
+                event_log = self._keeper.escrow_access_secretstore_template.subscribe_agreement_created(
+                    agreement_id, 30, None, (), wait=True
+                )
+                success = event_log is not None
+
         if success:
             logger.info(f'Service agreement {agreement_id} created successfully.')
         else:
@@ -208,6 +208,20 @@ class OceanAgreements:
             self._log_agreement_info(
                 asset, service_agreement, agreement_id, service_agreement_signature,
                 consumer_address, publisher_account, condition_ids
+            )
+
+        if success:
+            # subscribe to events related to this agreement_id
+            register_service_agreement_publisher(
+                self._config.storage_path,
+                consumer_address,
+                agreement_id,
+                did,
+                service_agreement,
+                service_definition_id,
+                service_agreement.get_price(),
+                publisher_account,
+                condition_ids
             )
 
         return success

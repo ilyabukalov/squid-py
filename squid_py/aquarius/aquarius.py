@@ -165,7 +165,7 @@ class Aquarius:
         else:
             raise Exception(f'Unable to update DDO: {response.content}')
 
-    def text_search(self, text, sort=None, offset=100, page=0):
+    def text_search(self, text, sort=None, offset=100, page=1):
         """
         Search in aquarius using text query.
 

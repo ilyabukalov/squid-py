@@ -220,7 +220,7 @@ class OceanAssets:
         """
         return self._did_resolver.resolve(did)
 
-    def search(self, text, sort=None, offset=100, page=0, aquarius_url=None):
+    def search(self, text, sort=None, offset=100, page=1, aquarius_url=None):
         """
         Search an asset in oceanDB using aquarius.
 
