@@ -220,7 +220,7 @@ class OceanAssets:
         """
         return self._did_resolver.resolve(did)
 
-    def search(self, text, sort=None, offset=100, page=0, aquarius_url=None):
+    def search(self, text, sort=None, offset=100, page=1, aquarius_url=None):
         """
         Search an asset in oceanDB using aquarius.
 
@@ -232,6 +232,7 @@ class OceanAssets:
             provided take the default
         :return: List of assets that match with the query
         """
+        assert page >= 1, f'Invalid page value {page}. Required page >= 1.'
         logger.info(f'Searching asset containing: {text}')
         return [DDO(dictionary=ddo_dict) for ddo_dict in
                 self._get_aquarius(aquarius_url).text_search(text, sort, offset, page)['results']]

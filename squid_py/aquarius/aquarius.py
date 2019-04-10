@@ -165,7 +165,7 @@ class Aquarius:
         else:
             raise Exception(f'Unable to update DDO: {response.content}')
 
-    def text_search(self, text, sort=None, offset=100, page=0):
+    def text_search(self, text, sort=None, offset=100, page=1):
         """
         Search in aquarius using text query.
 
@@ -187,6 +187,7 @@ class Aquarius:
         :param page: Integer with the number of page.
         :return: List of DDO instance
         """
+        assert page >= 1, f'Invalid page value {page}. Required page >= 1.'
         payload = {"text": text, "sort": sort, "offset": offset, "page": page}
         response = self.requests_session.get(
             f'{self.url}/query',
