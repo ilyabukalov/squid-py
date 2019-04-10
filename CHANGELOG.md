@@ -1,18 +1,41 @@
 History
 =======
 
+0.5.14 (April 5th, 2019)
+-------------------------
+* Update chunk_size in the requests.
+* Page should be equal or bigger than 1.
+
+0.5.13 (April 5th, 2019)
+-------------------------
+* Working with the new Response for queries in aquarius
+
+0.5.12 (April 5th, 2019)
+-------------------------
+* Custom httpProvider to manage better the connections pool.
+
+0.5.11 (April 1st, 2019)
+-------------------------
+* Fix to solve an issue handling the signature in web3.
+* Prepare changes to make Brizo work with squid-js
+
+0.5.10 (March 29th, 2019)
+-------------------------
+* Upgrade to keeper contracts 0.9.0
+* Update tests and examples to the requirements in the files section of the ddo.
+
 0.5.9 (March 27th, 2019)
 -------------------------
+* New event handler.
+* Keep the files in the ddo.
 
 0.5.8 (March 26th, 2019)
 -------------------------
 * Upgrade to keeper-contracts 0.8.8.
 
-
 0.5.7 (March 25th, 2019)
 -------------------------
 * Unify authentication and publicKey parameters in the ddo.
-
 
 0.5.6 (March 22nd, 2019)
 -------------------------
