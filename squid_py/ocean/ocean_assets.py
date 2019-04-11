@@ -232,6 +232,7 @@ class OceanAssets:
             provided take the default
         :return: List of assets that match with the query
         """
+        assert page >= 1, f'Invalid page value {page}. Required page >= 1.'
         logger.info(f'Searching asset containing: {text}')
         return [DDO(dictionary=ddo_dict) for ddo_dict in
                 self._get_aquarius(aquarius_url).text_search(text, sort, offset, page)['results']]

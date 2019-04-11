@@ -187,6 +187,7 @@ class Aquarius:
         :param page: Integer with the number of page.
         :return: List of DDO instance
         """
+        assert page >= 1, f'Invalid page value {page}. Required page >= 1.'
         payload = {"text": text, "sort": sort, "offset": offset, "page": page}
         response = self.requests_session.get(
             f'{self.url}/query',
