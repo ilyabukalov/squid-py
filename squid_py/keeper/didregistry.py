@@ -6,7 +6,7 @@ import logging
 from collections import namedtuple
 from urllib.parse import urlparse
 
-from squid_py.did import did_to_id_bytes
+from squid_py.did import did_to_id_bytes, id_to_did
 from squid_py.exceptions import OceanDIDNotFound
 from squid_py.keeper.contract_base import ContractBase
 from squid_py.keeper.event_filter import EventFilter
@@ -92,9 +92,17 @@ class DIDRegistry(ContractBase):
         :param did: Asset did, did
         :return: ethereum address, hex str
         """
-        return self.contract_concise.getDIDOwner(did_to_id_bytes(did))
+        return self.contract_concise.getDIDOwner(did)
 
     def add_provider(self, did, provider_address, account):
+        """
+        Add the provider of the did.
+
+        :param did: the id of an asset on-chain, hex str
+        :param provider_address: ethereum account address of the provider, hex str
+        :param account: Account executing the action
+        :return:
+        """
         tx_hash = self.send_transaction(
             'addDIDProvider',
             (did,
@@ -105,6 +113,14 @@ class DIDRegistry(ContractBase):
         return self.get_tx_receipt(tx_hash)
 
     def remove_provider(self, did, provider_address, account):
+        """
+        Remove a provider
+
+        :param did: the id of an asset on-chain, hex str
+        :param provider_address: ethereum account address of the provider, hex str
+        :param account: Account executing the action
+        :return:
+        """
         tx_hash = self.send_transaction(
             'removeDIDProvider',
             (did,
@@ -115,6 +131,13 @@ class DIDRegistry(ContractBase):
         return self.get_tx_receipt(tx_hash)
 
     def is_did_provider(self, did, address):
+        """
+        Return true if the address is the Provider of the did.
+
+        :param did: the id of an asset on-chain, hex str
+        :param address: ethereum account address, hex str
+        :return: bool
+        """
         return self.contract_concise.isDIDProvider(did, address)
 
     def get_did_providers(self, did):
@@ -133,29 +156,19 @@ class DIDRegistry(ContractBase):
         return None
 
     def get_owner_asset_ids(self, address):
+        """
+        Get the list of assets owned by an address owner.
+
+        :param address: ethereum account address, hex str
+        :return:
+        """
         block_filter = self._get_event_filter(owner=address)
         log_items = block_filter.get_all_entries(max_tries=5)
         did_list = []
         for log_i in log_items:
-            did_list.append(log_i.args['_did'])
+            did_list.append(id_to_did(log_i.args['_did']))
 
         return did_list
-
-    def _get_event_filter(self, did=None, owner=None, from_block=0, to_block='latest'):
-        _filters = {}
-        if did is not None:
-            _filters['_did'] = Web3Provider.get_web3().toBytes(hexstr=did)
-        if owner is not None:
-            _filters['_owner'] = Web3Provider.get_web3().toBytes(hexstr=owner)
-
-        block_filter = EventFilter(
-            DIDRegistry.DID_REGISTRY_EVENT_NAME,
-            getattr(self.events, DIDRegistry.DID_REGISTRY_EVENT_NAME),
-            from_block=from_block,
-            to_block=to_block,
-            argument_filters=_filters
-        )
-        return block_filter
 
     def get_registered_attribute(self, did_bytes):
         """
@@ -190,7 +203,8 @@ class DIDRegistry(ContractBase):
                 f'Please ensure assets are registered in the correct keeper contracts. '
                 f'The keeper-contracts DIDRegistry address is {self.address}')
 
-        block_filter = self._get_event_filter(did=did, from_block=block_number, to_block=block_number)
+        block_filter = self._get_event_filter(did=did, from_block=block_number,
+                                              to_block=block_number)
         log_items = block_filter.get_all_entries(max_tries=5)
         if log_items:
             log_item = log_items[-1].args
@@ -207,3 +221,19 @@ class DIDRegistry(ContractBase):
             logger.warning(f'Could not find {DIDRegistry.DID_REGISTRY_EVENT_NAME} event logs for '
                            f'did {did} at blockNumber {block_number}')
         return result
+
+    def _get_event_filter(self, did=None, owner=None, from_block=0, to_block='latest'):
+        _filters = {}
+        if did is not None:
+            _filters['_did'] = Web3Provider.get_web3().toBytes(hexstr=did)
+        if owner is not None:
+            _filters['_owner'] = Web3Provider.get_web3().toBytes(hexstr=owner)
+
+        block_filter = EventFilter(
+            DIDRegistry.DID_REGISTRY_EVENT_NAME,
+            getattr(self.events, DIDRegistry.DID_REGISTRY_EVENT_NAME),
+            from_block=from_block,
+            to_block=to_block,
+            argument_filters=_filters
+        )
+        return block_filter
