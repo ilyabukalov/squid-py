@@ -117,7 +117,8 @@ class OceanAssets:
             )
 
         metadata_copy['base']['checksum'] = ddo.generate_checksum(did, metadata)
-        ddo.add_proof(metadata_copy['base']['checksum'], publisher_account.address, private_key=priv_key)
+        ddo.add_proof(metadata_copy['base']['checksum'], publisher_account.address,
+                      private_key=priv_key)
 
         # only assign if the encryption worked
         if files_encrypted:
@@ -237,19 +238,23 @@ class OceanAssets:
         return [DDO(dictionary=ddo_dict) for ddo_dict in
                 self._get_aquarius(aquarius_url).text_search(text, sort, offset, page)['results']]
 
-    def query(self, query, aquarius_url=None):
+    def query(self, query, sort=None, offset=100, page=1, aquarius_url=None):
         """
         Search an asset in oceanDB using search query.
 
         :param query: dict with query parameters
             (e.g.) https://github.com/oceanprotocol/aquarius/blob/develop/docs/for_api_users/API.md
+        :param sort: Dictionary to choose order base in some value
+        :param offset: Number of elements shows by page
+        :param page: Page number
         :param aquarius_url: Url of the aquarius where you want to search. If there is not
             provided take the default
         :return: List of assets that match with the query.
         """
         logger.info(f'Searching asset query: {query}')
         aquarius = self._get_aquarius(aquarius_url)
-        return [DDO(dictionary=ddo_dict) for ddo_dict in aquarius.query_search(query)['results']]
+        return [DDO(dictionary=ddo_dict) for ddo_dict in
+                aquarius.query_search(query, sort, offset, page)['results']]
 
     def order(self, did, service_definition_id, consumer_account, auto_consume=False):
         """
