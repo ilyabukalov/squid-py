@@ -332,7 +332,8 @@ class OceanAssets:
         :param did: DID, str
         :return: the ethereum address of the owner/publisher of given asset did, hex-str
         """
-        return self._get_aquarius(self._aquarius_url).get_asset_ddo(did).proof['creator']
+        # return self._get_aquarius(self._aquarius_url).get_asset_ddo(did).proof['creator']
+        return self._keeper.did_registry.get_did_owner(did)
 
     def owner_assets(self, owner_address):
         """
@@ -341,8 +342,9 @@ class OceanAssets:
         :param owner_address: ethereum address of owner/publisher, hex-str
         :return: list of dids
         """
-        return [k for k, v in self._get_aquarius(self._aquarius_url).list_assets_ddo().items() if
-                v['proof']['creator'] == owner_address]
+        # return [k for k, v in self._get_aquarius(self._aquarius_url).list_assets_ddo().items() if
+        #         v['proof']['creator'] == owner_address]
+        return self._keeper.did_registry.get_owner_asset_ids(owner_address)
 
     def consumer_assets(self, consumer_address):
         """

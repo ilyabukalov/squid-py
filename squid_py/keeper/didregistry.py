@@ -92,7 +92,7 @@ class DIDRegistry(ContractBase):
         :param did: Asset did, did
         :return: ethereum address, hex str
         """
-        return self.contract_concise.getDIDOwner(did)
+        return self.contract_concise.getDIDOwner(did_to_id_bytes(did))
 
     def add_provider(self, did, provider_address, account):
         tx_hash = self.send_transaction(
