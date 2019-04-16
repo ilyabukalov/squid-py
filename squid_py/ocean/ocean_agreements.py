@@ -300,3 +300,13 @@ class OceanAgreements:
 
         self._keeper.token.token_approve(self._keeper.payment_conditions.address, amount,
                                          consumer_account)
+
+    def status(self, agreement_id):
+        """
+        Get the status of a service agreement.
+
+        :param agreement_id: id of the agreement, hex str
+        :return: dict with condition status of each of the agreement's conditions or None if the
+        agreement is invalid.
+        """
+        pass

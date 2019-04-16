@@ -114,3 +114,24 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
     assert new_asset.get_service(ServiceTypes.AUTHORIZATION)
     assert new_asset.get_service(ServiceTypes.ASSET_ACCESS)
     assert new_asset.get_service(ServiceTypes.METADATA)
+
+
+def test_asset_owner(publisher_ocean_instance):
+    ocn = publisher_ocean_instance
+
+    sample_ddo_path = get_resource_path('ddo', 'ddo_sa_sample.json')
+    assert sample_ddo_path.exists(), "{} does not exist!".format(sample_ddo_path)
+
+    acct = ocn.main_account
+
+    asset = DDO(json_filename=sample_ddo_path)
+    my_secret_store = 'http://myownsecretstore.com'
+    auth_service = ServiceDescriptor.authorization_service_descriptor(my_secret_store)
+    new_asset = ocn.assets.create(asset.metadata, acct, [auth_service])
+
+    assert ocn.assets.owner(new_asset.did) == acct.address
+
+def test_owner_assets(publisher_ocean_instance):
+    ocn = publisher_ocean_instance
+    acct = ocn.main_account
+    ocn.assets.owner_assets(acct.address)

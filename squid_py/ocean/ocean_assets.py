@@ -117,7 +117,8 @@ class OceanAssets:
             )
 
         metadata_copy['base']['checksum'] = ddo.generate_checksum(did, metadata)
-        ddo.add_proof(metadata_copy['base']['checksum'], publisher_account.address, private_key=priv_key)
+        ddo.add_proof(metadata_copy['base']['checksum'], publisher_account.address,
+                      private_key=priv_key)
 
         # only assign if the encryption worked
         if files_encrypted:
@@ -323,3 +324,31 @@ class OceanAssets:
         :return: bool
         """
         return self._get_aquarius(self._aquarius_url).validate_metadata(metadata)
+
+    def owner(self, did):
+        """
+        Return the owner of the asset.
+
+        :param did: DID, str
+        :return: the ethereum address of the owner/publisher of given asset did, hex-str
+        """
+        return self._get_aquarius(self._aquarius_url).get_asset_ddo(did).proof['creator']
+
+    def owner_assets(self, owner_address):
+        """
+        List of Asset objects published by ownerAddress
+
+        :param owner_address: ethereum address of owner/publisher, hex-str
+        :return: list of dids
+        """
+        return [k for k, v in self._get_aquarius(self._aquarius_url).list_assets_ddo().items() if
+                v['proof']['creator'] == owner_address]
+
+    def consumer_assets(self, consumer_address):
+        """
+        List of Asset objects purchased by consumerAddress
+
+        :param consumer_address: ethereum address of consumer, hes-str
+        :return: list of dids
+        """
+        pass
