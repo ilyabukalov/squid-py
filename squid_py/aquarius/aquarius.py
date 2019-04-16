@@ -199,7 +199,7 @@ class Aquarius:
         else:
             raise Exception(f'Unable to search for DDO: {response.content}')
 
-    def query_search(self, search_query):
+    def query_search(self, search_query, sort=None, offset=100, page=1):
         """
         Search using a query.
 
@@ -209,11 +209,18 @@ class Aquarius:
         And an Elastic Search driver, which implements a basic parser to convert the query into
         elastic search format.
 
-        Example: query_search({"service.metadata.base.name":"London Weather 2011"})
+        Example: query_search({"price":[0,10]})
 
         :param search_query: Python dictionary, query following mongodb syntax
+        :param sort: 1/-1 to sort ascending or descending.
+        :param offset: Integer with the number of elements displayed per page.
+        :param page: Integer with the number of page.
         :return: List of DDO instance
         """
+        assert page >= 1, f'Invalid page value {page}. Required page >= 1.'
+        search_query['sort'] = sort
+        search_query['offset'] = offset
+        search_query['page'] = page
         response = self.requests_session.post(
             f'{self.url}/query',
             data=json.dumps(search_query),
