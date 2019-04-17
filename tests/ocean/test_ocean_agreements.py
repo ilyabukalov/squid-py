@@ -12,7 +12,7 @@ from squid_py.assets.asset_consumer import AssetConsumer
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ocean.ocean_agreements import OceanAgreements
-from tests.resources.helper_functions import get_consumer_account, get_ddo_sample
+from tests.resources.helper_functions import (get_ddo_sample, log_event)
 from tests.resources.tiers import e2e_test
 
 
@@ -62,3 +62,97 @@ def test_agreement_release_reward():
 @e2e_test
 def test_agreement_refund_reward():
     pass
+
+
+def test_agreement_status(setup_agreements_enviroment, ocean_agreements):
+    (
+        keeper,
+        publisher_acc,
+        consumer_acc,
+        agreement_id,
+        asset_id,
+        price,
+        service_agreement,
+        (lock_cond_id, access_cond_id, escrow_cond_id),
+
+    ) = setup_agreements_enviroment
+
+    success = keeper.escrow_access_secretstore_template.create_agreement(
+        agreement_id,
+        asset_id,
+        [access_cond_id, lock_cond_id, escrow_cond_id],
+        service_agreement.conditions_timelocks,
+        service_agreement.conditions_timeouts,
+        consumer_acc.address,
+        publisher_acc
+    )
+    print('create agreement: ', success)
+    assert success, f'createAgreement failed {success}'
+    event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
+        agreement_id,
+        10,
+        log_event(keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
+        (),
+        wait=True
+    )
+    assert event, 'no event for AgreementCreated '
+    assert ocean_agreements.status(agreement_id) == {"agreementId": agreement_id,
+                                                     "conditions": {"lockReward": 1,
+                                                                    "accessSecretStore": 1,
+                                                                    "escrowReward": 1
+                                                                    }
+                                                     }
+    keeper.dispenser.request_tokens(price, consumer_acc)
+
+    keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_acc)
+    keeper.lock_reward_condition.fulfill(
+        agreement_id, keeper.escrow_reward_condition.address, price, consumer_acc)
+    event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        10,
+        log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
+        (),
+        wait=True
+    )
+    assert event, 'no event for LockRewardCondition.Fulfilled'
+    assert ocean_agreements.status(agreement_id) == {"agreementId": agreement_id,
+                                                     "conditions": {"lockReward": 2,
+                                                                    "accessSecretStore": 1,
+                                                                    "escrowReward": 1
+                                                                    }
+                                                     }
+    keeper.access_secret_store_condition.fulfill(
+        agreement_id, asset_id, consumer_acc.address, publisher_acc)
+    event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        20,
+        log_event(keeper.access_secret_store_condition.FULFILLED_EVENT),
+        (),
+        wait=True
+    )
+    assert event, 'no event for AccessSecretStoreCondition.Fulfilled'
+    assert ocean_agreements.status(agreement_id) == {"agreementId": agreement_id,
+                                                     "conditions": {"lockReward": 2,
+                                                                    "accessSecretStore": 2,
+                                                                    "escrowReward": 1
+                                                                    }
+                                                     }
+    keeper.escrow_reward_condition.fulfill(
+        agreement_id, price, publisher_acc.address,
+        consumer_acc.address, lock_cond_id,
+        access_cond_id, publisher_acc
+    )
+    event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        10,
+        log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
+        (),
+        wait=True
+    )
+    assert event, 'no event for EscrowReward.Fulfilled'
+    assert ocean_agreements.status(agreement_id) == {"agreementId": agreement_id,
+                                                     "conditions": {"lockReward": 2,
+                                                                    "accessSecretStore": 2,
+                                                                    "escrowReward": 2
+                                                                    }
+                                                     }

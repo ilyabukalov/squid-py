@@ -1,7 +1,9 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
+from squid_py.did import id_to_did
 from squid_py.keeper.conditions.condition_base import ConditionBase
+from squid_py.keeper.event_filter import EventFilter
 
 
 class AccessSecretStoreCondition(ConditionBase):
@@ -49,3 +51,26 @@ class AccessSecretStoreCondition(ConditionBase):
         :return: true if the access was granted, bool
         """
         return self.contract_concise.checkPermissions(grantee_address, document_id)
+
+    def get_purchased_assets_by_address(self, address, from_block=0, to_block='latest'):
+        """
+        Get the list of the assets dids purchased for an address.
+
+        :param address: is the address of the granted user, hex-str
+        :param from_block: block to start to listen
+        :param to_block: block to stop to listen
+        :return: list of dids
+        """
+        block_filter = EventFilter(
+            ConditionBase.FULFILLED_EVENT,
+            getattr(self.events, ConditionBase.FULFILLED_EVENT),
+            from_block=from_block,
+            to_block=to_block,
+            argument_filters={'_grantee': address}
+        )
+        log_items = block_filter.get_all_entries(max_tries=5)
+        did_list = []
+        for log_i in log_items:
+            did_list.append(id_to_did(log_i.args['_documentId']))
+
+        return did_list
