@@ -4,6 +4,9 @@
 from unittest.mock import MagicMock, Mock
 
 import pytest
+from squid_py.brizo.brizo import Brizo
+from tests.resources.mocks.brizo_mock import BrizoMock
+from squid_py.agreements.service_agreement import ServiceAgreement
 
 from squid_py import ConfigProvider
 from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
@@ -62,3 +65,38 @@ def test_agreement_release_reward():
 @e2e_test
 def test_agreement_refund_reward():
     pass
+
+
+def test_agreement_status(publisher_ocean_instance, consumer_ocean_instance, ocean_agreements, registered_ddo):
+    Brizo.set_http_client(
+        BrizoMock(publisher_ocean_instance, publisher_ocean_instance.main_account))
+
+    consumer_ocn = consumer_ocean_instance
+    consumer_acc = consumer_ocn.main_account
+    keeper = Keeper.get_instance()
+
+    pub_ocn = publisher_ocean_instance
+    publisher_acc = pub_ocn.main_account
+
+    service_definition_id = '1'
+    did = registered_ddo.did
+    asset_id = registered_ddo.asset_id
+    ddo = consumer_ocn.assets.resolve(did)
+    service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
+    price = service_agreement.get_price()
+
+    # Give consumer some tokens
+    keeper.dispenser.request_tokens(price * 2, consumer_acc)
+
+    agreement_id, signature = consumer_ocean_instance.agreements.prepare(
+        did, service_agreement.service_definition_id, consumer_acc)
+    success = publisher_ocean_instance.agreements.create(
+        did,
+        service_agreement.service_definition_id,
+        agreement_id,
+        signature,
+        consumer_acc.address,
+        publisher_acc
+    )
+
+    ocean_agreements.status(agreement_id)

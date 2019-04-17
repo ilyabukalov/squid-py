@@ -309,4 +309,12 @@ class OceanAgreements:
         :return: dict with condition status of each of the agreement's conditions or None if the
         agreement is invalid.
         """
-        pass
+        condition_ids = self._keeper.agreement_manager.get_agreement(agreement_id).condition_ids
+        result = {"agreementId": agreement_id}
+        conditions = dict()
+        for i in condition_ids:
+            conditions[self._keeper.get_condition_name_by_address(
+                self._keeper.condition_manager.get_condition(
+                    i).type_ref)] = self._keeper.condition_manager.get_condition_state(i)
+        result["conditions"] = conditions
+        return result
