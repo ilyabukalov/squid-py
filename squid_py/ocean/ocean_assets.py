@@ -328,3 +328,34 @@ class OceanAssets:
         :return: bool
         """
         return self._get_aquarius(self._aquarius_url).validate_metadata(metadata)
+
+    def owner(self, did):
+        """
+        Return the owner of the asset.
+
+        :param did: DID, str
+        :return: the ethereum address of the owner/publisher of given asset did, hex-str
+        """
+        # return self._get_aquarius(self._aquarius_url).get_asset_ddo(did).proof['creator']
+        return self._keeper.did_registry.get_did_owner(did_to_id(did))
+
+    def owner_assets(self, owner_address):
+        """
+        List of Asset objects published by ownerAddress
+
+        :param owner_address: ethereum address of owner/publisher, hex-str
+        :return: list of dids
+        """
+        # return [k for k, v in self._get_aquarius(self._aquarius_url).list_assets_ddo().items() if
+        #         v['proof']['creator'] == owner_address]
+        return self._keeper.did_registry.get_owner_asset_ids(owner_address)
+
+    def consumer_assets(self, consumer_address):
+        """
+        List of Asset objects purchased by consumerAddress
+
+        :param consumer_address: ethereum address of consumer, hes-str
+        :return: list of dids
+        """
+        return self._keeper.access_secret_store_condition.get_purchased_assets_by_address(
+            consumer_address)
