@@ -15,10 +15,11 @@ logger = logging.getLogger(__name__)
 
 EVENT_WAIT_TIMEOUT = 60
 
+
 def register_service_agreement_consumer(storage_path, publisher_address, agreement_id, did,
                                         service_agreement, service_definition_id, price,
                                         encrypted_files, consumer_account, condition_ids,
-                                        consume_callback=None, start_time=None):
+                                        events_manager, consume_callback=None, start_time=None):
     """
     Registers the given service agreement in the local storage.
     Subscribes to the service agreement events.
@@ -35,6 +36,7 @@ def register_service_agreement_consumer(storage_path, publisher_address, agreeme
     :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :param consume_callback:
     :param start_time: start time, int
+    :param events_manager:
     """
     if start_time is None:
         start_time = int(datetime.now().timestamp())
@@ -45,13 +47,13 @@ def register_service_agreement_consumer(storage_path, publisher_address, agreeme
     process_agreement_events_consumer(
         publisher_address, agreement_id, did, service_agreement,
         price, consumer_account, condition_ids,
-        consume_callback
+        consume_callback, events_manager
     )
 
 
 def process_agreement_events_consumer(publisher_address, agreement_id, did, service_agreement,
                                       price, consumer_account, condition_ids,
-                                      consume_callback):
+                                      consume_callback, events_manager):
     """
     Process the agreement events during the register of the service agreement for the consumer side.
 
@@ -63,15 +65,16 @@ def process_agreement_events_consumer(publisher_address, agreement_id, did, serv
     :param consumer_account: Account instance of the consumer
     :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :param consume_callback:
+    :param events_manager:
     :return:
     """
     conditions_dict = service_agreement.condition_by_name
-    keeper = Keeper.get_instance()
-    keeper.escrow_access_secretstore_template.subscribe_agreement_created(
+    events_manager.watch_agreement_created_event(
         agreement_id,
-        EVENT_WAIT_TIMEOUT,
         lock_reward_condition.fulfillLockRewardCondition,
-        (agreement_id, price, consumer_account)
+        None,
+        (agreement_id, price, consumer_account),
+        EVENT_WAIT_TIMEOUT,
     )
 
     if consume_callback:
@@ -84,18 +87,19 @@ def process_agreement_events_consumer(publisher_address, agreement_id, did, serv
 
             return do_refund
 
-        keeper.access_secret_store_condition.subscribe_condition_fulfilled(
+        events_manager.watch_access_event(
             agreement_id,
-            conditions_dict['accessSecretStore'].timeout,
             escrow_reward_condition.consume_asset,
+            _refund_callback(price, publisher_address, condition_ids),
             (agreement_id, did, service_agreement, consumer_account, consume_callback),
-            _refund_callback(price, publisher_address, condition_ids)
+            conditions_dict['accessSecretStore'].timeout
         )
 
 
 def register_service_agreement_publisher(storage_path, consumer_address, agreement_id, did,
                                          service_agreement, service_definition_id, price,
-                                         publisher_account, condition_ids, start_time=None):
+                                         publisher_account, condition_ids, events_manager,
+                                         start_time=None):
     """
     Registers the given service agreement in the local storage.
     Subscribes to the service agreement events.
@@ -110,6 +114,7 @@ def register_service_agreement_publisher(storage_path, consumer_address, agreeme
     :param publisher_account: Account instance of the publisher
     :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :param start_time:
+    :param events_manager:
     :return:
     """
     if start_time is None:
@@ -120,13 +125,12 @@ def register_service_agreement_publisher(storage_path, consumer_address, agreeme
 
     process_agreement_events_publisher(
         publisher_account, agreement_id, did, service_agreement,
-        price, consumer_address, condition_ids
+        price, consumer_address, condition_ids, events_manager
     )
 
 
 def process_agreement_events_publisher(publisher_account, agreement_id, did, service_agreement,
-                                       price, consumer_address,
-                                       condition_ids):
+                                       price, consumer_address, condition_ids, events_manager):
     """
     Process the agreement events during the register of the service agreement for the publisher side
 
@@ -137,32 +141,35 @@ def process_agreement_events_publisher(publisher_account, agreement_id, did, ser
     :param price: Asset price, int
     :param consumer_address: ethereum account address of consumer, hex str
     :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
+    :param events_manager:
     :return:
     """
     conditions_dict = service_agreement.condition_by_name
-    keeper = Keeper.get_instance()
-    keeper.lock_reward_condition.subscribe_condition_fulfilled(
+    events_manager.watch_lock_reward_event(
         agreement_id,
-        conditions_dict['lockReward'].timeout,
         access_secret_store_condition.fulfillAccessSecretStoreCondition,
+        None,
         (agreement_id, did, service_agreement,
-         consumer_address, publisher_account)
+         consumer_address, publisher_account),
+        conditions_dict['lockReward'].timeout
     )
 
-    keeper.access_secret_store_condition.subscribe_condition_fulfilled(
+    events_manager.watch_access_event(
         agreement_id,
-        conditions_dict['accessSecretStore'].timeout,
         escrow_reward_condition.fulfillEscrowRewardCondition,
+        None,
         (agreement_id, service_agreement,
-         price, consumer_address, publisher_account, condition_ids)
+         price, consumer_address, publisher_account, condition_ids),
+        conditions_dict['accessSecretStore'].timeout
     )
 
-    keeper.escrow_reward_condition.subscribe_condition_fulfilled(
+    events_manager.watch_reward_event(
         agreement_id,
-        conditions_dict['escrowReward'].timeout,
         verify_reward_condition.verifyRewardTokens,
+        None,
         (agreement_id, did, service_agreement,
-         price, consumer_address, publisher_account)
+         price, consumer_address, publisher_account),
+        conditions_dict['escrowReward'].timeout
     )
 
 

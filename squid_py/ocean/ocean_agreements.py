@@ -21,10 +21,11 @@ logger = logging.getLogger('ocean')
 class OceanAgreements:
     """Ocean agreements class."""
 
-    def __init__(self, keeper, asset_resolver, asset_consumer, config):
+    def __init__(self, keeper, asset_resolver, asset_consumer, events_manager, config):
         self._keeper = keeper
         self._asset_resolver = asset_resolver
         self._asset_consumer = asset_consumer
+        self._events_manager = events_manager
         self._config = config
         self.conditions = OceanConditions(self._keeper)
 
@@ -104,6 +105,7 @@ class OceanAgreements:
             asset.encrypted_files,
             consumer_account,
             condition_ids,
+            self._events_manager,
             self._asset_consumer.download if auto_consume else None,
         )
 
@@ -187,7 +189,8 @@ class OceanAgreements:
             service_definition_id,
             service_agreement.get_price(),
             publisher_account,
-            condition_ids
+            condition_ids,
+            self._events_manager
         )
 
         time_locks = service_agreement.conditions_timelocks

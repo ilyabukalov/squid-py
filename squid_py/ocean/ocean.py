@@ -11,6 +11,7 @@ from squid_py.config_provider import ConfigProvider
 from squid_py.did_resolver.did_resolver import DIDResolver
 from squid_py.keeper import Keeper
 from squid_py.keeper.diagnostics import Diagnostics
+from squid_py.keeper.events_manager import EventsManager
 from squid_py.log import setup_logging
 from squid_py.ocean.ocean_accounts import OceanAccounts
 from squid_py.ocean.ocean_agreements import OceanAgreements
@@ -69,6 +70,8 @@ class Ocean:
         self._config = ConfigProvider.get_config()
         self._keeper = Keeper.get_instance()
         self._did_resolver = DIDResolver(self._keeper.did_registry)
+        self.events_manager = EventsManager(self._keeper)
+        self.events_manager.start_all_listeners()
 
         # Initialize the public sub-modules
         self.tokens = OceanTokens(self._keeper)
@@ -102,6 +105,7 @@ class Ocean:
             self._keeper,
             self._did_resolver,
             AssetConsumer,
+            self.events_manager,
             ConfigProvider.get_config()
         )
 
