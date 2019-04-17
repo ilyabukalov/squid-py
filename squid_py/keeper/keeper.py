@@ -129,3 +129,14 @@ class Keeper(object):
         :return: balance, int
         """
         return Web3Provider.get_web3().eth.getBalance(address, block_identifier='latest')
+
+    def get_condition_name_by_address(self, address):
+        """Return the condition name for a given address."""
+        if self.lock_reward_condition.address == address:
+            return 'lockReward'
+        elif self.access_secret_store_condition.address == address:
+            return 'accessSecretStore'
+        elif self.escrow_reward_condition.address == address:
+            return 'escrowReward'
+        else:
+            logging.error(f'The current address {address} is not a condition address')
