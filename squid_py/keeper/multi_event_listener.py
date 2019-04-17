@@ -5,7 +5,7 @@ import logging
 import time
 
 from datetime import datetime
-from threading import Thread, Lock
+from threading import Thread, RLock
 
 from squid_py.keeper.contract_handler import ContractHandler
 from squid_py.keeper.event_filter import EventFilter
@@ -28,7 +28,7 @@ class MultiEventListener(object):
         self._stopped = True
         self._event_filters = dict()
 
-        self._lock = Lock()
+        self._lock = RLock()
 
     def make_event_filter(self, filter_key, filter_value):
         """Create a new event filter."""
@@ -59,20 +59,24 @@ class MultiEventListener(object):
             self._event_filters[(filter_key, filter_value)] = (
                 (event_filter, callback, timeout_callback, args, timeout, start_time)
             )
+            if self.is_stopped():
+                self.start_watching()
 
     def is_stopped(self):
         return self._stopped
 
     def stop_watching(self):
-        self._stopped = True
+        with self._lock:
+            self._stopped = True
 
     def start_watching(self):
         t = Thread(
             target=self.watch_events,
             daemon=True,
         )
-        self._stopped = False
-        t.start()
+        with self._lock:
+            self._stopped = False
+            t.start()
 
     def watch_events(self):
         while True:
@@ -80,7 +84,9 @@ class MultiEventListener(object):
                 if self.is_stopped():
                     return
 
-                filters = self._event_filters.copy()
+                with self._lock:
+                    filters = self._event_filters.copy()
+
                 for (key, value), \
                     (event_filter, callback, timeout_callback, args, timeout, start_time) \
                         in filters.items():
@@ -102,6 +108,10 @@ class MultiEventListener(object):
                 logger.debug(f'Error processing event: {str(e)}')
 
             time.sleep(0.05)
+            with self._lock:
+                if not self._event_filters:
+                    self._stopped = True
+                    break
 
     @staticmethod
     def process_event(event_filter, callback, timeout_callback, timeout, args,
@@ -123,18 +133,18 @@ class MultiEventListener(object):
                 callback(events[0], *args)
                 return True
 
-            return False
-
         except (ValueError, Exception) as err:
             # ignore error, but log it
             logger.debug(f'Got error grabbing keeper events: {str(err)}')
 
-            if timeout:
-                elapsed = int(datetime.now().timestamp()) - start_time
-                if elapsed > timeout:
-                    if timeout_callback:
-                        timeout_callback(*args)
-                    else:
-                        callback(None, *args)
+        if timeout:
+            elapsed = int(datetime.now().timestamp()) - start_time
+            if elapsed > timeout:
+                if timeout_callback:
+                    timeout_callback(*args)
+                else:
+                    callback(None, *args)
 
-                    return True
+                return True
+
+        return False

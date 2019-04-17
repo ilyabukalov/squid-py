@@ -9,6 +9,7 @@ from squid_py.agreements.events import (access_secret_store_condition, escrow_re
                                         lock_reward_condition, verify_reward_condition)
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.keeper import Keeper
+from squid_py.keeper.events_manager import EventsManager
 from .storage import get_service_agreements, record_service_agreement
 
 logger = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ EVENT_WAIT_TIMEOUT = 60
 def register_service_agreement_consumer(storage_path, publisher_address, agreement_id, did,
                                         service_agreement, service_definition_id, price,
                                         encrypted_files, consumer_account, condition_ids,
-                                        events_manager, consume_callback=None, start_time=None):
+                                        consume_callback=None, start_time=None):
     """
     Registers the given service agreement in the local storage.
     Subscribes to the service agreement events.
@@ -36,7 +37,6 @@ def register_service_agreement_consumer(storage_path, publisher_address, agreeme
     :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :param consume_callback:
     :param start_time: start time, int
-    :param events_manager:
     """
     if start_time is None:
         start_time = int(datetime.now().timestamp())
@@ -47,13 +47,13 @@ def register_service_agreement_consumer(storage_path, publisher_address, agreeme
     process_agreement_events_consumer(
         publisher_address, agreement_id, did, service_agreement,
         price, consumer_account, condition_ids,
-        consume_callback, events_manager
+        consume_callback
     )
 
 
 def process_agreement_events_consumer(publisher_address, agreement_id, did, service_agreement,
                                       price, consumer_account, condition_ids,
-                                      consume_callback, events_manager):
+                                      consume_callback):
     """
     Process the agreement events during the register of the service agreement for the consumer side.
 
@@ -65,10 +65,10 @@ def process_agreement_events_consumer(publisher_address, agreement_id, did, serv
     :param consumer_account: Account instance of the consumer
     :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :param consume_callback:
-    :param events_manager:
     :return:
     """
     conditions_dict = service_agreement.condition_by_name
+    events_manager = EventsManager.get_instance(Keeper.get_instance())
     events_manager.watch_agreement_created_event(
         agreement_id,
         lock_reward_condition.fulfillLockRewardCondition,
@@ -98,8 +98,7 @@ def process_agreement_events_consumer(publisher_address, agreement_id, did, serv
 
 def register_service_agreement_publisher(storage_path, consumer_address, agreement_id, did,
                                          service_agreement, service_definition_id, price,
-                                         publisher_account, condition_ids, events_manager,
-                                         start_time=None):
+                                         publisher_account, condition_ids, start_time=None):
     """
     Registers the given service agreement in the local storage.
     Subscribes to the service agreement events.
@@ -114,7 +113,6 @@ def register_service_agreement_publisher(storage_path, consumer_address, agreeme
     :param publisher_account: Account instance of the publisher
     :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :param start_time:
-    :param events_manager:
     :return:
     """
     if start_time is None:
@@ -125,12 +123,12 @@ def register_service_agreement_publisher(storage_path, consumer_address, agreeme
 
     process_agreement_events_publisher(
         publisher_account, agreement_id, did, service_agreement,
-        price, consumer_address, condition_ids, events_manager
+        price, consumer_address, condition_ids
     )
 
 
 def process_agreement_events_publisher(publisher_account, agreement_id, did, service_agreement,
-                                       price, consumer_address, condition_ids, events_manager):
+                                       price, consumer_address, condition_ids):
     """
     Process the agreement events during the register of the service agreement for the publisher side
 
@@ -141,10 +139,10 @@ def process_agreement_events_publisher(publisher_account, agreement_id, did, ser
     :param price: Asset price, int
     :param consumer_address: ethereum account address of consumer, hex str
     :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
-    :param events_manager:
     :return:
     """
     conditions_dict = service_agreement.condition_by_name
+    events_manager = EventsManager.get_instance(Keeper.get_instance())
     events_manager.watch_lock_reward_event(
         agreement_id,
         access_secret_store_condition.fulfillAccessSecretStoreCondition,

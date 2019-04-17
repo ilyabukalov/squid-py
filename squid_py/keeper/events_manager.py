@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 class EventsManager:
     """Manage the main keeper events listeners necessary for processing service agreements."""
+    _instance = None
 
     def __init__(self, keeper):
         self._keeper = keeper
@@ -31,6 +32,13 @@ class EventsManager:
             self._keeper.escrow_reward_condition.CONTRACT_NAME,
             self._keeper.escrow_reward_condition.FULFILLED_EVENT
         )
+
+    @staticmethod
+    def get_instance(keeper):
+        if not EventsManager._instance:
+            EventsManager._instance = EventsManager(keeper)
+
+        return EventsManager._instance
 
     def start_all_listeners(self):
         self.agreement_listener.start_watching()
