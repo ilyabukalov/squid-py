@@ -2,6 +2,7 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 import os
+import time
 
 from secret_store_client.client import RPCError
 
@@ -48,11 +49,11 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
     cons_ocn.accounts.request_tokens(consumer_account, 100)
     agreement_id = cons_ocn.assets.order(
-        ddo.did, sa.service_definition_id, consumer_account, auto_consume=True)
+        ddo.did, sa.service_definition_id, consumer_account, auto_consume=False)
 
     event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
         agreement_id,
-        20,
+        30,
         log_event(keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
         (),
         wait=True
@@ -61,7 +62,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
 
     event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
-        20,
+        30,
         log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
         (),
         wait=True
@@ -70,7 +71,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
 
     event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
-        10,
+        30,
         log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
         (),
         wait=True
@@ -78,6 +79,22 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     assert event, 'no event for EscrowReward.Fulfilled'
 
     assert w3.toHex(event.args['_agreementId']) == agreement_id
+
+    i = 0
+    while cons_ocn.agreements.is_access_granted(
+            agreement_id, ddo.did, consumer_account.address) is not True and i < 30:
+        time.sleep(1)
+        i += 1
+
+    assert cons_ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address)
+
+    cons_ocn.assets.consume(
+        agreement_id,
+        ddo.did,
+        sa.service_definition_id,
+        consumer_account,
+        config.downloads_path)
+
     assert len(os.listdir(config.downloads_path)) == downloads_path_elements + 1
 
     # decrypt the contentUrls using the publisher account instead of consumer account.
@@ -85,7 +102,11 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     # since SecretStore decrypt will fail the checkPermissions check
     try:
         cons_ocn.assets.consume(
-            agreement_id, ddo.did, service.service_definition_id, pub_acc, config.downloads_path
+            agreement_id,
+            ddo.did,
+            service.service_definition_id,
+            pub_acc,
+            config.downloads_path
         )
     except RPCError:
         print('hooray, secret store is working as expected.')

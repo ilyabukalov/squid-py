@@ -80,7 +80,8 @@ class EventListener(object):
 
         return None
 
-    def watch_one_event(self, event_filter, callback, timeout_callback, timeout, args,
+    @staticmethod
+    def watch_one_event(event_filter, callback, timeout_callback, timeout, args,
                         start_time=None):
         """
         Start to watch one event.

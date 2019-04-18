@@ -9,11 +9,13 @@ from squid_py.agreements.events import (access_secret_store_condition, escrow_re
                                         lock_reward_condition, verify_reward_condition)
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.keeper import Keeper
+from squid_py.keeper.events_manager import EventsManager
 from .storage import get_service_agreements, record_service_agreement
 
 logger = logging.getLogger(__name__)
 
 EVENT_WAIT_TIMEOUT = 60
+
 
 def register_service_agreement_consumer(storage_path, publisher_address, agreement_id, did,
                                         service_agreement, service_definition_id, price,
@@ -66,12 +68,13 @@ def process_agreement_events_consumer(publisher_address, agreement_id, did, serv
     :return:
     """
     conditions_dict = service_agreement.condition_by_name
-    keeper = Keeper.get_instance()
-    keeper.escrow_access_secretstore_template.subscribe_agreement_created(
+    events_manager = EventsManager.get_instance(Keeper.get_instance())
+    events_manager.watch_agreement_created_event(
         agreement_id,
-        EVENT_WAIT_TIMEOUT,
         lock_reward_condition.fulfillLockRewardCondition,
-        (agreement_id, price, consumer_account)
+        None,
+        (agreement_id, price, consumer_account),
+        EVENT_WAIT_TIMEOUT,
     )
 
     if consume_callback:
@@ -84,12 +87,12 @@ def process_agreement_events_consumer(publisher_address, agreement_id, did, serv
 
             return do_refund
 
-        keeper.access_secret_store_condition.subscribe_condition_fulfilled(
+        events_manager.watch_access_event(
             agreement_id,
-            conditions_dict['accessSecretStore'].timeout,
             escrow_reward_condition.consume_asset,
+            _refund_callback(price, publisher_address, condition_ids),
             (agreement_id, did, service_agreement, consumer_account, consume_callback),
-            _refund_callback(price, publisher_address, condition_ids)
+            conditions_dict['accessSecretStore'].timeout
         )
 
 
@@ -125,8 +128,7 @@ def register_service_agreement_publisher(storage_path, consumer_address, agreeme
 
 
 def process_agreement_events_publisher(publisher_account, agreement_id, did, service_agreement,
-                                       price, consumer_address,
-                                       condition_ids):
+                                       price, consumer_address, condition_ids):
     """
     Process the agreement events during the register of the service agreement for the publisher side
 
@@ -140,29 +142,32 @@ def process_agreement_events_publisher(publisher_account, agreement_id, did, ser
     :return:
     """
     conditions_dict = service_agreement.condition_by_name
-    keeper = Keeper.get_instance()
-    keeper.lock_reward_condition.subscribe_condition_fulfilled(
+    events_manager = EventsManager.get_instance(Keeper.get_instance())
+    events_manager.watch_lock_reward_event(
         agreement_id,
-        conditions_dict['lockReward'].timeout,
         access_secret_store_condition.fulfillAccessSecretStoreCondition,
+        None,
         (agreement_id, did, service_agreement,
-         consumer_address, publisher_account)
+         consumer_address, publisher_account),
+        conditions_dict['lockReward'].timeout
     )
 
-    keeper.access_secret_store_condition.subscribe_condition_fulfilled(
+    events_manager.watch_access_event(
         agreement_id,
-        conditions_dict['accessSecretStore'].timeout,
         escrow_reward_condition.fulfillEscrowRewardCondition,
+        None,
         (agreement_id, service_agreement,
-         price, consumer_address, publisher_account, condition_ids)
+         price, consumer_address, publisher_account, condition_ids),
+        conditions_dict['accessSecretStore'].timeout
     )
 
-    keeper.escrow_reward_condition.subscribe_condition_fulfilled(
+    events_manager.watch_reward_event(
         agreement_id,
-        conditions_dict['escrowReward'].timeout,
         verify_reward_condition.verifyRewardTokens,
+        None,
         (agreement_id, did, service_agreement,
-         price, consumer_address, publisher_account)
+         price, consumer_address, publisher_account),
+        conditions_dict['escrowReward'].timeout
     )
 
 
