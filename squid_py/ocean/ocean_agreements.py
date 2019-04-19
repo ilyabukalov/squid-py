@@ -12,6 +12,7 @@ from squid_py.did import did_to_id
 from squid_py.exceptions import (OceanInvalidAgreementTemplate,
                                  OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists)
 from squid_py.keeper.web3_provider import Web3Provider
+from squid_py.keeper.events_manager import EventsManager
 from squid_py.ocean.ocean_conditions import OceanConditions
 from squid_py.utils.utilities import prepare_prefixed_hash
 
@@ -356,3 +357,16 @@ class OceanAgreements:
                     i).type_ref)] = self._keeper.condition_manager.get_condition_state(i)
         result["conditions"] = conditions
         return result
+
+    @staticmethod
+    def subscribe_events(provider_address, callback):
+        events_manager = EventsManager.get_instance()
+        events_manager.agreement_listener.add_event_filter(
+            '_accessProvider',
+            provider_address,
+            callback,
+            None,
+            (),
+            None,
+            pin_event=True
+        )
