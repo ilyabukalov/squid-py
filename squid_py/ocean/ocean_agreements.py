@@ -45,6 +45,20 @@ class OceanAgreements:
         """
         return self._keeper.agreement_manager.get_agreement(agreement_id)
 
+    @staticmethod
+    def new():
+        return ServiceAgreement.create_new_agreement_id()
+
+    def sign(self, agreement_id, did, service_definition_id, consumer_account):
+        asset = self._asset_resolver.resolve(did)
+        service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
+
+        publisher_address = self._keeper.did_registry.get_did_owner(asset.asset_id)
+        agreement_hash = service_agreement.get_service_agreement_hash(
+            agreement_id, asset.asset_id, consumer_account.address, publisher_address, self._keeper
+        )
+        return self._keeper.sign_hash(agreement_hash, consumer_account)
+
     def prepare(self, did, service_definition_id, consumer_account):
         """
 
@@ -54,16 +68,8 @@ class OceanAgreements:
         :param consumer_account: Account instance of the consumer
         :return: tuple (agreement_id: str, signature: hex str)
         """
-        agreement_id = ServiceAgreement.create_new_agreement_id()
-        asset = self._asset_resolver.resolve(did)
-        service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
-
-        publisher_address = self._keeper.did_registry.get_did_owner(asset.asset_id)
-        agreement_hash = service_agreement.get_service_agreement_hash(
-            agreement_id, asset.asset_id, consumer_account.address, publisher_address, self._keeper
-        )
-        signature = self._keeper.sign_hash(agreement_hash, consumer_account)
-
+        agreement_id = self.new()
+        signature = self.sign(agreement_id, did, service_definition_id, consumer_account)
         return agreement_id, signature
 
     def send(self, did, agreement_id, service_definition_id, signature,
@@ -117,7 +123,7 @@ class OceanAgreements:
         )
 
     def create(self, did, service_definition_id, agreement_id,
-               service_agreement_signature, consumer_address, publisher_account):
+               service_agreement_signature, consumer_address, account):
         """
         Execute the service agreement on-chain using keeper's ServiceAgreement contract.
 
@@ -135,13 +141,14 @@ class OceanAgreements:
         :param service_agreement_signature: str the signed agreement message hash which includes
          conditions and their parameters values and other details of the agreement.
         :param consumer_address: ethereum account address of consumer, hex str
-        :param publisher_account: ethereum account address of publisher
+        :param account: Account instance creating the agreement. Can be either the
+            consumer, publisher or provider
         :return: dict the `executeAgreement` transaction receipt
         """
         assert consumer_address and Web3Provider.get_web3().isChecksumAddress(
             consumer_address), f'Invalid consumer address {consumer_address}'
-        assert publisher_account.address in self._keeper.accounts, \
-            f'Unrecognized publisher address {publisher_account.address}'
+        assert account.address in self._keeper.accounts, \
+            f'Unrecognized account address {account.address}'
 
         agreement_template_approved = self._keeper.template_manager.is_template_approved(
             self._keeper.escrow_access_secretstore_template.address)
@@ -156,26 +163,27 @@ class OceanAgreements:
         asset_id = asset.asset_id
         service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
         agreement_template = self._keeper.escrow_access_secretstore_template
-        # encrypted_files = asset.encrypted_files
 
         if agreement_template.get_agreement_consumer(agreement_id) is not None:
             raise OceanServiceAgreementExists(
                 f'Service agreement {agreement_id} already exists, cannot reuse '
                 f'the same agreement id.')
 
-        if not self._verify_service_agreement_signature(
-                did, agreement_id, service_definition_id,
-                consumer_address, service_agreement_signature,
-                ddo=asset
-        ):
-            raise OceanInvalidServiceAgreementSignature(
-                f'Verifying consumer signature failed: '
-                f'signature {service_agreement_signature}, '
-                f'consumerAddress {consumer_address}'
-            )
+        if consumer_address != account.address:
+            if not self._verify_service_agreement_signature(
+                    did, agreement_id, service_definition_id,
+                    consumer_address, service_agreement_signature,
+                    ddo=asset
+            ):
+                raise OceanInvalidServiceAgreementSignature(
+                    f'Verifying consumer signature failed: '
+                    f'signature {service_agreement_signature}, '
+                    f'consumerAddress {consumer_address}'
+                )
 
+        publisher_address = Web3Provider.get_web3().toChecksumAddress(asset.publisher)
         condition_ids = service_agreement.generate_agreement_condition_ids(
-            agreement_id, asset_id, consumer_address, publisher_account.address, self._keeper)
+            agreement_id, asset_id, consumer_address, publisher_address, self._keeper)
 
         time_locks = service_agreement.conditions_timelocks
         time_outs = service_agreement.conditions_timeouts
@@ -186,7 +194,7 @@ class OceanAgreements:
             time_locks,
             time_outs,
             consumer_address,
-            publisher_account
+            account
         )
 
         if not success:
@@ -207,22 +215,38 @@ class OceanAgreements:
             logger.info(f'Create agreement "{agreement_id}" failed.')
             self._log_agreement_info(
                 asset, service_agreement, agreement_id, service_agreement_signature,
-                consumer_address, publisher_account, condition_ids
+                consumer_address, account, condition_ids
             )
 
         if success:
             # subscribe to events related to this agreement_id
-            register_service_agreement_publisher(
-                self._config.storage_path,
-                consumer_address,
-                agreement_id,
-                did,
-                service_agreement,
-                service_definition_id,
-                service_agreement.get_price(),
-                publisher_account,
-                condition_ids
-            )
+            if consumer_address == account.address:
+                register_service_agreement_consumer(
+                    self._config.storage_path,
+                    publisher_address,
+                    agreement_id,
+                    did,
+                    service_agreement,
+                    service_definition_id,
+                    service_agreement.get_price(),
+                    asset.encrypted_files,
+                    account,
+                    condition_ids,
+                    None
+                )
+
+            else:
+                register_service_agreement_publisher(
+                    self._config.storage_path,
+                    consumer_address,
+                    agreement_id,
+                    did,
+                    service_agreement,
+                    service_definition_id,
+                    service_agreement.get_price(),
+                    account,
+                    condition_ids
+                )
 
         return success
 

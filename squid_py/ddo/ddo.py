@@ -72,6 +72,10 @@ class DDO:
         return self._proof
 
     @property
+    def publisher(self):
+        return self._proof.get('creator')
+
+    @property
     def metadata(self):
         """Get the metadata service."""
         metadata_service = self.find_service_by_type(ServiceTypes.METADATA)
