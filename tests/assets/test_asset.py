@@ -5,8 +5,8 @@
 import logging
 import time
 
-from squid_py.agreements.service_factory import ServiceDescriptor, ServiceTypes
 from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.service_factory import ServiceDescriptor, ServiceTypes
 from squid_py.ddo.ddo import DDO
 from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import get_resource_path
@@ -14,6 +14,7 @@ from tests.resources.tiers import e2e_test
 
 logging.getLogger("urllib3").setLevel(logging.WARNING)
 logging.getLogger("web3").setLevel(logging.WARNING)
+
 
 def create_asset(publisher_ocean_instance):
     ocn = publisher_ocean_instance
