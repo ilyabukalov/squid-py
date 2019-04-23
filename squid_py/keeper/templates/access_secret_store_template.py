@@ -15,7 +15,7 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
     AGREEMENT_CREATED_EVENT = 'AgreementCreated'
 
     def create_agreement(self, agreement_id, did, condition_ids, time_locks, time_outs,
-                         consumer_address, publisher_account):
+                         consumer_address, account):
         """
         Create the service agreement. Return true if it is created successfully.
 
@@ -25,7 +25,7 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
         :param time_locks: is a list of uint time lock values associated to each Condition, int
         :param time_outs: is a list of uint time out values associated to each Condition, int
         :param consumer_address: ethereum account address of consumer, hex str
-        :param publisher_account: Account instance of the publisher
+        :param account: Account instance creating the agreement
         :return: bool
         """
         logger.info(
@@ -38,8 +38,8 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
              time_locks,
              time_outs,
              consumer_address),
-            transact={'from': publisher_account.address,
-                      'passphrase': publisher_account.password}
+            transact={'from': account.address,
+                      'passphrase': account.password}
         )
         receipt = self.get_tx_receipt(tx_hash)
         return receipt and receipt.status == 1

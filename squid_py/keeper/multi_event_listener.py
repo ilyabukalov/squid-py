@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 class MultiEventListener(object):
     """Class representing an event listener."""
 
-    def __init__(self, contract_name, event_name, from_block=0, to_block='latest',
+    def __init__(self, contract_name, event_name, from_block='latest', to_block='latest',
                  filter_key=None):
         contract = ContractHandler.get(contract_name)
         self.event_name = event_name
@@ -27,7 +27,7 @@ class MultiEventListener(object):
         self._timeout = 60  # seconds
         self._stopped = True
         self._event_filters = dict()
-
+        self._pinned_events = dict()
         self._lock = RLock()
 
     def make_event_filter(self, filter_key, filter_value):
@@ -43,20 +43,22 @@ class MultiEventListener(object):
         return event_filter
 
     def add_event_filter(self, filter_key, filter_value, callback, timeout_callback,
-                         args, timeout, start_time=None):
+                         args, timeout, start_time=None, pin_event=False):
         if self.filter_key is not None:
             assert filter_key == self.filter_key, f'This events watcher is restricted to work ' \
                                                   f'with filter key {self.filter_key}.'
 
         event_filter = self.make_event_filter(filter_key, filter_value)
-        if not timeout:
-            timeout = self._timeout
+        if not pin_event:
+            if not timeout:
+                timeout = self._timeout
 
-        if not start_time:
-            start_time = int(datetime.now().timestamp())
+            if not start_time:
+                start_time = int(datetime.now().timestamp())
 
         with self._lock:
-            self._event_filters[(filter_key, filter_value)] = (
+            events_dict = self._pinned_events if pin_event else self._event_filters
+            events_dict[(filter_key, filter_value)] = (
                 (event_filter, callback, timeout_callback, args, timeout, start_time)
             )
             if self.is_stopped():
@@ -86,6 +88,7 @@ class MultiEventListener(object):
 
                 with self._lock:
                     filters = self._event_filters.copy()
+                    filters.update(self._pinned_events.copy())
 
                 for (key, value), \
                     (event_filter, callback, timeout_callback, args, timeout, start_time) \
@@ -98,9 +101,11 @@ class MultiEventListener(object):
                         timeout,
                         args,
                         start_time)
+
                     if done:
                         with self._lock:
-                            self._event_filters.pop((key, value))
+                            if (key, value) in self._event_filters:
+                                self._event_filters.pop((key, value))
 
                     time.sleep(0.05)
 
@@ -109,7 +114,7 @@ class MultiEventListener(object):
 
             time.sleep(0.05)
             with self._lock:
-                if not self._event_filters:
+                if not self._pinned_events and not self._event_filters:
                     self._stopped = True
                     break
 
