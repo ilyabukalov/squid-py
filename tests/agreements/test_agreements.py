@@ -179,4 +179,4 @@ def test_agreement():
     print({signature})
     assert signature == Web3Provider.get_web3().toBytes(
         hexstr="0x67901517c18a3d23e05806fff7f04235cc8ae3b1f82345b8bfb3e4b02b5800c7"), \
-        "The signatuere is not correct."
+        "The signature is not correct."
