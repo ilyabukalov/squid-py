@@ -358,9 +358,8 @@ class OceanAgreements:
         result["conditions"] = conditions
         return result
 
-    @staticmethod
-    def subscribe_events(provider_address, callback):
-        events_manager = EventsManager.get_instance()
+    def subscribe_events(self, provider_address, callback):
+        events_manager = EventsManager.get_instance(self._keeper)
         events_manager.agreement_listener.add_event_filter(
             '_accessProvider',
             provider_address,
