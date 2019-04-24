@@ -3,6 +3,7 @@
 
 import os
 import time
+import pytest
 
 from secret_store_client.client import RPCError
 
@@ -17,7 +18,7 @@ from tests.resources.helper_functions import (get_account_from_config, get_publi
                                               get_registered_ddo, log_event)
 
 
-def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
+def test_buy_asset(consumer_ocean_instance_brizo, publisher_ocean_instance_brizo):
     config = ExampleConfig.get_config()
     ConfigProvider.set_config(config)
     keeper = Keeper.get_instance()
@@ -27,12 +28,12 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     pub_acc = get_publisher_account(config)
 
     # Register ddo
-    ddo = get_registered_ddo(publisher_ocean_instance, pub_acc)
+    ddo = get_registered_ddo(publisher_ocean_instance_brizo, pub_acc)
     assert isinstance(ddo, DDO)
     # ocn here will be used only to publish the asset. Handling the asset by the publisher
     # will be performed by the Brizo server running locally
 
-    cons_ocn = consumer_ocean_instance
+    cons_ocn = consumer_ocean_instance_brizo
     # restore the http client because we want the actual Brizo server to do the work
     # not the BrizoMock.
     # Brizo.set_http_client(requests)
@@ -40,8 +41,8 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
                                                'parity.password1')
 
     downloads_path_elements = len(
-        os.listdir(consumer_ocean_instance._config.downloads_path)) if os.path.exists(
-        consumer_ocean_instance._config.downloads_path) else 0
+        os.listdir(consumer_ocean_instance_brizo._config.downloads_path)) if os.path.exists(
+        consumer_ocean_instance_brizo._config.downloads_path) else 0
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     assert ServiceAgreement.SERVICE_DEFINITION_ID in service.as_dictionary()
@@ -88,7 +89,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
 
     assert cons_ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address)
 
-    cons_ocn.assets.consume(
+    assert cons_ocn.assets.consume(
         agreement_id,
         ddo.did,
         sa.service_definition_id,
@@ -96,6 +97,37 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
         config.downloads_path)
 
     assert len(os.listdir(config.downloads_path)) == downloads_path_elements + 1
+
+    # Check that we can consume only an specific file in passing the index.
+    assert cons_ocn.assets.consume(
+        agreement_id,
+        ddo.did,
+        sa.service_definition_id,
+        consumer_account,
+        config.downloads_path,
+        2
+    )
+    assert len(os.listdir(config.downloads_path)) == downloads_path_elements + 1
+
+    with pytest.raises(AssertionError):
+        cons_ocn.assets.consume(
+            agreement_id,
+            ddo.did,
+            sa.service_definition_id,
+            consumer_account,
+            config.downloads_path,
+            -2
+        )
+
+    with pytest.raises(AssertionError):
+        cons_ocn.assets.consume(
+            agreement_id,
+            ddo.did,
+            sa.service_definition_id,
+            consumer_account,
+            config.downloads_path,
+            3
+        )
 
     # decrypt the contentUrls using the publisher account instead of consumer account.
     # if the secret store is working and ACL check is enabled, this should fail

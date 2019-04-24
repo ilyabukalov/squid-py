@@ -93,7 +93,7 @@ class MetadataBase(object):
                 "resourceId": "access-log2018-02-13-15-17-29-18386C502CAEA932"
             },
             {
-                "url": "http://ipv4.download.thinkbroadband.com/200MB.zip"
+                "url": "http://ipv4.download.thinkbroadband.com/5MB.zip"
             },
         ],
         'links': [

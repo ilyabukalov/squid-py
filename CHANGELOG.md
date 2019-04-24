@@ -1,6 +1,15 @@
 History
 =======
 
+0.6.0 (April 24th, 2019)
+------------------------
+* Get list of the Assets Published by an user
+* Get list of the Assets Purchased by an user
+* Get the SEA status
+* Get the Owner of an Asset
+* Expose an additional consume interface allowing to use index parameter
+* Consumer can initialize a SEA on-chain
+  
 0.5.14 (April 5th, 2019)
 -------------------------
 * Update chunk_size in the requests.

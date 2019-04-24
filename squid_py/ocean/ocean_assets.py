@@ -291,7 +291,7 @@ class OceanAssets:
         return agreement_id
 
     def consume(self, service_agreement_id, did, service_definition_id, consumer_account,
-                destination):
+                destination, index=None):
         """
         Consume the asset data.
 
@@ -307,9 +307,13 @@ class OceanAssets:
         :param service_definition_id: identifier of the service inside the asset DDO, str
         :param consumer_account: Account instance of the consumer
         :param destination: str path
+        :param index: Index of the document that is going to be downloaded, int
         :return: str path to saved files
         """
         ddo = self.resolve(did)
+        if index is not None:
+            assert isinstance(index, int), logger.error('index has to be an integer.')
+            assert index >= 0, logger.error('index has to be 0 or a positive integer.')
         return self._asset_consumer.download(
             service_agreement_id,
             service_definition_id,
@@ -317,7 +321,8 @@ class OceanAssets:
             consumer_account,
             destination,
             BrizoProvider.get_brizo(),
-            self._get_secret_store(consumer_account)
+            self._get_secret_store(consumer_account),
+            index
         )
 
     def validate(self, metadata):

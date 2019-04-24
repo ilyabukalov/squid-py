@@ -36,6 +36,16 @@ def consumer_ocean_instance():
 
 
 @pytest.fixture
+def publisher_ocean_instance_brizo():
+    return get_publisher_ocean_instance(use_brizo_mock=False)
+
+
+@pytest.fixture
+def consumer_ocean_instance_brizo():
+    return get_consumer_ocean_instance(use_brizo_mock=False)
+
+
+@pytest.fixture
 def registered_ddo():
     config = ExampleConfig.get_config()
     return get_registered_ddo(get_publisher_ocean_instance(), get_publisher_account(config))

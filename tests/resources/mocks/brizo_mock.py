@@ -35,7 +35,7 @@ class BrizoMock(object):
 
     @staticmethod
     def consume_service(service_agreement_id, service_endpoint, account_address, files,
-                        destination_folder):
+                        destination_folder, index=None):
         for f in files:
             with open(os.path.join(destination_folder, os.path.basename(f['url'])), 'w') as of:
                 of.write(f'mock data {service_agreement_id}.{service_endpoint}.{account_address}')

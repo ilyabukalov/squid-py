@@ -6,14 +6,10 @@
 import json
 import logging
 import os
-
-from tqdm import tqdm
+import re
 
 from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.exceptions import (
-    OceanInitializeServiceAgreementError,
-    OceanEncryptAssetUrlsError
-)
+from squid_py.exceptions import (OceanEncryptAssetUrlsError, OceanInitializeServiceAgreementError)
 from squid_py.http_requests.requests_session import get_requests_session
 from squid_py.keeper import Keeper
 
@@ -101,7 +97,7 @@ class Brizo:
 
     @staticmethod
     def consume_service(service_agreement_id, service_endpoint, account, files,
-                        destination_folder):
+                        destination_folder, index=None):
         """
         Call the brizo endpoint to get access to the different files that form the asset.
 
@@ -109,45 +105,31 @@ class Brizo:
         :param service_endpoint: Url to consume, str
         :param account: Account instance of the consumer signing this agreement, hex-str
         :param files: List containing the files to be consumed, list
+        :param index: Index of the document that is going to be downloaded, int
         :param destination_folder: Path, str
+        :return: True if was downloaded, bool
         """
         signature = Keeper.get_instance().sign_hash(service_agreement_id, account)
-        for i, _file in enumerate(files):
-            if 'url' in _file:
-                url = _file['url']
-                if url.startswith('"') or url.startswith("'"):
-                    url = url[1:-1]
-
-                file_name = os.path.basename(url)
-                consume_url = (f'{service_endpoint}'
-                               f'?url={url}'
-                               f'&serviceAgreementId={service_agreement_id}'
-                               f'&consumerAddress={account.address}'
-                               )
-            else:
-                file_name = f'file.{i}'
-                consume_url = (f'{service_endpoint}'
-                               f'?signature={signature}'
-                               f'&serviceAgreementId={service_agreement_id}'
-                               f'&consumerAddress={account.address}'
-                               f'&index={i}'
-                               )
-
+        if index is not None:
+            assert isinstance(index, int), logger.error('index has to be an integer.')
+            assert index >= 0, logger.error('index has to be 0 or a positive integer.')
+            assert index < len(files), logger.error(
+                'index can not be bigger than the number of files')
+            consume_url = Brizo._create_consume_url(service_endpoint, service_agreement_id, account,
+                                                    None, signature, index)
             logger.info(f'invoke consume endpoint with this url: {consume_url}')
             response = Brizo._http_client.get(consume_url, stream=True)
-            # total_size = response.headers.get('content-length', 0)
-            # logger.info(f'Total size of {file_name}: {total_size} bytes.')
-
-
-            # bar = tqdm(total=int(total_size), unit='KB', leave=False, smoothing=0.1)
-            if response.status_code == 200:
-                with open(os.path.join(destination_folder, file_name), 'wb') as f:
-                    for chunk in response.iter_content(chunk_size=None):
-                        f.write(chunk)
-                        # bar.update(len(chunk))
-                logger.info(f'Saved downloaded file in {f.name}')
-            else:
-                logger.warning(f'consume failed: {response.reason}')
+            file_name = Brizo._get_file_name(response)
+            Brizo.write_file(response, destination_folder, file_name)
+        else:
+            for i, _file in enumerate(files):
+                consume_url = Brizo._create_consume_url(service_endpoint, service_agreement_id,
+                                                        account, _file,
+                                                        signature, i)
+                logger.info(f'invoke consume endpoint with this url: {consume_url}')
+                response = Brizo._http_client.get(consume_url, stream=True)
+                file_name = Brizo._get_file_name(response)
+                Brizo.write_file(response, destination_folder, file_name)
 
     @staticmethod
     def _prepare_purchase_payload(did, service_agreement_id, service_definition_id, signature,
@@ -209,3 +191,48 @@ class Brizo:
     @staticmethod
     def get_encrypt_endpoint(config):
         return f'{Brizo.get_brizo_url(config)}/services/publish'
+
+    @staticmethod
+    def _get_file_name(response):
+        try:
+            return re.match(r'attachment;filename=(.+)',
+                            response.headers.get('content-disposition'))[1]
+        except Exception as e:
+            logger.warning(f'It was not possible to get the file name. {e}')
+
+    @staticmethod
+    def write_file(response, destination_folder, file_name):
+        """
+        Write the response content in a file in the destination folder.
+        :param response: Response
+        :param destination_folder: Destination folder, string
+        :param file_name: File name, string
+        :return: bool
+        """
+        if response.status_code == 200:
+            with open(os.path.join(destination_folder, file_name), 'wb') as f:
+                for chunk in response.iter_content(chunk_size=None):
+                    f.write(chunk)
+            logger.info(f'Saved downloaded file in {f.name}')
+        else:
+            logger.warning(f'consume failed: {response.reason}')
+
+    @staticmethod
+    def _create_consume_url(service_endpoint, service_agreement_id, account, _file=None,
+                            signature=None, index=None):
+        if _file is not None and 'url' in _file:
+            url = _file['url']
+            if url.startswith('"') or url.startswith("'"):
+                url = url[1:-1]
+            return (f'{service_endpoint}'
+                    f'?url={url}'
+                    f'&serviceAgreementId={service_agreement_id}'
+                    f'&consumerAddress={account.address}'
+                    )
+        else:
+            return (f'{service_endpoint}'
+                    f'?signature={signature}'
+                    f'&serviceAgreementId={service_agreement_id}'
+                    f'&consumerAddress={account.address}'
+                    f'&index={index}'
+                    )
