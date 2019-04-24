@@ -197,8 +197,8 @@ class Brizo:
         try:
             return re.match(r'attachment;filename=(.+)',
                             response.headers.get('content-disposition'))[1]
-        except:
-            logger.warning(f'It was not possible to get the file name.')
+        except Exception as e:
+            logger.warning(f'It was not possible to get the file name. {e}')
 
     @staticmethod
     def write_file(response, destination_folder, file_name):
