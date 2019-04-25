@@ -24,8 +24,8 @@
     ],
     "conditionDependency": {
       "lockReward": [],
-      "grantSecretStoreAccess": [],
-      "releaseReward": [
+      "accessSecretStore": [],
+      "escrowReward": [
         "lockReward",
         "accessSecretStore"
       ]
