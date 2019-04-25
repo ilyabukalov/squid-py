@@ -5,6 +5,7 @@
 import logging
 from datetime import datetime
 
+from squid_py import Account
 from squid_py.agreements.events import (access_secret_store_condition, escrow_reward_condition,
                                         lock_reward_condition, verify_reward_condition)
 from squid_py.agreements.service_agreement import ServiceAgreement
@@ -141,6 +142,9 @@ def process_agreement_events_publisher(publisher_account, agreement_id, did, ser
     :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :return:
     """
+    assert isinstance(publisher_account, Account), \
+        f'Invalid argument type for "publisher_account", ' \
+        f'expected "Account" instance got {type(publisher_account)}'
     conditions_dict = service_agreement.condition_by_name
     events_manager = EventsManager.get_instance(Keeper.get_instance())
     events_manager.watch_lock_reward_event(

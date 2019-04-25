@@ -282,8 +282,8 @@ class OceanAgreements:
         :param consumer_address: ethereum account address of consumer, hex str
         :return: bool True if user has permission
         """
-        agreement_consumer = self._keeper.escrow_access_secretstore_template.get_agreement_consumer(
-            agreement_id)
+        agreement_consumer = self._keeper.escrow_access_secretstore_template\
+            .get_agreement_consumer(agreement_id)
         if agreement_consumer != consumer_address:
             logger.warning(f'Invalid consumer address {consumer_address} and/or '
                            f'service agreement id {agreement_id} (did {did})'

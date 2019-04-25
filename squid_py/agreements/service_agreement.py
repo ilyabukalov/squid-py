@@ -3,6 +3,8 @@
 
 from collections import namedtuple
 
+from eth_utils import is_0x_prefixed
+
 from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.ddo.service import Service
@@ -205,6 +207,13 @@ class ServiceAgreement(Service):
         :param keeper:
         :return:
         """
+        assert isinstance(agreement_id, str), \
+            f'agreement_id should be a string, got {type(agreement_id)}'
+        assert isinstance(asset_id, str), \
+            f'asset_id should be a string, got {type(asset_id)}'
+        for i, v in enumerate((agreement_id, asset_id, consumer_address, publisher_address)):
+            assert is_0x_prefixed(v), f'argument # {i} is missing the 0x prefix, arg value is {v}'
+
         lock_cond_id = keeper.lock_reward_condition.generate_id(
             agreement_id,
             self.condition_by_name['lockReward'].param_types,
