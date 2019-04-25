@@ -6,20 +6,15 @@
 import hashlib
 import json
 import logging
-from base64 import b64decode, b64encode
 from datetime import datetime
 
-from Cryptodome.Hash import SHA256
-from Cryptodome.PublicKey import RSA
-from Cryptodome.Signature import PKCS1_v1_5
 from eth_utils import add_0x_prefix
 
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.ddo.public_key_base import PublicKeyBase
-from squid_py.ddo.public_key_hex import PublicKeyHex
 from squid_py.did import did_to_id
-from .constants import DID_DDO_CONTEXT_URL, KEY_PAIR_MODULUS_BIT, PROOF_TYPE
-from .public_key_rsa import AUTHENTICATION_TYPE_RSA, PUBLIC_KEY_TYPE_RSA, PublicKeyRSA
+from .constants import DID_DDO_CONTEXT_URL, PROOF_TYPE
+from .public_key_rsa import PUBLIC_KEY_TYPE_RSA, PublicKeyRSA
 from .service import Service
 
 logger = logging.getLogger('ddo')
@@ -103,21 +98,6 @@ class DDO:
             authentication = {'type': authentication_type, 'publicKey': public_key}
         logger.debug(f'Adding authentication {authentication}')
         self._authentications.append(authentication)
-
-    @staticmethod
-    def get_private_key():
-        """
-        Get your private key.
-
-        Add a signature with a public key and authentication entry for validating this DDO
-        returns the private key as part of the private/public key pair.
-
-        :return Private key pem, str
-        """
-        key_pair = RSA.generate(KEY_PAIR_MODULUS_BIT, e=65537)
-        private_key_pem = key_pair.exportKey("PEM")
-        logger.debug('Adding signature to the ddo object.')
-        return private_key_pem
 
     def add_service(self, service_type, service_endpoint=None, values=None):
         """
@@ -211,63 +191,22 @@ class DDO:
         if 'proof' in values:
             self._proof = values['proof']
 
-    def add_proof(self, text, publisher_address, private_key=None):
+    def add_proof(self, text, publisher_account, keeper):
         """Add a proof to the DDO, based on the public_key id/index and signed with the private key
         add a static proof to the DDO, based on one of the public keys."""
 
         # just incase clear out the current static proof property
         self._proof = None
-
-        signature = DDO.sign_text(text, private_key, 'RsaSignatureAuthentication2018')
-
         self._proof = {
             'type': PROOF_TYPE,
             'created': DDO._get_timestamp(),
-            'creator': publisher_address,
-            'signatureValue': b64encode(signature).decode('utf-8'),
+            'creator': publisher_account.address,
+            'signatureValue': keeper.sign_hash(text, publisher_account),
         }
-
-    def validate_proof(self, signature_text=None):
-        """Validate the static proof created with this DDO, return True if valid
-        if no static proof exists then return False."""
-
-        if not signature_text:
-            hash_text_list = self._hash_text_list()
-            signature_text = "".join(hash_text_list)
-        if self._proof is None:
-            return False
-        if not isinstance(self._proof, dict):
-            return False
-
-        if 'creator' in self._proof and 'signatureValue' in self._proof:
-            signature = b64decode(self._proof['signatureValue'])
-            return self.validate_from_key(self._proof['creator'], signature_text, signature)
-        return False
 
     def is_proof_defined(self):
         """Return true if a static proof exists in this DDO."""
         return self._proof is not None
-
-    def validate_from_key(self, key_id, signature_text, signature_value):
-        """Validate a signature based on a given public_key key_id/name."""
-
-        public_key = self.get_public_key(key_id, True)
-        if public_key is None:
-            return False
-
-        key_value = public_key.get_decode_value()
-        if key_value is None:
-            return False
-
-        authentication = self._get_authentication_from_public_key_id(public_key.get_id())
-        if authentication is None:
-            return False
-
-        # if public_key.get_store_type() != PUBLIC_KEY_STORE_TYPE_PEM:
-        # key_value = key_value.decode()
-
-        return DDO.validate_signature(signature_text, key_value, signature_value,
-                                      authentication.get_type())
 
     def get_public_key(self, key_id, is_search_embedded=False):
         """Key_id can be a string, or int. If int then the index in the list of keys."""
@@ -351,35 +290,6 @@ class DDO:
     def authentications(self):
         """Get the list authentication records."""
         return self._authentications[:]
-
-    @staticmethod
-    def sign_text(text, private_key, sign_type=PUBLIC_KEY_TYPE_RSA):
-        """Sign some text using the private key provided."""
-        if sign_type == PUBLIC_KEY_TYPE_RSA:
-            signer = PKCS1_v1_5.new(RSA.import_key(private_key))
-            text_hash = SHA256.new(text.encode('utf-8'))
-            signed_text = signer.sign(text_hash)
-            return signed_text
-
-        raise NotImplementedError
-
-    @staticmethod
-    def validate_signature(text, key, signature, sign_type=AUTHENTICATION_TYPE_RSA):
-        """Validate a signature based on some text, public key and signature."""
-        result = False
-        try:
-            if sign_type == AUTHENTICATION_TYPE_RSA:
-                rsa_key = RSA.import_key(key)
-                verifier = PKCS1_v1_5.new(rsa_key)
-                if verifier:
-                    text_hash = SHA256.new(text.encode('utf-8'))
-                    result = verifier.verify(text_hash, signature)
-            else:
-                raise NotImplementedError
-        except (ValueError, TypeError):
-            result = False
-
-        return result
 
     @staticmethod
     def create_public_key_from_json(values):

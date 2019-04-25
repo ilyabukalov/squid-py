@@ -6,6 +6,7 @@
 
 import json
 
+from examples import ExampleConfig
 from squid_py.ddo.ddo import DDO
 from squid_py.ddo.public_key_base import (
     PUBLIC_KEY_STORE_TYPE_BASE64,
@@ -14,7 +15,8 @@ from squid_py.ddo.public_key_base import (
     PUBLIC_KEY_STORE_TYPE_PEM
 )
 from squid_py.did import DID
-from tests.resources.helper_functions import get_resource_path
+from squid_py.keeper.keeper import Keeper
+from tests.resources.helper_functions import get_publisher_account, get_resource_path
 from tests.resources.tiers import unit_test
 
 public_key_store_types = [
@@ -141,10 +143,11 @@ def generate_sample_ddo():
     assert did
     ddo = DDO(did)
     assert ddo
-    private_key = ddo.get_private_key()
+    config = ExampleConfig.get_config()
+    pub_acc = get_publisher_account(config)
 
     # add a proof signed with the private key
-    ddo.add_proof('checksum', '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_key)
+    ddo.add_proof('checksum', pub_acc, Keeper.get_instance())
 
     metadata = json.loads(TEST_METADATA)
     ddo.add_service("Metadata", "http://myaquarius.org/api/v1/provider/assets/metadata/{did}",
@@ -159,7 +162,7 @@ def generate_sample_ddo():
 
         ddo.add_service(test_service['type'], test_service['serviceEndpoint'], values=values)
 
-    return ddo, private_key
+    return ddo
 
 
 @unit_test
@@ -168,11 +171,9 @@ def test_creating_ddo():
     assert did
     ddo = DDO(did)
     assert ddo
-    private_keys = []
-    for _ in public_key_store_types:
-        private_keys.append(ddo.get_private_key())
+    config = ExampleConfig.get_config()
+    pub_acc = get_publisher_account(config)
 
-    assert len(private_keys) == len(public_key_store_types)
     ddo.add_service(TEST_SERVICE_TYPE, TEST_SERVICE_URL)
 
     assert len(ddo.services) == 1
@@ -181,9 +182,8 @@ def test_creating_ddo():
     assert ddo_text_no_proof
 
     ddo_text_proof = ''
-    for private_key in enumerate(private_keys):
-        ddo.add_proof('checksum', '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_key[1])
-        ddo_text_proof = ddo.as_text()
+    ddo.add_proof('checksum', pub_acc, Keeper.get_instance())
+    ddo_text_proof = ddo.as_text()
 
     ddo = DDO(json_text=ddo_text_proof)
     assert ddo.is_proof_defined()
@@ -193,36 +193,15 @@ def test_creating_ddo():
 
 
 @unit_test
-def test_creating_ddo_embedded_public_key():
-    did = DID.did()
-    assert did
-    ddo = DDO(did)
-    assert ddo
-    private_keys = []
-    for _ in public_key_store_types:
-        private_keys.append(ddo.get_private_key())
-
-    assert len(private_keys) == len(public_key_store_types)
-    ddo.add_service(TEST_SERVICE_TYPE, TEST_SERVICE_URL)
-    # test validating static proofs
-    for private_key in enumerate(private_keys):
-        ddo.add_proof('checksum', '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_key[1])
-        ddo_text_proof = ddo.as_text()
-        assert ddo_text_proof
-
-
-@unit_test
 def test_creating_did_using_ddo():
     # create an empty ddo
     ddo = DDO()
     assert ddo
-    private_keys = []
-    for _ in public_key_store_types:
-        private_keys.append(ddo.get_private_key())
-    assert len(private_keys) == len(public_key_store_types)
+    config = ExampleConfig.get_config()
+    pub_acc = get_publisher_account(config)
     ddo.add_service(TEST_SERVICE_TYPE, TEST_SERVICE_URL)
     # add a proof to the first public_key/authentication
-    ddo.add_proof('checksum', '0x00bd138abd70e2f00903268f3db08f2d25677c9e', private_keys[0])
+    ddo.add_proof('checksum', pub_acc, Keeper.get_instance())
     ddo_text_proof = ddo.as_text()
     assert ddo_text_proof
 
@@ -255,24 +234,19 @@ def test_ddo_dict():
 
 
 @unit_test
-def test_generate_test_ddo_files():
+def test_generate_test_ddo_files(registered_ddo):
     for index in range(1, 3):
-        ddo, private_key = generate_sample_ddo()
+        ddo = registered_ddo
 
         json_output_filename = get_resource_path('ddo',
                                                  f'ddo_sample_generated_{index}.json')
         with open(json_output_filename, 'w') as fp:
             fp.write(ddo.as_text(is_pretty=True))
 
-        private_output_filename = get_resource_path('ddo',
-                                                    f'ddo_sample_generated_{index}_private_key.pem')
-        with open(private_output_filename, 'w') as fp:
-            fp.write(private_key.decode('utf-8'))
-
 
 @unit_test
 def test_find_service():
-    ddo, pvk = generate_sample_ddo()
+    ddo = generate_sample_ddo()
     service = ddo.find_service_by_id(0)
     assert service and service.type == 'Access', 'Failed to find service by integer id.'
     service = ddo.find_service_by_id('0')
