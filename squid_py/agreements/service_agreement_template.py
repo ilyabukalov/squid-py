@@ -154,8 +154,8 @@ class ServiceAgreementTemplate(object):
                 ],
                 "conditionDependency": {
                     "lockReward": [],
-                    "grantSecretStoreAccess": [],
-                    "releaseReward": [
+                    "accessSecretStore": [],
+                    "escrowReward": [
                         "lockReward",
                         "accessSecretStore"
                     ]
