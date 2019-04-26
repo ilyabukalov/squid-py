@@ -48,7 +48,7 @@ class AssetConsumer:
 
         if ddo.get_service('Authorization'):
             secret_store_service = ddo.get_service(service_type=ServiceTypes.AUTHORIZATION)
-            secret_store_url = secret_store_service.endpoints.consume
+            secret_store_url = secret_store_service.endpoints.service
             secret_store.set_secret_store_url(secret_store_url)
 
         # decrypt the contentUrls

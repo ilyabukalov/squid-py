@@ -164,8 +164,8 @@ class ServiceAgreement(Service):
         return cls(
             service_dict[cls.SERVICE_DEFINITION_ID],
             ServiceAgreementTemplate(service_dict),
-            service_dict.get(cls.PURCHASE_ENDPOINT),
             service_dict.get(cls.SERVICE_ENDPOINT),
+            service_dict.get(cls.PURCHASE_ENDPOINT),
             service_dict.get('type')
         )
 
