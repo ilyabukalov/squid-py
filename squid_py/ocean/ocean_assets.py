@@ -91,8 +91,6 @@ class OceanAssets:
         ddo.add_public_key(did, publisher_account.address)
         ddo.add_authentication(did, PUBLIC_KEY_TYPE_RSA)
 
-        priv_key = ddo.get_private_key()
-
         # Setup metadata service
         # First replace `files` with encrypted `files`
         assert metadata_copy['base'][
@@ -117,8 +115,7 @@ class OceanAssets:
             )
 
         metadata_copy['base']['checksum'] = ddo.generate_checksum(did, metadata)
-        ddo.add_proof(metadata_copy['base']['checksum'], publisher_account.address,
-                      private_key=priv_key)
+        ddo.add_proof(metadata_copy['base']['checksum'], publisher_account, self._keeper)
 
         # only assign if the encryption worked
         if files_encrypted:
