@@ -7,7 +7,7 @@ formatters:
 handlers:
   console:
     class: logging.StreamHandler
-    level: DEBUG
+    level: INFO
     formatter: simple
     stream: ext://sys.stdout
 
@@ -31,30 +31,30 @@ handlers:
 
 loggers:
   service_agreement:
-    level: DEBUG
+    level: INFO
     handlers: [console]
     propagate: no
   ddo:
-    level: DEBUG
+    level: INFO
     handlers: [console]
     propagate: no
   ocean:
-    level: DEBUG
+    level: INFO
     handlers: [console]
     propagate: no
   keeper:
-    level: DEBUG
+    level: INFO
     handlers: [console]
     propagate: no
   keeper-events:
-    level: DEBUG
+    level: INFO
     handlers: [console]
     propagate: no
   events:
-    level: DEBUG
+    level: INFO
     handlers: [console]
     propagate: no
 
 root:
-  level: DEBUG
+  level: INFO
   handlers: [console, info_file_handler, error_file_handler]

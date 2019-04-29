@@ -34,8 +34,6 @@ class ContractBase(object):
         self.contract_concise = dependencies['ContractHandler'].get_concise_contract(contract_name)
         self.contract = dependencies['ContractHandler'].get(contract_name)
 
-        logger.debug(f'Loaded {self}')
-
     @classmethod
     def get_instance(cls, dependencies=None):
         """
