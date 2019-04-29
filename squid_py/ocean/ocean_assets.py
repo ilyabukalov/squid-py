@@ -170,6 +170,18 @@ class OceanAssets:
             f' metadata service @{ddo_service_endpoint}, '
             f'`Access` service initialize @{ddo.services[0].endpoints.service}.')
         response = None
+        # register on-chain
+        registered_on_chain = self._keeper.did_registry.register(
+            did,
+            checksum=Web3Provider.get_web3().sha3(text=metadata_copy['base']['checksum']),
+            url=ddo_service_endpoint,
+            account=publisher_account,
+            providers=providers
+        )
+        if registered_on_chain is False:
+            logger.warning(f'Registering {did} on-chain failed.')
+            return None
+        logger.info(f'DDO with DID {did} successfully registered on chain.')
         try:
             # publish the new ddo in ocean-db/Aquarius
             response = self._get_aquarius().publish_asset_ddo(ddo)
@@ -178,19 +190,8 @@ class OceanAssets:
             raise ValueError(f'Invalid value to publish in the metadata: {str(ve)}')
         except Exception as e:
             logger.error(f'Publish asset in aquarius failed: {str(e)}')
-
         if not response:
             return None
-
-        # register on-chain
-        self._keeper.did_registry.register(
-            did,
-            checksum=Web3Provider.get_web3().sha3(text=metadata_copy['base']['checksum']),
-            url=ddo_service_endpoint,
-            account=publisher_account,
-            providers=providers
-        )
-        logger.info(f'DDO with DID {did} successfully registered on chain.')
         return ddo
 
     def retire(self, did):
