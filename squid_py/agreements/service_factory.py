@@ -39,35 +39,35 @@ class ServiceDescriptor(object):
                 {'serviceEndpoint': service_endpoint})
 
     @staticmethod
-    def access_service_descriptor(price, purchase_endpoint, service_endpoint, timeout, template_id):
+    def access_service_descriptor(price, consume_endpoint, service_endpoint, timeout, template_id):
         """
         Access service descriptor.
 
         :param price: Asset price, int
-        :param purchase_endpoint: url of the service provider, str
+        :param consume_endpoint: url of the service provider, str
         :param service_endpoint: identifier of the service inside the asset DDO, str
         :param timeout: amount of time in seconds before the agreement expires, int
         :param template_id: id of the template use to create the service, str
         :return: Service descriptor.
         """
         return (ServiceTypes.ASSET_ACCESS,
-                {'price': price, 'purchaseEndpoint': purchase_endpoint,
+                {'price': price, 'consumeEndpoint': consume_endpoint,
                  'serviceEndpoint': service_endpoint,
                  'timeout': timeout, 'templateId': template_id})
 
     @staticmethod
-    def compute_service_descriptor(price, purchase_endpoint, service_endpoint, timeout):
+    def compute_service_descriptor(price, consume_endpoint, service_endpoint, timeout):
         """
         Compute service descriptor.
 
         :param price: Asset price, int
-        :param purchase_endpoint: url of the service provider, str
+        :param consume_endpoint: url of the service provider, str
         :param service_endpoint: identifier of the service inside the asset DDO, str
         :param timeout: amount of time in seconds before the agreement expires, int
         :return: Service descriptor.
         """
         return (ServiceTypes.CLOUD_COMPUTE,
-                {'price': price, 'purchaseEndpoint': purchase_endpoint,
+                {'price': price, 'consumeEndpoint': consume_endpoint,
                  'serviceEndpoint': service_endpoint,
                  'timeout': timeout})
 
@@ -124,14 +124,14 @@ class ServiceFactory(object):
         elif service_type == ServiceTypes.ASSET_ACCESS:
             return ServiceFactory.build_access_service(
                 did, kwargs['price'],
-                kwargs['purchaseEndpoint'], kwargs['serviceEndpoint'],
+                kwargs['consumeEndpoint'], kwargs['serviceEndpoint'],
                 kwargs['timeout'], kwargs['templateId']
             )
 
         elif service_type == ServiceTypes.CLOUD_COMPUTE:
             return ServiceFactory.build_compute_service(
                 did, kwargs['price'],
-                kwargs['purchaseEndpoint'], kwargs['serviceEndpoint'], kwargs['timeout']
+                kwargs['consumeEndpoint'], kwargs['serviceEndpoint'], kwargs['timeout']
             )
 
         raise ValueError(f'Unknown service type {service_type}')
@@ -163,13 +163,13 @@ class ServiceFactory(object):
                        values={'service': 'SecretStore'})
 
     @staticmethod
-    def build_access_service(did, price, purchase_endpoint, service_endpoint, timeout, template_id):
+    def build_access_service(did, price, consume_endpoint, service_endpoint, timeout, template_id):
         """
         Build the access service.
 
         :param did: DID, str
         :param price: Asset price, int
-        :param purchase_endpoint: url of the service provider, str
+        :param consume_endpoint: url of the service provider, str
         :param service_endpoint: identifier of the service inside the asset DDO, str
         :param timeout: amount of time in seconds before the agreement expires, int
         :param template_id: id of the template use to create the service, str
@@ -196,7 +196,7 @@ class ServiceFactory(object):
         sa = ServiceAgreement(
             1,
             sla_template,
-            purchase_endpoint,
+            consume_endpoint,
             service_endpoint,
             ServiceTypes.ASSET_ACCESS
         )
@@ -204,6 +204,6 @@ class ServiceFactory(object):
         return sa
 
     @staticmethod
-    def build_compute_service(did, price, purchase_endpoint, service_endpoint, timeout):
+    def build_compute_service(did, price, consume_endpoint, service_endpoint, timeout):
         # TODO: implement this once the compute flow is ready
         return

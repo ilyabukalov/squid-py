@@ -21,7 +21,7 @@ Endpoints = namedtuple('Endpoints', ('service', 'consume'))
 class Service:
     """Service class to create validate service in a DDO."""
     SERVICE_ENDPOINT = 'serviceEndpoint'
-    PURCHASE_ENDPOINT = 'purchaseEndpoint'
+    CONSUME_ENDPOINT = 'consumeEndpoint'
 
     def __init__(self, service_endpoint, service_type, values, consume_endpoint=None, did=None):
         """Initialize Service instance."""
@@ -97,7 +97,7 @@ class Service:
         :param value: New value, str
         :return: None
         """
-        if name not in {'id', self.SERVICE_ENDPOINT, self.PURCHASE_ENDPOINT, 'type'}:
+        if name not in {'id', self.SERVICE_ENDPOINT, self.CONSUME_ENDPOINT, 'type'}:
             self._values[name] = value
 
     def set_did(self, did):
@@ -120,7 +120,7 @@ class Service:
             self.SERVICE_ENDPOINT: self._service_endpoint,
         }
         if self._consume_endpoint is not None:
-            values[self.PURCHASE_ENDPOINT] = self._consume_endpoint
+            values[self.CONSUME_ENDPOINT] = self._consume_endpoint
         if self._values:
             # add extra service values to the dictionary
             for name, value in self._values.items():
@@ -138,7 +138,7 @@ class Service:
             self.SERVICE_ENDPOINT: self._service_endpoint,
         }
         if self._consume_endpoint is not None:
-            values[self.PURCHASE_ENDPOINT] = self._consume_endpoint
+            values[self.CONSUME_ENDPOINT] = self._consume_endpoint
         if self._values:
             # add extra service values to the dictionary
             for name, value in self._values.items():

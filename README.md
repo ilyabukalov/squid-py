@@ -72,7 +72,7 @@ account = Account(config.parity_address, config.parity_password)
 # Let's start by registering an asset in the Ocean network
 metadata = Metadata.get_example()
 
-# purchase and service endpoints require `brizo.url` is set in the config file
+# consume and service endpoints require `brizo.url` is set in the config file
 # or passed to Ocean instance in the config_dict.
 # define the services to include in the new asset DDO
 
@@ -85,7 +85,7 @@ _ddo = ocean.assets.resolve(ddo.did)
 # CONSUMER
 # search for assets
 asset_ddo = ocean.assets.search('Ocean protocol')[0]
-# Need some ocean tokens to be able to purchase assets
+# Need some ocean tokens to be able to order assets
 ocean.accounts.request_tokens(account, 10)
 
 # Start the purchase/consume request. This will automatically make a payment from the specified account.

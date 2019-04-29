@@ -47,7 +47,7 @@ def test_buy_asset(consumer_ocean_instance_brizo, publisher_ocean_instance_brizo
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     assert ServiceAgreement.SERVICE_DEFINITION_ID in service.as_dictionary()
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
-    # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
+    # This will send the consume request to Brizo which in turn will execute the agreement on-chain
     cons_ocn.accounts.request_tokens(consumer_account, 100)
     agreement_id = cons_ocn.assets.order(
         ddo.did, sa.service_definition_id, consumer_account, auto_consume=False)

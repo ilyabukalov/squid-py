@@ -59,7 +59,7 @@ def buy_asset():
 
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
-    # This will send the purchase request to Brizo which in turn will execute the agreement on-chain
+    # This will send the order request to Brizo which in turn will execute the agreement on-chain
     cons_ocn.accounts.request_tokens(consumer_account, 100)
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
 

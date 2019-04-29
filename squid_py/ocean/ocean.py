@@ -51,7 +51,7 @@ class Ocean:
          * Purchase asset services by choosing a service agreement from the
            asset's DDO. Purchase goes through the service agreements interface
            and starts by signing a service agreement then sending the signature
-           to the publisher's Brizo server via the `purchaseEndpoint` in the service
+           to the publisher's Brizo server via the `consumeEndpoint` in the service
            definition:
 
            >> service_def_id = ddo.get_service(ServiceTypes.ASSET_ACCESS).service_definition_id

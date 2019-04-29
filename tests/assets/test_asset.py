@@ -123,7 +123,7 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
     assert new_asset.get_service(ServiceTypes.METADATA)
 
     access_service = ServiceDescriptor.access_service_descriptor(
-        2, 'purchase', 'consume', 35, ''
+        2, 'consume', 'consume', 35, ''
     )
     new_asset = ocn.assets.create(asset.metadata, acct, [access_service])
     assert new_asset.get_service(ServiceTypes.AUTHORIZATION)
@@ -155,7 +155,7 @@ def test_owner_assets(publisher_ocean_instance):
     assert len(ocn.assets.owner_assets(acct.address)) == assets_owned + 1
 
 
-def test_assets_purchased(publisher_ocean_instance, consumer_ocean_instance):
+def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
     ocn = publisher_ocean_instance
     acct = consumer_ocean_instance.main_account
     consumed_assets = len(ocn.assets.consumer_assets(acct.address))
