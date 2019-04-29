@@ -62,9 +62,9 @@ class Brizo:
     @staticmethod
     def initialize_service_agreement(did, agreement_id, service_definition_id, signature,
                                      account_address,
-                                     purchase_endpoint):
+                                     consume_endpoint):
         """
-        Send a request to the service provider (purchase_endpoint) to initialize the service
+        Send a request to the service provider (consume_endpoint) to initialize the service
         agreement for the asset identified by `did`.
 
         :param did: id of the asset includes the `did:op:` prefix, str
@@ -72,27 +72,27 @@ class Brizo:
         :param service_definition_id: identifier of the service inside the asset DDO, str
         :param signature: signed agreement hash, hex str
         :param account_address: ethereum address of the consumer signing this agreement, hex str
-        :param purchase_endpoint: url of the service provider, str
+        :param consume_endpoint: url of the service provider, str
         :return: bool
         """
-        payload = Brizo._prepare_purchase_payload(
+        payload = Brizo._prepare_consume_payload(
             did, agreement_id, service_definition_id, signature, account_address
         )
         response = Brizo._http_client.post(
-            purchase_endpoint, data=payload,
+            consume_endpoint, data=payload,
             headers={'content-type': 'application/json'}
         )
         if response and hasattr(response, 'status_code'):
             if response.status_code != 201:
-                msg = (f'Initialize service agreement failed at the purchaseEndpoint '
-                       f'{purchase_endpoint}, reason {response.text}, status {response.status_code}'
+                msg = (f'Initialize service agreement failed at the consumeEndpoint '
+                       f'{consume_endpoint}, reason {response.text}, status {response.status_code}'
                        )
                 logger.error(msg)
                 raise OceanInitializeServiceAgreementError(msg)
 
             logger.info(
                 f'Service agreement initialized successfully, service agreement id {agreement_id},'
-                f' purchaseEndpoint {purchase_endpoint}')
+                f' consumeEndpoint {consume_endpoint}')
             return True
 
     @staticmethod
@@ -132,7 +132,7 @@ class Brizo:
                 Brizo.write_file(response, destination_folder, file_name)
 
     @staticmethod
-    def _prepare_purchase_payload(did, service_agreement_id, service_definition_id, signature,
+    def _prepare_consume_payload(did, service_agreement_id, service_definition_id, signature,
                                   consumer_address):
         """Prepare a payload to send to `Brizo`.
 
@@ -169,9 +169,9 @@ class Brizo:
         return f'{brizo_url}{brizo_path}'
 
     @staticmethod
-    def get_purchase_endpoint(config):
+    def get_consume_endpoint(config):
         """
-        Return the endpoint to purchase the asset.
+        Return the endpoint to consume the asset.
 
         :param config:Config
         :return: Url, str

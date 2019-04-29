@@ -54,7 +54,7 @@ class AccessSecretStoreCondition(ConditionBase):
 
     def get_purchased_assets_by_address(self, address, from_block=0, to_block='latest'):
         """
-        Get the list of the assets dids purchased for an address.
+        Get the list of the assets dids consumed for an address.
 
         :param address: is the address of the granted user, hex-str
         :param from_block: block to start to listen

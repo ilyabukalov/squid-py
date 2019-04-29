@@ -17,7 +17,7 @@ class ServiceAgreement(Service):
     SERVICE_DEFINITION_ID = 'serviceDefinitionId'
     AGREEMENT_TEMPLATE = 'serviceAgreementTemplate'
     SERVICE_CONDITIONS = 'conditions'
-    PURCHASE_ENDPOINT = 'purchaseEndpoint'
+    CONSUME_ENDPOINT = 'consumeEndpoint'
     SERVICE_ENDPOINT = 'serviceEndpoint'
 
     def __init__(self, sa_definition_id, service_agreement_template, service_endpoint=None,
@@ -164,8 +164,8 @@ class ServiceAgreement(Service):
         return cls(
             service_dict[cls.SERVICE_DEFINITION_ID],
             ServiceAgreementTemplate(service_dict),
-            service_dict.get(cls.PURCHASE_ENDPOINT),
             service_dict.get(cls.SERVICE_ENDPOINT),
+            service_dict.get(cls.CONSUME_ENDPOINT),
             service_dict.get('type')
         )
 

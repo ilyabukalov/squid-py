@@ -77,7 +77,7 @@ class OceanAgreements:
              consumer_account, auto_consume=False):
         """
         Send a signed service agreement to the publisher Brizo instance to
-        purchase/access the service.
+        consume/access the service.
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
         :param agreement_id: 32 bytes identifier created by the consumer and will be used
