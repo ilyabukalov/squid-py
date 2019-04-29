@@ -97,6 +97,11 @@ class Ocean:
         # logger.info(f'\taquarius: {self._aquarius.url}')
         logger.info(f'\tDIDRegistry @ {self._keeper.did_registry.address}')
 
+    @property
+    def keeper(self):
+        """Keeper instance."""
+        return self._keeper
+
     def _make_ocean_agreements(self):
         return OceanAgreements(
             self._keeper,
