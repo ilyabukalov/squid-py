@@ -59,7 +59,7 @@ class DIDRegistry(ContractBase):
             did_source_id, checksum, url, account, providers or []
         )
         receipt = self.get_tx_receipt(transaction)
-        return receipt
+        return receipt and receipt.status == 1
 
     def _register_attribute(self, did, checksum, value, account, providers):
         """Register an DID attribute as an event on the block chain.
