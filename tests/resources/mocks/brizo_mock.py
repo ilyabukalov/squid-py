@@ -21,8 +21,8 @@ class BrizoMock(object):
             self.account = get_publisher_account(ConfigProvider.get_config())
 
     def initialize_service_agreement(self, did, agreement_id, service_definition_id,
-                                     signature, account_address, consume_endpoint):
-        print(f'BrizoMock.initialize_service_agreement: consume_endpoint={consume_endpoint}')
+                                     signature, account_address, purchase_endpoint):
+        print(f'BrizoMock.initialize_service_agreement: purchase_endpoint={purchase_endpoint}')
         self.ocean_instance.agreements.create(
             did,
             service_definition_id,
@@ -45,7 +45,7 @@ class BrizoMock(object):
         return Brizo.get_brizo_url(config)
 
     @staticmethod
-    def get_consume_endpoint(config):
+    def get_purchase_endpoint(config):
         return f'{Brizo.get_brizo_url(config)}/services/access/initialize'
 
     @staticmethod

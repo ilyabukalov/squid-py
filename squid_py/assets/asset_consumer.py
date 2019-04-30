@@ -39,7 +39,7 @@ class AssetConsumer:
             else encrypted_files[0]
         )
         sa = ServiceAgreement.from_ddo(service_definition_id, ddo)
-        consume_url = sa.consume_endpoint
+        consume_url = sa.service_endpoint
         if not consume_url:
             logger.error(
                 'Consume asset failed, service definition is missing the "serviceEndpoint".')
