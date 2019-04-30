@@ -256,11 +256,7 @@ class OceanAssets:
 
     def order(self, did, service_definition_id, consumer_account, auto_consume=False):
         """
-        Sign service agreement.
-
-        Sign the service agreement defined in the service section identified
-        by `service_definition_id` in the ddo and send the signed agreement to the purchase endpoint
-        associated with this service.
+        Place order by directly creating an SEA (agreement) on-chain.
 
         :param did: str starting with the prefix `did:op:` and followed by the asset id which is
         a hex str
@@ -268,21 +264,20 @@ class OceanAssets:
         service in the DDO (DID document)
         :param consumer_account: Account instance of the consumer
         :param auto_consume: boolean
-        :return: tuple(agreement_id, signature) the service agreement id (can be used to query
-            the keeper-contracts for the status of the service agreement) and signed agreement hash
+        :return: agreement_id the service agreement id (can be used to query
+            the keeper-contracts for the status of the service agreement)
         """
         assert consumer_account.address in self._keeper.accounts, f'Unrecognized consumer ' \
             f'address `consumer_account`'
 
-        agreement_id, signature = self._agreements.prepare(
-            did, service_definition_id, consumer_account
-        )
+        agreement_id = self._agreements.new()
         logger.debug(f'about to request create agreement: {agreement_id}')
-        self._agreements.send(
+        self._agreements.create(
             did,
-            agreement_id,
             service_definition_id,
-            signature,
+            agreement_id,
+            None,
+            consumer_account.address,
             consumer_account,
             auto_consume=auto_consume
         )
