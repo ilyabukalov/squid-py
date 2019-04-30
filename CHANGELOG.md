@@ -1,6 +1,13 @@
 History
 =======
 
+0.6.1 (April 30th, 2019)
+------------------------
+* The agreement can be created by the publisher and the consumer
+* Allow to consume individual assets using the index
+* Fix some mistakes in the ddo generation
+* Improve logging
+
 0.6.0 (April 24th, 2019)
 ------------------------
 * Get list of the Assets Published by an user
