@@ -68,7 +68,7 @@ def buy_asset():
     logging.info('placed order: %s, %s', ddo.did, agreement_id)
     i = 0
     while ocn.agreements.is_access_granted(
-            agreement_id, ddo.did, consumer_account.address) is not True and i < 30:
+            agreement_id, ddo.did, consumer_account.address) is not True and i < 60:
         time.sleep(1)
         i += 1
 

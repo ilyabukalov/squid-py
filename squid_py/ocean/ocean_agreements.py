@@ -124,7 +124,8 @@ class OceanAgreements:
         )
 
     def create(self, did, service_definition_id, agreement_id,
-               service_agreement_signature, consumer_address, account):
+               service_agreement_signature, consumer_address,
+               account, auto_consume=False):
         """
         Execute the service agreement on-chain using keeper's ServiceAgreement contract.
 
@@ -144,6 +145,7 @@ class OceanAgreements:
         :param consumer_address: ethereum account address of consumer, hex str
         :param account: Account instance creating the agreement. Can be either the
             consumer, publisher or provider
+        :param auto_consume: bool
         :return: dict the `executeAgreement` transaction receipt
         """
         assert consumer_address and Web3Provider.get_web3().isChecksumAddress(
@@ -233,7 +235,7 @@ class OceanAgreements:
                     asset.encrypted_files,
                     account,
                     condition_ids,
-                    None
+                    self._asset_consumer.download if auto_consume else None
                 )
 
             else:
