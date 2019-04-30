@@ -1,6 +1,10 @@
 History
 =======
 
+0.6.2 (April 30th, 2019)
+------------------------
+* Revert change that was breaking compatibility
+
 0.6.1 (April 30th, 2019)
 ------------------------
 * The agreement can be created by the publisher and the consumer
