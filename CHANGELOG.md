@@ -1,6 +1,10 @@
 History
 =======
 
+0.6.3 (April 30th, 2019)
+------------------------
+* Update `assets.order` to use `agreements.create` instead of `agreements.send`
+
 0.6.2 (April 30th, 2019)
 ------------------------
 * Revert change that was breaking compatibility
