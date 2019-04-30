@@ -130,7 +130,7 @@ TEST_SERVICES = [
     },
     {
         "type": "Access",
-        "consumeEndpoint": "service",
+        "purchaseEndpoint": "service",
         "serviceEndpoint": "consume",
         "serviceDefinitionId": "0",
         "templateId": "0x00000",

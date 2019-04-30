@@ -47,7 +47,7 @@ class OceanEncryptAssetUrlsError(Exception):
 
 
 class OceanServiceConsumeError(Exception):
-    """ Error invoking a consume endpoint"""
+    """ Error invoking a purchase endpoint"""
 
 
 class OceanInvalidAgreementTemplate(Exception):

@@ -140,7 +140,7 @@ class OceanAssets:
             brizo = BrizoProvider.get_brizo()
             service_descriptors += [ServiceDescriptor.access_service_descriptor(
                 metadata[MetadataBase.KEY]['price'],
-                brizo.get_consume_endpoint(self._config),
+                brizo.get_purchase_endpoint(self._config),
                 brizo.get_service_endpoint(self._config),
                 3600,
                 self._keeper.escrow_access_secretstore_template.address
@@ -154,7 +154,7 @@ class OceanAssets:
                 brizo = BrizoProvider.get_brizo()
                 service_descriptors += [ServiceDescriptor.access_service_descriptor(
                     metadata[MetadataBase.KEY]['price'],
-                    brizo.get_consume_endpoint(self._config),
+                    brizo.get_purchase_endpoint(self._config),
                     brizo.get_service_endpoint(self._config),
                     3600,
                     self._keeper.escrow_access_secretstore_template.address

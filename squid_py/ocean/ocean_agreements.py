@@ -120,7 +120,7 @@ class OceanAgreements:
             service_definition_id,
             signature,
             consumer_account.address,
-            service_agreement.endpoints.service
+            service_agreement.endpoints.purchase
         )
 
     def create(self, did, service_definition_id, agreement_id,

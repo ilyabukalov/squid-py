@@ -15,18 +15,18 @@ from collections import namedtuple
 
 logger = logging.getLogger(__name__)
 
-Endpoints = namedtuple('Endpoints', ('service', 'consume'))
+Endpoints = namedtuple('Endpoints', ('service', 'purchase'))
 
 
 class Service:
     """Service class to create validate service in a DDO."""
     SERVICE_ENDPOINT = 'serviceEndpoint'
-    CONSUME_ENDPOINT = 'consumeEndpoint'
+    PURCHASE_ENDPOINT = 'purchaseEndpoint'
 
-    def __init__(self, service_endpoint, service_type, values, consume_endpoint=None, did=None):
+    def __init__(self, service_endpoint, service_type, values, purchase_endpoint=None, did=None):
         """Initialize Service instance."""
         self._service_endpoint = service_endpoint
-        self._consume_endpoint = consume_endpoint
+        self._purchase_endpoint = purchase_endpoint
         self._type = service_type
         self._did = did
 
@@ -75,11 +75,11 @@ class Service:
     @property
     def endpoints(self):
         """
-        Tuple with the service and consume endpoints.
+        Tuple with the service and purchase endpoints.
 
         :return: Tuple
         """
-        return Endpoints(self._service_endpoint, self._consume_endpoint)
+        return Endpoints(self._service_endpoint, self._purchase_endpoint)
 
     @property
     def values(self):
@@ -97,7 +97,7 @@ class Service:
         :param value: New value, str
         :return: None
         """
-        if name not in {'id', self.SERVICE_ENDPOINT, self.CONSUME_ENDPOINT, 'type'}:
+        if name not in {'id', self.SERVICE_ENDPOINT, self.PURCHASE_ENDPOINT, 'type'}:
             self._values[name] = value
 
     def set_did(self, did):
@@ -119,8 +119,8 @@ class Service:
             'type': self._type,
             self.SERVICE_ENDPOINT: self._service_endpoint,
         }
-        if self._consume_endpoint is not None:
-            values[self.CONSUME_ENDPOINT] = self._consume_endpoint
+        if self._purchase_endpoint is not None:
+            values[self.PURCHASE_ENDPOINT] = self._purchase_endpoint
         if self._values:
             # add extra service values to the dictionary
             for name, value in self._values.items():
@@ -137,8 +137,8 @@ class Service:
             'type': self._type,
             self.SERVICE_ENDPOINT: self._service_endpoint,
         }
-        if self._consume_endpoint is not None:
-            values[self.CONSUME_ENDPOINT] = self._consume_endpoint
+        if self._purchase_endpoint is not None:
+            values[self.PURCHASE_ENDPOINT] = self._purchase_endpoint
         if self._values:
             # add extra service values to the dictionary
             for name, value in self._values.items():

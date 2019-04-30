@@ -17,17 +17,17 @@ class ServiceAgreement(Service):
     SERVICE_DEFINITION_ID = 'serviceDefinitionId'
     AGREEMENT_TEMPLATE = 'serviceAgreementTemplate'
     SERVICE_CONDITIONS = 'conditions'
-    CONSUME_ENDPOINT = 'consumeEndpoint'
+    PURCHASE_ENDPOINT = 'purchaseEndpoint'
     SERVICE_ENDPOINT = 'serviceEndpoint'
 
     def __init__(self, sa_definition_id, service_agreement_template, service_endpoint=None,
-                 consume_endpoint=None, service_type=None):
+                 purchase_endpoint=None, service_type=None):
         """
 
         :param sa_definition_id:
         :param service_agreement_template: ServiceAgreementTemplate instance
         :param service_endpoint: str URL to use for requesting service defined in this agreement
-        :param consume_endpoint: str URL to use for consuming the service after access is given
+        :param purchase_endpoint: str URL to use for consuming the service after access is given
         :param service_type: str like ServiceTypes.ASSET_ACCESS
         """
         self.sa_definition_id = sa_definition_id
@@ -42,7 +42,7 @@ class ServiceAgreement(Service):
 
         Service.__init__(self, service_endpoint,
                          service_type or ServiceTypes.ASSET_ACCESS,
-                         values_dict, consume_endpoint)
+                         values_dict, purchase_endpoint)
 
     def get_price(self):
         """
@@ -64,12 +64,12 @@ class ServiceAgreement(Service):
         return self._service_endpoint
 
     @property
-    def consume_endpoint(self):
+    def purchase_endpoint(self):
         """
 
         :return:
         """
-        return self._consume_endpoint
+        return self._purchase_endpoint
 
     @property
     def agreement(self):
@@ -165,7 +165,7 @@ class ServiceAgreement(Service):
             service_dict[cls.SERVICE_DEFINITION_ID],
             ServiceAgreementTemplate(service_dict),
             service_dict.get(cls.SERVICE_ENDPOINT),
-            service_dict.get(cls.CONSUME_ENDPOINT),
+            service_dict.get(cls.PURCHASE_ENDPOINT),
             service_dict.get('type')
         )
 
