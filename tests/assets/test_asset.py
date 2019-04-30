@@ -168,7 +168,7 @@ def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
 
     i = 0
     while ocn.agreements.is_access_granted(
-            agreement_id, ddo.did, acct.address) is not True and i < 30:
+            agreement_id, ddo.did, acct.address) is not True and i < 60:
         time.sleep(1)
         i += 1
 
