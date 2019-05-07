@@ -39,6 +39,7 @@ class Keeper(object):
         99: 'POA_Core',
         8995: 'nile',
         8996: 'spree',
+        2199: 'duero'
     }
 
     def __init__(self):

@@ -5,12 +5,12 @@ import logging
 import os
 import time
 
-from examples import ExampleConfig, get_account_from_config
+from examples import ExampleConfig
 from squid_py import ConfigProvider, Metadata, Ocean
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.keeper import Keeper
-from tests.resources.helper_functions import get_publisher_account
+from tests.resources.helper_functions import get_publisher_account, get_consumer_account
 
 
 def _log_event(event_name):
@@ -41,12 +41,13 @@ def buy_asset():
         acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
 
     # Register ddo
-    ddo = ocn.assets.create(Metadata.get_example(), acc, providers=[acc.address], use_secret_store=False)
+    ddo = ocn.assets.create(Metadata.get_example(), acc, providers=[acc.address], use_secret_store=True)
     logging.info(f'registered ddo: {ddo.did}')
     # ocn here will be used only to publish the asset. Handling the asset by the publisher
     # will be performed by the Brizo server running locally
     keeper = Keeper.get_instance()
-    if 'TEST_LOCAL_NILE' in os.environ and os.environ['TEST_LOCAL_NILE'] == '1':
+    test_net = os.environ.get('TEST_NET')
+    if test_net == 'nile_local':
         provider = keeper.did_registry.to_checksum_address(
             '0x413c9ba0a05b8a600899b41b0c62dd661e689354'
         )
@@ -55,7 +56,7 @@ def buy_asset():
                       f'{keeper.did_registry.is_did_provider(ddo.asset_id, provider)}')
 
     cons_ocn = Ocean()
-    consumer_account = get_account_from_config(config, 'parity.address1', 'parity.password1')
+    consumer_account = get_consumer_account(config)
 
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)

@@ -4,7 +4,6 @@
 import json
 import os
 import pathlib
-import time
 
 from examples import ExampleConfig
 from squid_py import ConfigProvider
@@ -53,6 +52,11 @@ def make_ocean_instance(account_index):
 
 
 def get_publisher_account(config):
+    address = os.getenv('PARITY_ADDRESS')
+    if address:
+        pswrd = os.getenv('PARITY_PASSWORD')
+        return Account(Web3Provider.get_web3().toChecksumAddress(address), pswrd)
+
     acc = get_account_from_config(config, 'parity.address', 'parity.password')
     if acc is None:
         acc = Account(Keeper.get_instance().accounts[0])
@@ -60,6 +64,11 @@ def get_publisher_account(config):
 
 
 def get_consumer_account(config):
+    address = os.getenv('PARITY_ADDRESS1')
+    if address:
+        pswrd = os.getenv('PARITY_PASSWORD1')
+        return Account(Web3Provider.get_web3().toChecksumAddress(address), pswrd)
+
     acc = get_account_from_config(config, 'parity.address1', 'parity.password1')
     if acc is None:
         acc = Account(Keeper.get_instance().accounts[1])
