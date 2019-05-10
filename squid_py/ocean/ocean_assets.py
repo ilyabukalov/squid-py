@@ -92,10 +92,9 @@ class OceanAssets:
         ddo.add_authentication(did, PUBLIC_KEY_TYPE_RSA)
 
         # Setup metadata service
-        # First replace `files` with encrypted `files`
+        # First compute files_encrypted
         assert metadata_copy['base'][
             'files'], 'files is required in the metadata base attributes.'
-        assert Metadata.validate(metadata), 'metadata seems invalid.'
         logger.debug('Encrypting content urls in the metadata.')
         brizo = BrizoProvider.get_brizo()
         if not use_secret_store:
@@ -127,8 +126,7 @@ class OceanAssets:
                 del file['url']
             metadata_copy['base']['encryptedFiles'] = files_encrypted
         else:
-            raise AssertionError('Encrypting the files failed. Make sure the secret store is'
-                                 ' setup properly in your config file.')
+            raise AssertionError('Encrypting the files failed.')
 
         # DDO url and `Metadata` service
         ddo_service_endpoint = self._get_aquarius().get_service_endpoint(did)
