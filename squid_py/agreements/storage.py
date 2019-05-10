@@ -1,8 +1,12 @@
 
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
+import logging
 
 import sqlite3
+
+
+logger = logging.getLogger(__name__)
 
 
 def record_service_agreement(storage_path, service_agreement_id, did, service_definition_id, price,
@@ -75,11 +79,30 @@ def get_service_agreements(storage_path, status='pending'):
             row for row in
             cursor.execute(
                 '''
-                SELECT id, did, service_definition_id, price, files, start_time, status
-                FROM service_agreements 
-                WHERE status=?;
+                    SELECT id, did, service_definition_id, price, files, start_time, status
+                    FROM service_agreements 
+                    WHERE status=?;
                 ''',
                 (status,))
         ]
+    finally:
+        conn.close()
+
+
+def get_agreement_ids(storage_path, status=None):
+    conn = sqlite3.connect(storage_path)
+    try:
+        cursor = conn.cursor()
+        query, args = "SELECT id FROM service_agreements", ()
+        if status is not None:
+            args = (status,)
+            query += " WHERE status=?"
+
+        agreement_ids = {row[0] for row in cursor.execute(query, args)}
+        return agreement_ids
+    except Exception as e:
+        logger.error(f'db error getting agreement ids: {e}')
+        return []
+
     finally:
         conn.close()

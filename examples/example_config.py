@@ -77,14 +77,14 @@ class ExampleConfig:
             a, p, a1, p1 = ExampleConfig.get_remote_parity_addresses()
             keeper_url = "https://duero.dev-ocean.com"
             ss_url = "https://secret-store.duero.dev-ocean.com"
-            aqua_url = "https://nginx-aquarius.dev-ocean.com/"
-            brizo_url = "http://localhost:8030"
+            aqua_url = "https://aquarius.duero.dev-ocean.com/"
+            brizo_url = "https://brizo.duero.dev-ocean.com/"
         elif test_net == 'duero_local':
             a, p, a1, p1 = ExampleConfig.get_remote_parity_addresses()
             keeper_url = "http://localhost:8545"
             ss_url = "https://secret-store.duero.dev-ocean.com"
-            aqua_url = "https://nginx-aquarius.dev-ocean.com/"
-            brizo_url = "http://localhost:8030"
+            aqua_url = "https://aquarius.duero.dev-ocean.com/"
+            brizo_url = "https://brizo.duero.dev-ocean.com/"
         else:  # test_net == 'spree':
             a, p, a1, p1 = ExampleConfig.get_local_parity_addresses()
             keeper_url = "http://localhost:8545"

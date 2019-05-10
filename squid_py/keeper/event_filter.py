@@ -1,4 +1,5 @@
 import logging
+import time
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,8 @@ class EventFilter:
         while i < max_tries:
             try:
                 logs = self._filter.get_all_entries()
-                return logs
+                if logs:
+                    return logs
             except ValueError as e:
                 logger.debug(f'Got error fetching event logs: {str(e)}')
                 if 'Filter not found' in str(e):
@@ -42,5 +44,6 @@ class EventFilter:
                     raise
 
             i += 1
+            time.sleep(0.01)
 
         return []
