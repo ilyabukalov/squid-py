@@ -88,6 +88,10 @@ def buy_asset():
     agreement_id = cons_ocn.assets.order(
         ddo.did, sa.service_definition_id, consumer_account)
     logging.info('placed order: %s, %s', ddo.did, agreement_id)
+    event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
+        agreement_id, 30, None, (), wait=True
+    )
+    assert event, "Agreement event is not found, check the keeper node's logs"
 
     i = 0
     while ocn.agreements.is_access_granted(

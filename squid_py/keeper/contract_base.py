@@ -94,7 +94,7 @@ class ContractBase(object):
             return
         return Web3Provider.get_web3().eth.getTransactionReceipt(tx_hash)
 
-    def subscribe_to_event(self, event_name, timeout, event_filter, callback=False,
+    def subscribe_to_event(self, event_name, timeout, event_filter, callback=None,
                            timeout_callback=None, args=None, wait=False):
         """
         Create a listener for the event choose.
