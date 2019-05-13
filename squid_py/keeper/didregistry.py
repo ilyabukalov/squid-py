@@ -201,7 +201,9 @@ class DIDRegistry(ContractBase):
             raise OceanDIDNotFound(
                 f'DID "{did}" is not found on-chain in the current did registry. '
                 f'Please ensure assets are registered in the correct keeper contracts. '
-                f'The keeper-contracts DIDRegistry address is {self.address}')
+                f'The keeper-contracts DIDRegistry address is {self.address}.'
+                f'Also ensure that sufficient time has passed after registering the asset '
+                f'such that the transaction is confirmed by the network validators.')
 
         block_filter = self._get_event_filter(did=did, from_block=block_number,
                                               to_block=block_number)

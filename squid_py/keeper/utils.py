@@ -41,7 +41,8 @@ def process_tx_receipt(tx_hash, event, event_name):
     try:
         web3.eth.waitForTransactionReceipt(tx_hash, timeout=20)
     except Timeout:
-        logger.info('Waiting for transaction receipt timed out. Cannot verify receipt and event.')
+        logger.info(f'Waiting for {event_name} transaction receipt timed out. '
+                    f'Cannot verify receipt and event.')
         return
 
     receipt = web3.eth.getTransactionReceipt(tx_hash)

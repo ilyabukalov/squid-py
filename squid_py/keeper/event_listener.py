@@ -57,7 +57,8 @@ class EventListener(object):
 
         def _callback(event):
             events.append(event)
-            original_callback(event)
+            if original_callback:
+                original_callback(event)
 
         if blocking:
             callback = _callback
@@ -115,8 +116,8 @@ class EventListener(object):
             if timeout:
                 elapsed = int(datetime.now().timestamp()) - start_time
                 if elapsed > timeout:
-                    if timeout_callback:
+                    if timeout_callback is not None:
                         timeout_callback(*args)
-                    else:
+                    elif callback is not None:
                         callback(None, *args)
                     break

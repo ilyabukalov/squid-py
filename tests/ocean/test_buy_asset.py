@@ -70,17 +70,6 @@ def test_buy_asset(consumer_ocean_instance_brizo, publisher_ocean_instance_brizo
     )
     assert event, 'no event for LockRewardCondition.Fulfilled'
 
-    event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
-        agreement_id,
-        30,
-        log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
-        (),
-        wait=True
-    )
-    assert event, 'no event for EscrowReward.Fulfilled'
-
-    assert w3.toHex(event.args['_agreementId']) == agreement_id
-
     i = 0
     while cons_ocn.agreements.is_access_granted(
             agreement_id, ddo.did, consumer_account.address) is not True and i < 30:
@@ -142,3 +131,15 @@ def test_buy_asset(consumer_ocean_instance_brizo, publisher_ocean_instance_brizo
         )
     except RPCError:
         print('hooray, secret store is working as expected.')
+
+    event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        30,
+        log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
+        (),
+        wait=True
+    )
+    assert event, 'no event for EscrowReward.Fulfilled'
+
+    assert w3.toHex(event.args['_agreementId']) == agreement_id
+
