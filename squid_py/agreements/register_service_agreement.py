@@ -10,7 +10,7 @@ from squid_py.agreements.events import (access_secret_store_condition, escrow_re
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.keeper import Keeper
 from squid_py.keeper.events_manager import EventsManager
-from .storage import get_service_agreements, record_service_agreement
+from squid_py.data_store.agreements import get_service_agreements, record_service_agreement
 
 logger = logging.getLogger(__name__)
 
