@@ -4,7 +4,7 @@
 import logging
 from datetime import datetime
 
-from squid_py.data_store import auth_tokens
+from squid_py.data_store.auth_tokens import AuthTokensStorage
 from squid_py.keeper.web3_provider import Web3Provider
 
 
@@ -15,26 +15,25 @@ class OceanAuth:
 
     def __init__(self, keeper, storage_path):
         self._keeper = keeper
-        self._storage_path = storage_path
+        self._tokens_storage = AuthTokensStorage(storage_path)
 
     @staticmethod
-    def hash_message(self, message):
+    def hash_message(message):
         return Web3Provider.get_web3().sha3(text=message)
 
     @property
     def shared_message(self):
         return self.SHARED_MESSAGE
 
-    @property
-    def timestamp(self):
-        return datetime.now().timestamp()
+    def get_timestamp(self):
+        return int(datetime.now().timestamp())
 
     def get_message(self, timestamp):
         return f'{self.SHARED_MESSAGE}\n{timestamp}'
 
     def get_message_and_time(self):
-        timestamp = datetime.now().timestamp()
-        return f'{self.SHARED_MESSAGE}\n{timestamp}', timestamp
+        timestamp = self.get_timestamp()
+        return self.get_message(timestamp), timestamp
 
     def get(self, signer):
         """
@@ -42,9 +41,9 @@ class OceanAuth:
         :param signer:
         :return:
         """
-        _hash, _time = self.get_message_and_time()
+        _message, _time = self.get_message_and_time()
         try:
-            return f'{self._keeper.sign_hash(_hash, signer)}-{_time}'
+            return f'{self._keeper.sign_hash(_message, signer)}-{_time}'
         except Exception as e:
             logging.error(f'Error signing token: {str(e)}')
 
@@ -54,13 +53,16 @@ class OceanAuth:
         :param token:
         :return:
         """
-        sig, timestamp = token.split('-')
-        message = self.get_message(timestamp)
-        message_hash = self.hash_message(message)
-        if timestamp + self.DEFAULT_TOKEN_VALID_TIME > self.timestamp:
+        parts = token.split('-')
+        if len(parts) < 2:
             return '0x0'
 
-        address = self._keeper.ec_recover(message_hash, sig)
+        sig, timestamp = parts
+        if self.get_timestamp() > (int(timestamp) + self.DEFAULT_TOKEN_VALID_TIME):
+            return '0x0'
+
+        message = self.get_message(timestamp)
+        address = self._keeper.ec_recover(message, sig)
         return Web3Provider.get_web3().toChecksumAddress(address)
 
     def store(self, signer):
@@ -71,7 +73,7 @@ class OceanAuth:
         """
         token = self.get(signer)
         signature, timestamp = token.split('-')
-        auth_tokens.write_token(self._storage_path, signer.address, token, timestamp)
+        self._tokens_storage.write_token(signer.address, token, timestamp)
         return token
 
     def restore(self, signer):
@@ -80,7 +82,7 @@ class OceanAuth:
         :param signer:
         :return:
         """
-        token, timestamp = auth_tokens.read_token(self._storage_path, signer.address)
+        token, timestamp = self._tokens_storage.read_token(signer.address)
         if not token:
             return None
 
