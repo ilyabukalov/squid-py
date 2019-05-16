@@ -15,12 +15,12 @@ class AuthTokensStorage(StorageBase):
         """
         Store signed token for session management.
 
-        :param storage_path: storage path for the internal db, str
         :param address: hex str the ethereum address that signed the token
         :param signed_token: hex str the signed token
         :param created_at: date-time of token creation
-
         """
+        logger.debug(f'Writing token to `auth_tokens` storage: '
+                     f'account={address}, token={signed_token}')
         self._run_query(
             f'''CREATE TABLE IF NOT EXISTS {self.AUTH_TOKENS_TABLE}
                (address VARCHAR PRIMARY KEY, signed_token VARCHAR, created VARCHAR);'''
@@ -36,11 +36,12 @@ class AuthTokensStorage(StorageBase):
         """
         Update/replace the stored signed token for the given ethereum address
 
-        :param storage_path: storage path for the internal db, str
         :param address: hex str the ethereum address that signed the token
         :param signed_token: hex str the signed token
         :param created_at: date-time of token creation
         """
+        logger.debug(f'Updating token already in `auth_tokens` storage: '
+                     f'account={address}, token={signed_token}')
         self._run_query(
             f'''UPDATE {self.AUTH_TOKENS_TABLE}
                 SET signed_token=?, created=?
@@ -52,7 +53,6 @@ class AuthTokensStorage(StorageBase):
         """
         Retrieve stored signed token for the given ethereum address
 
-        :param storage_path: storage path for the internal db, str
         :param address: hex str the ethereum address that signed the token
         :return: tuple (signed_token, created_at)
         """
@@ -63,8 +63,10 @@ class AuthTokensStorage(StorageBase):
                     WHERE address=?;''',
                 (address,))
             ]
-
-            return rows[0] if rows else (None, None)
+            token, timestamp = rows[0] if rows else (None, None)
+            logger.debug(f'Read auth token from `auth_tokens` storage: '
+                         f'account={address}, token={token}')
+            return token, timestamp
 
         except Exception as e:
             logging.error(f'Error reading token: {e}')

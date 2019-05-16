@@ -5,6 +5,9 @@ import sqlite3
 
 
 class StorageBase:
+    """
+    Provide basic database connection management (connect/close).
+    """
     def __init__(self, storage_path):
         self._storage_path = storage_path
         self._conn = None
@@ -20,6 +23,14 @@ class StorageBase:
             self._conn.close()
 
     def _run_query(self, query, args=None):
+        """
+
+        :param query: str the sql query to execute in sqlite3.
+        :param args: tuple/list of arguments that go along with the query. Number of arguments
+            must match the number of positional `?` in the query string
+        :return:
+            iterator on rows resulting from the query.
+        """
         try:
             self._connect()
             cursor = self._conn.cursor()

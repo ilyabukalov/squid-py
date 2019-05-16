@@ -174,6 +174,14 @@ class Config(configparser.ConfigParser):
         return self.get('resources', 'downloads.path')
 
     @property
+    def auth_token_message(self):
+        return self.get('resources', 'auth_token_message')
+
+    @property
+    def auth_token_expiration(self):
+        return self.get('resources', 'auth_token_expiration')
+
+    @property
     def web3_provider(self):
         """Web3 provider"""
         return self._web3_provider
