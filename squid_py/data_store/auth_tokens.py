@@ -36,8 +36,8 @@ class AuthTokensStorage:
                (address VARCHAR PRIMARY KEY, signed_token VARCHAR, created VARCHAR);'''
         )
         self._run_query(
-            f'''INSERT OR REPLACE 
-                INTO {AUTH_TOKENS_TABLE} 
+            f'''INSERT OR REPLACE
+                INTO {AUTH_TOKENS_TABLE}
                 VALUES (?,?,?)''',
             [address, signed_token, created_at],
         )
@@ -52,8 +52,8 @@ class AuthTokensStorage:
         :param created_at: date-time of token creation
         """
         self._run_query(
-            f'''UPDATE {AUTH_TOKENS_TABLE} 
-                SET signed_token=?, created=? 
+            f'''UPDATE {AUTH_TOKENS_TABLE}
+                SET signed_token=?, created=?
                 WHERE address=?''',
             (signed_token, created_at, address),
         )
@@ -68,8 +68,8 @@ class AuthTokensStorage:
         """
         try:
             rows = [row for row in self._run_query(
-                f'''SELECT signed_token, created 
-                    FROM {AUTH_TOKENS_TABLE}  
+                f'''SELECT signed_token, created
+                    FROM {AUTH_TOKENS_TABLE}
                     WHERE address=?;''',
                 (address,))
             ]
