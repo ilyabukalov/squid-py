@@ -37,7 +37,6 @@ class OceanAuth:
 
     def get(self, signer):
         """
-
         :param signer:
         :return:
         """
@@ -49,7 +48,6 @@ class OceanAuth:
 
     def check(self, token):
         """
-
         :param token:
         :return:
         """
@@ -67,22 +65,20 @@ class OceanAuth:
 
     def store(self, signer):
         """
-
         :param signer:
         :return:
         """
         token = self.get(signer)
-        signature, timestamp = token.split('-')
+        timestamp = token.split('-')[1]
         self._tokens_storage.write_token(signer.address, token, timestamp)
         return token
 
     def restore(self, signer):
         """
-
         :param signer:
         :return:
         """
-        token, timestamp = self._tokens_storage.read_token(signer.address)
+        token = self._tokens_storage.read_token(signer.address)[0]
         if not token:
             return None
 
@@ -92,7 +88,6 @@ class OceanAuth:
 
     def is_stored(self, account):
         """
-
         :param account:
         :return:
         """

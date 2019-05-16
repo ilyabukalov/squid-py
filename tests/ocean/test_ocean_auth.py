@@ -1,7 +1,7 @@
 from squid_py import ConfigProvider
 from squid_py.keeper import Keeper
 from squid_py.ocean.ocean_auth import OceanAuth
-from tests.resources.helper_functions import get_publisher_account, get_consumer_account
+from tests.resources.helper_functions import get_publisher_account
 
 
 def test_get_token():
@@ -25,7 +25,7 @@ def test_check_token():
     address = ocn_auth.check(token)
     assert address != '0x0', 'Verifying token failed.'
 
-    sig, timestamp = token.split('-')
+    sig = token.split('-')[0]
     assert ocn_auth.check(sig) == '0x0'
 
     # Test token expiration

@@ -5,9 +5,7 @@ import logging
 
 import sqlite3
 
-
 logger = logging.getLogger(__name__)
-
 
 AUTH_TOKENS_TABLE = 'auth_tokens'
 
@@ -33,7 +31,6 @@ class AuthTokensStorage:
         :param created_at: date-time of token creation
 
         """
-
         self._run_query(
             f'''CREATE TABLE IF NOT EXISTS {AUTH_TOKENS_TABLE}
                (address VARCHAR PRIMARY KEY, signed_token VARCHAR, created VARCHAR);'''
@@ -53,7 +50,6 @@ class AuthTokensStorage:
         :param address: hex str the ethereum address that signed the token
         :param signed_token: hex str the signed token
         :param created_at: date-time of token creation
-
         """
         self._run_query(
             f'''UPDATE {AUTH_TOKENS_TABLE} 
