@@ -186,7 +186,7 @@ def execute_pending_service_agreements(storage_path, account, actor_type, did_re
     """
     keeper = Keeper.get_instance()
     # service_agreement_id, did, service_definition_id, price, files, start_time, status
-    for (agreement_id, did, _, price, files, _, _
+    for (agreement_id, did, _, price, _, _, _
          ) in AgreementsStorage(storage_path).get_service_agreements(storage_path):
 
         ddo = did_resolver_fn(did)
