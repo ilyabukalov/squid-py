@@ -18,6 +18,29 @@ def get_variable_value(variable):
 
 
 class ExampleConfig:
+    _duero_services_url = "https://%s.duero.dev-ocean.com/"
+    _nile_services_url = "https://nginx-%s.dev-ocean.com/"
+    _duero_secret_store_url = "https://secret-store.duero.dev-ocean.com"
+    _nile_secret_store_url = "https://secret-store.dev-ocean.com"
+    _remote_keeper_url = "https://%s.dev-ocean.com"
+    _net_to_services_url = {
+        'duero': _duero_services_url,
+        'nile': _nile_services_url
+    }
+    _net_name_map = {
+        'duero': 'duero',
+        'duero_local': 'duero',
+        'nile': 'nile',
+        'nile_local': 'nile'
+    }
+    _net_to_env_name = {
+        'nile': 'TEST_NILE',
+        'nile_local': 'TEST_LOCAL_NILE',
+        'duero': 'TEST_DUERO',
+        'duero_local': 'TEST_LOCAL_DUERO',
+        'spree': 'TEST_LOCAL_SPREE'
+    }
+
     @staticmethod
     def get_config_net():
         return os.environ.get('TEST_NET', 'spree')
@@ -25,91 +48,64 @@ class ExampleConfig:
     @staticmethod
     def get_env_name():
         net = ExampleConfig.get_config_net()
-        if net == 'nile':
-            return 'TEST_NILE'
-        elif net == 'nile_local':
-            return 'TEST_LOCAL_NILE'
-        elif net == 'duero':
-            return 'TEST_DUERO'
-        elif net == 'duero_local':
-            return 'TEST_LOCAL_DUERO'
-        elif net == 'spree':
-            return 'TEST_LOCAL_SPREE'
-
-        return None
+        return ExampleConfig._net_to_env_name.get(net)
 
     @staticmethod
-    def get_remote_parity_addresses():
-        return (
-            get_variable_value('PARITY_ADDRESS'),
-            get_variable_value('PARITY_PASSWORD'),
-            get_variable_value('PARITY_ADDRESS1'),
-            get_variable_value('PARITY_PASSWORD1')
-        )
-
-    @staticmethod
-    def get_local_parity_addresses():
-        return (
-            "0x00bd138abd70e2f00903268f3db08f2d25677c9e", "node0",
-            "0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0", "secret"
-        )
-
-    @staticmethod
-    def get_config_dict():
-        test_net = ExampleConfig.get_config_net()
-
-        if test_net == 'nile':
-            a, p, a1, p1 = ExampleConfig.get_remote_parity_addresses()
-            keeper_url = "https://nile.dev-ocean.com"
-            ss_url = "https://secret-store.dev-ocean.com"
-            aqua_url = "https://nginx-aquarius.dev-ocean.com/"
-            brizo_url = "https://nginx-brizo.dev-ocean.com/"
-
-        elif test_net == 'nile_local':
-            # As above, but uses local nile node instead of connecting directly to the remote node.
-            # This is actually the recommended method in practical use cases.
-            a, p, a1, p1 = ExampleConfig.get_local_parity_addresses()
-            keeper_url = "http://localhost:8545"
-            ss_url = "https://secret-store.dev-ocean.com"
-            aqua_url = "https://nginx-aquarius.dev-ocean.com/"
-            brizo_url = "https://nginx-brizo.dev-ocean.com/"
-        elif test_net == 'duero':
-            a, p, a1, p1 = ExampleConfig.get_remote_parity_addresses()
-            keeper_url = "https://duero.dev-ocean.com"
-            ss_url = "https://secret-store.duero.dev-ocean.com"
-            aqua_url = "https://aquarius.duero.dev-ocean.com/"
-            brizo_url = "https://brizo.duero.dev-ocean.com/"
-        elif test_net == 'duero_local':
-            a, p, a1, p1 = ExampleConfig.get_remote_parity_addresses()
-            keeper_url = "http://localhost:8545"
-            ss_url = "https://secret-store.duero.dev-ocean.com"
-            aqua_url = "https://aquarius.duero.dev-ocean.com/"
-            brizo_url = "https://brizo.duero.dev-ocean.com/"
-        else:  # test_net == 'spree':
-            a, p, a1, p1 = ExampleConfig.get_local_parity_addresses()
-            keeper_url = "http://localhost:8545"
-            ss_url = "http://localhost:12001"
-            aqua_url = "http://172.15.0.15:5000"
-            brizo_url = "http://localhost:8030"
+    def get_accounts_config(local_node=True):
+        if local_node:
+            a, p = "0x00bd138abd70e2f00903268f3db08f2d25677c9e", "node0"
+            a1, p1 = "0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0", "secret"
+        else:
+            a, p = get_variable_value('PARITY_ADDRESS'), get_variable_value('PARITY_PASSWORD')
+            a1, p1 = get_variable_value('PARITY_ADDRESS1'), get_variable_value('PARITY_PASSWORD1')
 
         return {
+           "parity.address": a, "parity.password": p,
+           "parity.address1": a1, "parity.password1": p1
+        }
+
+    @staticmethod
+    def get_base_config(local_node=True):
+        config = {
             "keeper-contracts": {
-                "keeper.url": keeper_url,
+                "keeper.url": "http://localhost:8545",
                 "keeper.path": "artifacts",
-                "secret_store.url": ss_url,
-                "parity.url": keeper_url,
-                "parity.address": a,
-                "parity.password": p,
-                "parity.address1": a1,
-                "parity.password1": p1
+                "secret_store.url": "http://localhost:12001",
+                "parity.url": "http://localhost:8545",
             },
             "resources": {
-                "aquarius.url": aqua_url,
-                "brizo.url": brizo_url,
+                "aquarius.url": "http://172.15.0.15:5000",
+                "brizo.url": "http://localhost:8030",
                 "storage.path": "squid_py.db",
                 "downloads.path": "consume-downloads"
             }
         }
+        config['keeper-contracts'].update(ExampleConfig.get_accounts_config(local_node))
+        return config
+
+    @staticmethod
+    def _get_config(local_node=True, net_key=''):
+        config = ExampleConfig.get_base_config(local_node=local_node)
+        net_name = ExampleConfig._net_name_map.get(net_key)
+        if not local_node:
+            config['keeper-contracts']['keeper.url'] = ExampleConfig._remote_keeper_url % net_name
+
+        if net_name:
+            config['keeper-contracts']['secret_store.url'] = \
+                ExampleConfig._duero_secret_store_url if net_name == 'duero' \
+                    else ExampleConfig._nile_secret_store_url
+
+            service_url = ExampleConfig._net_to_services_url[net_name]
+            config['resources']['aquarius.url'] = service_url % 'aquarius'
+            config['resources']['brizo.url'] = service_url % 'brizo'
+
+        return config
+
+    @staticmethod
+    def get_config_dict():
+        test_net = ExampleConfig.get_config_net()
+        local_node = not test_net or test_net in ('nile_local', 'duero_local', 'spree')
+        return ExampleConfig._get_config(local_node, test_net)
 
     @staticmethod
     def get_config():

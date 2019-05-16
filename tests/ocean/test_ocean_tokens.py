@@ -1,6 +1,7 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
+
 def test_token_request(publisher_ocean_instance):
     receiver_account = publisher_ocean_instance.main_account
     # Starting balance for comparison

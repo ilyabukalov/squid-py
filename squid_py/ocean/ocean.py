@@ -15,6 +15,7 @@ from squid_py.log import setup_logging
 from squid_py.ocean.ocean_accounts import OceanAccounts
 from squid_py.ocean.ocean_agreements import OceanAgreements
 from squid_py.ocean.ocean_assets import OceanAssets
+from squid_py.ocean.ocean_auth import OceanAuth
 from squid_py.ocean.ocean_providers import OceanProviders
 from squid_py.ocean.ocean_secret_store import OceanSecretStore
 from squid_py.ocean.ocean_services import OceanServices
@@ -88,6 +89,7 @@ class Ocean:
         )
         self.services = OceanServices()
         self.ocean_providers = OceanProviders(self._keeper, self._did_resolver, self._config)
+        self.auth = OceanAuth(self._keeper, self._config.storage_path)
 
         # Verify keeper contracts
         Diagnostics.verify_contracts()

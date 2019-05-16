@@ -10,7 +10,7 @@ from squid_py.agreements.events import (access_secret_store_condition, escrow_re
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.keeper import Keeper
 from squid_py.keeper.events_manager import EventsManager
-from .storage import get_service_agreements, record_service_agreement
+from squid_py.data_store.agreements import AgreementsStorage
 
 logger = logging.getLogger(__name__)
 
@@ -41,8 +41,9 @@ def register_service_agreement_consumer(storage_path, publisher_address, agreeme
     if start_time is None:
         start_time = int(datetime.now().timestamp())
 
-    record_service_agreement(
-        storage_path, agreement_id, did, service_definition_id, price, encrypted_files, start_time)
+    AgreementsStorage(storage_path).record_service_agreement(
+        agreement_id, did, service_definition_id, price, encrypted_files, start_time
+    )
 
     process_agreement_events_consumer(
         publisher_address, agreement_id, did, service_agreement,
@@ -118,8 +119,9 @@ def register_service_agreement_publisher(storage_path, consumer_address, agreeme
     if start_time is None:
         start_time = int(datetime.now().timestamp())
 
-    record_service_agreement(
-        storage_path, agreement_id, did, service_definition_id, price, '', start_time)
+    AgreementsStorage(storage_path).record_service_agreement(
+        agreement_id, did, service_definition_id, price, '', start_time
+    )
 
     process_agreement_events_publisher(
         publisher_account, agreement_id, did, service_agreement,
@@ -184,8 +186,8 @@ def execute_pending_service_agreements(storage_path, account, actor_type, did_re
     """
     keeper = Keeper.get_instance()
     # service_agreement_id, did, service_definition_id, price, files, start_time, status
-    for (agreement_id, did, _,
-         price, files, start_time, _) in get_service_agreements(storage_path):
+    for (agreement_id, did, _, price, _, _, _
+         ) in AgreementsStorage(storage_path).get_service_agreements(storage_path):
 
         ddo = did_resolver_fn(did)
         for service in ddo.services:
