@@ -22,6 +22,8 @@ NAME_KEEPER_PATH = 'keeper.path'
 NAME_GAS_LIMIT = 'gas_limit'
 NAME_AQUARIUS_URL = 'aquarius.url'
 NAME_STORAGE_PATH = 'storage.path'
+NAME_AUTH_TOKEN_MESSAGE = 'auth_token_message'
+NAME_AUTH_TOKEN_EXPIRATION = 'auth_token_expiration'
 
 NAME_SECRET_STORE_URL = 'secret_store.url'
 NAME_PARITY_URL = 'parity.url'
@@ -34,6 +36,10 @@ environ_names = {
     NAME_GAS_LIMIT: ['GAS_LIMIT', 'Gas limit'],
     NAME_AQUARIUS_URL: ['AQUARIUS_URL', 'Aquarius URL'],
     NAME_STORAGE_PATH: ['STORAGE_PATH', 'Path to the local database file'],
+    NAME_AUTH_TOKEN_MESSAGE: ['AUTH_TOKEN_MESSAGE',
+                              'Message to use for generating user auth token'],
+    NAME_AUTH_TOKEN_EXPIRATION: ['AUTH_TOKEN_EXPIRATION',
+                                 'Auth token expiration time expressed in seconds'],
     NAME_SECRET_STORE_URL: ['SECRET_STORE_URL', 'Secret Store URL'],
     NAME_PARITY_URL: ['PARITY_URL', 'Parity URL'],
     NAME_PARITY_ADDRESS: ['PARITY_ADDRESS', 'Parity address'],
@@ -52,7 +58,9 @@ config_defaults = {
     },
     'resources': {
         NAME_AQUARIUS_URL: DEFAULT_NAME_AQUARIUS_URL,
-        NAME_STORAGE_PATH: DEFAULT_STORAGE_PATH
+        NAME_STORAGE_PATH: DEFAULT_STORAGE_PATH,
+        NAME_AUTH_TOKEN_MESSAGE: '',
+        NAME_AUTH_TOKEN_EXPIRATION: 0
     }
 }
 
@@ -175,11 +183,11 @@ class Config(configparser.ConfigParser):
 
     @property
     def auth_token_message(self):
-        return self.get('resources', 'auth_token_message')
+        return self.get('resources', NAME_AUTH_TOKEN_MESSAGE)
 
     @property
     def auth_token_expiration(self):
-        return self.get('resources', 'auth_token_expiration')
+        return self.get('resources', NAME_AUTH_TOKEN_EXPIRATION)
 
     @property
     def web3_provider(self):
