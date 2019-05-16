@@ -11,29 +11,29 @@ from squid_py.keeper.web3_provider import Web3Provider
 class OceanAuth:
     """Ocean auth class."""
     DEFAULT_TOKEN_VALID_TIME = 30 * 24 * 60 * 60  # in seconds
-    SHARED_MESSAGE = "Ocean Protocol authentication"
+    DEFAULT_MESSAGE = "Ocean Protocol authentication"
 
     def __init__(self, keeper, storage_path):
         self._keeper = keeper
         self._tokens_storage = AuthTokensStorage(storage_path)
 
+    def _get_default_message(self):
+        return self.DEFAULT_MESSAGE
+
     @staticmethod
-    def hash_message(message):
-        return Web3Provider.get_web3().sha3(text=message)
-
-    @property
-    def shared_message(self):
-        return self.SHARED_MESSAGE
-
-    def get_timestamp(self):
+    def _get_timestamp():
         return int(datetime.now().timestamp())
 
-    def get_message(self, timestamp):
-        return f'{self.SHARED_MESSAGE}\n{timestamp}'
+    def _get_message(self, timestamp):
+        return f'{self._get_default_message()}\n{timestamp}'
 
-    def get_message_and_time(self):
-        timestamp = self.get_timestamp()
-        return self.get_message(timestamp), timestamp
+    def _get_message_and_time(self):
+        timestamp = self._get_timestamp()
+        return self._get_message(timestamp), timestamp
+
+    @staticmethod
+    def is_token_valid(token):
+        return isinstance(token, str) and token.startswith('0x') and len(token.split('-')) == 2
 
     def get(self, signer):
         """
@@ -41,7 +41,7 @@ class OceanAuth:
         :param signer:
         :return:
         """
-        _message, _time = self.get_message_and_time()
+        _message, _time = self._get_message_and_time()
         try:
             return f'{self._keeper.sign_hash(_message, signer)}-{_time}'
         except Exception as e:
@@ -58,10 +58,10 @@ class OceanAuth:
             return '0x0'
 
         sig, timestamp = parts
-        if self.get_timestamp() > (int(timestamp) + self.DEFAULT_TOKEN_VALID_TIME):
+        if self._get_timestamp() > (int(timestamp) + self.DEFAULT_TOKEN_VALID_TIME):
             return '0x0'
 
-        message = self.get_message(timestamp)
+        message = self._get_message(timestamp)
         address = self._keeper.ec_recover(message, sig)
         return Web3Provider.get_web3().toChecksumAddress(address)
 

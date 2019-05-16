@@ -18,14 +18,10 @@ class AuthTokensStorage:
         self.conn = sqlite3.connect(self._storage_path)
 
     def _run_query(self, query, args=None):
-        try:
-            cursor = self.conn.cursor()
-            result = cursor.execute(query, args or ())
-            self.conn.commit()
-            return result
-        finally:
-            if self._storage_path != ':memory:':
-                self.conn.close()
+        cursor = self.conn.cursor()
+        result = cursor.execute(query, args or ())
+        self.conn.commit()
+        return result
 
     def write_token(self, address, signed_token, created_at):
         """
@@ -81,8 +77,6 @@ class AuthTokensStorage:
                     WHERE address=?;''',
                 (address,))
             ]
-            if rows:
-                return rows[0]
 
             return rows[0] if rows else (None, None)
 
