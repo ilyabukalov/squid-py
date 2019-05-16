@@ -60,7 +60,7 @@ class AgreementsStorage(StorageBase):
             self._run_query(
                 '''
                     SELECT id, did, service_definition_id, price, files, start_time, status
-                    FROM service_agreements 
+                    FROM service_agreements
                     WHERE status=?;
                 ''',
                 (status,))
