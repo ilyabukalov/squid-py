@@ -3,23 +3,13 @@
 #  SPDX-License-Identifier: Apache-2.0
 import logging
 
-import sqlite3
+from squid_py.data_store.storage_base import StorageBase
 
 logger = logging.getLogger(__name__)
 
-AUTH_TOKENS_TABLE = 'auth_tokens'
 
-
-class AuthTokensStorage:
-    def __init__(self, storage_path):
-        self._storage_path = storage_path
-        self.conn = sqlite3.connect(self._storage_path)
-
-    def _run_query(self, query, args=None):
-        cursor = self.conn.cursor()
-        result = cursor.execute(query, args or ())
-        self.conn.commit()
-        return result
+class AuthTokensStorage(StorageBase):
+    AUTH_TOKENS_TABLE = 'auth_tokens'
 
     def write_token(self, address, signed_token, created_at):
         """
@@ -32,12 +22,12 @@ class AuthTokensStorage:
 
         """
         self._run_query(
-            f'''CREATE TABLE IF NOT EXISTS {AUTH_TOKENS_TABLE}
+            f'''CREATE TABLE IF NOT EXISTS {self.AUTH_TOKENS_TABLE}
                (address VARCHAR PRIMARY KEY, signed_token VARCHAR, created VARCHAR);'''
         )
         self._run_query(
             f'''INSERT OR REPLACE
-                INTO {AUTH_TOKENS_TABLE}
+                INTO {self.AUTH_TOKENS_TABLE}
                 VALUES (?,?,?)''',
             [address, signed_token, created_at],
         )
@@ -52,7 +42,7 @@ class AuthTokensStorage:
         :param created_at: date-time of token creation
         """
         self._run_query(
-            f'''UPDATE {AUTH_TOKENS_TABLE}
+            f'''UPDATE {self.AUTH_TOKENS_TABLE}
                 SET signed_token=?, created=?
                 WHERE address=?''',
             (signed_token, created_at, address),
@@ -69,7 +59,7 @@ class AuthTokensStorage:
         try:
             rows = [row for row in self._run_query(
                 f'''SELECT signed_token, created
-                    FROM {AUTH_TOKENS_TABLE}
+                    FROM {self.AUTH_TOKENS_TABLE}
                     WHERE address=?;''',
                 (address,))
             ]
