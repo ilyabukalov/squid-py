@@ -44,37 +44,44 @@ def buy_asset():
     if not acc:
         acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
 
-    # Register ddo
-    ddo = ocn.assets.create(Metadata.get_example(), acc, providers=[], use_secret_store=True)
-    logging.info(f'registered ddo: {ddo.did}')
-    # ocn here will be used only to publish the asset. Handling the asset by the publisher
-    # will be performed by the Brizo server running locally
     keeper = Keeper.get_instance()
-    test_net = os.environ.get('TEST_NET')
-    if test_net == 'nile_local':
-        provider = keeper.did_registry.to_checksum_address(providers['nile'])
-    elif test_net == 'duero_local':
-        provider = keeper.did_registry.to_checksum_address(providers['duero'])
+
+    # Register ddo
+    did = ''
+    if did:
+        ddo = ocn.assets.resolve(did)
+        logging.info(f'using ddo: {did}')
     else:
-        provider = acc.address
+        ddo = ocn.assets.create(Metadata.get_example(), acc, providers=[], use_secret_store=True)
+        did = ddo.did
+        logging.info(f'registered ddo: {did}')
+        # ocn here will be used only to publish the asset. Handling the asset by the publisher
+        # will be performed by the Brizo server running locally
+        test_net = os.environ.get('TEST_NET')
+        if test_net.startswith('nile'):
+            provider = keeper.did_registry.to_checksum_address(providers['nile'])
+        elif test_net.startswith('duero'):
+            provider = keeper.did_registry.to_checksum_address(providers['duero'])
+        else:
+            provider = acc.address
 
-    # Wait for did registry event
-    event = keeper.did_registry.subscribe_to_event(
-        keeper.did_registry.DID_REGISTRY_EVENT_NAME,
-        30,
-        event_filter={
-            '_did': Web3Provider.get_web3().toBytes(hexstr=ddo.asset_id),
-            '_owner': acc.address},
-        wait=True
-    )
-    if not event:
-        logging.warning(f'Failed to get the did registry event for asset with did {ddo.did}.')
-    assert keeper.did_registry.get_block_number_updated(ddo.asset_id) > 0, \
-        f'There is an issue in registering asset {ddo.did} on-chain.'
+        # Wait for did registry event
+        event = keeper.did_registry.subscribe_to_event(
+            keeper.did_registry.DID_REGISTRY_EVENT_NAME,
+            30,
+            event_filter={
+                '_did': Web3Provider.get_web3().toBytes(hexstr=ddo.asset_id),
+                '_owner': acc.address},
+            wait=True
+        )
+        if not event:
+            logging.warning(f'Failed to get the did registry event for asset with did {did}.')
+        assert keeper.did_registry.get_block_number_updated(ddo.asset_id) > 0, \
+            f'There is an issue in registering asset {did} on-chain.'
 
-    keeper.did_registry.add_provider(ddo.asset_id, provider, acc)
-    logging.info(f'is {provider} set as did provider: '
-                 f'{keeper.did_registry.is_did_provider(ddo.asset_id, provider)}')
+        keeper.did_registry.add_provider(ddo.asset_id, provider, acc)
+        logging.info(f'is {provider} set as did provider: '
+                     f'{keeper.did_registry.is_did_provider(ddo.asset_id, provider)}')
 
     cons_ocn = Ocean()
     consumer_account = get_consumer_account(config)
@@ -85,24 +92,43 @@ def buy_asset():
     cons_ocn.accounts.request_tokens(consumer_account, 100)
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
 
-    agreement_id = cons_ocn.assets.order(
-        ddo.did, sa.service_definition_id, consumer_account)
-    logging.info('placed order: %s, %s', ddo.did, agreement_id)
+    agreement_id = ''
+    if not agreement_id:
+        # Use these 2 lines to request new agreement from Brizo
+        # agreement_id, signature = cons_ocn.agreements.prepare(did, sa.service_definition_id, consumer_account)
+        # cons_ocn.agreements.send(did, agreement_id, sa.service_definition_id, signature, consumer_account)
+
+        # assets.order now creates agreement directly using consumer account.
+        agreement_id = cons_ocn.assets.order(
+            did, sa.service_definition_id, consumer_account)
+
+    logging.info('placed order: %s, %s', did, agreement_id)
     event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
-        agreement_id, 30, None, (), wait=True
+        agreement_id, 60, None, (), wait=True
     )
     assert event, "Agreement event is not found, check the keeper node's logs"
+    logging.info(f'Got agreement event, next: lock reward condition')
 
+    event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
+        agreement_id, 60, None, (), wait=True
+    )
+    assert event, "Lock reward condition fulfilled event is not found, check the keeper node's logs"
+    logging.info('Got lock reward event, next: wait for the access condition..')
+
+    event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
+        agreement_id, 30, None, (), wait=True
+    )
+    logging.info(f'Got access event {event}')
     i = 0
     while ocn.agreements.is_access_granted(
-            agreement_id, ddo.did, consumer_account.address) is not True and i < 60:
+            agreement_id, did, consumer_account.address) is not True and i < 30:
         time.sleep(1)
         i += 1
-    assert ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address)
+    assert ocn.agreements.is_access_granted(agreement_id, did, consumer_account.address)
 
     ocn.assets.consume(
         agreement_id,
-        ddo.did,
+        did,
         sa.service_definition_id,
         consumer_account,
         config.downloads_path)

@@ -92,6 +92,10 @@ class ContractBase(object):
         except Timeout:
             logger.info('Waiting for transaction receipt timed out.')
             return
+        except ValueError as e:
+            logger.error(f'Waiting for transaction receipt failed: {e}')
+            return
+
         return Web3Provider.get_web3().eth.getTransactionReceipt(tx_hash)
 
     def subscribe_to_event(self, event_name, timeout, event_filter, callback=None,

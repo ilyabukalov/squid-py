@@ -129,11 +129,11 @@ class Brizo:
                 logger.info(f'invoke purchase endpoint with this url: {consume_url}')
                 response = Brizo._http_client.get(consume_url, stream=True)
                 file_name = Brizo._get_file_name(response)
-                Brizo.write_file(response, destination_folder, file_name)
+                Brizo.write_file(response, destination_folder, file_name or f'file-{i}')
 
     @staticmethod
     def _prepare_consume_payload(did, service_agreement_id, service_definition_id, signature,
-                                  consumer_address):
+                                 consumer_address):
         """Prepare a payload to send to `Brizo`.
 
         :param did: DID, str
