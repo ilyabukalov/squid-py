@@ -39,10 +39,10 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
              time_outs,
              consumer_address),
             transact={'from': account.address,
-                      'passphrase': account.password}
+                      'passphrase': account.password,
+                      'keyfile': account.key_file},
         )
-        receipt = self.get_tx_receipt(tx_hash)
-        return receipt and receipt.status == 1
+        return self.is_tx_successful(tx_hash)
 
     def get_condition_types(self):
         """

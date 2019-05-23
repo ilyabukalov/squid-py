@@ -51,28 +51,39 @@ def make_ocean_instance(account_index):
     return ocn
 
 
-def get_publisher_account(config):
-    address = os.getenv('PARITY_ADDRESS')
-    if address:
-        pswrd = os.getenv('PARITY_PASSWORD')
-        return Account(Web3Provider.get_web3().toChecksumAddress(address), pswrd)
+def _get_account(config, index=0):
+    name = 'PARITY_ADDRESS' if not index else f'PARITY_ADDRESS{index}'
+    config_name = 'parity.address' if not index else f'parity.address{index}'
+    pswrd_name = 'PARITY_PASSWORD' if not index else f'PARITY_PASSWORD{index}'
+    keyfile_name = 'PARITY_KEYFILE' if not index else f'PARITY_KEYFILE{index}'
 
-    acc = get_account_from_config(config, 'parity.address', 'parity.password')
+    address = os.getenv(name)
+    if not address:
+        acc = get_account_from_config(config, config_name)
+        address = acc.address
+
+    if address:
+        pswrd = os.getenv(pswrd_name)
+        if not pswrd:
+            pswrd = os.getenv(f'{address}_PASSWORD')
+        key_file = os.getenv(keyfile_name)
+        if not key_file:
+            key_file = os.getenv(f'{address}_KEYFILE')
+
+        return Account(Web3Provider.get_web3().toChecksumAddress(address), pswrd, key_file)
+
+    acc = get_account_from_config(config, config_name)
     if acc is None:
-        acc = Account(Keeper.get_instance().accounts[0])
+        acc = Account(Keeper.get_instance().accounts[index])
     return acc
+
+
+def get_publisher_account(config):
+    return _get_account(config, 0)
 
 
 def get_consumer_account(config):
-    address = os.getenv('PARITY_ADDRESS1')
-    if address:
-        pswrd = os.getenv('PARITY_PASSWORD1')
-        return Account(Web3Provider.get_web3().toChecksumAddress(address), pswrd)
-
-    acc = get_account_from_config(config, 'parity.address1', 'parity.password1')
-    if acc is None:
-        acc = Account(Keeper.get_instance().accounts[1])
-    return acc
+    return _get_account(config, 1)
 
 
 def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
@@ -111,7 +122,7 @@ def get_consumer_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mo
     return ocn
 
 
-def get_account_from_config(config, config_account_key, config_account_password_key):
+def get_account_from_config(config, config_account_key):
     address = None
     if config.has_option('keeper-contracts', config_account_key):
         address = config.get('keeper-contracts', config_account_key)
@@ -120,11 +131,7 @@ def get_account_from_config(config, config_account_key, config_account_password_
     if not (address and address in Keeper.get_instance().accounts):
         return None
 
-    password = None
-    if address and config.has_option('keeper-contracts', config_account_password_key):
-        password = config.get('keeper-contracts', config_account_password_key)
-
-    return Account(address, password)
+    return Account(address)
 
 
 def get_ddo_sample():

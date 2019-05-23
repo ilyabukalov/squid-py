@@ -98,6 +98,10 @@ class ContractBase(object):
 
         return Web3Provider.get_web3().eth.getTransactionReceipt(tx_hash)
 
+    def is_tx_successful(self, tx_hash):
+        receipt = self.get_tx_receipt(tx_hash)
+        return bool(receipt and receipt.status == 1)
+
     def subscribe_to_event(self, event_name, timeout, event_filter, callback=None,
                            timeout_callback=None, args=None, wait=False):
         """

@@ -37,8 +37,7 @@ class ConditionBase(ContractBase):
         :return: true if the condition was successfully fulfilled, bool
         """
         tx_hash = self.send_transaction('fulfill', args, **kwargs)
-        receipt = self.get_tx_receipt(tx_hash)
-        return receipt.status == 1
+        return self.is_tx_successful(tx_hash)
 
     def abort_by_timeout(self, condition_id):
         """
@@ -47,8 +46,7 @@ class ConditionBase(ContractBase):
         :return:
         """
         tx_hash = self.contract_concise.abortByTimeOut(condition_id)
-        receipt = self.get_tx_receipt(tx_hash)
-        return receipt.status == 1
+        return self.is_tx_successful(tx_hash)
 
     def _hash_values(self, *args, **kwargs):
         """

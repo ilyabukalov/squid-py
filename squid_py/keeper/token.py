@@ -45,9 +45,10 @@ class Token(ContractBase):
             (spender_address,
              price),
             transact={'from': from_account.address,
-                      'passphrase': from_account.password}
+                      'passphrase': from_account.password,
+                      'keyfile': from_account.key_file}
         )
-        return self.get_tx_receipt(tx_hash).status == 1
+        return self.is_tx_successful(tx_hash)
 
     def transfer(self, receiver_address, amount, from_account):
         """
@@ -63,9 +64,10 @@ class Token(ContractBase):
             (receiver_address,
              amount),
             transact={'from': from_account.address,
-                      'passphrase': from_account.password}
+                      'passphrase': from_account.password,
+                      'keyfile': from_account.key_file}
         )
-        return self.get_tx_receipt(tx_hash).status == 1
+        return self.is_tx_successful(tx_hash)
 
     def total_supply(self):
         """
@@ -87,9 +89,11 @@ class Token(ContractBase):
             'increaseAllowance',
             (spender_address,
              added_value),
-            transact={'from': owner_account.address, 'passphrase': owner_account.password}
+            transact={'from': owner_account.address,
+                      'passphrase': owner_account.password,
+                      'keyfile': owner_account.key_file}
         )
-        return self.get_tx_receipt(tx_hash).status == 1
+        return self.is_tx_successful(tx_hash)
 
     def decrease_allowance(self, spender_address, subtracted_value, owner_account):
         """
@@ -103,6 +107,8 @@ class Token(ContractBase):
             'decreaseAllowance',
             (spender_address,
              subtracted_value),
-            transact={'from': owner_account.address, 'passphrase': owner_account.password}
+            transact={'from': owner_account.address,
+                      'passphrase': owner_account.password,
+                      'keyfile': owner_account.key_file}
         )
-        return self.get_tx_receipt(tx_hash).status == 1
+        return self.is_tx_successful(tx_hash)

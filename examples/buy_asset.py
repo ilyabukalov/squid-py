@@ -36,7 +36,7 @@ def buy_asset():
     config = ConfigProvider.get_config()
     providers = {
         'duero': '0x9d4ed58293f71122ad6a733c1603927a150735d0',
-        'nile': '0x413c9ba0a05b8a600899b41b0c62dd661e689354',
+        'nile': '0x4aaab179035dc57b35e2ce066919048686f82972'
     }
     # make ocean instance
     ocn = Ocean()
@@ -45,14 +45,14 @@ def buy_asset():
         acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
 
     keeper = Keeper.get_instance()
-
     # Register ddo
-    did = ''
+    did = ''  # 'did:op:7648596b60f74301ae1ef9baa5d637255d517ff362434754a3779e1de4c8219b'
     if did:
         ddo = ocn.assets.resolve(did)
         logging.info(f'using ddo: {did}')
     else:
         ddo = ocn.assets.create(Metadata.get_example(), acc, providers=[], use_secret_store=True)
+        assert ddo is not None, f'Registering asset on-chain failed.'
         did = ddo.did
         logging.info(f'registered ddo: {did}')
         # ocn here will be used only to publish the asset. Handling the asset by the publisher
@@ -89,9 +89,8 @@ def buy_asset():
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     # This will send the order request to Brizo which in turn will execute the agreement on-chain
-    cons_ocn.accounts.request_tokens(consumer_account, 100)
+    cons_ocn.accounts.request_tokens(consumer_account, 10)
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
-
     agreement_id = ''
     if not agreement_id:
         # Use these 2 lines to request new agreement from Brizo
@@ -116,14 +115,15 @@ def buy_asset():
     logging.info('Got lock reward event, next: wait for the access condition..')
 
     event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
-        agreement_id, 30, None, (), wait=True
+        agreement_id, 15, None, (), wait=True
     )
     logging.info(f'Got access event {event}')
     i = 0
     while ocn.agreements.is_access_granted(
-            agreement_id, did, consumer_account.address) is not True and i < 30:
+            agreement_id, did, consumer_account.address) is not True and i < 15:
         time.sleep(1)
         i += 1
+
     assert ocn.agreements.is_access_granted(agreement_id, did, consumer_account.address)
 
     ocn.assets.consume(

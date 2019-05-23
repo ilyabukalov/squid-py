@@ -25,7 +25,8 @@ class SignCondition(ConditionBase):
             account_address,
             signature,
             transact={'from': from_account.address,
-                      'passphrase': from_account.password}
+                      'passphrase': from_account.password,
+                      'keyfile': from_account.key_file}
         )
 
     def hash_values(self, message, account_address):

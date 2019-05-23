@@ -1,6 +1,8 @@
 from web3.utils import empty
 from web3.utils.contracts import prepare_transaction
 
+from squid_py.keeper.wallet import Wallet
+
 
 class SquidContractFunction:
 
@@ -49,6 +51,8 @@ class SquidContractFunction:
             tx = transaction.copy()
             if 'passphrase' in tx:
                 tx.pop('passphrase')
+            if 'keyfile' in tx:
+                tx.pop('keyfile')
             gas = cf.estimateGas(tx)
             transact_transaction['gas'] = gas
 
@@ -90,11 +94,24 @@ def transact_with_contract_function(
     )
 
     passphrase = None
+    key_file = None
     if transaction and 'passphrase' in transaction:
         passphrase = transaction['passphrase']
         transact_transaction.pop('passphrase')
+        if 'keyfile' in transaction:
+            key_file = transaction['keyfile']
+            transact_transaction.pop('keyfile')
 
-    if passphrase:
+    # Restrict transactions to raw transactions for now (security first)
+    if not (passphrase and key_file):
+        raise AssertionError(
+            'password and key file are required for signing transactions locally.'
+        )
+
+    if passphrase and key_file:
+        raw_tx = Wallet(web3, key_file, passphrase).sign_tx(transact_transaction)
+        txn_hash = web3.eth.sendRawTransaction(raw_tx)
+    elif passphrase:
         txn_hash = web3.personal.sendTransaction(transact_transaction, passphrase)
     else:
         txn_hash = web3.eth.sendTransaction(transact_transaction)

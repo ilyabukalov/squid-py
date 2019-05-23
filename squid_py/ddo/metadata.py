@@ -77,7 +77,7 @@ class MetadataBase(object):
         'inLanguage': "en",
         'categories': ["white-papers"],
         'tags': "data exchange sharing curation bonding curve",
-        'price': 23,
+        'price': 0,
         'files': [
             {
                 "url": "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.pdf",

@@ -33,12 +33,13 @@ class Dispenser(ContractBase):
                 'requestTokens',
                 (amount,),
                 transact={'from': address,
-                          'passphrase': account.password}
+                          'passphrase': account.password,
+                          'keyfile': account.key_file}
             )
             logging.debug(f'{address} requests {amount} tokens, returning receipt')
             try:
                 receipt = Web3Provider.get_web3().eth.waitForTransactionReceipt(
-                    tx_hash, timeout=20)
+                    tx_hash, timeout=10)
                 logging.debug(f'requestTokens receipt: {receipt}')
             except Timeout:
                 receipt = None

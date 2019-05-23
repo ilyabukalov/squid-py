@@ -3,7 +3,6 @@
 
 from collections import namedtuple
 
-from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper import ContractBase
 
 AgreementTemplate = namedtuple(
@@ -40,8 +39,10 @@ class TemplateStoreManager(ContractBase):
             'proposeTemplate',
             (template_id,),
             transact={'from': from_account.address,
-                      'passphrase': from_account.password})
-        return self.get_tx_receipt(tx_hash).status == 1
+                      'passphrase': from_account.password,
+                      'keyfile': from_account.key_file}
+        )
+        return self.is_tx_successful(tx_hash)
 
     def approve_template(self, template_id, from_account):
         """
@@ -55,8 +56,10 @@ class TemplateStoreManager(ContractBase):
             'approveTemplate',
             (template_id,),
             transact={'from': from_account.address,
-                      'passphrase': from_account.password})
-        return self.get_tx_receipt(tx_hash).status == 1
+                      'passphrase': from_account.password,
+                      'keyfile': from_account.key_file}
+        )
+        return self.is_tx_successful(tx_hash)
 
     def revoke_template(self, template_id, from_account):
         """
@@ -70,8 +73,10 @@ class TemplateStoreManager(ContractBase):
             'revokeTemplate',
             (template_id,),
             transact={'from': from_account.address,
-                      'passphrase': from_account.password})
-        return self.get_tx_receipt(tx_hash).status == 1
+                      'passphrase': from_account.password,
+                      'keyfile': from_account.key_file}
+        )
+        return self.is_tx_successful(tx_hash)
 
     def is_template_approved(self, template_id):
         """

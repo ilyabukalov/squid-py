@@ -42,8 +42,7 @@ class AgreementStoreManager(ContractBase):
             time_locks,
             time_outs,
         )
-        receipt = self.get_tx_receipt(tx_hash)
-        return receipt and receipt.status == 1
+        return self.is_tx_successful(tx_hash)
 
     def get_agreement(self, agreement_id):
         """

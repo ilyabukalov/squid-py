@@ -22,13 +22,19 @@ class ExampleConfig:
     _duero_brizo_url = "https://brizo.duero.dev-ocean.com"
     # _nile_aqua_url = "http://172.15.0.15:5000"
 
-    _nile_aqua_url = "https://nginx-aquarius.dev-ocean.com"
-    _nile_brizo_url = "https://nginx-brizo.dev-ocean.com"
+    # _nile_aqua_url = "https://nginx-aquarius.dev-ocean.com"
+    # _nile_brizo_url = "https://nginx-brizo.dev-ocean.com"
+    # _nile_aqua_url = "https://nginx-aquarius.dev-ocean.com"
+    _nile_aqua_url = "https://aquarius.marketplace.dev-ocean.com"
+    # _nile_aqua_url = "http://172.15.0.15:5000"
+    _nile_brizo_url = "https://brizo.marketplace.dev-ocean.com"
     # _nile_brizo_url = "http://localhost:8030"
 
     _duero_secret_store_url = "https://secret-store.duero.dev-ocean.com"
     _nile_secret_store_url = "https://secret-store.dev-ocean.com"
+    # _nile_secret_store_url = "https://secret-store.marketplace.dev-ocean.com"
     _remote_keeper_url = "https://%s.dev-ocean.com"
+    _parity_url = "http://localhost:8545"
     _net_to_services_url = {
         'duero': {'aquarius': _duero_aqua_url, 'brizo': _duero_brizo_url},
         'nile': {'aquarius': _nile_aqua_url, 'brizo': _nile_brizo_url}
@@ -86,7 +92,8 @@ class ExampleConfig:
                 "downloads.path": "consume-downloads"
             }
         }
-        config['keeper-contracts'].update(ExampleConfig.get_accounts_config(local_node))
+        # Accounts info is in env vars, need to deprecate the config accounts options
+        # config['keeper-contracts'].update(ExampleConfig.get_accounts_config(local_node))
         return config
 
     @staticmethod
@@ -105,7 +112,8 @@ class ExampleConfig:
             config['resources']['aquarius.url'] = service_url['aquarius']
             config['resources']['brizo.url'] = service_url['brizo']
 
-        config['keeper-contracts']['parity.url'] = config['keeper-contracts']['keeper.url']
+        # parity_url maybe different than the keeper_url
+        config['keeper-contracts']['parity.url'] = ExampleConfig._parity_url
         return config
 
     @staticmethod

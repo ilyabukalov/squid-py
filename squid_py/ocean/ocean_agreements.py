@@ -58,7 +58,11 @@ class OceanAgreements:
         agreement_hash = service_agreement.get_service_agreement_hash(
             agreement_id, asset.asset_id, consumer_account.address, publisher_address, self._keeper
         )
-        return self._keeper.sign_hash(agreement_hash, consumer_account)
+        signature = self._keeper.sign_hash(agreement_hash, consumer_account)
+        address = self._keeper.ec_recover(agreement_hash, signature)
+        assert address == consumer_account.address
+        logger.debug(f'agreement-signature={signature}, agreement-hash={agreement_hash}')
+        return signature
 
     def prepare(self, did, service_definition_id, consumer_account):
         """
@@ -150,8 +154,8 @@ class OceanAgreements:
         """
         assert consumer_address and Web3Provider.get_web3().isChecksumAddress(
             consumer_address), f'Invalid consumer address {consumer_address}'
-        assert account.address in self._keeper.accounts, \
-            f'Unrecognized account address {account.address}'
+        # assert account.address in self._keeper.accounts, \
+        #     f'Unrecognized account address {account.address}'
 
         agreement_template_approved = self._keeper.template_manager.is_template_approved(
             self._keeper.escrow_access_secretstore_template.address)
@@ -208,7 +212,7 @@ class OceanAgreements:
                 success = True
             else:
                 event_log = self._keeper.escrow_access_secretstore_template.subscribe_agreement_created(
-                    agreement_id, 30, None, (), wait=True
+                    agreement_id, 15, None, (), wait=True
                 )
                 success = event_log is not None
 

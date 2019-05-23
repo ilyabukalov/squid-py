@@ -20,7 +20,8 @@ class HashLockCondition(ConditionBase):
             agreement_id,
             preimage,
             transact={'from': account.address,
-                      'passphrase': account.password}
+                      'passphrase': account.password,
+                      'keyfile': account.key_file}
         )
 
     def hash_values(self, preimage):

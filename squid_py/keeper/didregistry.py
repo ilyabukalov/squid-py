@@ -58,8 +58,7 @@ class DIDRegistry(ContractBase):
         transaction = self._register_attribute(
             did_source_id, checksum, url, account, providers or []
         )
-        receipt = self.get_tx_receipt(transaction)
-        return receipt and receipt.status == 1
+        return self.is_tx_successful(transaction)
 
     def _register_attribute(self, did, checksum, value, account, providers):
         """Register an DID attribute as an event on the block chain.
@@ -78,7 +77,8 @@ class DIDRegistry(ContractBase):
              providers,
              value),
             transact={'from': account.address,
-                      'passphrase': account.password}
+                      'passphrase': account.password,
+                      'keyfile': account.key_file}
         )
 
     def get_block_number_updated(self, did):
@@ -108,9 +108,10 @@ class DIDRegistry(ContractBase):
             (did,
              provider_address),
             transact={'from': account.address,
-                      'passphrase': account.password}
+                      'passphrase': account.password,
+                      'keyfile': account.key_file}
         )
-        return self.get_tx_receipt(tx_hash)
+        return self.is_tx_successful(tx_hash)
 
     def remove_provider(self, did, provider_address, account):
         """
@@ -126,9 +127,10 @@ class DIDRegistry(ContractBase):
             (did,
              provider_address),
             transact={'from': account.address,
-                      'passphrase': account.password}
+                      'passphrase': account.password,
+                      'keyfile': account.key_file}
         )
-        return self.get_tx_receipt(tx_hash)
+        return self.is_tx_successful(tx_hash)
 
     def is_did_provider(self, did, address):
         """

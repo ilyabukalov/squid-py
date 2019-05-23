@@ -23,7 +23,10 @@ def fulfill_lock_reward_condition(event, agreement_id, price, consumer_account):
     keeper = Keeper.get_instance()
     tx_hash = None
     try:
-        keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_account)
+        logger.debug(f'approving "{price}"" token transfer by lock_reward_condition '
+                    f'@{keeper.lock_reward_condition.address} for account address {consumer_account.address}')
+        approved = keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_account)
+        logger.info(f'approval of token transfer was {"" if approved else "NOT"} successful')
         tx_hash = keeper.lock_reward_condition.fulfill(
             agreement_id, keeper.escrow_reward_condition.address, price, consumer_account
         )
@@ -32,8 +35,10 @@ def fulfill_lock_reward_condition(event, agreement_id, price, consumer_account):
             keeper.lock_reward_condition.FULFILLED_EVENT,
             'LockRewardCondition.Fulfilled'
         )
+        logger.debug(f'done locking reward for agreement {agreement_id}.')
+
     except Exception as e:
-        logger.debug(f'error locking reward: {e}')
+        logger.error(f'error locking reward: {e}')
         if not tx_hash:
             raise e
 

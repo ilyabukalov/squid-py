@@ -67,6 +67,8 @@ class OceanAssets:
             item is a dict of parameters and values required by the service
         :param providers: list of addresses of providers of this asset (a provider is
             an ethereum account that is authorized to provide asset services)
+        :param use_secret_store: bool when False use Brizo to encrypt asset's urls instead
+            of the secretstore
         :return: DDO instance
         """
         assert isinstance(metadata, dict), f'Expected metadata of type dict, got {type(metadata)}'
@@ -81,9 +83,13 @@ class OceanAssets:
         did = DID.did()
         logger.debug(f'Generating new did: {did}')
         # Check if it's already registered first!
-        if did in self._get_aquarius().list_assets():
-            raise OceanDIDAlreadyExist(
-                f'Asset id {did} is already registered to another asset.')
+        try:
+            if did in self._get_aquarius().list_assets():
+                raise OceanDIDAlreadyExist(
+                    f'Asset id {did} is already registered to another asset.')
+        except Exception as e:
+            logger.warning(f'Could not get assets list from aquarius, '
+                           f'skip checking duplicate did: {e}')
 
         ddo = DDO(did)
 
@@ -265,9 +271,6 @@ class OceanAssets:
         :return: agreement_id the service agreement id (can be used to query
             the keeper-contracts for the status of the service agreement)
         """
-        assert consumer_account.address in self._keeper.accounts, f'Unrecognized consumer ' \
-            f'address `consumer_account`'
-
         agreement_id = self._agreements.new()
         logger.debug(f'about to request create agreement: {agreement_id}')
         self._agreements.create(

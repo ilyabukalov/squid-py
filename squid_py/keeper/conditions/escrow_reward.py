@@ -36,7 +36,8 @@ class EscrowRewardCondition(ConditionBase):
             lock_condition_id,
             release_condition_id,
             transact={'from': account.address,
-                      'passphrase': account.password}
+                      'passphrase': account.password,
+                      'keyfile': account.key_file}
         )
 
     def hash_values(self, amount, receiver_address, sender_address, lock_condition_id,

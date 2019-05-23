@@ -20,6 +20,7 @@ from squid_py.keeper.dispenser import Dispenser
 from squid_py.keeper.templates.access_secret_store_template import EscrowAccessSecretStoreTemplate
 from squid_py.keeper.templates.template_manager import TemplateStoreManager
 from squid_py.keeper.token import Token
+from squid_py.keeper.wallet import Wallet
 from squid_py.keeper.web3.signature import SignatureFix
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.utils.utilities import split_signature
@@ -98,18 +99,16 @@ class Keeper(object):
         :param account: Account
         :return:
         """
-        return Web3Provider.get_web3().personal.sign(
-            msg_hash, account.address, account.password
-        )
+        wallet = Wallet(Web3Provider.get_web3(), account.key_file, account.password, account.address)
+        s = wallet.sign(msg_hash)
+        return s.signature.hex()
 
     @staticmethod
     def ec_recover(message, signed_message):
         w3 = Web3Provider.get_web3()
         v, r, s = split_signature(w3, w3.toBytes(hexstr=signed_message))
         signature_object = SignatureFix(vrs=(v, big_endian_to_int(r), big_endian_to_int(s)))
-        return Web3Provider.get_web3().personal.ecRecover(
-            message,
-            signature_object.to_hex_v_hacked())
+        return w3.eth.account.recoverHash(message, signature=signature_object.to_hex_v_hacked())
 
     @staticmethod
     def unlock_account(account):

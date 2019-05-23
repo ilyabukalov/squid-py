@@ -26,7 +26,8 @@ class AccessSecretStoreCondition(ConditionBase):
             document_id,
             grantee_address,
             transact={'from': account.address,
-                      'passphrase': account.password}
+                      'passphrase': account.password,
+                      'keyfile': account.key_file}
         )
 
     def hash_values(self, document_id, grantee_address):
