@@ -58,7 +58,7 @@ TEST_METADATA = """
        "4d517500da0acb0d65a716f61330969334630363ce4a6a9d39691026ac7908ea" }
      ],
      "inLanguage": "en",
-     "tags": "weather, uk, 2011, temperature, humidity",
+     "tags": ["weather", "uk", "2011", "temperature", "humidity"],
      "price": 10
    },
    "curation": {

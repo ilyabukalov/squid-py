@@ -76,7 +76,7 @@ class MetadataBase(object):
         'workExample': "Text PDF",
         'inLanguage': "en",
         'categories': ["white-papers"],
-        'tags': "data exchange sharing curation bonding curve",
+        'tags': ["data exchange", "sharing", "curation", "bonding curve"],
         'price': 23,
         'files': [
             {
