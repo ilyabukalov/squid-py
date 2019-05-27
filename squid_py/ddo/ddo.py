@@ -334,14 +334,15 @@ class DDO:
 
         :param did: DID, str
         :param metadata: conforming to the Metadata accepted by Ocean Protocol, dict
-        :return: hex str
+        :return: hex str, beginning with '0x'
         """
         files_checksum = ''
         for file in metadata['base']['files']:
             if 'checksum' in file:
                 files_checksum = files_checksum + file['checksum']
-        return hashlib.sha3_256((files_checksum +
-                                 metadata['base']['name'] +
-                                 metadata['base']['author'] +
-                                 metadata['base']['license'] +
-                                 did).encode('UTF-8')).hexdigest()
+        hashstr = hashlib.sha3_256((files_checksum +
+                                    metadata['base']['name'] +
+                                    metadata['base']['author'] +
+                                    metadata['base']['license'] +
+                                    did).encode('UTF-8')).hexdigest()
+        return '0x' + hashstr

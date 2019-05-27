@@ -169,9 +169,11 @@ class OceanAssets:
             f'`Access` service initialize @{ddo.services[0].endpoints.service}.')
         response = None
         # register on-chain
+        # Remove '0x' from the start of metadata_copy['base']['checksum']
+        text_for_sha3 = metadata_copy['base']['checksum'][2:]
         registered_on_chain = self._keeper.did_registry.register(
             did,
-            checksum=Web3Provider.get_web3().sha3(text=metadata_copy['base']['checksum']),
+            checksum=Web3Provider.get_web3().sha3(text=text_for_sha3),
             url=ddo_service_endpoint,
             account=publisher_account,
             providers=providers
