@@ -53,7 +53,7 @@ class ServiceAgreement(Service):
         for cond in self.conditions:
             for p in cond.parameters:
                 if p.name == '_amount':
-                    return p.value
+                    return int(p.value)
 
     @property
     def service_endpoint(self):
