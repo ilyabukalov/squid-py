@@ -21,6 +21,9 @@ class OceanConditions:
         :param account: Account
         :return: bool
         """
+        self._keeper.dispenser.request_tokens(amount, account)
+        self._keeper.token.token_approve(self._keeper.lock_reward_condition.address, amount,
+                                         account)
         return self._keeper.lock_reward_condition.fulfill(
             agreement_id, self._keeper.escrow_reward_condition.address, amount, account
         )

@@ -102,11 +102,12 @@ def test_agreement_status(setup_agreements_enviroment, ocean_agreements):
                                                                     "escrowReward": 1
                                                                     }
                                                      }
-    keeper.dispenser.request_tokens(price, consumer_acc)
+    # keeper.dispenser.request_tokens(price, consumer_acc)
 
-    keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_acc)
-    keeper.lock_reward_condition.fulfill(
-        agreement_id, keeper.escrow_reward_condition.address, price, consumer_acc)
+    # keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_acc)
+    ocean_agreements.conditions.lock_reward(agreement_id,price, consumer_acc)
+    # keeper.lock_reward_condition.fulfill(
+    #     agreement_id, keeper.escrow_reward_condition.address, price, consumer_acc)
     event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         10,
