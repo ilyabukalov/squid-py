@@ -74,7 +74,7 @@ class ExampleConfig:
                 "parity.url": "http://localhost:8545",
             },
             "resources": {
-                "aquarius.url": "http://localhost:5000",
+                "aquarius.url": "http://172.15.0.11:5000",
                 "brizo.url": "http://localhost:8030",
                 "storage.path": "squid_py.db",
                 "downloads.path": "consume-downloads"
