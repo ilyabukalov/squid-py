@@ -245,6 +245,18 @@ class Aquarius:
 
         raise AquariusGenericError(f'Unable to remove DID: {response}')
 
+    def retire_all_assets(self):
+        """
+        Retire all the ddo assets.
+        :return: str
+        """
+        response = self.requests_session.delete(f'{self.url}', headers=self._headers)
+        if response.status_code == 200:
+            logging.debug(f'Removed all the assets successfully')
+            return response
+
+        raise AquariusGenericError(f'Unable to remove all the DID: {response}')
+
     def validate_metadata(self, metadata):
         """
         Validate that the metadata of your ddo is valid.

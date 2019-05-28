@@ -122,6 +122,7 @@ def test_update_with_not_valid_ddo(asset1):
 
 @e2e_test
 def test_text_search(asset1, asset2):
+    aquarius.retire_all_assets()
     office_matches = len(aquarius.text_search(text='Office')['results'])
     aquarius.publish_asset_ddo(asset1)
     assert len(aquarius.text_search(text='Office')['results']) == (office_matches + 1)
@@ -144,6 +145,7 @@ def test_text_search_invalid_query():
 
 @e2e_test
 def test_query_search(asset1, asset2):
+    aquarius.retire_all_assets()
     num_matches = len(
         aquarius.query_search(search_query={"query": {"type": ["MessagingService"]}})['results'])
     aquarius.publish_asset_ddo(asset1)
