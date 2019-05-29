@@ -1,6 +1,10 @@
 History
 =======
 
+0.6.6 (May 29th, 2019)
+----------------------
+* Fix issue in the signature.
+
 0.6.6 (May 28th, 2019)
 ----------------------
 * Begin checksum with 0x.
