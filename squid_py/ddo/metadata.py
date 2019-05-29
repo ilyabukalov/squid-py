@@ -72,41 +72,43 @@ class MetadataBase(object):
         'author': "Ocean Protocol Foundation Ltd.",
         'license': "CC-BY",
         'copyrightHolder': "Ocean Protocol Foundation Ltd.",
-        'compression': "",
         'workExample': "Text PDF",
         'inLanguage': "en",
         'categories': ["white-papers"],
         'tags': ["data exchange", "sharing", "curation", "bonding curve"],
-        'price': 23,
+        'price': "23",
         'files': [
             {
+                "index": 0,
                 "url": "https://testocnfiles.blob.core.windows.net/testfiles/testzkp.pdf",
                 "checksum": "efb2c764274b745f5fc37f97c6b0e761",
                 "checksumType": "MD5",
-                "contentLength": "4535431",
+                "contentLength": 4535431,
                 "resourceId": "access-log2018-02-13-15-17-29-18386C502CAEA932"
             },
             {
+                "index": 1,
                 "url": "s3://ocean-test-osmosis-data-plugin-dataseeding-1537375953/data.txt",
                 "checksum": "efb2c764274b745f5fc37f97c6b0e761",
-                "contentLength": "4535431",
+                "contentLength": 4535431,
                 "resourceId": "access-log2018-02-13-15-17-29-18386C502CAEA932"
             },
             {
+                "index": 2,
                 "url": "http://ipv4.download.thinkbroadband.com/5MB.zip"
             },
         ],
         'links': [
             {
-                "sample1": "http://data.ceda.ac.uk/badc/ukcp09/data/gridded-land-obs/gridded-land"
+                "url": "http://data.ceda.ac.uk/badc/ukcp09/data/gridded-land-obs/gridded-land"
                            "-obs-daily/",
             },
             {
-                "sample2": "http://data.ceda.ac.uk/badc/ukcp09/data/gridded-land-obs/gridded-land"
+                "url": "http://data.ceda.ac.uk/badc/ukcp09/data/gridded-land-obs/gridded-land"
                            "-obs-averages-25km/",
             },
             {
-                "fieldsDescription": "http://data.ceda.ac.uk/badc/ukcp09/",
+                "url": "http://data.ceda.ac.uk/badc/ukcp09/",
             },
 
         ],
