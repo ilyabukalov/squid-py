@@ -98,8 +98,6 @@ class Keeper(object):
         :param account: Account
         :return: signature
         """
-        if msg_hash[:2] == '0x':
-            msg_hash = msg_hash[2:]
         return Web3Provider.get_web3().personal.sign(
             msg_hash, account.address, account.password
         )
