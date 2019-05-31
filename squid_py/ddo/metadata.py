@@ -68,7 +68,7 @@ class MetadataBase(object):
         'name': "Ocean protocol white paper",
         'type': "dataset",
         'description': "Introduce the main concepts and vision behind ocean protocol",
-        'dateCreated': "2012-10-10T17:00:000Z",
+        'dateCreated': "2012-10-10T17:00:00Z",
         'author': "Ocean Protocol Foundation Ltd.",
         'license': "CC-BY",
         'copyrightHolder': "Ocean Protocol Foundation Ltd.",
