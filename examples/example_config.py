@@ -18,6 +18,8 @@ def get_variable_value(variable):
 
 
 class ExampleConfig:
+    _local_aqua_url = "http://172.15.0.15:5000"
+    _local_brizo_url = "http://localhost:8030"
     _duero_services_url = "https://%s.duero.dev-ocean.com/"
     _nile_services_url = "https://nginx-%s.dev-ocean.com/"
     _duero_secret_store_url = "https://secret-store.duero.dev-ocean.com"
@@ -25,20 +27,25 @@ class ExampleConfig:
     _remote_keeper_url = "https://%s.dev-ocean.com"
     _net_to_services_url = {
         'duero': _duero_services_url,
-        'nile': _nile_services_url
+        'nile': _nile_services_url,
+        'kovan': {'aquarius': _local_aqua_url, 'brizo': _local_brizo_url}
     }
     _net_name_map = {
         'duero': 'duero',
         'duero_local': 'duero',
         'nile': 'nile',
-        'nile_local': 'nile'
+        'nile_local': 'nile',
+        'kovan': 'kovan',
+        'kovan_local': 'kovan'
     }
     _net_to_env_name = {
         'nile': 'TEST_NILE',
         'nile_local': 'TEST_LOCAL_NILE',
         'duero': 'TEST_DUERO',
         'duero_local': 'TEST_LOCAL_DUERO',
-        'spree': 'TEST_LOCAL_SPREE'
+        'spree': 'TEST_LOCAL_SPREE',
+        'kovan': 'TEST_KOVAN',
+        'kovan_local': 'TEST_LOCAL_KOVAN'
     }
 
     @staticmethod
@@ -104,8 +111,9 @@ class ExampleConfig:
     @staticmethod
     def get_config_dict():
         test_net = ExampleConfig.get_config_net()
-        local_node = not test_net or test_net in ('nile_local', 'duero_local', 'spree')
-        return ExampleConfig._get_config(local_node, test_net)
+        local_node = not test_net or test_net in ('nile_local', 'duero_local', 'spree', 'kovan_local')
+        config_dict = ExampleConfig._get_config(local_node, test_net)
+        return config_dict
 
     @staticmethod
     def get_config():

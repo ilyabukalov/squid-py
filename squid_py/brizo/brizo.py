@@ -117,7 +117,7 @@ class Brizo:
                 'index can not be bigger than the number of files')
             consume_url = Brizo._create_consume_url(service_endpoint, service_agreement_id, account,
                                                     None, signature, index)
-            logger.info(f'invoke purchase endpoint with this url: {consume_url}')
+            logger.info(f'invoke consume endpoint with this url: {consume_url}')
             response = Brizo._http_client.get(consume_url, stream=True)
             file_name = Brizo._get_file_name(response)
             Brizo.write_file(response, destination_folder, file_name)
@@ -126,7 +126,7 @@ class Brizo:
                 consume_url = Brizo._create_consume_url(service_endpoint, service_agreement_id,
                                                         account, _file,
                                                         signature, i)
-                logger.info(f'invoke purchase endpoint with this url: {consume_url}')
+                logger.info(f'invoke consume endpoint with this url: {consume_url}')
                 response = Brizo._http_client.get(consume_url, stream=True)
                 file_name = Brizo._get_file_name(response)
                 Brizo.write_file(response, destination_folder, file_name)
