@@ -29,11 +29,17 @@ class EventFilter:
         if self._poll_interval is not None:
             self._filter.poll_interval = self._poll_interval
 
+    def get_new_entries(self, max_tries=1):
+        return self._get_entries(self._filter.get_new_entries, max_tries=max_tries)
+
     def get_all_entries(self, max_tries=1):
+        return self._get_entries(self._filter.get_all_entries, max_tries=max_tries)
+
+    def _get_entries(self, entries_getter, max_tries=1):
         i = 0
         while i < max_tries:
             try:
-                logs = self._filter.get_all_entries()
+                logs = entries_getter()
                 if logs:
                     return logs
             except ValueError as e:
