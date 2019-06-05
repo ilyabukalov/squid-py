@@ -133,7 +133,7 @@ class MultiEventListener(object):
         :return:
         """
         try:
-            events = event_filter.get_all_entries()
+            events = event_filter.get_new_entries()
             if events:
                 callback(events[0], *args)
                 return True

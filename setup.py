@@ -97,6 +97,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/oceanprotocol/squid-py',
-    version='0.6.7',
+    version='0.6.8',
     zip_safe=False,
 )

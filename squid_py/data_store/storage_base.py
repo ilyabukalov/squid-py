@@ -31,11 +31,10 @@ class StorageBase:
         :return:
             iterator on rows resulting from the query.
         """
-        try:
+        if not self._conn:
             self._connect()
-            cursor = self._conn.cursor()
-            result = cursor.execute(query, args or ())
-            self._conn.commit()
-            return result
-        finally:
-            self._disconnect()
+
+        cursor = self._conn.cursor()
+        result = cursor.execute(query, args or ())
+        self._conn.commit()
+        return result
