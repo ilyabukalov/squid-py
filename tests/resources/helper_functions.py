@@ -60,7 +60,7 @@ def _get_account(config, index=0):
     address = os.getenv(name)
     if not address:
         acc = get_account_from_config(config, config_name)
-        address = acc.address
+        address = acc.address if acc else None
 
     if address:
         pswrd = os.getenv(pswrd_name)

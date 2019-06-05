@@ -1,3 +1,5 @@
+import logging
+
 from web3.utils import empty
 from web3.utils.contracts import prepare_transaction
 
@@ -110,6 +112,7 @@ def transact_with_contract_function(
 
     if passphrase and key_file:
         raw_tx = Wallet(web3, key_file, passphrase).sign_tx(transact_transaction)
+        logging.debug(f'sending raw tx: function: {function_name}, tx hash: {raw_tx.hex()}')
         txn_hash = web3.eth.sendRawTransaction(raw_tx)
     elif passphrase:
         txn_hash = web3.personal.sendTransaction(transact_transaction, passphrase)

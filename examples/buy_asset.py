@@ -133,6 +133,16 @@ def buy_asset():
         consumer_account,
         config.downloads_path)
     logging.info('Success buying asset.')
+
+    event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        30,
+        None,
+        (),
+        wait=True
+    )
+    assert event, 'no event for EscrowReward.Fulfilled'
+    logging.info(f'got EscrowReward.FULFILLED event: {event}')
     logging.info('Done buy asset.')
 
 

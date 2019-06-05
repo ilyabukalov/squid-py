@@ -25,7 +25,7 @@ def fulfill_access_secret_store_condition(event, agreement_id, did, service_agre
     :param consumer_address: ethereum account address of consumer, hex str
     :param publisher_account: Account instance of the publisher
     """
-    logger.debug(f"release reward after event {event}.")
+    logger.debug(f"grant access after event {event}.")
     name_to_parameter = {param.name: param for param in
                          service_agreement.condition_by_name['accessSecretStore'].parameters}
     document_id = add_0x_prefix(name_to_parameter['_documentId'].value)
@@ -41,7 +41,7 @@ def fulfill_access_secret_store_condition(event, agreement_id, did, service_agre
             'AccessSecretStoreCondition.Fulfilled'
         )
     except Exception as e:
-        # logger.error(f'Error when calling grantAccess condition function: {e}')
+        logger.error(f'Error when calling grantAccess condition function: {e}', exc_info=1)
         raise e
 
 
