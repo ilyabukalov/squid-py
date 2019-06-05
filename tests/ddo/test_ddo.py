@@ -58,7 +58,7 @@ TEST_METADATA = """
        "4d517500da0acb0d65a716f61330969334630363ce4a6a9d39691026ac7908ea" }
      ],
      "inLanguage": "en",
-     "tags": "weather, uk, 2011, temperature, humidity",
+     "tags": ["weather", "uk", "2011", "temperature", "humidity"],
      "price": 10
    },
    "curation": {
@@ -229,8 +229,8 @@ def test_ddo_dict():
     assert sample_ddo_path.exists(), f'{sample_ddo_path} does not exist!'
 
     ddo1 = DDO(json_filename=sample_ddo_path)
-    assert len(ddo1.public_keys) == 3
-    assert ddo1.did == 'did:op:3597a39818d598e5d60b83eabe29e337d37d9ed5af218b4af5e94df9f7d9783a'
+    assert len(ddo1.public_keys) == 1
+    assert ddo1.did == 'did:op:0c184915b07b44c888d468be85a9b28253e80070e5294b1aaed81c2f0264e429'
 
 
 @unit_test

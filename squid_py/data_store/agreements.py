@@ -32,12 +32,12 @@ class AgreementsStorage(StorageBase):
         self._run_query(
             '''CREATE TABLE IF NOT EXISTS service_agreements
                (id VARCHAR PRIMARY KEY, did VARCHAR, service_definition_id INTEGER,
-                price INTEGER, files VARCHAR, start_time INTEGER, status VARCHAR(10));'''
+                price VARCHAR, files VARCHAR, start_time INTEGER, status VARCHAR(10));'''
         )
         self._run_query(
             'INSERT OR REPLACE INTO service_agreements VALUES (?,?,?,?,?,?,?)',
             (service_agreement_id, did, service_definition_id,
-             price, files, start_time, status),
+             str(price), files, start_time, status),
         )
 
     def update_status(self, service_agreement_id, status):

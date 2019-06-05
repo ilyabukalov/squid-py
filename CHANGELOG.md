@@ -1,6 +1,25 @@
 History
 =======
 
+0.6.6 (May 29th, 2019)
+----------------------
+* Fix issue in the signature.
+
+0.6.6 (May 28th, 2019)
+----------------------
+* Begin checksum with 0x.
+* Fix small bugs.
+* Add version info of the contracts.
+* Manage price as a string.
+
+0.6.5 (May 16th, 2019)
+----------------------
+* Add ocean auth module to support handling signed token.
+
+0.6.4 (May 7th, 2019)
+----------------------
+* Use the proper version of keeper-contracts that supports consumer creating service agreement.
+
 0.6.3 (April 30th, 2019)
 ------------------------
 * Update `assets.order` to use `agreements.create` instead of `agreements.send`

@@ -47,6 +47,16 @@ class ContractHandler(object):
         return (ContractHandler._contracts.get(name) or ContractHandler._load(name))[1]
 
     @staticmethod
+    def get_contract_version(name):
+        """
+        Return the version of the contract in use.
+
+        :param name: name of the contract
+        :return: str version
+        """
+        return ContractHandler._contracts.get(name)[2]
+
+    @staticmethod
     def set(name, contract):
         """
         Set a Contract instance for a contract name.
@@ -78,7 +88,8 @@ class ContractHandler(object):
         address = Web3Provider.get_web3().toChecksumAddress(contract_definition['address'])
         abi = contract_definition['abi']
         contract = Web3Provider.get_web3().eth.contract(address=address, abi=abi)
-        ContractHandler._contracts[contract_name] = (contract, ConciseContract(contract))
+        ContractHandler._contracts[contract_name] = (
+        contract, ConciseContract(contract), contract_definition['version'])
         return ContractHandler._contracts[contract_name]
 
     @staticmethod

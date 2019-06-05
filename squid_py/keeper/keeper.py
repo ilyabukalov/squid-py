@@ -97,7 +97,7 @@ class Keeper(object):
 
         :param msg_hash:
         :param account: Account
-        :return:
+        :return: signature
         """
         wallet = Wallet(Web3Provider.get_web3(), account.key_file, account.password, account.address)
         s = wallet.sign(msg_hash)
