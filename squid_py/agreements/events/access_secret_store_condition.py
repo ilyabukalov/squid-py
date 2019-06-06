@@ -8,7 +8,6 @@ from eth_utils import add_0x_prefix
 
 from squid_py.did import did_to_id
 from squid_py.keeper import Keeper
-from squid_py.keeper.utils import process_tx_receipt
 
 logger = logging.getLogger(__name__)
 
@@ -32,13 +31,8 @@ def fulfill_access_secret_store_condition(event, agreement_id, did, service_agre
     asset_id = add_0x_prefix(did_to_id(did))
     assert document_id == asset_id, f'document_id {document_id} <=> asset_id {asset_id} mismatch.'
     try:
-        tx_hash = Keeper.get_instance().access_secret_store_condition.fulfill(
+        Keeper.get_instance().access_secret_store_condition.fulfill(
             agreement_id, document_id, consumer_address, publisher_account
-        )
-        process_tx_receipt(
-            tx_hash,
-            Keeper.get_instance().access_secret_store_condition.FULFILLED_EVENT,
-            'AccessSecretStoreCondition.Fulfilled'
         )
     except Exception as e:
         logger.error(f'Error when calling grantAccess condition function: {e}', exc_info=1)
