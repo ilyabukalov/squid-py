@@ -20,14 +20,27 @@ def get_variable_value(variable):
 class ExampleConfig:
     _local_aqua_url = "http://172.15.0.15:5000"
     _local_brizo_url = "http://localhost:8030"
-    _duero_services_url = "https://%s.duero.dev-ocean.com/"
-    _nile_services_url = "https://nginx-%s.dev-ocean.com/"
+    _duero_aqua_url = "https://aquarius.duero.dev-ocean.com"
+    _duero_brizo_url = "https://brizo.duero.dev-ocean.com"
+    # _nile_aqua_url = "http://172.15.0.15:5000"
+
+    # _nile_aqua_url = "https://nginx-aquarius.dev-ocean.com"
+    # _nile_brizo_url = "https://nginx-brizo.dev-ocean.com"
+    # _nile_aqua_url = "https://nginx-aquarius.dev-ocean.com"
+    _nile_aqua_url = "https://aquarius.marketplace.dev-ocean.com"
+    # _nile_aqua_url = "http://172.15.0.15:5000"
+    _nile_brizo_url = "https://brizo.marketplace.dev-ocean.com"
+    # _nile_brizo_url = "http://localhost:8030"
+
     _duero_secret_store_url = "https://secret-store.duero.dev-ocean.com"
     _nile_secret_store_url = "https://secret-store.dev-ocean.com"
+    # _nile_secret_store_url = "https://secret-store.marketplace.dev-ocean.com"
+    _kovan_keeper_url = "http://localhost:8545"
     _remote_keeper_url = "https://%s.dev-ocean.com"
+    _parity_url = "http://localhost:8545"
     _net_to_services_url = {
-        'duero': _duero_services_url,
-        'nile': _nile_services_url,
+        'duero': {'aquarius': _duero_aqua_url, 'brizo': _duero_brizo_url},
+        'nile': {'aquarius': _nile_aqua_url, 'brizo': _nile_brizo_url},
         'kovan': {'aquarius': _local_aqua_url, 'brizo': _local_brizo_url}
     }
     _net_name_map = {
@@ -94,18 +107,22 @@ class ExampleConfig:
     def _get_config(local_node=True, net_key=''):
         config = ExampleConfig.get_base_config(local_node=local_node)
         net_name = ExampleConfig._net_name_map.get(net_key)
-        if not local_node:
+        if net_name == 'kovan':
+            config['keeper-contracts']['keeper.url'] = ExampleConfig._kovan_keeper_url
+        elif not local_node:
             config['keeper-contracts']['keeper.url'] = ExampleConfig._remote_keeper_url % net_name
 
         if net_name:
             config['keeper-contracts']['secret_store.url'] = \
                 ExampleConfig._duero_secret_store_url if net_name == 'duero' \
-                    else ExampleConfig._nile_secret_store_url
+                else ExampleConfig._nile_secret_store_url
 
             service_url = ExampleConfig._net_to_services_url[net_name]
-            config['resources']['aquarius.url'] = service_url % 'aquarius'
-            config['resources']['brizo.url'] = service_url % 'brizo'
+            config['resources']['aquarius.url'] = service_url['aquarius']
+            config['resources']['brizo.url'] = service_url['brizo']
 
+        # parity_url maybe different than the keeper_url
+        config['keeper-contracts']['parity.url'] = ExampleConfig._parity_url
         return config
 
     @staticmethod

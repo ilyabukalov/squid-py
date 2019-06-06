@@ -43,7 +43,7 @@ class EventFilter:
                 if logs:
                     return logs
             except ValueError as e:
-                logger.debug(f'Got error fetching event logs: {str(e)}')
+                # logger.debug(f'Got error fetching event logs: {str(e)}')
                 if 'Filter not found' in str(e):
                     self._create_filter()
                 else:
