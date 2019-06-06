@@ -29,6 +29,11 @@ def fulfill_escrow_reward_condition(event, agreement_id, service_agreement, pric
     :param condition_ids: is a list of bytes32 content-addressed Condition IDs, bytes32
     :return:
     """
+    if not event:
+        logger.warning(f'`fulfill_escrow_reward_condition` got empty event: '
+                       f'event listener timed out.')
+        return
+
     logger.debug(f"release reward after event {event}.")
     access_id, lock_id = condition_ids[:2]
     logger.debug(f'fulfill_escrow_reward_condition: '

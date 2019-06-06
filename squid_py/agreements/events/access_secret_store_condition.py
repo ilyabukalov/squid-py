@@ -24,6 +24,11 @@ def fulfill_access_secret_store_condition(event, agreement_id, did, service_agre
     :param consumer_address: ethereum account address of consumer, hex str
     :param publisher_account: Account instance of the publisher
     """
+    if not event:
+        logger.debug(f'`fulfill_access_secret_store_condition` got empty event: '
+                     f'event listener timed out.')
+        return
+
     logger.debug(f"grant access after event {event}.")
     name_to_parameter = {param.name: param for param in
                          service_agreement.condition_by_name['accessSecretStore'].parameters}

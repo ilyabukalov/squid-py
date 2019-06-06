@@ -18,6 +18,10 @@ def fulfill_lock_reward_condition(event, agreement_id, price, consumer_account):
     :param price: Asset price, int
     :param consumer_account: Account instance of the consumer
     """
+    if not event:
+        logger.warning(f'`fulfill_lock_reward_condition` got empty event: event listener timed out.')
+        return
+
     logger.debug(f"about to lock reward after event {event}.")
     keeper = Keeper.get_instance()
     tx_hash = None
