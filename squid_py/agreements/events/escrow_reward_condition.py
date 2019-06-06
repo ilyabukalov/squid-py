@@ -43,10 +43,11 @@ def fulfill_escrow_reward_condition(event, agreement_id, service_agreement, pric
                  f'publisher={publisher_account.address},'
                  f'conditionIds={condition_ids}')
     assert price == service_agreement.get_price(), 'price mismatch.'
+    assert isinstance(price, int), f'price expected to be int type, got type "{type(price)}"'
     try:
         Keeper.get_instance().escrow_reward_condition.fulfill(
             agreement_id,
-            int(price),
+            price,
             publisher_account.address,
             consumer_address,
             lock_id,
