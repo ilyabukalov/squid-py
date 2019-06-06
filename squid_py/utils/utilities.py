@@ -2,6 +2,7 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
+import os
 import uuid
 from collections import namedtuple
 
@@ -9,7 +10,9 @@ from eth_keys import KeyAPI
 from eth_utils import big_endian_to_int
 from web3.utils.encoding import to_bytes
 
+from squid_py import Account
 from squid_py.keeper.utils import generate_multi_value_hash
+from squid_py.keeper.web3_provider import Web3Provider
 
 Signature = namedtuple('Signature', ('v', 'r', 's'))
 
@@ -121,3 +124,42 @@ def split_signature(web3, signature):
         v = 27 + v % 2
 
     return Signature(v, r, s)
+
+
+def get_account(config, index, keeper=None):
+    name = 'PARITY_ADDRESS' if not index else f'PARITY_ADDRESS{index}'
+    config_name = 'parity.address' if not index else f'parity.address{index}'
+    pswrd_name = 'PARITY_PASSWORD' if not index else f'PARITY_PASSWORD{index}'
+    keyfile_name = 'PARITY_KEYFILE' if not index else f'PARITY_KEYFILE{index}'
+
+    address = os.getenv(name)
+    if not address:
+        acc = get_account_from_config(config, config_name)
+        address = acc.address if acc else None
+
+    if address:
+        pswrd = os.getenv(pswrd_name)
+        if not pswrd:
+            pswrd = os.getenv(f'{address}_PASSWORD')
+        key_file = os.getenv(keyfile_name)
+        if not key_file:
+            key_file = os.getenv(f'{address}_KEYFILE')
+
+        return Account(Web3Provider.get_web3().toChecksumAddress(address), pswrd, key_file)
+
+    acc = get_account_from_config(config, config_name)
+    if acc is None and keeper is not None:
+        acc = Account(keeper.accounts[index])
+    return acc
+
+
+def get_account_from_config(config, config_account_key, keeper):
+    address = None
+    if config.has_option('keeper-contracts', config_account_key):
+        address = config.get('keeper-contracts', config_account_key)
+        address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
+
+    if not (address and address in keeper.accounts):
+        return None
+
+    return Account(address)

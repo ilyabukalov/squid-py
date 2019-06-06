@@ -7,7 +7,6 @@ import pathlib
 
 from examples import ExampleConfig
 from squid_py import ConfigProvider
-from squid_py.accounts.account import Account
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.ddo.ddo import DDO
 from squid_py.ddo.metadata import Metadata
@@ -18,6 +17,7 @@ from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from squid_py.utils.utilities import prepare_prefixed_hash
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.mocks.secret_store_mock import SecretStoreMock
+from squid_py.utils.utilities import get_account
 
 PUBLISHER_INDEX = 1
 CONSUMER_INDEX = 0
@@ -51,39 +51,12 @@ def make_ocean_instance(account_index):
     return ocn
 
 
-def _get_account(config, index=0):
-    name = 'PARITY_ADDRESS' if not index else f'PARITY_ADDRESS{index}'
-    config_name = 'parity.address' if not index else f'parity.address{index}'
-    pswrd_name = 'PARITY_PASSWORD' if not index else f'PARITY_PASSWORD{index}'
-    keyfile_name = 'PARITY_KEYFILE' if not index else f'PARITY_KEYFILE{index}'
-
-    address = os.getenv(name)
-    if not address:
-        acc = get_account_from_config(config, config_name)
-        address = acc.address if acc else None
-
-    if address:
-        pswrd = os.getenv(pswrd_name)
-        if not pswrd:
-            pswrd = os.getenv(f'{address}_PASSWORD')
-        key_file = os.getenv(keyfile_name)
-        if not key_file:
-            key_file = os.getenv(f'{address}_KEYFILE')
-
-        return Account(Web3Provider.get_web3().toChecksumAddress(address), pswrd, key_file)
-
-    acc = get_account_from_config(config, config_name)
-    if acc is None:
-        acc = Account(Keeper.get_instance().accounts[index])
-    return acc
-
-
 def get_publisher_account(config):
-    return _get_account(config, 0)
+    return get_account(config, 0, Keeper.get_instance())
 
 
 def get_consumer_account(config):
-    return _get_account(config, 1)
+    return get_account(config, 1, Keeper.get_instance())
 
 
 def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
@@ -120,18 +93,6 @@ def get_consumer_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mo
         BrizoProvider.set_brizo_class(BrizoMock)
 
     return ocn
-
-
-def get_account_from_config(config, config_account_key):
-    address = None
-    if config.has_option('keeper-contracts', config_account_key):
-        address = config.get('keeper-contracts', config_account_key)
-        address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
-
-    if not (address and address in Keeper.get_instance().accounts):
-        return None
-
-    return Account(address)
 
 
 def get_ddo_sample():

@@ -1,5 +1,7 @@
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 class Wallet:
     """
@@ -23,8 +25,7 @@ class Wallet:
 
     """
     _last_tx_count = dict()
-
-    MIN_GAS_PRICE = 2000000000
+    MIN_GAS_PRICE = 1000000000
 
     def __init__(self, web3, key_file, password, address=None):
         self._web3 = web3
@@ -60,14 +61,14 @@ class Wallet:
         private_key = self.__read_key()
         account = self._web3.eth.account.privateKeyToAccount(private_key)
         nonce = Wallet._get_nonce(self._web3, account.address)
-        logging.debug(f'`Wallet` signing tx: sender address: {account.address} nonce: {nonce}, '
-                      f'gasprice: {self._web3.eth.gasPrice}')
+        logger.debug(f'`Wallet` signing tx: sender address: {account.address} nonce: {nonce}, '
+                     f'gasprice: {self._web3.eth.gasPrice}')
         gas_price = int(self._web3.eth.gasPrice / 100)
         gas_price = max(gas_price, self.MIN_GAS_PRICE)
         tx['nonce'] = nonce
         tx['gasPrice'] = gas_price
         signed_tx = self._web3.eth.account.signTransaction(tx, private_key)
-        logging.debug(f'`Wallet` signed tx is {signed_tx}')
+        logger.debug(f'`Wallet` signed tx is {signed_tx}')
         return signed_tx.rawTransaction
 
     def sign(self, msg_hash):

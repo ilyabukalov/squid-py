@@ -14,7 +14,8 @@ from squid_py.config_provider import ConfigProvider
 from squid_py.ddo.ddo import DDO
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
-from tests.resources.helper_functions import (get_account_from_config, get_publisher_account,
+from squid_py.utils.utilities import get_account_from_config
+from tests.resources.helper_functions import (get_publisher_account,
                                               get_registered_ddo, log_event)
 
 
