@@ -24,9 +24,11 @@ class OceanConditions:
         self._keeper.dispenser.request_tokens(amount, account)
         self._keeper.token.token_approve(self._keeper.lock_reward_condition.address, amount,
                                          account)
-        return self._keeper.lock_reward_condition.fulfill(
+        tx_hash = self._keeper.lock_reward_condition.fulfill(
             agreement_id, self._keeper.escrow_reward_condition.address, amount, account
         )
+        receipt = self._keeper.lock_reward_condition.get_tx_receipt(tx_hash)
+        return bool(receipt and receipt.status == 1)
 
     def grant_access(self, agreement_id, did, grantee_address, account):
         """
@@ -38,9 +40,11 @@ class OceanConditions:
         :param account: Account
         :return:
         """
-        return self._keeper.access_secret_store_condition.fulfill(
+        tx_hash = self._keeper.access_secret_store_condition.fulfill(
             agreement_id, add_0x_prefix(did_to_id(did)), grantee_address, account
         )
+        receipt = self._keeper.access_secret_store_condition.get_tx_receipt(tx_hash)
+        return bool(receipt and receipt.status == 1)
 
     def release_reward(self, agreement_id, amount, account):
         """
@@ -55,7 +59,7 @@ class OceanConditions:
         consumer, provider = self._keeper.escrow_access_secretstore_template.get_agreement_data(
             agreement_id)
         access_id, lock_id = agreement_values.condition_ids[:2]
-        return self._keeper.escrow_reward_condition.fulfill(
+        tx_hash = self._keeper.escrow_reward_condition.fulfill(
             agreement_id,
             amount,
             provider,
@@ -64,6 +68,8 @@ class OceanConditions:
             access_id,
             account
         )
+        receipt = self._keeper.escrow_reward_condition.get_tx_receipt(tx_hash)
+        return bool(receipt and receipt.status == 1)
 
     def refund_reward(self, agreement_id, amount, account):
         """

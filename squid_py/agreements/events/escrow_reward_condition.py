@@ -11,6 +11,7 @@ from squid_py.brizo import BrizoProvider
 from squid_py.did import did_to_id
 from squid_py.did_resolver.did_resolver import DIDResolver
 from squid_py.keeper import Keeper
+from squid_py.keeper.utils import process_tx_receipt
 from squid_py.secret_store import SecretStoreProvider
 
 logger = logging.getLogger(__name__)
@@ -45,7 +46,8 @@ def fulfill_escrow_reward_condition(event, agreement_id, service_agreement, pric
     assert price == service_agreement.get_price(), 'price mismatch.'
     assert isinstance(price, int), f'price expected to be int type, got type "{type(price)}"'
     try:
-        Keeper.get_instance().escrow_reward_condition.fulfill(
+        escrow_condition = Keeper.get_instance().escrow_reward_condition
+        tx_hash = escrow_condition.fulfill(
             agreement_id,
             price,
             publisher_account.address,
@@ -53,6 +55,11 @@ def fulfill_escrow_reward_condition(event, agreement_id, service_agreement, pric
             lock_id,
             access_id,
             publisher_account
+        )
+        process_tx_receipt(
+            tx_hash,
+            getattr(escrow_condition.contract.events, escrow_condition.FULFILLED_EVENT)(),
+            'EscrowReward.Fulfilled'
         )
     except Exception as e:
         logger.error(f'Error when doing escrow_reward_condition.fulfill: {e}', exc_info=1)
@@ -82,7 +89,8 @@ def refund_reward(event, agreement_id, did, service_agreement, price, consumer_a
     assert document_id == asset_id, f'document_id {document_id} <=> asset_id {asset_id} mismatch.'
     assert price == service_agreement.get_price(), 'price mismatch.'
     try:
-        Keeper.get_instance().escrow_reward_condition.fulfill(
+        escrow_condition = Keeper.get_instance().escrow_reward_condition
+        tx_hash = escrow_condition.fulfill(
             agreement_id,
             price,
             publisher_address,
@@ -90,6 +98,11 @@ def refund_reward(event, agreement_id, did, service_agreement, price, consumer_a
             lock_id,
             access_id,
             consumer_account
+        )
+        process_tx_receipt(
+            tx_hash,
+            getattr(escrow_condition.contract.events, escrow_condition.FULFILLED_EVENT)(),
+            'EscrowReward.Fulfilled'
         )
     except Exception as e:
         logger.error(f'Error when doing escrow_reward_condition.fulfills: {e}',  exc_info=1)
