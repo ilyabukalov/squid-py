@@ -183,11 +183,11 @@ class OceanAssets:
         if registered_on_chain is False:
             logger.warning(f'Registering {did} on-chain failed.')
             return None
-        logger.info(f'DDO with DID {did} successfully registered on chain.')
+        logger.info(f'Successfully registered DDO (DID={did}) on chain.')
         try:
             # publish the new ddo in ocean-db/Aquarius
             response = self._get_aquarius().publish_asset_ddo(ddo)
-            logger.debug('Asset/ddo published successfully in aquarius.')
+            logger.info('Asset/ddo published successfully in aquarius.')
         except ValueError as ve:
             raise ValueError(f'Invalid value to publish in the metadata: {str(ve)}')
         except Exception as e:

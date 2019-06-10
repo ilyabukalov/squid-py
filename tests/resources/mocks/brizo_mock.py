@@ -29,46 +29,7 @@ class BrizoMock(object):
             from tests.resources.helper_functions import get_publisher_account
             self.account = get_publisher_account(self.ocean_instance.config)
 
-        ocean_instance.agreements.subscribe_events(
-            self.account.address, self._handle_agreement_created)
-
-    def _handle_agreement_created(self, event, *_):
-        if not event or not event.args:
-            return
-
-        # print(f'Start handle_agreement_created: event_args={event.args}')
-        ocean = self.ocean_instance
-        config = ocean.config
-        provider_account = self.account
-        assert provider_account.address == event.args["_accessProvider"]
-        did = id_to_did(event.args["_did"])
-        agreement_id = Web3Provider.get_web3().toHex(event.args["_agreementId"])
-
-        ddo = ocean.assets.resolve(did)
-        sa = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, ddo)
-
-        condition_ids = sa.generate_agreement_condition_ids(
-            agreement_id=agreement_id,
-            asset_id=add_0x_prefix(did_to_id(did)),
-            consumer_address=event.args["_accessConsumer"],
-            publisher_address=ddo.publisher,
-            keeper=Keeper.get_instance())
-
-        am = AgreementsManager(
-            config, self.ocean_instance.keeper,
-            EventsManager(self.ocean_instance.keeper), config.storage_path)
-        am.register_publisher(
-            event.args["_accessConsumer"],
-            agreement_id,
-            did,
-            sa,
-            sa.service_definition_id,
-            sa.get_price(),
-            provider_account,
-            condition_ids
-        )
-
-        # print(f'handle_agreement_created() -- done registering event listeners.')
+        ocean_instance.agreements.watch_provider_events(self.account)
 
     def initialize_service_agreement(self, did, agreement_id, service_definition_id,
                                      signature, account_address, purchase_endpoint):

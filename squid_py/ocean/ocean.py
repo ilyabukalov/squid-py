@@ -92,7 +92,6 @@ class Ocean:
 
         logger.debug('Squid Ocean instance initialized: ')
         logger.debug(f'\tOther accounts: {sorted([a.address for a in self.accounts.list()])}')
-        logger.debug(f'\taquarius: {self._aquarius.url}')
         logger.debug(f'\tDIDRegistry @ {self._keeper.did_registry.address}')
 
     @property
