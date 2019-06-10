@@ -4,8 +4,7 @@
 
 import logging
 
-from squid_py.agreements.register_service_agreement import (register_service_agreement_consumer,
-                                                            register_service_agreement_publisher)
+from squid_py.agreements.manager import AgreementsManager
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.did import did_to_id
@@ -100,18 +99,13 @@ class OceanAgreements:
         condition_ids = service_agreement.generate_agreement_condition_ids(
             agreement_id, asset.asset_id, consumer_account.address, publisher_address, self._keeper)
 
-        register_service_agreement_consumer(
-            self._config.storage_path,
-            publisher_address,
-            agreement_id,
-            did,
-            service_agreement,
-            service_definition_id,
-            service_agreement.get_price(),
-            asset.encrypted_files,
-            consumer_account,
-            condition_ids,
-            self._asset_consumer.download if auto_consume else None,
+        am = AgreementsManager(
+            self._config, self._keeper, EventsManager(self._keeper), self._config.storage_path)
+        am.register_consumer(
+            publisher_address, agreement_id, did, service_agreement,
+            service_definition_id, service_agreement.get_price(), asset.encrypted_files,
+            consumer_account, condition_ids,
+            self._asset_consumer.download if auto_consume else None
         )
 
         return BrizoProvider.get_brizo().initialize_service_agreement(
@@ -222,33 +216,23 @@ class OceanAgreements:
             )
 
         if success:
+            am = AgreementsManager(
+                self._config, self._keeper, EventsManager(self._keeper), self._config.storage_path)
+
             # subscribe to events related to this agreement_id
             if consumer_address == account.address:
-                register_service_agreement_consumer(
-                    self._config.storage_path,
-                    publisher_address,
-                    agreement_id,
-                    did,
-                    service_agreement,
-                    service_definition_id,
-                    service_agreement.get_price(),
-                    asset.encrypted_files,
-                    account,
-                    condition_ids,
+                am.register_consumer(
+                    publisher_address, agreement_id, did,
+                    service_agreement, service_definition_id, service_agreement.get_price(),
+                    asset.encrypted_files, account, condition_ids,
                     self._asset_consumer.download if auto_consume else None
                 )
 
             else:
-                register_service_agreement_publisher(
-                    self._config.storage_path,
-                    consumer_address,
-                    agreement_id,
-                    did,
-                    service_agreement,
-                    service_definition_id,
-                    service_agreement.get_price(),
-                    account,
-                    condition_ids
+                am.register_publisher(
+                    consumer_address, agreement_id, did,
+                    service_agreement, service_definition_id, service_agreement.get_price(),
+                    account, condition_ids
                 )
 
         return success

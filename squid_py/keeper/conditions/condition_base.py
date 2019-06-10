@@ -71,7 +71,7 @@ class ConditionBase(ContractBase):
         :param wait: if true block the listener until get the event, bool
         :return:
         """
-        logger.info(
+        logger.debug(
             f'Subscribing {self.FULFILLED_EVENT} event with agreement id {agreement_id}.')
         return self.subscribe_to_event(
             self.FULFILLED_EVENT,

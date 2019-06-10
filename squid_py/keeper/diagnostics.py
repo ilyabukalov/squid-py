@@ -5,7 +5,6 @@ import logging
 import os
 
 from squid_py import OceanKeeperContractsNotFound
-from squid_py.config_provider import ConfigProvider
 from squid_py.keeper import Keeper
 from squid_py.keeper.contract_handler import ContractHandler
 
@@ -22,7 +21,7 @@ class Diagnostics:
 
         :raise Exception: raise exception if the contracts are not deployed correctly.
         """
-        artifacts_path = ConfigProvider.get_config().keeper_path
+        artifacts_path = Keeper.get_instance().artifacts_path
         logger.info(f'Keeper contract artifacts (JSON abi files) at: {artifacts_path}')
 
         if os.environ.get('KEEPER_NETWORK_NAME'):

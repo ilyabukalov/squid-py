@@ -109,7 +109,8 @@ def refund_reward(event, agreement_id, did, service_agreement, price, consumer_a
         raise e
 
 
-def consume_asset(event, agreement_id, did, service_agreement, consumer_account, consume_callback):
+def consume_asset(event, agreement_id, did, service_agreement, consumer_account, consume_callback,
+                  secret_store_url, parity_url, downloads_path):
     """
     Consumption of an asset after get the event call.
 
@@ -119,12 +120,14 @@ def consume_asset(event, agreement_id, did, service_agreement, consumer_account,
     :param service_agreement: ServiceAgreement instance
     :param consumer_account: Account instance of the consumer
     :param consume_callback:
+    :param secret_store_url: str URL of secret store node for retrieving decryption keys
+    :param parity_url: str URL of parity client to use for secret store encrypt/decrypt
+    :param downloads_path: str path to save downloaded files
     """
     logger.debug(f"consuming asset after event {event}.")
     if consume_callback:
-        config = ConfigProvider.get_config()
         secret_store = SecretStoreProvider.get_secret_store(
-            config.secret_store_url, config.parity_url, consumer_account
+            secret_store_url, parity_url, consumer_account
         )
         brizo = BrizoProvider.get_brizo()
 
@@ -133,7 +136,7 @@ def consume_asset(event, agreement_id, did, service_agreement, consumer_account,
             service_agreement.service_definition_id,
             DIDResolver(Keeper.get_instance().did_registry).resolve(did),
             consumer_account,
-            ConfigProvider.get_config().downloads_path,
+            downloads_path,
             brizo,
             secret_store
         )

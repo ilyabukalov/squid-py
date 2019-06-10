@@ -12,10 +12,11 @@ class Web3Provider(object):
     _web3 = None
 
     @staticmethod
-    def get_web3():
+    def get_web3(config=None):
         """Return the web3 instance to interact with the ethereum client."""
         if Web3Provider._web3 is None:
-            config = ConfigProvider.get_config()
+            if not config:
+                config = ConfigProvider.get_config()
             provider = (
                 config.web3_provider
                 if config.web3_provider

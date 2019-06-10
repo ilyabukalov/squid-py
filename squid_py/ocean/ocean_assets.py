@@ -67,6 +67,8 @@ class OceanAssets:
             item is a dict of parameters and values required by the service
         :param providers: list of addresses of providers of this asset (a provider is
             an ethereum account that is authorized to provide asset services)
+        :param use_secret_store: bool indicate whether to use the secret store directly for
+            encrypting urls (Uses Brizo provider service if set to False)
         :return: DDO instance
         """
         assert isinstance(metadata, dict), f'Expected metadata of type dict, got {type(metadata)}'
@@ -118,7 +120,7 @@ class OceanAssets:
 
         # only assign if the encryption worked
         if files_encrypted:
-            logger.info(f'Content urls encrypted successfully {files_encrypted}')
+            logger.debug(f'Content urls encrypted successfully {files_encrypted}')
             index = 0
             for file in metadata_copy['base']['files']:
                 file['index'] = index

@@ -5,13 +5,13 @@ import os
 
 from eth_utils import add_0x_prefix
 
-from squid_py import ConfigProvider
-from squid_py.agreements.register_service_agreement import register_service_agreement_publisher
+from squid_py.agreements.manager import AgreementsManager
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.brizo.brizo import Brizo
 from squid_py.did import id_to_did, did_to_id
 from squid_py.keeper import Keeper
+from squid_py.keeper.events_manager import EventsManager
 from squid_py.keeper.web3_provider import Web3Provider
 
 
@@ -27,7 +27,7 @@ class BrizoMock(object):
         self.account = account
         if not account:
             from tests.resources.helper_functions import get_publisher_account
-            self.account = get_publisher_account(ConfigProvider.get_config())
+            self.account = get_publisher_account(self.ocean_instance.config)
 
         ocean_instance.agreements.subscribe_events(
             self.account.address, self._handle_agreement_created)
@@ -37,8 +37,8 @@ class BrizoMock(object):
             return
 
         # print(f'Start handle_agreement_created: event_args={event.args}')
-        config = ConfigProvider.get_config()
         ocean = self.ocean_instance
+        config = ocean.config
         provider_account = self.account
         assert provider_account.address == event.args["_accessProvider"]
         did = id_to_did(event.args["_did"])
@@ -53,8 +53,11 @@ class BrizoMock(object):
             consumer_address=event.args["_accessConsumer"],
             publisher_address=ddo.publisher,
             keeper=Keeper.get_instance())
-        register_service_agreement_publisher(
-            config.storage_path,
+
+        am = AgreementsManager(
+            config, self.ocean_instance.keeper,
+            EventsManager(self.ocean_instance.keeper), config.storage_path)
+        am.register_publisher(
             event.args["_accessConsumer"],
             agreement_id,
             did,
@@ -64,6 +67,7 @@ class BrizoMock(object):
             provider_account,
             condition_ids
         )
+
         # print(f'handle_agreement_created() -- done registering event listeners.')
 
     def initialize_service_agreement(self, did, agreement_id, service_definition_id,
