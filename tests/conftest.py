@@ -37,12 +37,12 @@ def consumer_ocean_instance():
 
 @pytest.fixture
 def publisher_ocean_instance_brizo():
-    return get_publisher_ocean_instance(use_brizo_mock=False)
+    return get_publisher_ocean_instance(use_brizo_mock=True)
 
 
 @pytest.fixture
 def consumer_ocean_instance_brizo():
-    return get_consumer_ocean_instance(use_brizo_mock=False)
+    return get_consumer_ocean_instance(use_brizo_mock=True)
 
 
 @pytest.fixture
