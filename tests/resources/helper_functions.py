@@ -42,7 +42,7 @@ def init_ocn_tokens(ocn, account, amount=100):
 
 def make_ocean_instance(account_index):
     config_dict = ExampleConfig.get_config_dict()
-    config_dict['resources']['storage_path'] = f'squid_py.{account_index}.db'
+    config_dict['resources']['storage.path'] = f'squid_py.{account_index}.db'
     ocn = Ocean(Config(options_dict=config_dict))
     account = ocn.accounts.list()[account_index]
     if account_index == 0:
@@ -98,7 +98,7 @@ def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_m
 
 def get_consumer_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
     ocn = make_ocean_instance(CONSUMER_INDEX)
-    account = get_consumer_account(ConfigProvider.get_config())
+    account = get_consumer_account(ocn.config)
     if account.address in ocn.accounts.accounts_addresses:
         ocn.main_account = account
     else:
