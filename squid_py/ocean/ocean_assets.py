@@ -137,7 +137,6 @@ class OceanAssets:
         if not service_descriptors:
             service_descriptors = [ServiceDescriptor.authorization_service_descriptor(
                 self._config.secret_store_url)]
-            brizo = BrizoProvider.get_brizo()
             service_descriptors += [ServiceDescriptor.access_service_descriptor(
                 metadata[MetadataBase.KEY]['price'],
                 brizo.get_purchase_endpoint(self._config),
@@ -151,7 +150,6 @@ class OceanAssets:
                 service_descriptors += [ServiceDescriptor.authorization_service_descriptor(
                     self._config.secret_store_url)]
             else:
-                brizo = BrizoProvider.get_brizo()
                 service_descriptors += [ServiceDescriptor.access_service_descriptor(
                     metadata[MetadataBase.KEY]['price'],
                     brizo.get_purchase_endpoint(self._config),

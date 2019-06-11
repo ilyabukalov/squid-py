@@ -6,7 +6,7 @@ import os
 import pathlib
 
 from examples import ExampleConfig
-from squid_py import ConfigProvider
+from squid_py import ConfigProvider, Config
 from squid_py.accounts.account import Account
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.ddo.ddo import DDO
@@ -41,7 +41,9 @@ def init_ocn_tokens(ocn, account, amount=100):
 
 
 def make_ocean_instance(account_index):
-    ocn = Ocean(ExampleConfig.get_config())
+    config_dict = ExampleConfig.get_config_dict()
+    config_dict['resources']['storage_path'] = f'squid_py.{account_index}.db'
+    ocn = Ocean(Config(options_dict=config_dict))
     account = ocn.accounts.list()[account_index]
     if account_index == 0:
         account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password')
@@ -77,7 +79,8 @@ def get_consumer_account(config):
 
 def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
     ocn = make_ocean_instance(PUBLISHER_INDEX)
-    account = get_publisher_account(ConfigProvider.get_config())
+    ConfigProvider.set_config(ocn.config)
+    account = get_publisher_account(ocn.config)
     if account.address in ocn.accounts.accounts_addresses:
         ocn.main_account = account
     else:
