@@ -5,6 +5,8 @@
 import logging
 import time
 
+import pytest
+
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_factory import ServiceDescriptor, ServiceTypes
 from squid_py.ddo.ddo import DDO
@@ -155,6 +157,7 @@ def test_owner_assets(publisher_ocean_instance):
     assert len(ocn.assets.owner_assets(acct.address)) == assets_owned + 1
 
 
+@pytest.mark.skip
 def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
     ocn = publisher_ocean_instance
     acct = consumer_ocean_instance.main_account
