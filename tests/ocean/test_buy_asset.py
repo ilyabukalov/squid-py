@@ -17,7 +17,7 @@ from squid_py.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import (get_account_from_config, get_publisher_account,
                                               get_registered_ddo, log_event)
 
-
+@pytest.mark.skip
 def test_buy_asset(consumer_ocean_instance_brizo, publisher_ocean_instance_brizo):
     config = ExampleConfig.get_config()
     ConfigProvider.set_config(config)

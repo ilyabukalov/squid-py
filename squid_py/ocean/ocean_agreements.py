@@ -4,11 +4,14 @@
 
 import logging
 
-from squid_py.agreements.register_service_agreement import (register_service_agreement_consumer,
-                                                            register_service_agreement_publisher)
+from eth_utils import add_0x_prefix
+
+from squid_py.agreements.manager import AgreementsManager
 from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.service_types import ServiceTypes
 from squid_py.brizo.brizo_provider import BrizoProvider
-from squid_py.did import did_to_id
+from squid_py.data_store.agreements import AgreementsStorage
+from squid_py.did import did_to_id, id_to_did
 from squid_py.exceptions import (OceanInvalidAgreementTemplate,
                                  OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists)
 from squid_py.keeper.web3_provider import Web3Provider
@@ -100,18 +103,13 @@ class OceanAgreements:
         condition_ids = service_agreement.generate_agreement_condition_ids(
             agreement_id, asset.asset_id, consumer_account.address, publisher_address, self._keeper)
 
-        register_service_agreement_consumer(
-            self._config.storage_path,
-            publisher_address,
-            agreement_id,
-            did,
-            service_agreement,
-            service_definition_id,
-            service_agreement.get_price(),
-            asset.encrypted_files,
-            consumer_account,
-            condition_ids,
-            self._asset_consumer.download if auto_consume else None,
+        am = AgreementsManager(
+            self._config, self._keeper, EventsManager(self._keeper), self._config.storage_path)
+        am.register_consumer(
+            publisher_address, agreement_id, did, service_agreement,
+            service_definition_id, service_agreement.get_price(), asset.encrypted_files,
+            consumer_account, condition_ids,
+            self._asset_consumer.download if auto_consume else None
         )
 
         return BrizoProvider.get_brizo().initialize_service_agreement(
@@ -222,33 +220,23 @@ class OceanAgreements:
             )
 
         if success:
+            am = AgreementsManager(
+                self._config, self._keeper, EventsManager(self._keeper), self._config.storage_path)
+
             # subscribe to events related to this agreement_id
             if consumer_address == account.address:
-                register_service_agreement_consumer(
-                    self._config.storage_path,
-                    publisher_address,
-                    agreement_id,
-                    did,
-                    service_agreement,
-                    service_definition_id,
-                    service_agreement.get_price(),
-                    asset.encrypted_files,
-                    account,
-                    condition_ids,
+                am.register_consumer(
+                    publisher_address, agreement_id, did,
+                    service_agreement, service_definition_id, service_agreement.get_price(),
+                    asset.encrypted_files, account, condition_ids,
                     self._asset_consumer.download if auto_consume else None
                 )
 
             else:
-                register_service_agreement_publisher(
-                    self._config.storage_path,
-                    consumer_address,
-                    agreement_id,
-                    did,
-                    service_agreement,
-                    service_definition_id,
-                    service_agreement.get_price(),
-                    account,
-                    condition_ids
+                am.register_publisher(
+                    consumer_address, agreement_id, did,
+                    service_agreement, service_definition_id, service_agreement.get_price(),
+                    account, condition_ids
                 )
 
         return success
@@ -375,3 +363,68 @@ class OceanAgreements:
             None,
             pin_event=True
         )
+
+    def watch_provider_events(self, provider_account):
+        """Starts listening to events that an agreement provider needs to act on to fulfill
+        it's part of the Service Agreement flow.
+
+        This function provides default behaviour and assumes service agreement of type 'Access'.
+
+        :param provider_account: Account instance
+        :return: None
+        """
+        events_manager = EventsManager.get_instance(self._keeper)
+        events_manager.agreement_listener.add_event_filter(
+            '_accessProvider',
+            provider_account.address,
+            self._handle_agreement_created_event,
+            None,
+            (provider_account, self._config.storage_path),
+            None,
+            pin_event=True
+        )
+
+    def _handle_agreement_created_event(self, event, provider_account, storage_path, *_):
+        if not event or not event.args:
+            return
+
+        try:
+            agreement_id = Web3Provider.get_web3().toHex(event.args["_agreementId"])
+            ids = AgreementsStorage(storage_path).get_agreement_ids()
+            if ids:
+                # logger.info(f'got agreement ids: #{agreement_id}#, ##{ids}##, \nid in ids: {agreement_id in ids}')
+                if agreement_id in ids:
+                    logger.debug(f'handle_agreement_created: skipping service agreement {agreement_id} '
+                                 f'because it already been processed before.')
+                    return
+
+            logger.debug(f'Start handle_agreement_created: event_args={event.args}')
+            if provider_account.address != event.args["_accessProvider"]:
+                return
+
+            did = id_to_did(event.args["_did"])
+            ddo = self._asset_resolver.resolve(did)
+            sa = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, ddo)
+            condition_ids = sa.generate_agreement_condition_ids(
+                agreement_id=agreement_id,
+                asset_id=add_0x_prefix(did_to_id(did)),
+                consumer_address=event.args["_accessConsumer"],
+                publisher_address=ddo.publisher,
+                keeper=self._keeper
+            )
+            AgreementsManager(
+                self._config, self._keeper, EventsManager(self._keeper), storage_path
+            ).register_publisher(
+                event.args["_accessConsumer"],
+                agreement_id,
+                did,
+                sa,
+                sa.service_definition_id,
+                sa.get_price(),
+                provider_account,
+                condition_ids
+            )
+
+            logger.debug(f'handle_agreement_created() -- done registering event listeners.')
+        except Exception as e:
+            logger.error(f'Error in handle_agreement_created: {e}', exc_info=1)

@@ -24,7 +24,7 @@ class MultiEventListener(object):
         self.filter_key = filter_key
         self.from_block = from_block
         self.to_block = to_block
-        self._timeout = 60  # seconds
+        self._timeout = 600  # seconds
         self._stopped = True
         self._event_filters = dict()
         self._pinned_events = dict()

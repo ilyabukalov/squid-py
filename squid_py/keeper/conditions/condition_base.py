@@ -37,8 +37,7 @@ class ConditionBase(ContractBase):
         :return: true if the condition was successfully fulfilled, bool
         """
         tx_hash = self.send_transaction('fulfill', args, **kwargs)
-        receipt = self.get_tx_receipt(tx_hash)
-        return receipt.status == 1
+        return tx_hash
 
     def abort_by_timeout(self, condition_id):
         """
@@ -72,7 +71,7 @@ class ConditionBase(ContractBase):
         :param wait: if true block the listener until get the event, bool
         :return:
         """
-        logger.info(
+        logger.debug(
             f'Subscribing {self.FULFILLED_EVENT} event with agreement id {agreement_id}.')
         return self.subscribe_to_event(
             self.FULFILLED_EVENT,

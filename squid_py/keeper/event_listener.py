@@ -25,7 +25,7 @@ class EventListener(object):
         self.to_block = to_block
         self.event_filter = self.make_event_filter()
         self.event_filter.poll_interval = 0.5
-        self.timeout = 60  # seconds
+        self.timeout = 600  # seconds
         self.args = args
 
     def make_event_filter(self):
@@ -52,6 +52,9 @@ class EventListener(object):
         :param blocking: bool blocks this call until the event is detected
         :return: event if blocking is True and an event is received, otherwise returns None
         """
+        if blocking:
+            assert timeout is not None, '`timeout` argument is required when `blocking` is True.'
+
         events = []
         original_callback = callback
 
@@ -62,6 +65,7 @@ class EventListener(object):
 
         if blocking:
             callback = _callback
+
         # TODO Review where to close this threads.
         Thread(
             target=self.watch_one_event,

@@ -28,7 +28,7 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
         :param account: Account instance creating the agreement
         :return: bool
         """
-        logger.info(
+        logger.debug(
             f'Creating agreement {agreement_id} with did={did}, consumer={consumer_address}.')
         tx_hash = self.send_transaction(
             'createAgreement',
@@ -80,7 +80,7 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
         :param wait: if true block the listener until get the event, bool
         :return:
         """
-        logger.info(
+        logger.debug(
             f'Subscribing {self.AGREEMENT_CREATED_EVENT} event with agreement id {agreement_id}.')
         return self.subscribe_to_event(
             self.AGREEMENT_CREATED_EVENT,

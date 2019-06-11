@@ -73,8 +73,9 @@ def test_escrow_access_secret_store_template_flow(setup_agreements_enviroment):
     pub_token_balance = keeper.token.get_token_balance(publisher_acc.address)
     starting_balance = keeper.token.get_token_balance(keeper.escrow_reward_condition.address)
     keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_acc)
-    keeper.lock_reward_condition.fulfill(
+    tx_hash = keeper.lock_reward_condition.fulfill(
         agreement_id, keeper.escrow_reward_condition.address, price, consumer_acc)
+    keeper.lock_reward_condition.get_tx_receipt(tx_hash)
     event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         10,
@@ -84,13 +85,15 @@ def test_escrow_access_secret_store_template_flow(setup_agreements_enviroment):
     )
     assert event, 'no event for LockRewardCondition.Fulfilled'
     assert keeper.condition_manager.get_condition_state(lock_cond_id) == 2, ''
-    assert keeper.token \
-               .get_token_balance(keeper.escrow_reward_condition.address) == (
-                   price + starting_balance), ''
+    assert keeper.token.get_token_balance(
+        keeper.escrow_reward_condition.address
+    ) == (price + starting_balance), ''
 
     # Fulfill access_secret_store_condition
-    keeper.access_secret_store_condition.fulfill(
-        agreement_id, asset_id, consumer_acc.address, publisher_acc)
+    tx_hash = keeper.access_secret_store_condition.fulfill(
+        agreement_id, asset_id, consumer_acc.address, publisher_acc
+    )
+    keeper.access_secret_store_condition.get_tx_receipt(tx_hash)
     event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
         agreement_id,
         20,
@@ -102,11 +105,12 @@ def test_escrow_access_secret_store_template_flow(setup_agreements_enviroment):
     assert keeper.condition_manager.get_condition_state(access_cond_id) == 2, ''
 
     # Fulfill escrow_reward_condition
-    keeper.escrow_reward_condition.fulfill(
+    tx_hash = keeper.escrow_reward_condition.fulfill(
         agreement_id, price, publisher_acc.address,
         consumer_acc.address, lock_cond_id,
         access_cond_id, publisher_acc
     )
+    keeper.escrow_reward_condition.get_tx_receipt(tx_hash)
     event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         10,
@@ -116,10 +120,10 @@ def test_escrow_access_secret_store_template_flow(setup_agreements_enviroment):
     )
     assert event, 'no event for EscrowReward.Fulfilled'
     assert keeper.condition_manager.get_condition_state(escrow_cond_id) == 2, ''
-    assert keeper.token \
-               .get_token_balance(keeper.escrow_reward_condition.address) == starting_balance, ''
-    assert keeper.token \
-               .get_token_balance(publisher_acc.address) == (pub_token_balance + price), ''
+    assert keeper.token.get_token_balance(
+        keeper.escrow_reward_condition.address
+    ) == starting_balance, ''
+    assert keeper.token.get_token_balance(publisher_acc.address) == (pub_token_balance + price), ''
 
 
 @e2e_test

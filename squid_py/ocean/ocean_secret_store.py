@@ -16,9 +16,9 @@ class OceanSecretStore:
     def __init__(self, config):
         self._config = config
         if config.secret_store_url and config.parity_url and config.parity_address:
-            logger.info(f'\tSecretStore: url {config.secret_store_url}, '
-                        f'parity-client {config.parity_url}, '
-                        f'account {config.parity_address}')
+            logger.debug(f'\tSecretStore: url {config.secret_store_url}, '
+                         f'parity-client {config.parity_url}, '
+                         f'account {config.parity_address}')
 
         self._secret_store_url = config.secret_store_url
         self._parity_url = config.parity_url

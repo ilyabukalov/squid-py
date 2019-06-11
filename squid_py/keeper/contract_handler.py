@@ -89,7 +89,7 @@ class ContractHandler(object):
         abi = contract_definition['abi']
         contract = Web3Provider.get_web3().eth.contract(address=address, abi=abi)
         ContractHandler._contracts[contract_name] = (
-        contract, ConciseContract(contract), contract_definition['version'])
+            contract, ConciseContract(contract), contract_definition['version'])
         return ContractHandler._contracts[contract_name]
 
     @staticmethod

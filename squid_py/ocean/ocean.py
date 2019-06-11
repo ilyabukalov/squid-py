@@ -10,7 +10,6 @@ from squid_py.assets.asset_consumer import AssetConsumer
 from squid_py.config_provider import ConfigProvider
 from squid_py.did_resolver.did_resolver import DIDResolver
 from squid_py.keeper import Keeper
-from squid_py.keeper.diagnostics import Diagnostics
 from squid_py.log import setup_logging
 from squid_py.ocean.ocean_accounts import OceanAccounts
 from squid_py.ocean.ocean_agreements import OceanAgreements
@@ -64,10 +63,10 @@ class Ocean:
         """
         # Configuration information for the market is stored in the Config class
         # config = Config(filename=config_file, options_dict=config_dict)
-        if config:
-            ConfigProvider.set_config(config)
+        if not config:
+            config = ConfigProvider.get_config()
 
-        self._config = ConfigProvider.get_config()
+        self._config = config
         self._keeper = Keeper.get_instance()
         self._did_resolver = DIDResolver(self._keeper.did_registry)
 
@@ -77,13 +76,13 @@ class Ocean:
         self.secret_store = OceanSecretStore(self._config)
         self.templates = OceanTemplates(
             self._keeper,
-            ConfigProvider.get_config()
+            config
         )
         self.agreements = self._make_ocean_agreements()
         self.assets = OceanAssets(
             self._keeper,
             self._did_resolver,
-            self._make_ocean_agreements(),
+            self.agreements,
             AssetConsumer,
             self._config
         )
@@ -91,13 +90,13 @@ class Ocean:
         self.ocean_providers = OceanProviders(self._keeper, self._did_resolver, self._config)
         self.auth = OceanAuth(self._keeper, self._config.storage_path)
 
-        # Verify keeper contracts
-        Diagnostics.verify_contracts()
-        # Diagnostics.check_deployed_agreement_templates()
-        logger.info('Squid Ocean instance initialized: ')
-        logger.info(f'\tOther accounts: {sorted([a.address for a in self.accounts.list()])}')
-        # logger.info(f'\taquarius: {self._aquarius.url}')
-        logger.info(f'\tDIDRegistry @ {self._keeper.did_registry.address}')
+        logger.debug('Squid Ocean instance initialized: ')
+        logger.debug(f'\tOther accounts: {sorted([a.address for a in self.accounts.list()])}')
+        logger.debug(f'\tDIDRegistry @ {self._keeper.did_registry.address}')
+
+    @property
+    def config(self):
+        return self._config
 
     @property
     def keeper(self):
@@ -109,7 +108,7 @@ class Ocean:
             self._keeper,
             self._did_resolver,
             AssetConsumer,
-            ConfigProvider.get_config()
+            self._config
         )
 
     @deprecated("Use ocean.accounts.list")
