@@ -157,7 +157,6 @@ def test_owner_assets(publisher_ocean_instance):
     assert len(ocn.assets.owner_assets(acct.address)) == assets_owned + 1
 
 
-@pytest.mark.skip
 def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
     ocn = publisher_ocean_instance
     acct = consumer_ocean_instance.main_account
