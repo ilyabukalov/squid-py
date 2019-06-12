@@ -41,36 +41,22 @@ def init_ocn_tokens(ocn, account, amount=100):
     )
 
 
-def make_ocean_instance(account_index):
-    config_dict = ExampleConfig.get_config_dict()
-    config_dict['resources']['storage.path'] = f'squid_py.{account_index}.db'
-    ocn = Ocean(Config(options_dict=config_dict))
-    account = ocn.accounts.list()[account_index]
-    if account_index == 0:
-        account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password')
-    else:
-        account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password1')
-
-    return ocn
-
-
 def get_publisher_account(config):
+    # address = "0x00bd138abd70e2f00903268f3db08f2d25677c9e"\
+    # os.putenv('PARITY_ADDRESS', address)
     return get_account(config, 0, Keeper.get_instance())
 
 
 def get_consumer_account(config):
+    # address = "0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0"
+    # os.putenv('PARITY_ADDRESS1', address)
     return get_account(config, 1, Keeper.get_instance())
 
 
 def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
-    ocn = make_ocean_instance(PUBLISHER_INDEX)
-    ConfigProvider.set_config(ocn.config)
-    account = get_publisher_account(ocn.config)
-    if account.address in ocn.accounts.accounts_addresses:
-        ocn.main_account = account
-    else:
-        ocn.main_account = ocn.accounts.list()[0]
-
+    ocn = Ocean()
+    account = get_publisher_account(ConfigProvider.get_config())
+    ocn.main_account = account
     if init_tokens:
         init_ocn_tokens(ocn, ocn.main_account)
     if use_ss_mock:
@@ -82,13 +68,9 @@ def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_m
 
 
 def get_consumer_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
-    ocn = make_ocean_instance(CONSUMER_INDEX)
-    account = get_consumer_account(ocn.config)
-    if account.address in ocn.accounts.accounts_addresses:
-        ocn.main_account = account
-    else:
-        ocn.main_account = ocn.accounts.list()[1]
-
+    ocn = Ocean()
+    account = get_consumer_account(ConfigProvider.get_config())
+    ocn.main_account = account
     if init_tokens:
         init_ocn_tokens(ocn, ocn.main_account)
     if use_ss_mock:

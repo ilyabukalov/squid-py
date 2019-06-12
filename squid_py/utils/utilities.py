@@ -11,6 +11,7 @@ from eth_utils import big_endian_to_int
 from web3.utils.encoding import to_bytes
 
 from squid_py import Account
+from squid_py.keeper import Keeper
 from squid_py.keeper.utils import generate_multi_value_hash
 from squid_py.keeper.web3_provider import Web3Provider
 
@@ -133,8 +134,8 @@ def get_account(config, index, keeper=None):
     keyfile_name = 'PARITY_KEYFILE' if not index else f'PARITY_KEYFILE{index}'
 
     address = os.getenv(name)
+    acc = get_account_from_config(config, config_name, pswrd_name)
     if not address:
-        acc = get_account_from_config(config, config_name)
         address = acc.address if acc else None
 
     if address:
@@ -147,19 +148,19 @@ def get_account(config, index, keeper=None):
 
         return Account(Web3Provider.get_web3().toChecksumAddress(address), pswrd, key_file)
 
-    acc = get_account_from_config(config, config_name)
     if acc is None and keeper is not None:
         acc = Account(keeper.accounts[index])
     return acc
 
 
-def get_account_from_config(config, config_account_key, keeper):
+def get_account_from_config(config, config_account_key, config_account_password_key):
     address = None
     if config.has_option('keeper-contracts', config_account_key):
         address = config.get('keeper-contracts', config_account_key)
         address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
 
-    if not (address and address in keeper.accounts):
-        return None
+    password = None
+    if address and config.has_option('keeper-contracts', config_account_password_key):
+        password = config.get('keeper-contracts', config_account_password_key)
 
-    return Account(address)
+    return Account(address, password)
