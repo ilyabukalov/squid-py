@@ -179,6 +179,12 @@ def test_retire_ddo(asset1):
 
 
 @e2e_test
+def test_retire_all_ddos(asset1):
+    aquarius.retire_all_assets()
+    assert len(aquarius.list_assets()) == 0
+
+
+@e2e_test
 def test_retire_not_published_did():
     with pytest.raises(Exception):
         aquarius.retire_asset_ddo('did:op:not_registered')
