@@ -11,7 +11,6 @@ from eth_utils import big_endian_to_int
 from web3.utils.encoding import to_bytes
 
 from squid_py import Account
-from squid_py.keeper import Keeper
 from squid_py.keeper.utils import generate_multi_value_hash
 from squid_py.keeper.web3_provider import Web3Provider
 
