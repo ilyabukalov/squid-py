@@ -4,6 +4,7 @@
 
 import logging
 
+from web3.contract import ContractEvent
 from web3.utils.threads import Timeout
 
 from squid_py.keeper.web3_provider import Web3Provider
@@ -28,15 +29,21 @@ def generate_multi_value_hash(types, values):
     )
 
 
-def process_tx_receipt(tx_hash, event, event_name):
+def process_tx_receipt(tx_hash, event_instance, event_name):
     """
     Wait until the tx receipt is processed.
 
     :param tx_hash: hash of the transaction
-    :param event: AttributeDict with the event data.
+    :param event_instance: instance of ContractEvent
     :param event_name: name of the event to subscribe, str
     :return:
     """
+    if not isinstance(tx_hash, bytes):
+        raise TypeError(f'first argument should be bytes type, '
+                        f'got type {type(tx_hash)} and value {tx_hash}')
+    if not isinstance(event_instance, ContractEvent):
+        raise TypeError(f'second argument should be a ContractEvent, '
+                        f'got {event_instance} of type {type(event_instance)}')
     web3 = Web3Provider.get_web3()
     try:
         web3.eth.waitForTransactionReceipt(tx_hash, timeout=20)
@@ -46,15 +53,15 @@ def process_tx_receipt(tx_hash, event, event_name):
         return
 
     receipt = web3.eth.getTransactionReceipt(tx_hash)
-    event = event().processReceipt(receipt)
-    if event:
+    event_logs = event_instance.processReceipt(receipt)
+    if event_logs:
         logger.info(f'Success: got {event_name} event after fulfilling condition.')
         logger.debug(
-            f'Success: got {event_name} event after fulfilling condition. {receipt}, ::: {event}')
+            f'Success: got {event_name} event after fulfilling condition. {receipt}, ::: {event_logs}')
     else:
         logger.debug(f'Something is not right, cannot find the {event_name} event after calling the'
                      f' fulfillment condition. This is the transaction receipt {receipt}')
 
     if receipt and receipt.status == 0:
         logger.warning(
-            f'Transaction failed: tx_hash {tx_hash}, tx event {event_name}, receipt {receipt}')
+            f'Transaction failed: tx_hash {tx_hash.hex()}, tx event {event_name}, receipt {receipt}')

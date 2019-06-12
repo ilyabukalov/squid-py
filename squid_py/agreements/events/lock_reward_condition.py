@@ -19,26 +19,33 @@ def fulfill_lock_reward_condition(event, agreement_id, price, consumer_account):
     :param price: Asset price, int
     :param consumer_account: Account instance of the consumer
     """
+    if not event:
+        logger.warning(f'`fulfill_lock_reward_condition` got empty event: event listener timed out.')
+        return
+
     logger.debug(f"about to lock reward after event {event}.")
     keeper = Keeper.get_instance()
     tx_hash = None
     try:
         logger.debug(f'approving "{price}"" token transfer by lock_reward_condition '
-                    f'@{keeper.lock_reward_condition.address} for account address {consumer_account.address}')
-        approved = keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_account)
+                     f'@{keeper.lock_reward_condition.address} '
+                     f'for account address {consumer_account.address}')
+        approved = keeper.token.token_approve(
+            keeper.lock_reward_condition.address, price, consumer_account)
         logger.info(f'approval of token transfer was {"" if approved else "NOT"} successful')
         tx_hash = keeper.lock_reward_condition.fulfill(
             agreement_id, keeper.escrow_reward_condition.address, price, consumer_account
         )
         process_tx_receipt(
             tx_hash,
-            keeper.lock_reward_condition.FULFILLED_EVENT,
+            getattr(keeper.lock_reward_condition.contract.events,
+                    keeper.lock_reward_condition.FULFILLED_EVENT)(),
             'LockRewardCondition.Fulfilled'
         )
         logger.debug(f'done locking reward for agreement {agreement_id}.')
 
     except Exception as e:
-        logger.error(f'error locking reward: {e}')
+        logger.error(f'error locking reward: {e}', exc_info=1)
         if not tx_hash:
             raise e
 

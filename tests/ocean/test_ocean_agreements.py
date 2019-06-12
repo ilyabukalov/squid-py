@@ -105,7 +105,7 @@ def test_agreement_status(setup_agreements_enviroment, ocean_agreements):
     # keeper.dispenser.request_tokens(price, consumer_acc)
 
     # keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_acc)
-    ocean_agreements.conditions.lock_reward(agreement_id,price, consumer_acc)
+    ocean_agreements.conditions.lock_reward(agreement_id, price, consumer_acc)
     # keeper.lock_reward_condition.fulfill(
     #     agreement_id, keeper.escrow_reward_condition.address, price, consumer_acc)
     event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
@@ -122,8 +122,9 @@ def test_agreement_status(setup_agreements_enviroment, ocean_agreements):
                                                                     "escrowReward": 1
                                                                     }
                                                      }
-    keeper.access_secret_store_condition.fulfill(
+    tx_hash = keeper.access_secret_store_condition.fulfill(
         agreement_id, asset_id, consumer_acc.address, publisher_acc)
+    keeper.access_secret_store_condition.get_tx_receipt(tx_hash)
     event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
         agreement_id,
         20,
@@ -138,11 +139,12 @@ def test_agreement_status(setup_agreements_enviroment, ocean_agreements):
                                                                     "escrowReward": 1
                                                                     }
                                                      }
-    keeper.escrow_reward_condition.fulfill(
+    tx_hash = keeper.escrow_reward_condition.fulfill(
         agreement_id, price, publisher_acc.address,
         consumer_acc.address, lock_cond_id,
         access_cond_id, publisher_acc
     )
+    keeper.escrow_reward_condition.get_tx_receipt(tx_hash)
     event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         10,

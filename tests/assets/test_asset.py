@@ -5,6 +5,8 @@
 import logging
 import time
 
+import pytest
+
 from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_factory import ServiceDescriptor, ServiceTypes
 from squid_py.ddo.ddo import DDO

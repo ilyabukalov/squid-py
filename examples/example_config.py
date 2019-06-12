@@ -35,6 +35,7 @@ class ExampleConfig:
     _duero_secret_store_url = "https://secret-store.duero.dev-ocean.com"
     _nile_secret_store_url = "https://secret-store.dev-ocean.com"
     # _nile_secret_store_url = "https://secret-store.marketplace.dev-ocean.com"
+    _kovan_keeper_url = "http://localhost:8545"
     _remote_keeper_url = "https://%s.dev-ocean.com"
     _parity_url = "http://localhost:8545"
     _net_to_services_url = {
@@ -108,7 +109,9 @@ class ExampleConfig:
     def _get_config(local_node=True, net_key=''):
         config = ExampleConfig.get_base_config()
         net_name = ExampleConfig._net_name_map.get(net_key)
-        if not local_node:
+        if net_name == 'kovan':
+            config['keeper-contracts']['keeper.url'] = ExampleConfig._kovan_keeper_url
+        elif not local_node:
             config['keeper-contracts']['keeper.url'] = ExampleConfig._remote_keeper_url % net_name
 
         if net_name:

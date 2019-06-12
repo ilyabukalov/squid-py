@@ -58,7 +58,15 @@ class DIDRegistry(ContractBase):
         transaction = self._register_attribute(
             did_source_id, checksum, url, account, providers or []
         )
-        return self.is_tx_successful(transaction)
+        receipt = self.get_tx_receipt(transaction)
+        if receipt:
+            return receipt.status == 1
+
+        _filters = dict()
+        _filters['_did'] = Web3Provider.get_web3().toBytes(hexstr=did)
+        _filters['_owner'] = Web3Provider.get_web3().toBytes(hexstr=account.address)
+        event = self.subscribe_to_event(self.DID_REGISTRY_EVENT_NAME, 15, _filters, wait=True)
+        return event is not None
 
     def _register_attribute(self, did, checksum, value, account, providers):
         """Register an DID attribute as an event on the block chain.

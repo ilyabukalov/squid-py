@@ -24,7 +24,7 @@ class MultiEventListener(object):
         self.filter_key = filter_key
         self.from_block = from_block
         self.to_block = to_block
-        self._timeout = 60  # seconds
+        self._timeout = 600  # seconds
         self._stopped = True
         self._event_filters = dict()
         self._pinned_events = dict()
@@ -94,13 +94,17 @@ class MultiEventListener(object):
                     (event_filter, callback, timeout_callback, args, timeout, start_time) \
                         in filters.items():
 
-                    done = self.process_event(
-                        event_filter,
-                        callback,
-                        timeout_callback,
-                        timeout,
-                        args,
-                        start_time)
+                    try:
+                        done = self.process_event(
+                            event_filter,
+                            callback,
+                            timeout_callback,
+                            timeout,
+                            args,
+                            start_time)
+                    except Exception as e:
+                        logger.error(f'Error processing event: {str(e)}', exc_info=1)
+                        done = True
 
                     if done:
                         with self._lock:
@@ -134,13 +138,14 @@ class MultiEventListener(object):
         """
         try:
             events = event_filter.get_new_entries()
-            if events:
+            if events and events[0] is not None:
                 callback(events[0], *args)
                 return True
 
         except (ValueError, Exception) as err:
             # ignore error, but log it
-            logger.debug(f'Got error grabbing keeper events: {str(err)}')
+            # logger.error(f'Got error grabbing keeper events: {str(err)}', exc_info=1)
+            pass
 
         if timeout:
             elapsed = int(datetime.now().timestamp()) - start_time

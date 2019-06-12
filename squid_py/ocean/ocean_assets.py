@@ -67,8 +67,8 @@ class OceanAssets:
             item is a dict of parameters and values required by the service
         :param providers: list of addresses of providers of this asset (a provider is
             an ethereum account that is authorized to provide asset services)
-        :param use_secret_store: bool when False use Brizo to encrypt asset's urls instead
-            of the secretstore
+        :param use_secret_store: bool indicate whether to use the secret store directly for
+            encrypting urls (Uses Brizo provider service if set to False)
         :return: DDO instance
         """
         assert isinstance(metadata, dict), f'Expected metadata of type dict, got {type(metadata)}'
@@ -83,13 +83,9 @@ class OceanAssets:
         did = DID.did()
         logger.debug(f'Generating new did: {did}')
         # Check if it's already registered first!
-        try:
-            if did in self._get_aquarius().list_assets():
-                raise OceanDIDAlreadyExist(
-                    f'Asset id {did} is already registered to another asset.')
-        except Exception as e:
-            logger.warning(f'Could not get assets list from aquarius, '
-                           f'skip checking duplicate did: {e}')
+        if did in self._get_aquarius().list_assets():
+            raise OceanDIDAlreadyExist(
+                f'Asset id {did} is already registered to another asset.')
 
         ddo = DDO(did)
 
@@ -124,7 +120,7 @@ class OceanAssets:
 
         # only assign if the encryption worked
         if files_encrypted:
-            logger.info(f'Content urls encrypted successfully {files_encrypted}')
+            logger.debug(f'Content urls encrypted successfully {files_encrypted}')
             index = 0
             for file in metadata_copy['base']['files']:
                 file['index'] = index
@@ -141,7 +137,6 @@ class OceanAssets:
         if not service_descriptors:
             service_descriptors = [ServiceDescriptor.authorization_service_descriptor(
                 self._config.secret_store_url)]
-            brizo = BrizoProvider.get_brizo()
             service_descriptors += [ServiceDescriptor.access_service_descriptor(
                 metadata[MetadataBase.KEY]['price'],
                 brizo.get_purchase_endpoint(self._config),
@@ -155,7 +150,6 @@ class OceanAssets:
                 service_descriptors += [ServiceDescriptor.authorization_service_descriptor(
                     self._config.secret_store_url)]
             else:
-                brizo = BrizoProvider.get_brizo()
                 service_descriptors += [ServiceDescriptor.access_service_descriptor(
                     metadata[MetadataBase.KEY]['price'],
                     brizo.get_purchase_endpoint(self._config),
@@ -187,11 +181,11 @@ class OceanAssets:
         if registered_on_chain is False:
             logger.warning(f'Registering {did} on-chain failed.')
             return None
-        logger.info(f'DDO with DID {did} successfully registered on chain.')
+        logger.info(f'Successfully registered DDO (DID={did}) on chain.')
         try:
             # publish the new ddo in ocean-db/Aquarius
             response = self._get_aquarius().publish_asset_ddo(ddo)
-            logger.debug('Asset/ddo published successfully in aquarius.')
+            logger.info('Asset/ddo published successfully in aquarius.')
         except ValueError as ve:
             raise ValueError(f'Invalid value to publish in the metadata: {str(ve)}')
         except Exception as e:

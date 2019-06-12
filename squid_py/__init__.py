@@ -1,5 +1,5 @@
 __author__ = """OceanProtocol"""
-__version__ = '0.6.8'
+__version__ = '0.6.10'
 
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0

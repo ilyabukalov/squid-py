@@ -43,9 +43,11 @@ class Keeper(object):
         2199: 'duero'
     }
 
-    def __init__(self):
+    def __init__(self, artifacts_path=None):
         self.network_name = Keeper.get_network_name(Keeper.get_network_id())
-        self.artifacts_path = ConfigProvider.get_config().keeper_path
+        if not artifacts_path:
+            artifacts_path = ConfigProvider.get_config().keeper_path
+        self.artifacts_path = artifacts_path
         self.accounts = Web3Provider.get_web3().eth.accounts
 
         self.dispenser = Dispenser.get_instance()

@@ -19,7 +19,7 @@ from tests.resources.helper_functions import (get_publisher_account,
                                               get_registered_ddo, log_event)
 
 
-def test_buy_asset(consumer_ocean_instance_brizo, publisher_ocean_instance_brizo):
+def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     config = ExampleConfig.get_config()
     ConfigProvider.set_config(config)
     keeper = Keeper.get_instance()
@@ -29,12 +29,12 @@ def test_buy_asset(consumer_ocean_instance_brizo, publisher_ocean_instance_brizo
     pub_acc = get_publisher_account(config)
 
     # Register ddo
-    ddo = get_registered_ddo(publisher_ocean_instance_brizo, pub_acc)
+    ddo = get_registered_ddo(publisher_ocean_instance, pub_acc)
     assert isinstance(ddo, DDO)
     # ocn here will be used only to publish the asset. Handling the asset by the publisher
     # will be performed by the Brizo server running locally
 
-    cons_ocn = consumer_ocean_instance_brizo
+    cons_ocn = consumer_ocean_instance
     # restore the http client because we want the actual Brizo server to do the work
     # not the BrizoMock.
     # Brizo.set_http_client(requests)
@@ -42,8 +42,8 @@ def test_buy_asset(consumer_ocean_instance_brizo, publisher_ocean_instance_brizo
                                                'parity.password1')
 
     downloads_path_elements = len(
-        os.listdir(consumer_ocean_instance_brizo._config.downloads_path)) if os.path.exists(
-        consumer_ocean_instance_brizo._config.downloads_path) else 0
+        os.listdir(consumer_ocean_instance._config.downloads_path)) if os.path.exists(
+        consumer_ocean_instance._config.downloads_path) else 0
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     assert ServiceAgreement.SERVICE_DEFINITION_ID in service.as_dictionary()
@@ -55,7 +55,7 @@ def test_buy_asset(consumer_ocean_instance_brizo, publisher_ocean_instance_brizo
 
     event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
         agreement_id,
-        30,
+        15,
         log_event(keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
         (),
         wait=True
@@ -64,7 +64,7 @@ def test_buy_asset(consumer_ocean_instance_brizo, publisher_ocean_instance_brizo
 
     event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
-        30,
+        15,
         log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
         (),
         wait=True
@@ -73,7 +73,7 @@ def test_buy_asset(consumer_ocean_instance_brizo, publisher_ocean_instance_brizo
 
     i = 0
     while cons_ocn.agreements.is_access_granted(
-            agreement_id, ddo.did, consumer_account.address) is not True and i < 30:
+            agreement_id, ddo.did, consumer_account.address) is not True and i < 15:
         time.sleep(1)
         i += 1
 
@@ -143,4 +143,3 @@ def test_buy_asset(consumer_ocean_instance_brizo, publisher_ocean_instance_brizo
     assert event, 'no event for EscrowReward.Fulfilled'
 
     assert w3.toHex(event.args['_agreementId']) == agreement_id
-
