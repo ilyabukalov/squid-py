@@ -114,3 +114,4 @@ consume-downloads
 start_ocean.log
 errors.log.*
 info.log.*
+*.db
