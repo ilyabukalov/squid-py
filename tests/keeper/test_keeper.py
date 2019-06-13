@@ -1,12 +1,13 @@
 import os
 
+from eth_utils import add_0x_prefix
 from web3 import Web3
 
 from squid_py import ConfigProvider
 from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.utils.utilities import prepare_prefixed_hash
-from tests.resources.helper_functions import get_publisher_account
+from tests.resources.helper_functions import get_publisher_account, get_resource_path
 from tests.resources.tiers import e2e_test
 
 
@@ -90,7 +91,7 @@ def test_verify_signature(consumer_ocean_instance):
     signature = (
         "0x44fa549d33f5993f73e96f91cad01d9b37830da78494e35bda32a280d1b864ac020a761e872633c8149a5b63b65a1143f9f5a3be35822a9e90e0187d4a1f9d101c"
     )
-    assert hex_agr_hash == '0x' + agreement_hash.hex()
+    assert hex_agr_hash == add_0x_prefix(agreement_hash.hex())
     prefixed_hash = prepare_prefixed_hash(agreement_hash)
     recovered_address = w3.eth.account.recoverHash(prefixed_hash, signature=signature)
     assert address == recovered_address, f'Could not verify signature using address {address}'
@@ -106,3 +107,30 @@ def test_sign_and_recover():
     signature = Keeper.sign_hash(msg_hash, account)
     address = w3.toChecksumAddress(Keeper.ec_recover(msg_hash, signature))
     assert address == account.address
+
+    # Signature created on msg with the ethereum prefix. `web3.eth.account.recoverHash` does NOT
+    # add any prefixes to the message, so we have to add the prefix before the call.
+    prefixed_hash = prepare_prefixed_hash(msg_hash)
+    address = w3.eth.account.recoverHash(prefixed_hash, signature=signature)
+    assert address == account.address
+
+    # Now do the opposite, sign with eth.account.signHash() (using prefixed msg hash),
+    # then recover address with Keeper.ec_recover() on the msg hash with no prefix.
+    with open(get_resource_path('data', 'publisher_key_file.json')) as kf:
+        key = kf.read()
+    prvkey = w3.eth.account.decrypt(key, account.password)
+    account_sig_prefixed = add_0x_prefix(w3.eth.account.signHash(prefixed_hash, prvkey)['signature'].hex())
+    assert Keeper.ec_recover(msg_hash, account_sig_prefixed) == account.address
+
+
+@e2e_test
+def test_get_condition_name_by_address():
+    keeper = Keeper.get_instance()
+    name = keeper.get_condition_name_by_address(keeper.lock_reward_condition.address)
+    assert name == 'lockReward'
+
+    name = keeper.get_condition_name_by_address(keeper.access_secret_store_condition.address)
+    assert name == 'accessSecretStore'
+
+    name = keeper.get_condition_name_by_address(keeper.escrow_reward_condition.address)
+    assert name == 'escrowReward'

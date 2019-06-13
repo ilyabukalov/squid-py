@@ -15,7 +15,6 @@ from squid_py.keeper import Keeper
 from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.ocean.ocean import Ocean
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
-from squid_py.utils.utilities import prepare_prefixed_hash
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.mocks.secret_store_mock import SecretStoreMock
 
