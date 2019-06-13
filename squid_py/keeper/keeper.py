@@ -63,9 +63,9 @@ class Keeper(object):
         self.hash_lock_condition = HashLockCondition.get_instance()
 
     @staticmethod
-    def get_instance():
+    def get_instance(artifacts_path=None):
         """Return the Keeper instance (singleton)."""
-        return Keeper()
+        return Keeper(artifacts_path)
 
     @staticmethod
     def get_network_name(network_id):
@@ -110,8 +110,8 @@ class Keeper(object):
         v, r, s = split_signature(w3, w3.toBytes(hexstr=signed_message))
         signature_object = SignatureFix(vrs=(v, big_endian_to_int(r), big_endian_to_int(s)))
         return Web3Provider.get_web3().personal.ecRecover(
-            message,
-            signature_object.to_hex_v_hacked())
+            message, signature=signed_message)
+            # signature_object.to_hex_v_hacked())
 
     @staticmethod
     def unlock_account(account):

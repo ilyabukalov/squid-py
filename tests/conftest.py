@@ -58,6 +58,9 @@ def web3_instance():
 
 
 @pytest.fixture
+def web3_provider():
+    Web3Provider
+@pytest.fixture
 def metadata():
     return get_metadata()
 

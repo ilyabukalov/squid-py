@@ -146,20 +146,6 @@ def log_event(event_name):
     return _process_event
 
 
-def verify_signature(_address, _agreement_hash, _signature, expected_match):
-    w3 = Web3Provider.get_web3()
-    prefixed_hash = prepare_prefixed_hash(_agreement_hash)
-    recovered_address0 = w3.eth.account.recoverHash(prefixed_hash, signature=_signature)
-    recovered_address1 = w3.eth.account.recoverHash(_agreement_hash, signature=_signature)
-    print('original address: ', _address)
-    print('w3.eth.account.recoverHash(prefixed_hash, signature=signature)  => ',
-          recovered_address0)
-    print('w3.eth.account.recoverHash(agreement_hash, signature=signature) => ',
-          recovered_address1)
-    assert _address == (recovered_address0, recovered_address1)[expected_match], \
-        'Could not verify signature using address {}'.format(_address)
-
-
 def get_metadata():
     path = get_resource_path('ddo', 'valid_metadata.json')
     assert path.exists(), f"{path} does not exist!"
