@@ -36,7 +36,6 @@ def test_ec_recover():
 
     for expected_address, document_id, signed_document_id in test_values:
         rec_address = Keeper.get_instance().ec_recover(document_id, signed_document_id)
-        print(f'recovered address: {rec_address}, original address {expected_address}')
         assert expected_address.lower() == rec_address.lower()
 
 
@@ -62,9 +61,11 @@ def test_get_network_id():
 def test_get_network_name():
     name = Keeper.get_network_name(Keeper.get_network_id())
     assert name in Keeper._network_name_map.values()
-    os.putenv('KEEPER_NETWORK_NAME', 'yellow')
+    os.environ['KEEPER_NETWORK_NAME'] = 'yellow'
+    assert 'KEEPER_NETWORK_NAME' in os.environ
     name = Keeper.get_network_name(Keeper.get_network_id())
     assert name == 'yellow'
+    del os.environ['KEEPER_NETWORK_NAME']
 
     assert Keeper.get_network_name(1) == Keeper._network_name_map.get(1)
     assert Keeper.get_network_name(2) == Keeper._network_name_map.get(2)
@@ -76,20 +77,6 @@ def test_get_network_name():
     assert Keeper.get_network_name(8995) == Keeper._network_name_map.get(8995)
     assert Keeper.get_network_name(8996) == Keeper._network_name_map.get(8996)
     assert Keeper.get_network_name(0) == 'development'
-
-
-def verify_signature(_address, _agreement_hash, _signature, expected_match):
-    w3 = Web3Provider.get_web3()
-    prefixed_hash = prepare_prefixed_hash(_agreement_hash)
-    recovered_address0 = w3.eth.account.recoverHash(prefixed_hash, signature=_signature)
-    recovered_address1 = w3.eth.account.recoverHash(_agreement_hash, signature=_signature)
-    print('original address: ', _address)
-    print('w3.eth.account.recoverHash(prefixed_hash, signature=signature)  => ',
-          recovered_address0)
-    print('w3.eth.account.recoverHash(agreement_hash, signature=signature) => ',
-          recovered_address1)
-    assert _address == (recovered_address0, recovered_address1)[expected_match], \
-        'Could not verify signature using address {}'.format(_address)
 
 
 @e2e_test
@@ -160,7 +147,7 @@ def test_sign_and_recover():
         key = kf.read()
     prvkey = w3.eth.account.decrypt(key, account.password)
     account_sig_prefixed = add_0x_prefix(w3.eth.account.signHash(prefixed_hash, prvkey)['signature'].hex())
-    assert Keeper.ec_recover(msg_hash, account_sig_prefixed) == account.address
+    assert Keeper.ec_recover(msg_hash, account_sig_prefixed) == account.address.lower()
 
 
 @e2e_test

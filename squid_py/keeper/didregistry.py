@@ -135,7 +135,8 @@ class DIDRegistry(ContractBase):
             transact={'from': account.address,
                       'passphrase': account.password}
         )
-        return self.get_tx_receipt(tx_hash)
+        receipt = self.get_tx_receipt(tx_hash)
+        return bool(receipt and receipt.status == 1)
 
     def is_did_provider(self, did, address):
         """
@@ -157,7 +158,11 @@ class DIDRegistry(ContractBase):
             None if asset has no registerd providers
         """
         register_values = self.contract_concise.getDIDRegister(did)
-        if register_values and len(register_values) == 5:
+        if register_values and len(register_values) == 5 and register_values[0]:
+            # sanitize providers list, because if providers were removed they will
+            # be replaced with null/None
+            valid_providers = [a for a in register_values[4] if a is not None]
+            register_values[4] = valid_providers
             return DIDRegisterValues(*register_values).providers
 
         return None

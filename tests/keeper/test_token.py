@@ -10,7 +10,7 @@ from squid_py.keeper.token import Token
 from tests.resources.helper_functions import get_consumer_account, get_publisher_account
 from tests.resources.tiers import e2e_test
 
-token = Token(Token.CONTRACT_NAME)
+token = Token.get_instance()
 consumer_account = get_consumer_account(ConfigProvider.get_config())
 publisher_account = get_publisher_account(ConfigProvider.get_config())
 
