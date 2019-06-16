@@ -13,8 +13,18 @@ logger = logging.getLogger(__name__)
 
 
 class AssetConsumer:
-    # TODO: asset consumer should be a `callable` to handle consuming an asset after it has
-    #   been purchased.
+
+    def __call__(self, service_agreement_id, service_definition_id, ddo, consumer_account, destination,
+                 brizo, secret_store, index=None):
+        self.download(
+            service_agreement_id,
+            service_definition_id,
+            ddo,
+            consumer_account,
+            destination,
+            brizo,
+            secret_store,
+            index)
 
     @staticmethod
     def download(service_agreement_id, service_definition_id, ddo, consumer_account, destination,

@@ -109,7 +109,7 @@ class OceanAgreements:
             publisher_address, agreement_id, did, service_agreement,
             service_definition_id, service_agreement.get_price(), asset.encrypted_files,
             consumer_account, condition_ids,
-            self._asset_consumer.download if auto_consume else None
+            self._asset_consumer if auto_consume else None
         )
 
         return BrizoProvider.get_brizo().initialize_service_agreement(
@@ -229,7 +229,7 @@ class OceanAgreements:
                     publisher_address, agreement_id, did,
                     service_agreement, service_definition_id, service_agreement.get_price(),
                     asset.encrypted_files, account, condition_ids,
-                    self._asset_consumer.download if auto_consume else None
+                    self._asset_consumer if auto_consume else None
                 )
 
             else:

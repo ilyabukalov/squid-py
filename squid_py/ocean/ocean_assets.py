@@ -91,6 +91,8 @@ class OceanAssets:
 
         # Add public key and authentication
         ddo.add_public_key(did, publisher_account.address)
+
+        # :AUDIT: ssallam -- How does PUBLIC_KEY_TYPE_RSA authentication type apply to the did?
         ddo.add_authentication(did, PUBLIC_KEY_TYPE_RSA)
 
         # Setup metadata service
@@ -307,7 +309,7 @@ class OceanAssets:
         if index is not None:
             assert isinstance(index, int), logger.error('index has to be an integer.')
             assert index >= 0, logger.error('index has to be 0 or a positive integer.')
-        return self._asset_consumer.download(
+        return self._asset_consumer(
             service_agreement_id,
             service_definition_id,
             ddo,

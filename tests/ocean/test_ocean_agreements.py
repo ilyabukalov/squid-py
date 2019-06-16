@@ -31,8 +31,8 @@ def ocean_agreements():
         w3.toChecksumAddress("0x00bd138abd70e2f00903268f3db08f2d25677c9e")
     )
     did_resolver.resolve = MagicMock(return_value=ddo)
-    consumer_class = Mock
-    consumer_class.download = MagicMock(return_value='')
+    # consumer_class = Mock
+    # consumer_class.download = MagicMock(return_value='')
     return OceanAgreements(
         keeper,
         did_resolver,
