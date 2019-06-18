@@ -223,6 +223,7 @@ def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
 
     assert len(ocn.assets.consumer_assets(acct.address)) == consumed_assets + 1
 
+
 def test_ocean_assets_resolve(publisher_ocean_instance, metadata):
     publisher = publisher_ocean_instance.main_account
     ddo = publisher_ocean_instance.assets.create(metadata, publisher)

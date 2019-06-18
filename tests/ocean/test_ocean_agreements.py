@@ -105,7 +105,7 @@ def test_agreement_status(setup_agreements_enviroment, ocean_agreements):
                                                                     "escrowReward": 1
                                                                     }
                                                      }
-    # keeper.dispenser.request_tokens(price, consumer_acc)
+    # keeper.dispenser.request_vodkas(price, consumer_acc)
 
     # keeper.token.token_approve(keeper.lock_reward_condition.address, price, consumer_acc)
     ocean_agreements.conditions.lock_reward(agreement_id, price, consumer_acc)
@@ -185,7 +185,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     price = service_agreement.get_price()
 
     # Give consumer some tokens
-    keeper.dispenser.request_tokens(price * 2, consumer_acc)
+    keeper.dispenser.request_vodkas(price * 2, consumer_acc)
 
     agreement_id, signature = consumer_ocean_instance.agreements.prepare(
         did, service_agreement.service_definition_id, consumer_acc)
