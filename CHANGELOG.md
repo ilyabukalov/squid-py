@@ -1,7 +1,28 @@
 History
 =======
 
-0.6.6 (May 29th, 2019)
+0.6.11 (Jun 14th, 2019)
+----------------------
+* Fix issue in condition method.
+* Fix problem with brizo mock.
+
+0.6.10 (Jun 11th, 2019)
+----------------------
+* Allow separate config per ocean instance
+* Fix issue in timeout processing in multi event listener
+* Refactor registering of agreement events watchers
+* Add interface and implementation to support provider handling of new agreement events (in squid, caller does not need to implement own handler)
+
+0.6.9 (Jun 6th, 2019)
+----------------------
+* Remove waiting for transaction receipt when handling agreement events.
+
+0.6.8 (Jun 5th, 2019)
+----------------------
+* Eliminate processing the same event repeatedly
+* Fix a database issue
+
+0.6.7 (May 29th, 2019)
 ----------------------
 * Fix issue in the signature.
 
