@@ -15,7 +15,7 @@ class AgreementsManager:
     Manages processing new agreements events and storage.
 
     """
-    EVENT_WAIT_TIMEOUT = 60
+    EVENT_WAIT_TIMEOUT = 3600
 
     def __init__(self, config, keeper, events_manager, storage_path):
         self._config = config
@@ -62,8 +62,8 @@ class AgreementsManager:
             access_secret_store_condition.fulfillAccessSecretStoreCondition,
             None,
             (agreement_id, did, service_agreement,
-             consumer_address, publisher_account),
-            conditions_dict['lockReward'].timeout
+             consumer_address, publisher_account, condition_ids[0]),
+            max(conditions_dict['lockReward'].timeout, self.EVENT_WAIT_TIMEOUT)
         )
 
         self._events_manager.watch_access_event(
@@ -71,8 +71,8 @@ class AgreementsManager:
             escrow_reward_condition.fulfillEscrowRewardCondition,
             None,
             (agreement_id, service_agreement,
-             price, consumer_address, publisher_account, condition_ids),
-            conditions_dict['accessSecretStore'].timeout
+             price, consumer_address, publisher_account, condition_ids, condition_ids[2]),
+            max(conditions_dict['accessSecretStore'].timeout, self.EVENT_WAIT_TIMEOUT)
         )
 
         self._events_manager.watch_reward_event(
@@ -81,7 +81,7 @@ class AgreementsManager:
             None,
             (agreement_id, did, service_agreement,
              price, consumer_address, publisher_account),
-            conditions_dict['escrowReward'].timeout
+            max(conditions_dict['escrowReward'].timeout, self.EVENT_WAIT_TIMEOUT)
         )
 
     def register_consumer(self, publisher_address, agreement_id, did, service_agreement,
@@ -124,7 +124,7 @@ class AgreementsManager:
             agreement_id,
             lock_reward_condition.fulfillLockRewardCondition,
             None,
-            (agreement_id, price, consumer_account),
+            (agreement_id, price, consumer_account, condition_ids[1]),
             self.EVENT_WAIT_TIMEOUT,
         )
 
@@ -133,7 +133,7 @@ class AgreementsManager:
                 def do_refund(_event, _agreement_id, _did, _service_agreement, _consumer_account, *_):
                     escrow_reward_condition.refund_reward(
                         _event, _agreement_id, _did, _service_agreement, _price,
-                        _consumer_account, _publisher_address, _condition_ids
+                        _consumer_account, _publisher_address, _condition_ids, _condition_ids[2]
                     )
 
                 return do_refund
@@ -145,7 +145,7 @@ class AgreementsManager:
                 (agreement_id, did, service_agreement, consumer_account, consume_callback,
                  self._config.secret_store_url, self._config.parity_url,
                  self._config.downloads_path),
-                conditions_dict['accessSecretStore'].timeout
+                max(conditions_dict['accessSecretStore'].timeout, self.EVENT_WAIT_TIMEOUT)
             )
 
     def process_pending_service_agreements(self, account, actor_type, did_resolver_fn):

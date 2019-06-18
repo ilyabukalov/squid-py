@@ -21,7 +21,6 @@ class OceanConditions:
         :param account: Account
         :return: bool
         """
-        self._keeper.dispenser.request_tokens(amount, account)
         self._keeper.token.token_approve(self._keeper.lock_reward_condition.address, amount,
                                          account)
         tx_hash = self._keeper.lock_reward_condition.fulfill(
