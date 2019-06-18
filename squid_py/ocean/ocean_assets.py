@@ -309,7 +309,7 @@ class OceanAssets:
         if index is not None:
             assert isinstance(index, int), logger.error('index has to be an integer.')
             assert index >= 0, logger.error('index has to be 0 or a positive integer.')
-        return self._asset_consumer(
+        return self._asset_consumer.download(
             service_agreement_id,
             service_definition_id,
             ddo,

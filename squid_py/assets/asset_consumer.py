@@ -14,18 +14,6 @@ logger = logging.getLogger(__name__)
 
 class AssetConsumer:
 
-    def __call__(self, service_agreement_id, service_definition_id, ddo, consumer_account, destination,
-                 brizo, secret_store, index=None):
-        self.download(
-            service_agreement_id,
-            service_definition_id,
-            ddo,
-            consumer_account,
-            destination,
-            brizo,
-            secret_store,
-            index)
-
     @staticmethod
     def download(service_agreement_id, service_definition_id, ddo, consumer_account, destination,
                  brizo, secret_store, index=None):
