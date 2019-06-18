@@ -57,8 +57,8 @@ def test_register_with_invalid_params():
     checksum_test = w3.sha3(text='checksum')
     value_test = 'http://localhost:5000'
     # No checksum provided
-    with pytest.raises(TypeError):
-        did_registry.register(did_test, url=value_test)
+    with pytest.raises(ValueError):
+        did_registry.register(did_test, '', url=value_test, account=None)
     # Invalid checksum  provided
     with pytest.raises(ValueError):
         did_registry.register(did_test, did_test, url=value_test, account=None)
