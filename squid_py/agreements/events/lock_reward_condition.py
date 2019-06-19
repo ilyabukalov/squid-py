@@ -3,10 +3,9 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 import logging
-import time
 
+from squid_py.agreements.utils import process_fulfill_condition
 from squid_py.keeper import Keeper
-from squid_py.keeper.utils import process_tx_receipt
 
 logger = logging.getLogger(__name__)
 
@@ -35,34 +34,14 @@ def fulfill_lock_reward_condition(event, agreement_id, price, consumer_account, 
 
     approved = keeper.token.token_approve(
         keeper.lock_reward_condition.address, price, consumer_account)
-    logger.debug(f'approval of token transfer was {"" if approved else "NOT"} successful')
-
-    tx_hash = None
-    num_tries = 10
-    for i in range(num_tries):
-        try:
-            tx_hash = keeper.lock_reward_condition.fulfill(
-                agreement_id, keeper.escrow_reward_condition.address, price, consumer_account
-            )
-            success = process_tx_receipt(
-                tx_hash,
-                getattr(keeper.lock_reward_condition.contract.events,
-                        keeper.lock_reward_condition.FULFILLED_EVENT)(),
-                'LockRewardCondition.Fulfilled',
-                agreement_id
-            )
-
-            if success or keeper.condition_manager.get_condition_state(lock_condition_id) > 1:
-                logger.info(f'done locking reward for agreement {agreement_id}')
-                break
-
-            logger.debug(f'done trial {i} locking reward for agreement {agreement_id}, success?: {bool(success)}')
-            time.sleep(2)
-
-        except Exception as e:
-            logger.error(f'error locking reward (agreementId {agreement_id}): {e}', exc_info=1)
-            if not tx_hash:
-                raise e
+    logger.info(f'approval of token transfer was {"" if approved else "NOT"} successful')
+    args = (
+        agreement_id,
+        keeper.escrow_reward_condition.address,
+        price,
+        consumer_account
+    )
+    process_fulfill_condition(args, keeper.lock_reward_condition, lock_condition_id, logger, 10)
 
 
 fulfillLockRewardCondition = fulfill_lock_reward_condition

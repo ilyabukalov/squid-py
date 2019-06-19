@@ -7,6 +7,7 @@ import time
 
 from eth_utils import add_0x_prefix
 
+from squid_py.agreements.utils import process_fulfill_condition
 from squid_py.brizo import BrizoProvider
 from squid_py.did import did_to_id
 from squid_py.did_resolver.did_resolver import DIDResolver
@@ -54,34 +55,18 @@ def fulfill_escrow_reward_condition(event, agreement_id, service_agreement, pric
                  f'conditionIds={condition_ids}')
     assert price == service_agreement.get_price(), 'price mismatch.'
     assert isinstance(price, int), f'price expected to be int type, got type "{type(price)}"'
-    num_tries = 10
-    for i in range(num_tries):
-        try:
-            escrow_condition = Keeper.get_instance().escrow_reward_condition
-            tx_hash = escrow_condition.fulfill(
-                agreement_id,
-                price,
-                publisher_account.address,
-                consumer_address,
-                lock_id,
-                access_id,
-                publisher_account
-            )
-            success = process_tx_receipt(
-                tx_hash,
-                getattr(escrow_condition.contract.events, escrow_condition.FULFILLED_EVENT)(),
-                'EscrowReward.Fulfilled'
-            )
-            if success or keeper.condition_manager.get_condition_state(escrow_condition_id) > 1:
-                logger.info(f'done release escrow reward for agreement {agreement_id}')
-                break
-
-            logger.info(f'done trial {i} release escrow reward for agreement {agreement_id}, success?: {bool(success)}')
-            time.sleep(2)
-
-        except Exception as e:
-            logger.error(f'Error when doing escrow_reward_condition.fulfill (agreementId {agreement_id}): {e}', exc_info=1)
-            raise e
+    time.sleep(5)
+    keeper = Keeper.get_instance()
+    args = (
+        agreement_id,
+        price,
+        publisher_account.address,
+        consumer_address,
+        lock_id,
+        access_id,
+        publisher_account
+    )
+    process_fulfill_condition(args, keeper.escrow_reward_condition, escrow_condition_id, logger, 10)
 
 
 def refund_reward(event, agreement_id, did, service_agreement, price, consumer_account,

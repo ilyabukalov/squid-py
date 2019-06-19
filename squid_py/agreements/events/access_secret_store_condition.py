@@ -3,13 +3,12 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 import logging
-import time
 
 from eth_utils import add_0x_prefix
 
+from squid_py.agreements.utils import process_fulfill_condition
 from squid_py.did import did_to_id
 from squid_py.keeper import Keeper
-from squid_py.keeper.utils import process_tx_receipt
 
 logger = logging.getLogger(__name__)
 
@@ -47,28 +46,14 @@ def fulfill_access_secret_store_condition(event, agreement_id, did, service_agre
     document_id = add_0x_prefix(name_to_parameter['_documentId'].value)
     asset_id = add_0x_prefix(did_to_id(did))
     assert document_id == asset_id, f'document_id {document_id} <=> asset_id {asset_id} mismatch.'
-    num_tries = 10
-    for i in range(num_tries):
-        try:
-            access_condition = Keeper.get_instance().access_secret_store_condition
-            tx_hash = access_condition.fulfill(
-                agreement_id, document_id, consumer_address, publisher_account
-            )
-            success = process_tx_receipt(
-                tx_hash,
-                getattr(access_condition.contract.events, access_condition.FULFILLED_EVENT)(),
-                'AccessSecretStoreCondition.Fulfilled'
-            )
-            if success or keeper.condition_manager.get_condition_state(access_condition_id) > 1:
-                logger.info(f'done fulfill access condition for agreement {agreement_id}')
-                break
 
-            logger.info(f'done trial {i} fulfill access condition for agreement {agreement_id}, success?: {bool(success)}')
-            time.sleep(2)
-
-        except Exception as e:
-            logger.error(f'Error when calling grantAccess condition function (agreementId {agreement_id}): {e}', exc_info=1)
-            raise e
+    args = (
+        agreement_id,
+        document_id,
+        consumer_address,
+        publisher_account
+    )
+    process_fulfill_condition(args, keeper.access_secret_store_condition, access_condition_id, logger, 10)
 
 
 fulfillAccessSecretStoreCondition = fulfill_access_secret_store_condition
