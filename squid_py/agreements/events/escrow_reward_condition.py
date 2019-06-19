@@ -13,6 +13,7 @@ from squid_py.did import did_to_id
 from squid_py.did_resolver.did_resolver import DIDResolver
 from squid_py.keeper import Keeper
 from squid_py.keeper.utils import process_tx_receipt
+from squid_py.keeper.web3_provider import Web3Provider
 from squid_py.secret_store import SecretStoreProvider
 
 logger = logging.getLogger(__name__)
@@ -57,10 +58,11 @@ def fulfill_escrow_reward_condition(event, agreement_id, service_agreement, pric
     assert isinstance(price, int), f'price expected to be int type, got type "{type(price)}"'
     time.sleep(5)
     keeper = Keeper.get_instance()
+    did_owner = keeper.agreement_manager.get_agreement_did_owner(agreement_id)
     args = (
         agreement_id,
         price,
-        publisher_account.address,
+        Web3Provider.get_web3().toChecksumAddress(did_owner),
         consumer_address,
         lock_id,
         access_id,
@@ -88,7 +90,8 @@ def refund_reward(event, agreement_id, did, service_agreement, price, consumer_a
     if Keeper.get_instance().condition_manager.get_condition_state(escrow_condition_id) > 1:
         logger.debug(
             f'escrow reward condition already fulfilled/aborted: '
-            f'agreementId={agreement_id}, escrow reward conditionId={escrow_condition_id}'
+            f'agreementId={agreement_id}, escrow reward conditionId={escrow_condition_id},'
+            f' publisher={publisher_address}'
         )
         return
 
@@ -97,6 +100,7 @@ def refund_reward(event, agreement_id, did, service_agreement, price, consumer_a
                          service_agreement.condition_by_name['escrowReward'].parameters}
     document_id = add_0x_prefix(name_to_parameter['_documentId'].value)
     asset_id = add_0x_prefix(did_to_id(did))
+    did_owner = Keeper.get_instance().agreement_manager.get_agreement_did_owner(agreement_id)
     assert document_id == asset_id, f'document_id {document_id} <=> asset_id {asset_id} mismatch.'
     assert price == service_agreement.get_price(), 'price mismatch.'
     try:
@@ -104,7 +108,7 @@ def refund_reward(event, agreement_id, did, service_agreement, price, consumer_a
         tx_hash = escrow_condition.fulfill(
             agreement_id,
             price,
-            publisher_address,
+            Web3Provider.get_web3().toChecksumAddress(did_owner),
             consumer_account.address,
             lock_id,
             access_id,
