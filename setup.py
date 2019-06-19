@@ -21,7 +21,7 @@ with open('CHANGELOG.md') as history_file:
 # or pip install -e .
 install_requirements = [
     'coloredlogs',
-    'keeper-contracts==0.9.7',
+    'keeper-contracts==0.10.2',
     'pyopenssl',
     'PyJWT',  # not jwt
     'PyYAML==4.2b4',
