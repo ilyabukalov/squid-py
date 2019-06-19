@@ -12,7 +12,8 @@ from eth_utils import add_0x_prefix
 
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.ddo.public_key_base import PublicKeyBase
-from squid_py.did import did_to_id
+from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_ETHEREUM_ECDSA
+from squid_py.did import did_to_id, OCEAN_PREFIX
 from .constants import DID_DDO_CONTEXT_URL, PROOF_TYPE
 from .public_key_rsa import PUBLIC_KEY_TYPE_RSA, PublicKeyRSA
 from .service import Service
@@ -54,6 +55,8 @@ class DDO:
     @property
     def asset_id(self):
         """The asset id part of the DID"""
+        if not self._did:
+            return None
         return add_0x_prefix(did_to_id(self._did))
 
     @property
@@ -68,13 +71,26 @@ class DDO:
 
     @property
     def publisher(self):
-        return self._proof.get('creator')
+        return self._proof.get('creator') if self._proof else None
 
     @property
     def metadata(self):
         """Get the metadata service."""
         metadata_service = self.find_service_by_type(ServiceTypes.METADATA)
-        return metadata_service.values['metadata']
+        return metadata_service.values['metadata'] if metadata_service else None
+
+    @property
+    def created(self):
+        return self._created
+
+    def assign_did(self, did):
+        if self._did:
+            raise AssertionError('"did" is already set on this DDO instance.')
+        assert did and isinstance(did, str), \
+            f'did must be of str type, got {did} of type {type(did)}'
+        assert did.startswith(OCEAN_PREFIX), \
+            f'"did" seems invalid, must start with {OCEAN_PREFIX} prefix.'
+        self._did = did
 
     def add_public_key(self, did, public_key):
         """
@@ -84,13 +100,13 @@ class DDO:
         """
         logger.debug(f'Adding public key {public_key} to the did {did}')
         self._public_keys.append(
-            PublicKeyBase(did, **{"owner": public_key, "type": "EthereumECDSAKey"}))
+            PublicKeyBase(did, **{"owner": public_key, "type": PUBLIC_KEY_TYPE_ETHEREUM_ECDSA}))
 
-    def add_authentication(self, public_key, authentication_type=None):
+    def add_authentication(self, public_key, authentication_type):
         """
         Add a authentication public key id and type to the list of authentications.
 
-        :param key_id: Key id, Authentication
+        :param public_key: Key id, Authentication
         :param authentication_type: Authentication type, str
         """
         authentication = {}
@@ -195,8 +211,6 @@ class DDO:
         """Add a proof to the DDO, based on the public_key id/index and signed with the private key
         add a static proof to the DDO, based on one of the public keys."""
 
-        # just incase clear out the current static proof property
-        self._proof = None
         self._proof = {
             'type': PROOF_TYPE,
             'created': DDO._get_timestamp(),
@@ -208,7 +222,7 @@ class DDO:
         """Return true if a static proof exists in this DDO."""
         return self._proof is not None
 
-    def get_public_key(self, key_id, is_search_embedded=False):
+    def get_public_key(self, key_id):
         """Key_id can be a string, or int. If int then the index in the list of keys."""
         if isinstance(key_id, int):
             return self._public_keys[key_id]
@@ -217,24 +231,16 @@ class DDO:
             if item.get_id() == key_id:
                 return item
 
-        if is_search_embedded:
-            for authentication in self._authentications:
-                if authentication.get_public_key_id() == key_id:
-                    return authentication.get_public_key()
         return None
 
     def _get_public_key_count(self):
         """Return the count of public keys in the list and embedded."""
-        index = len(self._public_keys)
-        for authentication in self._authentications:
-            if authentication.is_public_key():
-                index += 1
-        return index
+        return len(self._public_keys)
 
     def _get_authentication_from_public_key_id(self, key_id):
         """Return the authentication based on it's id."""
         for authentication in self._authentications:
-            if authentication.is_key_id(key_id):
+            if authentication['publicKey'] == key_id:
                 return authentication
         return None
 
@@ -304,14 +310,15 @@ class DDO:
         if values.get('type') == PUBLIC_KEY_TYPE_RSA:
             public_key = PublicKeyRSA(_id, owner=values.get('owner'))
         else:
-            public_key = PublicKeyBase(_id, owner=values.get('owner'), type='EthereumECDSAKey')
+            public_key = PublicKeyBase(
+                _id, owner=values.get('owner'), type=PUBLIC_KEY_TYPE_ETHEREUM_ECDSA)
 
         public_key.set_key_value(values)
         return public_key
 
     @staticmethod
     def create_authentication_from_json(values):
-        """Create authentitaciton object from a JSON string."""
+        """Create authentication object from a JSON dict."""
         key_id = values.get('publicKey')
         authentication_type = values.get('type')
         if not key_id:
@@ -319,7 +326,6 @@ class DDO:
                 f'Invalid authentication definition, "publicKey" is missing: {values}')
 
         authentication = {'type': authentication_type, 'publicKey': key_id}
-
         return authentication
 
     @staticmethod

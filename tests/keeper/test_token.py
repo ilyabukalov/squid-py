@@ -5,11 +5,12 @@
 import pytest
 
 from squid_py.config_provider import ConfigProvider
+from squid_py.keeper.conditions import LockRewardCondition
 from squid_py.keeper.token import Token
 from tests.resources.helper_functions import get_consumer_account, get_publisher_account
 from tests.resources.tiers import e2e_test
 
-token = Token('OceanToken')
+token = Token.get_instance()
 consumer_account = get_consumer_account(ConfigProvider.get_config())
 publisher_account = get_publisher_account(ConfigProvider.get_config())
 
@@ -46,3 +47,37 @@ def test_token_approve_invalid_address():
 def test_token_approve_invalid_tokens():
     with pytest.raises(Exception):
         token.token_approve(consumer_account.address, -100, publisher_account)
+
+
+@e2e_test
+def test_token_allowance():
+    lock_reward_condition = LockRewardCondition(LockRewardCondition.CONTRACT_NAME)
+    allowance = token.get_allowance(consumer_account.address, lock_reward_condition.address)
+    if allowance > 0:
+        token.decrease_allowance(lock_reward_condition.address, allowance, consumer_account)
+        allowance = token.get_allowance(consumer_account.address, lock_reward_condition.address)
+    assert allowance == 0
+
+    assert token.token_approve(lock_reward_condition.address, 77, consumer_account) is True
+    allowance = token.get_allowance(consumer_account.address, lock_reward_condition.address)
+    assert allowance == 77
+
+    assert token.token_approve(lock_reward_condition.address, 49, consumer_account) is True
+    allowance = token.get_allowance(consumer_account.address, lock_reward_condition.address)
+    assert allowance == 49
+
+    token.decrease_allowance(lock_reward_condition.address, 5, consumer_account)
+    allowance = token.get_allowance(consumer_account.address, lock_reward_condition.address)
+    assert allowance == 44
+
+    token.increase_allowance(lock_reward_condition.address, 10, consumer_account)
+    allowance = token.get_allowance(consumer_account.address, lock_reward_condition.address)
+    assert allowance == 54
+
+
+@e2e_test
+def test_token_transfer():
+    balance = token.get_token_balance(publisher_account.address)
+    token.transfer(publisher_account.address, 3, consumer_account)
+    new_balance = token.get_token_balance(publisher_account.address)
+    assert new_balance == (balance + 3)

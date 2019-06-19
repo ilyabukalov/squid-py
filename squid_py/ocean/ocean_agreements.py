@@ -392,6 +392,7 @@ class OceanAgreements:
         if not event or not event.args:
             return
 
+        agreement_id = None
         try:
             agreement_id = Web3Provider.get_web3().toHex(event.args["_agreementId"])
             ids = AgreementsStorage(storage_path).get_agreement_ids()
@@ -402,7 +403,7 @@ class OceanAgreements:
                                  f'because it already been processed before.')
                     return
 
-            logger.debug(f'Start handle_agreement_created: event_args={event.args}')
+            logger.debug(f'Start handle_agreement_created (agreementId {agreement_id}): event_args={event.args}')
             if provider_account.address != event.args["_accessProvider"]:
                 return
 
@@ -429,6 +430,7 @@ class OceanAgreements:
                 condition_ids
             )
 
-            logger.debug(f'handle_agreement_created() -- done registering event listeners.')
+            logger.debug(f'handle_agreement_created()  (agreementId {agreement_id}) -- '
+                         f'done registering event listeners.')
         except Exception as e:
-            logger.error(f'Error in handle_agreement_created: {e}', exc_info=1)
+            logger.error(f'Error in handle_agreement_created (agreementId {agreement_id}): {e}', exc_info=1)

@@ -139,7 +139,8 @@ class MultiEventListener(object):
         try:
             events = event_filter.get_new_entries()
             if events and events[0] is not None:
-                callback(events[0], *args)
+                for event in events:
+                    callback(event, *args)
                 return True
 
         except (ValueError, Exception) as err:

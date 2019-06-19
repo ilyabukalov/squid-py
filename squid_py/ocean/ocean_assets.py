@@ -91,6 +91,8 @@ class OceanAssets:
 
         # Add public key and authentication
         ddo.add_public_key(did, publisher_account.address)
+
+        # :AUDIT: ssallam -- How does PUBLIC_KEY_TYPE_RSA authentication type apply to the did?
         ddo.add_authentication(did, PUBLIC_KEY_TYPE_RSA)
 
         # Setup metadata service

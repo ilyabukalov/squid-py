@@ -15,7 +15,7 @@ from tests.resources.tiers import e2e_test
 
 @pytest.fixture()
 def dispenser():
-    return Dispenser('Dispenser')
+    return Dispenser.get_instance()
 
 
 @e2e_test
