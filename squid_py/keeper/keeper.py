@@ -49,8 +49,8 @@ class Keeper(object):
             artifacts_path = ConfigProvider.get_config().keeper_path
         self.artifacts_path = artifacts_path
         self.accounts = Web3Provider.get_web3().eth.accounts
-
-        self.dispenser = Dispenser.get_instance()
+        if self.network_name != 'pacific':
+            self.dispenser = Dispenser.get_instance()
         self.token = Token.get_instance()
         self.did_registry = DIDRegistry.get_instance()
         self.template_manager = TemplateStoreManager.get_instance()
