@@ -17,6 +17,13 @@ class Dispenser(ContractBase):
 
     CONTRACT_NAME = 'Dispenser'
 
+    @staticmethod
+    def get_scale():
+        return 10 ** 18
+
+    def request_vodkas(self, amount, account):
+        self.request_tokens(max(1, int(amount/self.get_scale())), account)
+
     def request_tokens(self, amount, account):
         """
         Request an amount of tokens for a particular address.

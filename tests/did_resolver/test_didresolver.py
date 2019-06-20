@@ -27,40 +27,6 @@ def keeper():
 
 
 @e2e_test
-def test_did_registry_register(publisher_ocean_instance):
-    ocean = publisher_ocean_instance
-
-    register_account = ocean.main_account
-    did_registry = keeper().did_registry
-    did_id = secrets.token_hex(32)
-    did_test = 'did:op:' + did_id
-    checksum_test = Web3.sha3(text='checksum')
-    value_test = 'http://localhost:5000'
-
-    # register DID-> URL
-    assert did_registry.register(did_test, checksum_test, url=value_test, account=register_account)
-
-
-@e2e_test
-def test_did_registry_no_account_provided():
-    did_registry = keeper().did_registry
-    did_id = secrets.token_hex(32)
-    did_test = 'did:op:' + did_id
-    checksum_test = Web3.sha3(text='checksum')
-    value_test = 'http://localhost:5000'
-    # No checksum provided
-    with pytest.raises(TypeError):
-        did_registry.register(did_test, url=value_test)
-    # No account provided
-    with pytest.raises(ValueError):
-        did_registry.register(did_test, did_test, url=value_test, account=None)
-
-    # Invalide key field provided
-    with pytest.raises(ValueError):
-        did_registry.register(did_test, checksum_test, url=value_test, account=None)
-
-
-@e2e_test
 def test_did_resolver_library(publisher_ocean_instance):
     ocean = publisher_ocean_instance
     register_account = ocean.main_account

@@ -6,18 +6,24 @@
 
 import json
 
+import pytest
+
 from examples import ExampleConfig
 from squid_py.ddo.ddo import DDO
 from squid_py.ddo.public_key_base import (
     PUBLIC_KEY_STORE_TYPE_BASE64,
     PUBLIC_KEY_STORE_TYPE_BASE85,
     PUBLIC_KEY_STORE_TYPE_HEX,
-    PUBLIC_KEY_STORE_TYPE_PEM
-)
+    PUBLIC_KEY_STORE_TYPE_PEM,
+    PublicKeyBase)
+from squid_py.ddo.public_key_hex import AUTHENTICATION_TYPE_HEX
+from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_ETHEREUM_ECDSA, PUBLIC_KEY_TYPE_RSA
 from squid_py.did import DID
 from squid_py.keeper.keeper import Keeper
+from squid_py.keeper.web3_provider import Web3Provider
+from squid_py.utils.utilities import get_public_key_from_address
 from tests.resources.helper_functions import get_publisher_account, get_resource_path
-from tests.resources.tiers import unit_test
+from tests.resources.tiers import unit_test, e2e_test
 
 public_key_store_types = [
     PUBLIC_KEY_STORE_TYPE_PEM,
@@ -150,7 +156,7 @@ def generate_sample_ddo():
     ddo.add_proof('checksum', pub_acc, Keeper.get_instance())
 
     metadata = json.loads(TEST_METADATA)
-    ddo.add_service("Metadata", "http://myaquarius.org/api/v1/provider/assets/metadata/{did}",
+    ddo.add_service("Metadata", f"http://myaquarius.org/api/v1/provider/assets/metadata/{did}",
                     values={'metadata': metadata})
     for test_service in TEST_SERVICES:
         if 'values' in test_service:
@@ -165,23 +171,21 @@ def generate_sample_ddo():
     return ddo
 
 
-@unit_test
+@e2e_test
 def test_creating_ddo():
     did = DID.did()
-    assert did
     ddo = DDO(did)
-    assert ddo
+    assert ddo.did == did
+
     config = ExampleConfig.get_config()
     pub_acc = get_publisher_account(config)
 
     ddo.add_service(TEST_SERVICE_TYPE, TEST_SERVICE_URL)
-
     assert len(ddo.services) == 1
 
     ddo_text_no_proof = ddo.as_text()
     assert ddo_text_no_proof
 
-    ddo_text_proof = ''
     ddo.add_proof('checksum', pub_acc, Keeper.get_instance())
     ddo_text_proof = ddo.as_text()
 
@@ -193,17 +197,68 @@ def test_creating_ddo():
 
 
 @unit_test
-def test_creating_did_using_ddo():
+def test_creating_ddo_from_scratch():
     # create an empty ddo
     ddo = DDO()
-    assert ddo
+    assert ddo.did == ''
+    assert ddo.asset_id is None
+    assert ddo.created is not None
+
+    did = DID.did()
+    ddo.assign_did(did)
+    assert ddo.did == did
+
     config = ExampleConfig.get_config()
     pub_acc = get_publisher_account(config)
+
     ddo.add_service(TEST_SERVICE_TYPE, TEST_SERVICE_URL)
+
     # add a proof to the first public_key/authentication
     ddo.add_proof('checksum', pub_acc, Keeper.get_instance())
     ddo_text_proof = ddo.as_text()
     assert ddo_text_proof
+
+    config = ExampleConfig.get_config()
+    pub_acc = get_publisher_account(config)
+    assert not ddo.public_keys
+    ddo.add_public_key(did, get_public_key_from_address(Web3Provider.get_web3(), pub_acc))
+    assert len(ddo.public_keys) == 1
+    assert ddo.get_public_key(0) == ddo.public_keys[0]
+    with pytest.raises(IndexError):
+        ddo.get_public_key(1)
+
+    assert ddo.get_public_key(did) == ddo.public_keys[0]
+    assert ddo.get_public_key('0x32233') is None
+
+    assert not ddo.authentications
+    ddo.add_authentication(did, AUTHENTICATION_TYPE_HEX)
+    assert len(ddo.authentications) == 1
+
+
+@unit_test
+def test_create_auth_from_json():
+    auth = {'publicKey': '0x00000', 'type': 'auth-type', 'nothing': ''}
+    assert DDO.create_authentication_from_json(auth) == \
+        {'publicKey': '0x00000', 'type': 'auth-type'}
+    with pytest.raises(ValueError):
+        DDO.create_authentication_from_json({'type': 'auth-type'})
+
+
+@unit_test
+def test_create_public_key_from_json():
+    pkey = {'id': 'pkeyid', 'type': 'keytype', 'owner': '0x00009'}
+    pub_key_inst = DDO.create_public_key_from_json(pkey)
+    assert isinstance(pub_key_inst, PublicKeyBase)
+    assert pub_key_inst.get_id() == pkey['id']
+    assert pub_key_inst.get_type() == PUBLIC_KEY_TYPE_ETHEREUM_ECDSA
+    assert pub_key_inst.get_owner() == pkey['owner']
+
+    pub_key_inst = DDO.create_public_key_from_json(
+        {'type': PUBLIC_KEY_TYPE_RSA}
+    )
+    assert pub_key_inst.get_id() == ''
+    assert pub_key_inst.get_type() == PUBLIC_KEY_TYPE_RSA
+    assert pub_key_inst.get_owner() is None
 
 
 @unit_test

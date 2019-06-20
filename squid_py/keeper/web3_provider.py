@@ -37,3 +37,7 @@ class Web3Provider(object):
             Web3Provider._web3.testing = getattr(Web3Provider._web3, 'testing')
 
         return Web3Provider._web3
+
+    @staticmethod
+    def set_web3(web3):
+        Web3Provider._web3 = web3

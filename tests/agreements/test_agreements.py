@@ -67,7 +67,7 @@ def test_escrow_access_secret_store_template_flow(setup_agreements_enviroment):
         assert int(cond.state) == 1
 
     # Give consumer some tokens
-    keeper.dispenser.request_tokens(price, consumer_acc)
+    keeper.dispenser.request_vodkas(price, consumer_acc)
 
     # Fulfill lock_reward_condition
     pub_token_balance = keeper.token.get_token_balance(publisher_acc.address)
