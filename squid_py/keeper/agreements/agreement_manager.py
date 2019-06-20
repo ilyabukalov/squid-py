@@ -74,7 +74,7 @@ class AgreementStoreManager(ContractBase):
         :param agreement_id: id of the agreement, hex str
         :return: the DID owner associated with agreement.did from the DID registry.
         """
-        return self.contract_concise.getAgreementDidOwner(agreement_id)
+        return self.contract_concise.getAgreementDIDOwner(agreement_id)
 
     def get_num_agreements(self):
         """Return the size of the Agreements list.

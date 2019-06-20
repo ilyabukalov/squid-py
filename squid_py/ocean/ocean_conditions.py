@@ -4,6 +4,7 @@
 from eth_utils import add_0x_prefix
 
 from squid_py.did import did_to_id
+from squid_py.keeper.web3_provider import Web3Provider
 
 
 class OceanConditions:
@@ -57,11 +58,12 @@ class OceanConditions:
         agreement_values = self._keeper.agreement_manager.get_agreement(agreement_id)
         consumer, provider = self._keeper.escrow_access_secretstore_template.get_agreement_data(
             agreement_id)
+        owner = agreement_values.owner
         access_id, lock_id = agreement_values.condition_ids[:2]
         tx_hash = self._keeper.escrow_reward_condition.fulfill(
             agreement_id,
             amount,
-            provider,
+            Web3Provider.get_web3().toChecksumAddress(owner),
             consumer,
             lock_id,
             access_id,
