@@ -64,9 +64,9 @@ class Keeper(object):
         self.hash_lock_condition = HashLockCondition.get_instance()
 
     @staticmethod
-    def get_instance():
+    def get_instance(artifacts_path=None):
         """Return the Keeper instance (singleton)."""
-        return Keeper()
+        return Keeper(artifacts_path)
 
     @staticmethod
     def get_network_name(network_id):
@@ -96,6 +96,8 @@ class Keeper(object):
     @staticmethod
     def sign_hash(msg_hash, account):
         """
+        This method use `personal_sign`for signing a message. This will always prepend the
+        `\x19Ethereum Signed Message:\n32` prefix before signing.
 
         :param msg_hash:
         :param account: Account
@@ -107,6 +109,16 @@ class Keeper(object):
 
     @staticmethod
     def ec_recover(message, signed_message):
+        """
+        This method uses `personal_ecRecover` which prepends the message with the
+        `\x19Ethereum Signed Message:\n32` prefix.
+        Hence, it's important to not prepend the message with this prefix when recovering the
+        signer address.
+
+        :param message:
+        :param signed_message:
+        :return:
+        """
         w3 = Web3Provider.get_web3()
         v, r, s = split_signature(w3, w3.toBytes(hexstr=signed_message))
         signature_object = SignatureFix(vrs=(v, big_endian_to_int(r), big_endian_to_int(s)))

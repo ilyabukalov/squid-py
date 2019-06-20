@@ -76,7 +76,7 @@ class MetadataBase(object):
         'inLanguage': "en",
         'categories': ["white-papers"],
         'tags': ["data exchange", "sharing", "curation", "bonding curve"],
-        'price': "23",
+        'price': "10000000000000000000",
         'files': [
             {
                 "index": 0,

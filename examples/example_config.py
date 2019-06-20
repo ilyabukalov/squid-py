@@ -134,6 +134,6 @@ class ExampleConfig:
 
     @staticmethod
     def get_config():
-        logging.info("Configuration loaded for environment '{}'"
+        logging.debug("Configuration loaded for environment '{}'"
                      .format(ExampleConfig.get_config_net()))
         return Config(options_dict=ExampleConfig.get_config_dict())

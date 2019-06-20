@@ -3,7 +3,6 @@
 
 from collections import namedtuple
 
-from squid_py.config import DEFAULT_GAS_LIMIT
 from squid_py.keeper import ContractBase
 
 AgreementTemplate = namedtuple(

@@ -85,8 +85,6 @@ class AgreementsStorage(StorageBase):
                 query += " WHERE status=?"
 
             agreement_ids = {row[0] for row in self._run_query(query, args)}
-            logger.debug(f'Read agreement ids from `service_agreements` storage: '
-                         f'agreementIds={agreement_ids}')
             return agreement_ids
         except Exception as e:
             logger.error(f'db error getting agreement ids: {e}')

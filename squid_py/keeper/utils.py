@@ -29,13 +29,14 @@ def generate_multi_value_hash(types, values):
     )
 
 
-def process_tx_receipt(tx_hash, event_instance, event_name):
+def process_tx_receipt(tx_hash, event_instance, event_name, agreement_id=None):
     """
     Wait until the tx receipt is processed.
 
     :param tx_hash: hash of the transaction
     :param event_instance: instance of ContractEvent
     :param event_name: name of the event to subscribe, str
+    :param agreement_id: hex str
     :return:
     """
     if not isinstance(tx_hash, bytes):
@@ -50,7 +51,7 @@ def process_tx_receipt(tx_hash, event_instance, event_name):
     except Timeout:
         logger.info(f'Waiting for {event_name} transaction receipt timed out. '
                     f'Cannot verify receipt and event.')
-        return
+        return False
 
     receipt = web3.eth.getTransactionReceipt(tx_hash)
     event_logs = event_instance.processReceipt(receipt)
@@ -64,4 +65,7 @@ def process_tx_receipt(tx_hash, event_instance, event_name):
 
     if receipt and receipt.status == 0:
         logger.warning(
-            f'Transaction failed: tx_hash {tx_hash.hex()}, tx event {event_name}, receipt {receipt}')
+            f'Transaction failed: tx_hash {tx_hash.hex()}, tx event {event_name}, receipt {receipt}, id {agreement_id}')
+        return False
+
+    return True
