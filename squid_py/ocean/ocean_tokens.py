@@ -1,6 +1,7 @@
 """Ocean module."""
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
+import logging
 
 
 class OceanTokens:
@@ -17,6 +18,12 @@ class OceanTokens:
         :param amount: int number of tokens to request
         :return: bool
         """
+        if not self._keeper.dispenser:
+            network_id = self._keeper.get_network_id()
+            logging.warning(f'The Dispenser contract is not available for the current '
+                            f'keeper network {self._keeper.get_network_name(network_id)}.')
+            return False
+
         return self._keeper.dispenser.request_tokens(amount, account)
 
     def transfer(self, receiver_address, amount, sender_account):
