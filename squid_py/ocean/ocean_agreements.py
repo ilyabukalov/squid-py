@@ -104,7 +104,7 @@ class OceanAgreements:
             agreement_id, asset.asset_id, consumer_account.address, publisher_address, self._keeper)
 
         am = AgreementsManager(
-            self._config, self._keeper, EventsManager(self._keeper), self._config.storage_path)
+            self._config, self._keeper, EventsManager.get_instance(self._keeper), self._config.storage_path)
         am.register_consumer(
             publisher_address, agreement_id, did, service_agreement,
             service_definition_id, service_agreement.get_price(), asset.encrypted_files,
@@ -221,7 +221,7 @@ class OceanAgreements:
 
         if success:
             am = AgreementsManager(
-                self._config, self._keeper, EventsManager(self._keeper), self._config.storage_path)
+                self._config, self._keeper, EventsManager.get_instance(self._keeper), self._config.storage_path)
 
             # subscribe to events related to this agreement_id
             if consumer_address == account.address:
