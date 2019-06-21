@@ -414,7 +414,7 @@ class OceanAgreements:
                 keeper=self._keeper
             )
             AgreementsManager(
-                self._config, self._keeper, EventsManager(self._keeper), storage_path
+                self._config, self._keeper, EventsManager.get_instance(self._keeper), storage_path
             ).register_publisher(
                 event.args["_accessConsumer"],
                 agreement_id,
