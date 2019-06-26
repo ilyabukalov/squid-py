@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class EventListener(object):
     """Class representing an event listener."""
 
-    def __init__(self, contract_name, event_name, args=None, from_block=0, to_block='latest',
+    def __init__(self, contract_name, event_name, args=None, from_block='latest', to_block='latest',
                  filters=None):
         contract = ContractHandler.get(contract_name)
         self.event_name = event_name

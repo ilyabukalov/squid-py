@@ -4,6 +4,7 @@
 import logging
 
 from squid_py.keeper import ContractBase, utils
+from squid_py.keeper.event_filter import EventFilter
 from squid_py.keeper.web3_provider import Web3Provider
 
 logger = logging.getLogger('escrowAccessSecretStoreTemplate')
@@ -82,3 +83,21 @@ class ConditionBase(ContractBase):
             args=args,
             wait=wait
         )
+
+    def get_event_filter_fulfilled(self, agreement_id=None, from_block='latest', to_block='latest'):
+        _filter = {}
+        if agreement_id:
+            assert isinstance(agreement_id, str) or isinstance(agreement_id, bytes)
+            if isinstance(agreement_id, str) and agreement_id.startswith('0x'):
+                agreement_id = Web3Provider.get_web3().toBytes(hexstr=agreement_id)
+            _filter['_agreementId'] = agreement_id
+
+        event_filter = EventFilter(
+            self.FULFILLED_EVENT,
+            getattr(self.events, self.FULFILLED_EVENT),
+            _filter,
+            from_block=from_block,
+            to_block=to_block
+        )
+        event_filter.set_poll_interval(0.5)
+        return event_filter

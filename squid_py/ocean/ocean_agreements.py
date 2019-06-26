@@ -11,7 +11,7 @@ from squid_py.agreements.service_agreement import ServiceAgreement
 from squid_py.agreements.service_types import ServiceTypes
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.data_store.agreements import AgreementsStorage
-from squid_py.did import did_to_id, id_to_did
+from squid_py.did import did_to_id, id_to_did, did_to_id_bytes
 from squid_py.exceptions import (OceanInvalidAgreementTemplate,
                                  OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists)
 from squid_py.keeper.web3_provider import Web3Provider
@@ -104,7 +104,9 @@ class OceanAgreements:
             agreement_id, asset.asset_id, consumer_account.address, publisher_address, self._keeper)
 
         am = AgreementsManager(
-            self._config, self._keeper, EventsManager(self._keeper), self._config.storage_path)
+            self._config, self._keeper,
+            EventsManager.get_instance(self._keeper, self._config.storage_path),
+            self._config.storage_path)
         am.register_consumer(
             publisher_address, agreement_id, did, service_agreement,
             service_definition_id, service_agreement.get_price(), asset.encrypted_files,
@@ -221,7 +223,11 @@ class OceanAgreements:
 
         if success:
             am = AgreementsManager(
-                self._config, self._keeper, EventsManager(self._keeper), self._config.storage_path)
+                self._config,
+                self._keeper,
+                EventsManager.get_instance(self._keeper, self._config.storage_path),
+                self._config.storage_path
+            )
 
             # subscribe to events related to this agreement_id
             if consumer_address == account.address:
@@ -353,7 +359,7 @@ class OceanAgreements:
         return result
 
     def subscribe_events(self, provider_address, callback):
-        events_manager = EventsManager.get_instance(self._keeper)
+        events_manager = EventsManager.get_instance(self._keeper, self._config.storage_path)
         events_manager.agreement_listener.add_event_filter(
             '_accessProvider',
             provider_address,
@@ -373,15 +379,11 @@ class OceanAgreements:
         :param provider_account: Account instance
         :return: None
         """
-        events_manager = EventsManager.get_instance(self._keeper)
-        events_manager.agreement_listener.add_event_filter(
-            '_accessProvider',
-            provider_account.address,
+        events_manager = EventsManager.get_instance(self._keeper, self._config.storage_path)
+        events_manager.watch_agreement_provider_event(
+            provider_account,
+            self._config.storage_path,
             self._handle_agreement_created_event,
-            None,
-            (provider_account, self._config.storage_path),
-            None,
-            pin_event=True
         )
 
     def _handle_agreement_created_event(self, event, provider_account, storage_path, *_):
@@ -414,7 +416,10 @@ class OceanAgreements:
                 keeper=self._keeper
             )
             AgreementsManager(
-                self._config, self._keeper, EventsManager(self._keeper), storage_path
+                self._config,
+                self._keeper,
+                EventsManager.get_instance(self._keeper, self._config.storage_path),
+                storage_path
             ).register_publisher(
                 event.args["_accessConsumer"],
                 agreement_id,

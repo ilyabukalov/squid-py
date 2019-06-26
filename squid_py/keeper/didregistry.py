@@ -220,6 +220,11 @@ class DIDRegistry(ContractBase):
         block_filter = self._get_event_filter(did=did, from_block=block_number,
                                               to_block=block_number)
         log_items = block_filter.get_all_entries(max_tries=5)
+        if not log_items:
+            block_filter = self._get_event_filter(did=did, from_block=block_number - 1,
+                                                  to_block=block_number + 1)
+            log_items = block_filter.get_all_entries(max_tries=3)
+
         if log_items:
             log_item = log_items[-1].args
             value = log_item['_value']

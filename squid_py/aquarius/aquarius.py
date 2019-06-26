@@ -25,6 +25,7 @@ class Aquarius:
 
         :param aquarius_url: Url of the aquarius instance.
         """
+        assert aquarius_url, f'Invalid url "{aquarius_url}"'
         # :HACK:
         if '/api/v1/aquarius/assets' in aquarius_url:
             aquarius_url = aquarius_url[:aquarius_url.find('/api/v1/aquarius/assets')]

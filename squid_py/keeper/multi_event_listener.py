@@ -32,10 +32,11 @@ class MultiEventListener(object):
 
     def make_event_filter(self, filter_key, filter_value):
         """Create a new event filter."""
+        _filter = {filter_key: filter_value} if filter_key else {}
         event_filter = EventFilter(
             self.event_name,
             self.event,
-            {filter_key: filter_value},
+            _filter,
             from_block=self.from_block,
             to_block=self.to_block
         )
@@ -57,6 +58,9 @@ class MultiEventListener(object):
                 start_time = int(datetime.now().timestamp())
 
         with self._lock:
+            if not filter_key:
+                filter_key = 'generic'
+                filter_value = 'generic'
             events_dict = self._pinned_events if pin_event else self._event_filters
             events_dict[(filter_key, filter_value)] = (
                 (event_filter, callback, timeout_callback, args, timeout, start_time)
@@ -137,11 +141,14 @@ class MultiEventListener(object):
         :return:
         """
         try:
-            events = event_filter.get_new_entries()
-            if events and events[0] is not None:
+            events = event_filter.get_all_entries()
+            if events:
+                processed_some_events = False
                 for event in events:
-                    callback(event, *args)
-                return True
+                    if event:
+                        callback(event, *args)
+                        processed_some_events = True
+                return processed_some_events
 
         except (ValueError, Exception) as err:
             # ignore error, but log it

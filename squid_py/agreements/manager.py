@@ -161,7 +161,7 @@ class AgreementsManager:
         keeper = self._keeper
         # service_agreement_id, did, service_definition_id, price, files, start_time, status
         for (agreement_id, did, _, price, _, _, _
-             ) in AgreementsStorage(self._storage_path).get_service_agreements():
+             ) in AgreementsStorage(self._storage_path).get_agreements():
 
             ddo = did_resolver_fn(did)
             service = ddo.get_service(ServiceTypes.ASSET_ACCESS)
