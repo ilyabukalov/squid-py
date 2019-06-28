@@ -116,7 +116,7 @@ class EventListener(object):
                 # ignore error, but log it
                 logger.debug(f'Got error grabbing keeper events: {str(err)}')
 
-            time.sleep(0.1)
+            time.sleep(0.5)
             if timeout:
                 elapsed = int(datetime.now().timestamp()) - start_time
                 if elapsed > timeout:

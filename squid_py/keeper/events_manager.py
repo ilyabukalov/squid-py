@@ -109,11 +109,11 @@ class EventsManager:
         self._monitor_is_on = False
         self._monitor_enabled = bool(os.getenv('OCN_SQUID_EVENTS_MONITOR_ON', 'True') == 'True')
         try:
-            self._monitor_sleep_time = os.getenv('OCN_SQUID_EVENTS_MONITOR_TIME', 5)
+            self._monitor_sleep_time = os.getenv('OCN_SQUID_EVENTS_MONITOR_TIME', 3)
         except ValueError:
-            self._monitor_sleep_time = 5
+            self._monitor_sleep_time = 3
 
-        self._monitor_sleep_time = max(self._monitor_sleep_time, 10)
+        self._monitor_sleep_time = max(self._monitor_sleep_time, 3)
         if self._monitor_enabled:
             logger.info(
                 f'events monitor is enabled in env var '
@@ -220,7 +220,7 @@ class EventsManager:
             self._account.address, from_block, to_block)
         logger.debug(f'getting event logs in range {from_block} to {to_block} for provider address {self._account.address}')
         logs = event_filter.get_all_entries(max_tries=5)
-        event_filter.uninstall()
+        # event_filter.uninstall()
         return logs
 
     def _handle_agreement_created_event(self, event, *_):

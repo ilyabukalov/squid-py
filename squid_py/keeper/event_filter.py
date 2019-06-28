@@ -32,8 +32,6 @@ class EventFilter:
         self._create_filter()
 
     def _create_filter(self):
-        logger.debug(f'creating filter: event={self.event_name}, '
-                     f'arg-filter={self.argument_filters}, from/to={self.block_range}')
         self._filter = self.event().createFilter(
             fromBlock=self.block_range[0],
             toBlock=self.block_range[1],
@@ -61,8 +59,8 @@ class EventFilter:
                 if 'Filter not found' in str(e):
                     logger.debug(f'recreating filter (Filter not found): event={self.event_name}, '
                                  f'arg-filter={self.argument_filters}, from/to={self.block_range}')
+                    time.sleep(1)
                     self._create_filter()
-                    continue
                 else:
                     raise
 
