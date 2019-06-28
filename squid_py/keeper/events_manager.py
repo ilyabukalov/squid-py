@@ -107,18 +107,12 @@ class EventsManager:
         logger.debug(f'starting events monitor: latest block number {self.latest_block}')
 
         self._monitor_is_on = False
-        self._monitor_enabled = bool(os.getenv('OCN_SQUID_EVENTS_MONITOR_ON', 'True') == 'True')
         try:
             self._monitor_sleep_time = os.getenv('OCN_SQUID_EVENTS_MONITOR_TIME', 3)
         except ValueError:
             self._monitor_sleep_time = 3
 
         self._monitor_sleep_time = max(self._monitor_sleep_time, 3)
-        if self._monitor_enabled:
-            logger.info(
-                f'events monitor is enabled in env var '
-                f'OCN_SQUID_EVENTS_MONITOR_ON (value={os.getenv("OCN_SQUID_EVENTS_MONITOR_ON")}')
-            self.start_agreement_events_monitor()
 
     @staticmethod
     def get_instance(keeper, storage_path, account):
