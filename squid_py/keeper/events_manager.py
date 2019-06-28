@@ -7,39 +7,29 @@ import time
 from datetime import datetime
 from threading import Thread
 
-from squid_py.agreements.events.access_secret_store_condition import fulfill_access_secret_store_condition
+from squid_py.agreements.events import access_secret_store_condition, escrow_reward_condition
 from squid_py.agreements.service_agreement import ServiceAgreement
+from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
+from squid_py.agreements.service_types import ServiceTypes
+from squid_py.agreements.utils import get_sla_template_path
 from squid_py.data_store.agreements import AgreementsStorage
+from squid_py.did import id_to_did
 from squid_py.did_resolver.did_resolver import DIDResolver
-from squid_py.keeper.multi_event_listener import MultiEventListener
 from squid_py.keeper.web3_provider import Web3Provider
 
 logger = logging.getLogger(__name__)
 
 
 class AgreementRecord:
-    ESCROW_REWARD = AgreementsStorage.ESCROW_REWARD_NAME
-    ACCESS_SECRETSTORE = AgreementsStorage.ACCESS_NAME
-    LOCK_REWARD = AgreementsStorage.LOCK_REWARD_NAME
 
-    def __init__(self, agreement_id, publisher, consumer, provider, did, condition_ids):
+    def __init__(self, agreement_id, publisher, consumer, provider, did, condition_to_id):
         self.agreement_id = agreement_id
         self.publisher = publisher
         self.consumer = consumer
         self.provider = provider
         self.did = did
-        self.condition_ids = {
-            self.ACCESS_SECRETSTORE: condition_ids[0],
-            self.LOCK_REWARD: condition_ids[1],
-            self.ESCROW_REWARD: condition_ids[2],
-        }
-        self.cond_state = {
-            self.ACCESS_SECRETSTORE: 0,
-            self.LOCK_REWARD: 0,
-            self.ESCROW_REWARD: 0,
-
-        }
-
+        self.condition_to_id = condition_to_id
+        self.cond_state = {cond: 0 for cond in condition_to_id.keys()}
         self.created = int(datetime.now().timestamp())
 
     @property
@@ -51,7 +41,7 @@ class AgreementRecord:
         return {cond for cond, state in self.cond_state.items() if state < 2}
 
     def get_condition_id(self, cond):
-        return self.condition_ids[cond]
+        return self.condition_to_id.get(cond)
 
     def update_cond_state(self, cond, state):
         self.cond_state[cond] = state
@@ -65,7 +55,7 @@ class EventsManager:
     """Manage the main keeper events listeners necessary for processing service agreements.
 
     on init
-        if not db -> create db
+        if not db or not db schema -> create db and schema
         determine LAST_N_BLOCKS (allow setting from outside using an env var)
         read agreements from local database since LAST_N_BLOCKS
             keep set of completed/fulfilled (all conditions fulfilled) agreements to avoid reprocessing during event processing
@@ -86,59 +76,42 @@ class EventsManager:
     """
     _instance = None
 
-    def __init__(self, keeper, storage_path):
+    EVENT_WAIT_TIMEOUT = 3600
+    LAST_N_BLOCKS = 200
+
+    def __init__(self, keeper, storage_path, account):
         self._keeper = keeper
         self._storage_path = storage_path
+        self._account = account
         self._web3 = Web3Provider.get_web3()
+        self._db = AgreementsStorage(self._storage_path)
 
         self.known_agreement_ids = set()
         self.completed_ids = set()
         self.other_agreement_ids = set()
-        self.condition_event_names = {AgreementRecord.ESCROW_REWARD, AgreementRecord.LOCK_REWARD, AgreementRecord.ACCESS_SECRETSTORE}
 
-        self.event_type_map = {
-            'EscrowAccessTemplate': ['_accessConsumer', '_accessProvider', '_did'],
-            AgreementRecord.LOCK_REWARD: ['_rewardAddress', '_amount', '_conditionId'],
-            AgreementRecord.ACCESS_SECRETSTORE: ['_grantee', '_documentId', '_conditionId'],
-            AgreementRecord.ESCROW_REWARD: ['_receiver', '_amount', '_conditionId'],
-        }
+        # prepare condition names and events arguments dict
+        sla_template_path = get_sla_template_path()
+        sla_template = ServiceAgreementTemplate.from_json_file(sla_template_path)
+        self.condition_names = [cond.name for cond in sla_template.conditions]
+        self.event_to_arg_names = sla_template.get_event_to_args_map(self._keeper.contract_name_to_instance)
 
-        self.agreement_listener = MultiEventListener(
-            self._keeper.escrow_access_secretstore_template.CONTRACT_NAME,
-            self._keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT,
-        )
-        self.lock_cond_listener = MultiEventListener(
-            self._keeper.lock_reward_condition.CONTRACT_NAME,
-            self._keeper.lock_reward_condition.FULFILLED_EVENT,
-        )
-        self.access_cond_listener = MultiEventListener(
-            self._keeper.access_secret_store_condition.CONTRACT_NAME,
-            self._keeper.access_secret_store_condition.FULFILLED_EVENT,
-        )
-        self.reward_cond_listener = MultiEventListener(
-            self._keeper.escrow_reward_condition.CONTRACT_NAME,
-            self._keeper.escrow_reward_condition.FULFILLED_EVENT,
-        )
-
-        w3 = Web3Provider.get_web3()
-        db = AgreementsStorage(self._storage_path)
+        db = self.db
         db.create_tables()
         # get largest block_number from db or `latest` if db has no data
-        self.last_block_number = w3.eth.getBlock('latest')
-        db_latest = db.get_latest_block_number() or self.last_block_number
-        self.last_block_number = min(db_latest, self.last_block_number)
-        agreements, conditions = db.get_pending_agreements(self.last_block_number-500)
-        # :TODO: prepare pending agreements for processing later in the watcher loop
-        # for agrid, data in agreements.items():
-        #     AgreementRecord(agrid, )
-        # self.pending_agreements = agreements
+        self.last_n_blocks = os.getenv('OCN_EVENTS_MONITOR_LAST_N_BLOCKS', self.LAST_N_BLOCKS)
+        self.latest_block = self._web3.eth.blockNumber
+        db_latest = db.get_latest_block_number() or self.latest_block
+        self.latest_block = min(db_latest, self.latest_block)
+        self.last_processed_block = 0
+        logger.debug(f'starting events monitor: latest block number {self.latest_block}')
 
         self._monitor_is_on = False
-        self._monitor_enabled = bool(os.getenv('OCN_SQUID_EVENTS_MONITOR_ON') == 'True')
+        self._monitor_enabled = bool(os.getenv('OCN_SQUID_EVENTS_MONITOR_ON', 'True') == 'True')
         try:
-            self._monitor_sleep_time = os.getenv('OCN_SQUID_EVENTS_MONITOR_TIME', 30)
+            self._monitor_sleep_time = os.getenv('OCN_SQUID_EVENTS_MONITOR_TIME', 5)
         except ValueError:
-            self._monitor_sleep_time = 30
+            self._monitor_sleep_time = 5
 
         self._monitor_sleep_time = max(self._monitor_sleep_time, 10)
         if self._monitor_enabled:
@@ -148,11 +121,19 @@ class EventsManager:
             self.start_agreement_events_monitor()
 
     @staticmethod
-    def get_instance(keeper, storage_path):
-        if not EventsManager._instance:
-            EventsManager._instance = EventsManager(keeper, storage_path)
+    def get_instance(keeper, storage_path, account):
+        if not EventsManager._instance or EventsManager._instance.provider_account != account:
+            EventsManager._instance = EventsManager(keeper, storage_path, account)
 
         return EventsManager._instance
+
+    @property
+    def db(self):
+        return AgreementsStorage(self._storage_path)
+
+    @property
+    def provider_account(self):
+        return self._account
 
     @property
     def is_monitor_running(self):
@@ -162,6 +143,7 @@ class EventsManager:
         if self._monitor_is_on:
             return
 
+        logger.debug(f'Starting the agreement events monitor.')
         t = Thread(
             target=self.run_monitor,
             daemon=True,
@@ -173,167 +155,170 @@ class EventsManager:
     def stop_monitor(self):
         self._monitor_is_on = False
 
+    def process_pending_agreements(self, pending_agreements, conditions):
+        logger.debug(f'processing pending agreements, there is {len(pending_agreements)} agreements to process.')
+        for agreement_id in pending_agreements.keys():
+            data = pending_agreements[agreement_id]
+            did = data[0]
+            consumer_address = data[5]
+            block_number = data[6]
+            condition_state_dict = conditions[agreement_id]
+            self.process_condition_events(
+                agreement_id,
+                condition_state_dict,
+                did,
+                consumer_address,
+                block_number,
+                new_agreement=False
+            )
+
+    def get_next_block_range(self):
+        to_block = self._web3.eth.blockNumber
+        if self.last_processed_block:
+            block_range = self.last_processed_block - 1, to_block
+        else:
+            block_num = self.db.get_latest_block_number() or 0
+            assert block_num <= to_block
+            from_block = max(to_block - self.last_n_blocks, block_num)
+            block_range = from_block, to_block
+
+        logger.debug(f'next block range = {block_range}, latest block number: {to_block}')
+        return block_range
+
+    def do_first_check(self):
+        db = self.db
+        if not db.get_agreement_count():
+            return
+
+        block_num = db.get_latest_block_number()
+        agreements, conditions = db.get_pending_agreements(block_num - self.last_n_blocks)
+        self.process_pending_agreements(agreements, conditions)
+
     def run_monitor(self):
-        i = 0
-        completed_ids, id_to_pending_conditions = self.get_completed_and_pending_agreement_ids()
+        self.do_first_check()
         while True:
             try:
                 if not self._monitor_is_on:
                     return
 
-                # for name, event_filter in event_filters.items():
-                #     try:
-                #         events = event_filter.get_new_entries()
-                #         for event in events:
-                #             self.process_event(name, event)
-                #     except Exception as e:
-                #         logger.error(f'Error processing event: {str(e)}', exc_info=1)
+                _from, _to = self.get_next_block_range()
+                for event_log in self.get_agreement_events(_from, _to):
+                    self._handle_agreement_created_event(event_log)
+
+                self.last_processed_block = _to
 
             except Exception as e:
                 logger.debug(f'Error processing event: {str(e)}')
 
             time.sleep(self._monitor_sleep_time)
-            i += 1
-
-    def start_all_listeners(self):
-        self.agreement_listener.start_watching()
-        self.lock_cond_listener.start_watching()
-        self.access_cond_listener.start_watching()
-        self.reward_cond_listener.start_watching()
-
-    def stop_all_listeners(self):
-        self.agreement_listener.stop_watching()
-        self.lock_cond_listener.stop_watching()
-        self.access_cond_listener.stop_watching()
-        self.reward_cond_listener.stop_watching()
-
-    def watch_agreement_created_event(self, agreement_id, callback, timeout_callback,
-                                      args, timeout, start_time=None):
-        self.agreement_listener.add_event_filter(
-            '_agreementId',
-            Web3Provider.get_web3().toBytes(hexstr=agreement_id),
-            callback,
-            timeout_callback,
-            args,
-            timeout,
-            start_time
-        )
-
-    def watch_agreement_provider_event(self, provider_account, storage_path, callback):
-        self.agreement_listener.add_event_filter(
-            '_accessProvider',
-            provider_account.address,
-            self._agreement_created_callback(callback, provider_account),
-            None,
-            (provider_account, storage_path),
-            None,
-            pin_event=True
-        )
-        # self.watch_all_lock_reward_events(provider_account, fulfill_access_secret_store_condition)
-
-    def _agreement_created_callback(self, calback, provider_account):
-        def _callback(event, *args):
-            agreement_id = None
-            try:
-                provider = event.args._accessProvider
-                agreement_id = Web3Provider.get_web3().toHex(event.args._agreementId)
-                if provider.lower() != provider_account.address.lower():
-                    logger.debug(f'AgreementCreated event with agreementId {agreement_id}, but for different provider {provider}')
-                    return
-
-                if agreement_id not in self.known_agreement_ids:
-                    self.known_agreement_ids.add(agreement_id)
-                    # agreement = self._keeper.agreement_manager.get_agreement(agreement_id)
-                    # publisher = self._keeper.agreement_manager.contract_concise.getAgreementDIDOwner(agreement_id)
-                    # consumer, provider = self._keeper.escrow_access_secretstore_template.get_agreement_data(agreement_id)
-            except Exception as e:
-                logger.error(f'Error reporting agreement: {agreement_id}, {e}')
-            return calback(event, *args)
-
-        return _callback
-
-    def _lock_reward_callback(self, callback, provider_account, keeper):
-        def _callback(event, *_):
-            agreement_id = None
-            try:
-                logger.debug(f'lockReward.Fulfilled event: {event}')
-                agreement_id = Web3Provider.get_web3().toHex(event.args._agreementId)
-                if agreement_id in self.agreements_map:
-                    agreement = self.agreements_map[agreement_id]
-                    ddo = DIDResolver(keeper.did_registry)
-                    service_agreement = ServiceAgreement.from_ddo('Access', ddo)
-                    state = keeper.condition_manager.get_condition_state(agreement.condition_ids[0])
-                    if state < 2:
-                        logger.debug(
-                            f'Processing lockReward event on agreement {agreement_id} '
-                            f'=> access condition is not fulfilled yet, try to fulfill now.'
-                        )
-                        callback(event, agreement_id, agreement.did, service_agreement,
-                                 agreement.consumer, provider_account, agreement.condition_ids[0])
-
-            except Exception as e:
-                logger.error(f'Error processing lockReward event: agreement={agreement_id}, error={e}', exc_info=1)
-            return
-
-        return _callback
-
-    def watch_all_lock_reward_events(self, provider_account, callback):
-        self.lock_cond_listener.add_event_filter(
-            None,
-            None,
-            self._lock_reward_callback(callback, provider_account, self._keeper),
-            None,
-            (),
-            None,
-            None,
-            pin_event=True
-        )
-
-    def watch_lock_reward_event(self, agreement_id, callback, timeout_callback,
-                                args, timeout, start_time=None):
-        self.lock_cond_listener.add_event_filter(
-            '_agreementId',
-            Web3Provider.get_web3().toBytes(hexstr=agreement_id),
-            callback,
-            timeout_callback,
-            args,
-            timeout,
-            start_time
-        )
-
-    def watch_access_event(self, agreement_id, callback, timeout_callback,
-                           args, timeout, start_time=None):
-        self.access_cond_listener.add_event_filter(
-            '_agreementId',
-            Web3Provider.get_web3().toBytes(hexstr=agreement_id),
-            callback,
-            timeout_callback,
-            args,
-            timeout,
-            start_time
-        )
-
-    def watch_reward_event(self, agreement_id, callback, timeout_callback,
-                           args, timeout, start_time=None):
-        self.reward_cond_listener.add_event_filter(
-            '_agreementId',
-            Web3Provider.get_web3().toBytes(hexstr=agreement_id),
-            callback,
-            timeout_callback,
-            args,
-            timeout,
-            start_time
-        )
-
-    def get_agreements_from_keeper(self):
-        return []
 
     def get_last_block_number(self):
-        return self.last_block_number - 100
+        return self.latest_block - 100
 
-    def get_completed_and_pending_agreement_ids(self):
-        store = AgreementsStorage(self._storage_path)
-        _, agrid_to_conditions = store.get_pending_agreements(self.get_last_block_number())
-        pending_agreements = {_id: conditions for _id, conditions in agrid_to_conditions.items() if conditions}
-        completed_ids = store.get_completed_agreement_ids(self.get_last_block_number())
-        return completed_ids, pending_agreements
+    def get_agreement_events(self, from_block, to_block):
+        event_filter = self._keeper.escrow_access_secretstore_template.get_event_filter_for_agreement_created(
+            self._account.address, from_block, to_block)
+        logger.debug(f'getting event logs in range {from_block} to {to_block} for provider address {self._account.address}')
+        logs = event_filter.get_all_entries(max_tries=5)
+        event_filter.uninstall()
+        return logs
+
+    def _handle_agreement_created_event(self, event, *_):
+        if not event or not event.args:
+            return
+
+        if self._account.address != event.args["_accessProvider"]:
+            logger.debug(f'agreement event not for my address {self._account.address}, event provider address {event.args["_accessProvider"]}')
+            return
+        agreement_id = None
+        try:
+            agreement_id = self._web3.toHex(event.args["_agreementId"])
+            ids = self.db.get_agreement_ids()
+            if ids:
+                # logger.info(f'got agreement ids: #{agreement_id}#, ##{ids}##, \nid in ids: {agreement_id in ids}')
+                if agreement_id in ids:
+                    logger.debug(f'handle_agreement_created: skipping service agreement {agreement_id} '
+                                 f'because it already been processed before.')
+                    return
+
+            logger.debug(f'Start handle_agreement_created (agreementId {agreement_id}): event_args={event.args}')
+
+            did = id_to_did(event.args["_did"])
+
+            condition_state_dict = {
+                'lockReward': 1,
+                'accessSecretStore': 1,
+                'escrowReward': 1
+            }
+            self.process_condition_events(
+                agreement_id, condition_state_dict, did, event.args['_accessConsumer'],
+                event.blockNumber, new_agreement=True
+            )
+
+            logger.debug(f'handle_agreement_created()  (agreementId {agreement_id}) -- '
+                         f'done registering event listeners.')
+        except Exception as e:
+            logger.error(f'Error in handle_agreement_created (agreementId {agreement_id}): {e}', exc_info=1)
+
+    def _last_condition_fulfilled(self, _, agreement_id, cond_name_to_id):
+        # update db, escrow reward status to fulfilled
+        # log the success of this transaction
+        db = self.db
+        for cond, _id in cond_name_to_id.items():
+            state = self._keeper.condition_manager.get_condition_state(_id)
+            db.update_condition_status(agreement_id, cond, state)
+
+        logger.info(f'Agreement {agreement_id} is completed, all conditions are fulfilled.')
+
+    def process_condition_events(self, agreement_id, condition_state_dict, did,
+                                 consumer_address, block_number, new_agreement=True):
+
+        ddo = DIDResolver(self._keeper.did_registry).resolve(did)
+        service_agreement = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, ddo)
+        condition_def_dict = service_agreement.condition_by_name
+        price = service_agreement.get_price()
+        if new_agreement:
+            start_time = int(datetime.now().timestamp())
+            self.db.record_service_agreement(
+                agreement_id, ddo.did, service_agreement.service_definition_id, price,
+                ddo.metadata['base'].get('encryptedFiles'), consumer_address, start_time,
+                block_number, ServiceTypes.ASSET_ACCESS,
+                service_agreement.condition_by_name.keys()
+            )
+
+        condition_ids = service_agreement.generate_agreement_condition_ids(
+            agreement_id=agreement_id,
+            asset_id=ddo.asset_id,
+            consumer_address=consumer_address,
+            publisher_address=ddo.publisher,
+            keeper=self._keeper
+        )
+        cond_order = ['accessSecretStore', 'lockReward', 'escrowReward']
+        cond_to_id = {cond_order[i]: _id for i, _id in enumerate(condition_ids)}
+        for cond, state in condition_state_dict.items():
+            if cond == 'lockReward':
+                self._keeper.lock_reward_condition.subscribe_condition_fulfilled(
+                    agreement_id,
+                    max(condition_def_dict['lockReward'].timeout, self.EVENT_WAIT_TIMEOUT),
+                    access_secret_store_condition.fulfillAccessSecretStoreCondition,
+                    (agreement_id, ddo.did, service_agreement, consumer_address,
+                     self._account, condition_ids[0]),
+                    from_block=block_number
+                )
+            elif cond == 'accessSecretStore':
+                self._keeper.access_secret_store_condition.subscribe_condition_fulfilled(
+                    agreement_id,
+                    max(condition_def_dict['accessSecretStore'].timeout, self.EVENT_WAIT_TIMEOUT),
+                    escrow_reward_condition.fulfillEscrowRewardCondition,
+                    (agreement_id, service_agreement, price, consumer_address, self._account,
+                     condition_ids, condition_ids[2]),
+                    from_block=block_number
+                )
+            elif cond == 'escrowReward':
+                self._keeper.escrow_reward_condition.subscribe_condition_fulfilled(
+                    agreement_id,
+                    max(condition_def_dict['escrowReward'].timeout, self.EVENT_WAIT_TIMEOUT),
+                    self._last_condition_fulfilled,
+                    (agreement_id, cond_to_id),
+                    from_block=block_number
+                )

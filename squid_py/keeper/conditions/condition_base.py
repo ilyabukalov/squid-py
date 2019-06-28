@@ -60,7 +60,8 @@ class ConditionBase(ContractBase):
         return self.contract_concise.hashValues(*args, **kwargs)
 
     def subscribe_condition_fulfilled(self, agreement_id, timeout, callback, args,
-                                      timeout_callback=None, wait=False):
+                                      timeout_callback=None, wait=False,
+                                      from_block=None, to_block=None):
         """
         Subscribe to the condition fullfilled event.
 
@@ -70,6 +71,8 @@ class ConditionBase(ContractBase):
         :param args:
         :param timeout_callback:
         :param wait: if true block the listener until get the event, bool
+        :param from_block: int or None
+        :param to_block: int or None
         :return:
         """
         logger.debug(
@@ -81,10 +84,12 @@ class ConditionBase(ContractBase):
             callback=callback,
             timeout_callback=timeout_callback,
             args=args,
-            wait=wait
+            wait=wait,
+            from_block=from_block,
+            to_block=to_block
         )
 
-    def get_event_filter_fulfilled(self, agreement_id=None, from_block='latest', to_block='latest'):
+    def get_event_filter_for_fulfilled(self, agreement_id=None, from_block='latest', to_block='latest'):
         _filter = {}
         if agreement_id:
             assert isinstance(agreement_id, str) or isinstance(agreement_id, bytes)

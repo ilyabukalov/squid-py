@@ -16,6 +16,13 @@ class EventFilter:
         self._poll_interval = poll_interval if poll_interval else 0.5
         self._create_filter()
 
+    @property
+    def filter_id(self):
+        return self._filter.filter_id if self._filter else None
+
+    def uninstall(self):
+        Web3Provider.get_web3().eth.uninstallFilter(self._filter.filter_id)
+
     def set_poll_interval(self, interval):
         self._poll_interval = interval
         if self._filter and  self._poll_interval is not None:
@@ -25,6 +32,8 @@ class EventFilter:
         self._create_filter()
 
     def _create_filter(self):
+        logger.debug(f'creating filter: event={self.event_name}, '
+                     f'arg-filter={self.argument_filters}, from/to={self.block_range}')
         self._filter = self.event().createFilter(
             fromBlock=self.block_range[0],
             toBlock=self.block_range[1],
@@ -45,13 +54,12 @@ class EventFilter:
             try:
                 logs = entries_getter()
                 if logs:
-                    logger.debug(f'found event logs: event-name={self.event_name}, '
+                    logger.debug(f'found event logs: event-name={self.event_name}, range={self.block_range}, '
                                  f'logs={logs}')
                     return logs
             except ValueError as e:
-                # logger.debug(f'Got error fetching event logs: {str(e)}')
                 if 'Filter not found' in str(e):
-                    logger.error(f'recreating filter (Filter not found): event={self.event_name}, '
+                    logger.debug(f'recreating filter (Filter not found): event={self.event_name}, '
                                  f'arg-filter={self.argument_filters}, from/to={self.block_range}')
                     self._create_filter()
                     continue
@@ -61,8 +69,5 @@ class EventFilter:
             i += 1
             if max_tries > 1 and i < max_tries:
                 time.sleep(0.5)
-                logger.error(f'recreating filter (retrying): event={self.event_name}, '
-                             f'arg-filter={self.argument_filters}, from/to={self.block_range}')
-                self._create_filter()
 
         return []

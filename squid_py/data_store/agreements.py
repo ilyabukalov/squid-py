@@ -1,4 +1,3 @@
-
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 import collections
@@ -12,16 +11,17 @@ logger = logging.getLogger(__name__)
 class DatabaseSchema:
     agreement_table = f'''
         CREATE TABLE IF NOT EXISTS agreement
-            (agreement_id VARCHAR(70) PRIMARY KEY, 
-             did VARCHAR, service_definition_id INTEGER, price VARCHAR, urls VARCHAR, 
-             start_time INTEGER, block_number INTEGER, type VARCHAR(100));
+            (agreement_id VARCHAR(70) PRIMARY KEY, did VARCHAR, service_definition_id INTEGER, 
+             price VARCHAR, urls VARCHAR, consumer VARCHAR(70), start_time INTEGER, 
+             block_number INTEGER, type VARCHAR(100));
     '''
 
     agreement_condition_table = f'''
         CREATE TABLE IF NOT EXISTS agreement_condition
-            (agreement_id VARCHAR(70) FOREIGN KEY REFERENCES agreement(agreement_id),
+            (agreement_id VARCHAR(70),
              condition_name VARCHAR(100),
-             status INTEGER);
+             status INTEGER,
+             PRIMARY KEY (agreement_id, condition_name));
     '''
 
     SCHEMA = {
@@ -34,16 +34,14 @@ class AgreementsStorage(StorageBase):
     """
     Provide storage for SEA service agreements in an sqlite3 database.
     """
-    LOCK_REWARD_NAME = 'LockRewardCondition'
-    ACCESS_NAME = 'AccessSecretStoreCondition'
-    ESCROW_REWARD_NAME = 'EscrowReward'
 
     def create_tables(self):
         for name, create_table_query in DatabaseSchema.SCHEMA.items():
             self._run_query(create_table_query)
 
     def record_service_agreement(self, agreement_id, did, service_definition_id, price,
-                                 urls, start_time, block_number, agreement_type, conditions):
+                                 urls, consumer, start_time, block_number,
+                                 agreement_type, conditions):
         """
         Records the given pending service agreement.
 
@@ -55,7 +53,7 @@ class AgreementsStorage(StorageBase):
         :param start_time: str timestamp capturing the time this agreement was initiated
         :param block_number: int
         :param agreement_type:
-        :param conditions:
+        :param conditions: list of str represent names of conditions associated with this agreement
         :return:
         """
         logger.debug(f'Recording agreement info to `service_agreements` storage: '
@@ -63,11 +61,11 @@ class AgreementsStorage(StorageBase):
                      f'service_definition_id={service_definition_id}, price={price}')
         self._run_query(
             'INSERT OR REPLACE INTO '
-            'agreement(agreement_id, did, service_definition_id, price, urls, '
+            'agreement(agreement_id, did, service_definition_id, price, urls, consumer, '
             '          start_time, block_number, type) '
-            'VALUES (?,?,?,?,?,?,?,?) ',
+            'VALUES (?,?,?,?,?,?,?,?,?) ',
             (agreement_id, did, service_definition_id,
-             str(price), urls, start_time, block_number, agreement_type),
+             str(price), urls, consumer, start_time, block_number, agreement_type),
         )
         for cond in conditions:
             self._run_query(
@@ -83,11 +81,10 @@ class AgreementsStorage(StorageBase):
 
         :param agreement_id: hex str the id of the service agreement used as primary key
         :param condition_name: str name of agreement condition to update its status
-        :param status: str indicates the current status (pending, completed, aborted)
+        :param status: int status of condition (0 Uninitialized, 1 Unfulfilled, 2 Fulfilled, 3 Aborted)
         :return:
         """
         assert 1 <= status <= 3
-        assert condition_name in (self.LOCK_REWARD_NAME, self.ACCESS_NAME, self.ESCROW_REWARD_NAME)
 
         logger.debug(f'Updating agreement {agreement_id} status to {status}')
         self._run_query(
@@ -101,22 +98,22 @@ class AgreementsStorage(StorageBase):
         """
         Get service agreements matching the given status.
 
-        :param status: str indicates the current status (pending, completed, aborted)
+        :param since_block_number: int
         :return:
         """
         agreements = collections.defaultdict(list)
         conditions = collections.defaultdict(dict)
         query = f'''
-            SELECT a.agreement_id, did, service_definition_id, price, urls, start_time, 
+            SELECT a.agreement_id, did, service_definition_id, price, urls, consumer, start_time, 
                 block_number, type, ac.condition_name, ac.status 
-                   
+
             FROM agreement AS a, agreement_condition AS ac
-            WHERE a.block_number >= since_block_number;
+            WHERE a.block_number>=?;
         '''
 
-        for row in self._run_query(query, ()):
-            agreements[row[0]] = row[1:7]
-            conditions[row[0]][row[8]] = row[9]
+        for row in self._run_query(query, (since_block_number,)):
+            agreements[row[0]] = row[1:8]
+            conditions[row[0]][row[9]] = row[10]
 
         return agreements, conditions
 
@@ -126,7 +123,7 @@ class AgreementsStorage(StorageBase):
             FROM agreement AS a, agreement_condition AS ac 
             WHERE a.agreement_id = ac.agreement_id 
               AND block_number>=? 
-              AND status >= 2
+              AND status>=2
         '''
         agreement_ids = {row[0] for row in self._run_query(query, (since_block_number,))}
         return agreement_ids
@@ -135,24 +132,27 @@ class AgreementsStorage(StorageBase):
         """
         Get service agreements matching the given status.
 
-        :param status: str indicates the current status (pending, completed, aborted)
+        :param since_block_number: int
         :return:
         """
         agreements = collections.defaultdict(list)
         conditions = collections.defaultdict(dict)
-        query = f'''
-            SELECT a.agreement_id, did, service_definition_id, price, urls, start_time, 
-                block_number, type, ac.condition_name, ac.status 
+        try:
+            query = f'''
+                SELECT a.agreement_id, did, service_definition_id, price, urls, start_time, 
+                    consumer, block_number, type, ac.condition_name, ac.status 
 
-            FROM agreement AS a, agreement_condition AS ac
-            WHERE a.agreement_id = ac.agreement_id 
-              AND a.block_number >= ? 
-              AND ac.status < 2;
-        '''
+                FROM agreement AS a, agreement_condition AS ac
+                WHERE a.agreement_id = ac.agreement_id 
+                  AND a.block_number>=? 
+                  AND ac.status<2;
+            '''
 
-        for row in self._run_query(query, (since_block_number, )):
-            agreements[row[0]] = row[1:7]
-            conditions[row[0]][row[8]] = row[9]
+            for row in self._run_query(query, (since_block_number,)):
+                agreements[row[0]] = row[1:8]
+                conditions[row[0]][row[9]] = row[10]
+        except Exception as e:
+            logger.debug(f'error processing pending agreements query: {e}')
 
         return agreements, conditions
 
@@ -165,7 +165,7 @@ class AgreementsStorage(StorageBase):
             query = '''
                 SELECT agreement_id 
                 FROM agreement 
-                WHERE block_number>=?'''
+                WHERE block_number>=? '''
             agreement_ids = {row[0] for row in self._run_query(query, (since_block_number,))}
             return agreement_ids
         except Exception as e:
@@ -195,6 +195,14 @@ class AgreementsStorage(StorageBase):
                 FROM agreement
             '''
             result = self._run_query(query, ())
-            return result[0][0]
+            return list(result)[0][0]
         except Exception as e:
             logger.debug(f'error finding latest block number from db: {e}')
+
+    def get_agreement_count(self):
+        try:
+            result = self._run_query('SELECT COUNT(agreement_id) FROM agreement ')
+            return list(result)[0][0]
+        except Exception as e:
+            logger.debug(f'error counting agreements: {e}')
+            return 0
