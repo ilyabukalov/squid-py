@@ -1,6 +1,17 @@
 History
 =======
 
+0.6.13 (Jun 22nd, 2019)
+-----------------------
+* Pick up always last version of contracts.
+* Don't allow dispenser in pacific
+
+0.6.12 (Jun 21st, 2019)
+-----------------------
+* Fix processing events related to service agreements
+* Fix release reward after access is granted
+* Increase test coverage
+
 0.6.11 (Jun 14th, 2019)
 ----------------------
 * Fix issue in condition method.

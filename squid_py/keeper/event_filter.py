@@ -1,6 +1,8 @@
 import logging
 import time
 
+from squid_py.keeper.web3_provider import Web3Provider
+
 logger = logging.getLogger(__name__)
 
 
@@ -11,16 +13,27 @@ class EventFilter:
         self.argument_filters = argument_filters
         self.block_range = (from_block, to_block)
         self._filter = None
-        self._poll_interval = poll_interval
+        self._poll_interval = poll_interval if poll_interval else 0.5
         self._create_filter()
+
+    @property
+    def filter_id(self):
+        return self._filter.filter_id if self._filter else None
+
+    def uninstall(self):
+        Web3Provider.get_web3().eth.uninstallFilter(self._filter.filter_id)
 
     def set_poll_interval(self, interval):
         self._poll_interval = interval
+        if self._filter and  self._poll_interval is not None:
+            self._filter.poll_interval = self._poll_interval
 
     def recreate_filter(self):
         self._create_filter()
 
     def _create_filter(self):
+        logger.debug(f'creating filter: event={self.event_name}, '
+                     f'arg-filter={self.argument_filters}, from/to={self.block_range}')
         self._filter = self.event().createFilter(
             fromBlock=self.block_range[0],
             toBlock=self.block_range[1],
@@ -41,15 +54,20 @@ class EventFilter:
             try:
                 logs = entries_getter()
                 if logs:
+                    logger.debug(f'found event logs: event-name={self.event_name}, range={self.block_range}, '
+                                 f'logs={logs}')
                     return logs
             except ValueError as e:
-                # logger.debug(f'Got error fetching event logs: {str(e)}')
                 if 'Filter not found' in str(e):
+                    logger.debug(f'recreating filter (Filter not found): event={self.event_name}, '
+                                 f'arg-filter={self.argument_filters}, from/to={self.block_range}')
                     self._create_filter()
+                    continue
                 else:
                     raise
 
             i += 1
-            time.sleep(0.01)
+            if max_tries > 1 and i < max_tries:
+                time.sleep(0.5)
 
         return []

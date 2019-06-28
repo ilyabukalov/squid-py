@@ -17,6 +17,7 @@ from squid_py.keeper.conditions.lock_reward import LockRewardCondition
 from squid_py.keeper.conditions.sign import SignCondition
 from squid_py.keeper.didregistry import DIDRegistry
 from squid_py.keeper.dispenser import Dispenser
+from squid_py.keeper.generic_contract import GenericContract
 from squid_py.keeper.templates.access_secret_store_template import EscrowAccessSecretStoreTemplate
 from squid_py.keeper.templates.template_manager import TemplateStoreManager
 from squid_py.keeper.token import Token
@@ -40,7 +41,8 @@ class Keeper(object):
         99: 'POA_Core',
         8995: 'nile',
         8996: 'spree',
-        2199: 'duero'
+        2199: 'duero',
+        0xcea11: 'pacific'
     }
 
     def __init__(self, artifacts_path=None):
@@ -49,8 +51,9 @@ class Keeper(object):
             artifacts_path = ConfigProvider.get_config().keeper_path
         self.artifacts_path = artifacts_path
         self.accounts = Web3Provider.get_web3().eth.accounts
-
-        self.dispenser = Dispenser.get_instance()
+        self.dispenser = None
+        if self.network_name != 'pacific':
+            self.dispenser = Dispenser.get_instance()
         self.token = Token.get_instance()
         self.did_registry = DIDRegistry.get_instance()
         self.template_manager = TemplateStoreManager.get_instance()
@@ -62,6 +65,21 @@ class Keeper(object):
         self.escrow_reward_condition = EscrowRewardCondition.get_instance()
         self.access_secret_store_condition = AccessSecretStoreCondition.get_instance()
         self.hash_lock_condition = HashLockCondition.get_instance()
+        contracts = (
+            self.dispenser,
+            self.token,
+            self.did_registry,
+            self.template_manager,
+            self.escrow_access_secretstore_template,
+            self.agreement_manager,
+            self.condition_manager,
+            self.sign_condition,
+            self.lock_reward_condition,
+            self.escrow_reward_condition,
+            self.access_secret_store_condition,
+            self.hash_lock_condition
+        )
+        self._contract_name_to_instance = {contract.name: contract for contract in contracts}
 
     @staticmethod
     def get_instance(artifacts_path=None):
@@ -143,6 +161,21 @@ class Keeper(object):
         :return: balance, int
         """
         return Web3Provider.get_web3().eth.getBalance(address, block_identifier='latest')
+
+    @property
+    def contract_name_to_instance(self):
+        return self._contract_name_to_instance
+
+    def get_contract(self, contract_name):
+        contract = self.contract_name_to_instance.get(contract_name)
+        if contract:
+            return contract
+
+        try:
+            return GenericContract(contract_name)
+        except Exception as e:
+            logging.error(f'Cannot load contract {contract_name}: {e}')
+            return None
 
     def get_condition_name_by_address(self, address):
         """Return the condition name for a given address."""

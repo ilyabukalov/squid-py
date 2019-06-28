@@ -20,8 +20,14 @@ def get_variable_value(variable):
 class ExampleConfig:
     _local_aqua_url = "http://172.15.0.15:5000"
     _local_brizo_url = "http://localhost:8030"
-    _duero_aqua_url = "https://aquarius.duero.dev-ocean.com"
-    _duero_brizo_url = "https://brizo.duero.dev-ocean.com"
+    # _duero_aqua_url = "https://aquarius.duero.dev-ocean.com"
+    # _duero_brizo_url = "https://brizo.duero.dev-ocean.com"
+    _duero_aqua_url = "http://localhost:5000"
+    _duero_brizo_url = "http://localhost:8030"
+
+    _pacific_aqua_url = "https://aquarius.pacific.dev-ocean.com"
+    _pacific_brizo_url = "https://brizo.pacific.dev-ocean.com"
+
     # _nile_aqua_url = "http://172.15.0.15:5000"
 
     # _nile_aqua_url = "https://nginx-aquarius.dev-ocean.com"
@@ -34,6 +40,7 @@ class ExampleConfig:
 
     _duero_secret_store_url = "https://secret-store.duero.dev-ocean.com"
     _nile_secret_store_url = "https://secret-store.dev-ocean.com"
+    _pacific_secret_store_url = "https://secret-store.pacific.oceanprotocol.com"
     # _nile_secret_store_url = "https://secret-store.marketplace.dev-ocean.com"
     _kovan_keeper_url = "http://localhost:8545"
     _remote_keeper_url = "https://%s.dev-ocean.com"
@@ -41,7 +48,8 @@ class ExampleConfig:
     _net_to_services_url = {
         'duero': {'aquarius': _duero_aqua_url, 'brizo': _duero_brizo_url},
         'nile': {'aquarius': _nile_aqua_url, 'brizo': _nile_brizo_url},
-        'kovan': {'aquarius': _local_aqua_url, 'brizo': _local_brizo_url}
+        'kovan': {'aquarius': _local_aqua_url, 'brizo': _local_brizo_url},
+        'pacific': {'aquarius': _pacific_aqua_url, 'brizo': _pacific_brizo_url},
     }
     _net_name_map = {
         'duero': 'duero',
@@ -49,7 +57,9 @@ class ExampleConfig:
         'nile': 'nile',
         'nile_local': 'nile',
         'kovan': 'kovan',
-        'kovan_local': 'kovan'
+        'kovan_local': 'kovan',
+        'pacific': 'pacific',
+        'pacific_local': 'pacific'
     }
     _net_to_env_name = {
         'nile': 'TEST_NILE',
@@ -58,7 +68,10 @@ class ExampleConfig:
         'duero_local': 'TEST_LOCAL_DUERO',
         'spree': 'TEST_LOCAL_SPREE',
         'kovan': 'TEST_KOVAN',
-        'kovan_local': 'TEST_LOCAL_KOVAN'
+        'kovan_local': 'TEST_LOCAL_KOVAN',
+        'pacific': 'TEST_PACIFIC',
+        'pacific_local': 'TEST_LOCAL_PACIFIC'
+
     }
 
     @staticmethod
@@ -95,6 +108,8 @@ class ExampleConfig:
         net_name = ExampleConfig._net_name_map.get(net_key)
         if net_name == 'kovan':
             config['keeper-contracts']['keeper.url'] = ExampleConfig._kovan_keeper_url
+        elif net_name == 'pacific':
+            config['keeper-contracts']['keeper.url'] = 'https://pacific.oceanprotocol.com'
         elif not local_node:
             config['keeper-contracts']['keeper.url'] = ExampleConfig._remote_keeper_url % net_name
 

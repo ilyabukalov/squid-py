@@ -54,7 +54,7 @@ class Diagnostics:
             )
 
         keeper = Keeper.get_instance()
-        contracts = [keeper.dispenser, keeper.token, keeper.did_registry,
+        contracts = [keeper.token, keeper.did_registry,
                      keeper.agreement_manager, keeper.template_manager, keeper.condition_manager,
                      keeper.access_secret_store_condition, keeper.sign_condition,
                      keeper.lock_reward_condition, keeper.escrow_access_secretstore_template,

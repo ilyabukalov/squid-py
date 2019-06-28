@@ -15,14 +15,14 @@ logger = logging.getLogger(__name__)
 class EventListener(object):
     """Class representing an event listener."""
 
-    def __init__(self, contract_name, event_name, args=None, from_block=0, to_block='latest',
+    def __init__(self, contract_name, event_name, args=None, from_block=None, to_block=None,
                  filters=None):
         contract = ContractHandler.get(contract_name)
         self.event_name = event_name
         self.event = getattr(contract.events, event_name)
         self.filters = filters if filters else {}
-        self.from_block = from_block
-        self.to_block = to_block
+        self.from_block = from_block if from_block is not None else 'latest'
+        self.to_block = to_block if to_block is not None else 'latest'
         self.event_filter = self.make_event_filter()
         self.event_filter.poll_interval = 0.5
         self.timeout = 600  # seconds
