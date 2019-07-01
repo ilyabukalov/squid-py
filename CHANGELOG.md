@@ -1,6 +1,10 @@
 History
 =======
 
+0.6.14 (Jul 1st, 2019)
+-----------------------
+* Events monitor.
+
 0.6.13 (Jun 22nd, 2019)
 -----------------------
 * Pick up always last version of contracts.
