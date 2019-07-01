@@ -123,16 +123,17 @@ def test_update_with_not_valid_ddo(asset1):
 @e2e_test
 def test_text_search(asset1, asset2):
     office_matches = len(aquarius.text_search(text='white paper', offset=10000)['results'])
-    response = aquarius.publish_asset_ddo(asset1)
-    print(f'got response from `publish_asset_ddo`: {response} ')
-    assert len(aquarius.text_search(text='white paper', offset=10000)['results']) == (office_matches + 1)
+    aquarius.publish_asset_ddo(asset1)
+    assert len(aquarius.text_search(text='white paper', offset=10000)['results']) == (
+                office_matches + 1)
 
     text = '0c184915b07b44c888d468be85a9b28253e80070e5294b1aaed81c2f0264e430'
     id_matches2 = len(aquarius.text_search(text=text, offset=10000)['results'])
     aquarius.publish_asset_ddo(asset2)
     assert len(aquarius.text_search(text=text, offset=10000)['results']) == (id_matches2 + 1)
 
-    assert len(aquarius.text_search(text='white paper', offset=10000)['results']) == (office_matches + 2)
+    assert len(aquarius.text_search(text='white paper', offset=10000)['results']) == (
+                office_matches + 2)
     aquarius.retire_asset_ddo(asset1.did)
     aquarius.retire_asset_ddo(asset2.did)
 
@@ -152,13 +153,13 @@ def test_query_search(asset1, asset2):
 
     assert len(aquarius.query_search(search_query={"query": {"type": ["Authorization"]}},
                                      offset=10000)['results']) == (
-            num_matches + 1)
+                   num_matches + 1)
 
     aquarius.publish_asset_ddo(asset2)
 
     assert len(aquarius.query_search(search_query={"query": {"type": ["Access"]}},
                                      offset=10000)['results']) == (
-            num_matches + 2)
+                   num_matches + 2)
     aquarius.retire_asset_ddo(asset1.did)
     aquarius.retire_asset_ddo(asset2.did)
 
