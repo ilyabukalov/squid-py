@@ -4,6 +4,7 @@
 import logging
 
 from squid_py.keeper import ContractBase
+from squid_py.keeper.event_filter import EventFilter
 from squid_py.keeper.web3_provider import Web3Provider
 
 logger = logging.getLogger('escrowAccessSecretStoreTemplate')
@@ -69,7 +70,8 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
         data = self.get_agreement_data(agreement_id)
         return data[0] if data and len(data) > 1 else None
 
-    def subscribe_agreement_created(self, agreement_id, timeout, callback, args, wait=False):
+    def subscribe_agreement_created(self, agreement_id, timeout, callback, args, wait=False,
+                                    from_block='latest', to_block='latest'):
         """
         Subscribe to an agreement created.
 
@@ -78,6 +80,8 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
         :param callback:
         :param args:
         :param wait: if true block the listener until get the event, bool
+        :param from_block: int or None
+        :param to_block: int or None
         :return:
         """
         logger.debug(
@@ -88,5 +92,31 @@ class EscrowAccessSecretStoreTemplate(ContractBase):
             {'_agreementId': Web3Provider.get_web3().toBytes(hexstr=agreement_id)},
             callback=callback,
             args=args,
-            wait=wait
+            wait=wait,
+            from_block=from_block,
+            to_block=to_block
         )
+
+    def get_event_filter_for_agreement_created(self, provider_address=None, from_block='latest', to_block='latest'):
+        """
+
+        :param provider_address: hex str ethereum address
+        :param from_block: int or None
+        :param to_block: int or None
+        :return:
+        """
+        _filter = {}
+        if provider_address:
+            assert isinstance(provider_address, str)
+            _filter['_accessProvider'] = provider_address
+
+        event_filter = EventFilter(
+            self.AGREEMENT_CREATED_EVENT,
+            getattr(self.events, self.AGREEMENT_CREATED_EVENT),
+            _filter,
+            from_block=from_block,
+            to_block=to_block
+        )
+        event_filter.set_poll_interval(0.5)
+        return event_filter
+

@@ -5,11 +5,12 @@
 import json
 
 from squid_py.agreements.service_agreement_condition import Event, ServiceAgreementCondition
+from squid_py.agreements.service_types import ServiceTypes
 
 
 class ServiceAgreementTemplate(object):
     """Class representing a Service Agreement Template."""
-    DOCUMENT_TYPE = 'Access'
+    DOCUMENT_TYPE = ServiceTypes.ASSET_ACCESS
     TEMPLATE_ID_KEY = 'templateId'
 
     def __init__(self, template_json=None):
@@ -106,6 +107,24 @@ class ServiceAgreementTemplate(object):
         :param conditions: list of conditions.
         """
         self.template['conditions'] = [cond.as_dictionary() for cond in conditions]
+
+    def get_event_to_args_map(self, contract_by_name):
+        """
+        keys in returned dict have the format <contract_name>.<event_name>
+        """
+        cond_contract_tuples = [(cond, contract_by_name[cond.contract_name]) for cond in self.conditions]
+        event_to_args = {
+            f'{cond.contract_name}.{cond.events[0].name}': (
+                contract.get_event_argument_names(cond.events[0].name)
+            )
+            for cond, contract in cond_contract_tuples
+        }
+        agr_event_key = f'{self.contract_name}.{self.agreement_events[0].name}'
+        event_to_args[agr_event_key] = contract_by_name[self.contract_name].get_event_argument_names(
+            self.agreement_events[0].name
+        )
+
+        return event_to_args
 
     def as_dictionary(self):
         """

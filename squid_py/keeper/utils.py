@@ -54,7 +54,7 @@ def process_tx_receipt(tx_hash, event_instance, event_name, agreement_id=None):
         return False
 
     receipt = web3.eth.getTransactionReceipt(tx_hash)
-    event_logs = event_instance.processReceipt(receipt)
+    event_logs = event_instance.processReceipt(receipt) if receipt else None
     if event_logs:
         logger.info(f'Success: got {event_name} event after fulfilling condition.')
         logger.debug(

@@ -96,7 +96,8 @@ class ContractBase(object):
         return Web3Provider.get_web3().eth.getTransactionReceipt(tx_hash)
 
     def subscribe_to_event(self, event_name, timeout, event_filter, callback=None,
-                           timeout_callback=None, args=None, wait=False):
+                           timeout_callback=None, args=None, wait=False,
+                           from_block='latest', to_block='latest'):
         """
         Create a listener for the event choose.
 
@@ -107,6 +108,8 @@ class ContractBase(object):
         :param timeout_callback:
         :param args:
         :param wait: if true block the listener until get the event, bool
+        :param from_block: int or None
+        :param to_block: int or None
         :return:
         """
         from squid_py.keeper.event_listener import EventListener
@@ -114,7 +117,9 @@ class ContractBase(object):
             self.CONTRACT_NAME,
             event_name,
             args,
-            filters=event_filter
+            filters=event_filter,
+            from_block=from_block,
+            to_block=to_block
         ).listen_once(
             callback,
             timeout_callback=timeout_callback,
@@ -136,6 +141,15 @@ class ContractBase(object):
             contract_fn
         )
         return contract_function.transact(transact)
+
+    def get_event_argument_names(self, event_name):
+        event = getattr(self._contract.events, event_name, None)
+        if event:
+            return event().argument_names
+
+    @property
+    def function_names(self):
+        return list(self._contract.function_names)
 
     def __str__(self):
         return f'{self.name} at {self.address}'
