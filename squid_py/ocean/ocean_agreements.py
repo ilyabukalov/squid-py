@@ -233,7 +233,7 @@ class OceanAgreements:
     def _process_consumer_agreement_events(
             self, agreement_id, did, service_agreement, account,
             condition_ids, publisher_address, from_block, auto_consume):
-        logger.error(f'process consumer events for agreement {agreement_id}, blockNumber {from_block+10}')
+        logger.debug(f'process consumer events for agreement {agreement_id}, blockNumber {from_block+10}')
         self._keeper.escrow_access_secretstore_template.subscribe_agreement_created(
             agreement_id,
             300,

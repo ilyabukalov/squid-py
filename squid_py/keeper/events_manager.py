@@ -107,18 +107,12 @@ class EventsManager:
         logger.debug(f'starting events monitor: latest block number {self.latest_block}')
 
         self._monitor_is_on = False
-        self._monitor_enabled = bool(os.getenv('OCN_SQUID_EVENTS_MONITOR_ON', 'True') == 'True')
         try:
-            self._monitor_sleep_time = os.getenv('OCN_SQUID_EVENTS_MONITOR_TIME', 5)
+            self._monitor_sleep_time = os.getenv('OCN_SQUID_EVENTS_MONITOR_TIME', 3)
         except ValueError:
-            self._monitor_sleep_time = 5
+            self._monitor_sleep_time = 3
 
-        self._monitor_sleep_time = max(self._monitor_sleep_time, 10)
-        if self._monitor_enabled:
-            logger.info(
-                f'events monitor is enabled in env var '
-                f'OCN_SQUID_EVENTS_MONITOR_ON (value={os.getenv("OCN_SQUID_EVENTS_MONITOR_ON")}')
-            self.start_agreement_events_monitor()
+        self._monitor_sleep_time = max(self._monitor_sleep_time, 3)
 
     @staticmethod
     def get_instance(keeper, storage_path, account):
@@ -162,10 +156,10 @@ class EventsManager:
             did = data[0]
             consumer_address = data[5]
             block_number = data[6]
-            condition_state_dict = conditions[agreement_id]
+            unfulfilled_conditions = conditions[agreement_id].keys()
             self.process_condition_events(
                 agreement_id,
-                condition_state_dict,
+                unfulfilled_conditions,
                 did,
                 consumer_address,
                 block_number,
@@ -178,7 +172,8 @@ class EventsManager:
             block_range = self.last_processed_block - 1, to_block
         else:
             block_num = self.db.get_latest_block_number() or 0
-            assert block_num <= to_block
+            if block_num > to_block:
+                block_num = to_block - self.last_n_blocks
             from_block = max(to_block - self.last_n_blocks, block_num)
             block_range = from_block, to_block
 
@@ -220,7 +215,7 @@ class EventsManager:
             self._account.address, from_block, to_block)
         logger.debug(f'getting event logs in range {from_block} to {to_block} for provider address {self._account.address}')
         logs = event_filter.get_all_entries(max_tries=5)
-        event_filter.uninstall()
+        # event_filter.uninstall()
         return logs
 
     def _handle_agreement_created_event(self, event, *_):
@@ -245,13 +240,9 @@ class EventsManager:
 
             did = id_to_did(event.args["_did"])
 
-            condition_state_dict = {
-                'lockReward': 1,
-                'accessSecretStore': 1,
-                'escrowReward': 1
-            }
+            unfulfilled_conditions = ['lockReward', 'accessSecretStore', 'escrowReward']
             self.process_condition_events(
-                agreement_id, condition_state_dict, did, event.args['_accessConsumer'],
+                agreement_id, unfulfilled_conditions, did, event.args['_accessConsumer'],
                 event.blockNumber, new_agreement=True
             )
 
@@ -270,7 +261,7 @@ class EventsManager:
 
         logger.info(f'Agreement {agreement_id} is completed, all conditions are fulfilled.')
 
-    def process_condition_events(self, agreement_id, condition_state_dict, did,
+    def process_condition_events(self, agreement_id, conditions, did,
                                  consumer_address, block_number, new_agreement=True):
 
         ddo = DIDResolver(self._keeper.did_registry).resolve(did)
@@ -295,7 +286,8 @@ class EventsManager:
         )
         cond_order = ['accessSecretStore', 'lockReward', 'escrowReward']
         cond_to_id = {cond_order[i]: _id for i, _id in enumerate(condition_ids)}
-        for cond, state in condition_state_dict.items():
+        for cond in conditions:
+
             if cond == 'lockReward':
                 self._keeper.lock_reward_condition.subscribe_condition_fulfilled(
                     agreement_id,
