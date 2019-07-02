@@ -172,7 +172,8 @@ class EventsManager:
             block_range = self.last_processed_block - 1, to_block
         else:
             block_num = self.db.get_latest_block_number() or 0
-            assert block_num <= to_block
+            if block_num > to_block:
+                block_num = to_block - self.last_n_blocks
             from_block = max(to_block - self.last_n_blocks, block_num)
             block_range = from_block, to_block
 

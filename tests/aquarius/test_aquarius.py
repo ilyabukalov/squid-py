@@ -24,7 +24,8 @@ def _get_asset(file_name):
 def asset1():
     asset = _get_asset('ddo_sample1.json')
     asset._did = DID.did()
-    return asset
+    yield asset
+    aquarius.retire_all_assets()
 
 
 @pytest.fixture
