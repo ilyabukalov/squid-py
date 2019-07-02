@@ -156,10 +156,10 @@ class EventsManager:
             did = data[0]
             consumer_address = data[5]
             block_number = data[6]
-            condition_state_dict = conditions[agreement_id]
+            unfulfilled_conditions = conditions[agreement_id].keys()
             self.process_condition_events(
                 agreement_id,
-                condition_state_dict,
+                unfulfilled_conditions,
                 did,
                 consumer_address,
                 block_number,
@@ -239,13 +239,9 @@ class EventsManager:
 
             did = id_to_did(event.args["_did"])
 
-            condition_state_dict = {
-                'lockReward': 1,
-                'accessSecretStore': 1,
-                'escrowReward': 1
-            }
+            unfulfilled_conditions = ['lockReward', 'accessSecretStore', 'escrowReward']
             self.process_condition_events(
-                agreement_id, condition_state_dict, did, event.args['_accessConsumer'],
+                agreement_id, unfulfilled_conditions, did, event.args['_accessConsumer'],
                 event.blockNumber, new_agreement=True
             )
 
@@ -264,7 +260,7 @@ class EventsManager:
 
         logger.info(f'Agreement {agreement_id} is completed, all conditions are fulfilled.')
 
-    def process_condition_events(self, agreement_id, condition_state_dict, did,
+    def process_condition_events(self, agreement_id, conditions, did,
                                  consumer_address, block_number, new_agreement=True):
 
         ddo = DIDResolver(self._keeper.did_registry).resolve(did)
@@ -289,7 +285,8 @@ class EventsManager:
         )
         cond_order = ['accessSecretStore', 'lockReward', 'escrowReward']
         cond_to_id = {cond_order[i]: _id for i, _id in enumerate(condition_ids)}
-        for cond, state in condition_state_dict.items():
+        for cond in conditions:
+
             if cond == 'lockReward':
                 self._keeper.lock_reward_condition.subscribe_condition_fulfilled(
                     agreement_id,

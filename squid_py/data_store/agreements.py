@@ -36,7 +36,7 @@ class AgreementsStorage(StorageBase):
     """
 
     def create_tables(self):
-        for name, create_table_query in DatabaseSchema.SCHEMA.items():
+        for create_table_query in DatabaseSchema.SCHEMA.values():
             self._run_query(create_table_query)
 
     def record_service_agreement(self, agreement_id, did, service_definition_id, price,
