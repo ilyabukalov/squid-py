@@ -7,20 +7,20 @@ import json
 import logging
 import os
 
-from squid_py.agreements.service_factory import ServiceDescriptor, ServiceFactory
-from squid_py.agreements.service_types import ServiceTypes
-from squid_py.aquarius.aquarius_provider import AquariusProvider
-from squid_py.aquarius.exceptions import AquariusGenericError
+from ocean_commons.agreements.service_factory import ServiceDescriptor, ServiceFactory
+from ocean_commons.agreements.service_types import ServiceTypes
+from ocean_commons.aquarius.aquarius_provider import AquariusProvider
+from ocean_commons.aquarius.exceptions import AquariusGenericError
 from squid_py.brizo.brizo_provider import BrizoProvider
-from squid_py.ddo.ddo import DDO
-from squid_py.ddo.metadata import Metadata, MetadataBase
-from squid_py.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
-from squid_py.did import DID, did_to_id
-from squid_py.exceptions import (
+from ocean_commons.ddo.ddo import DDO
+from ocean_commons.ddo.metadata import Metadata, MetadataBase
+from ocean_commons.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
+from ocean_commons.did import DID, did_to_id
+from ocean_commons.exceptions import (
     OceanDIDAlreadyExist,
     OceanInvalidMetadata,
 )
-from squid_py.keeper.web3_provider import Web3Provider
+from ocean_commons.keeper.web3_provider import Web3Provider
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 
 logger = logging.getLogger('ocean')

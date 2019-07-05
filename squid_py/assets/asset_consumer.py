@@ -5,9 +5,9 @@ import json
 import logging
 import os
 
-from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.agreements.service_types import ServiceTypes
-from squid_py.did import did_to_id
+from ocean_commons.agreements.service_agreement import ServiceAgreement
+from ocean_commons.agreements.service_types import ServiceTypes
+from ocean_commons.did import did_to_id
 
 logger = logging.getLogger(__name__)
 

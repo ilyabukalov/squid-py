@@ -4,16 +4,16 @@
 
 import logging
 
-from squid_py.agreements.events import lock_reward_condition, escrow_reward_condition
-from squid_py.agreements.service_agreement import ServiceAgreement
+from ocean_commons.agreements.events import lock_reward_condition, escrow_reward_condition
+from ocean_commons.agreements.service_agreement import ServiceAgreement
 from squid_py.brizo.brizo_provider import BrizoProvider
-from squid_py.did import did_to_id
-from squid_py.exceptions import (OceanInvalidAgreementTemplate,
+from ocean_commons.did import did_to_id
+from ocean_commons.exceptions import (OceanInvalidAgreementTemplate,
                                  OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists)
-from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.keeper.events_manager import EventsManager
+from ocean_commons.keeper.web3_provider import Web3Provider
+from ocean_commons.keeper.events_manager import EventsManager
 from squid_py.ocean.ocean_conditions import OceanConditions
-from squid_py.utils.utilities import prepare_prefixed_hash
+from ocean_commons.utils.utilities import prepare_prefixed_hash
 
 logger = logging.getLogger('ocean')
 

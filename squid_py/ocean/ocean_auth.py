@@ -1,12 +1,13 @@
 """Ocean module."""
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
+
 import logging
 from datetime import datetime
 
 from squid_py import ConfigProvider
 from squid_py.data_store.auth_tokens import AuthTokensStorage
-from squid_py.keeper.web3_provider import Web3Provider
+from ocean_commons.keeper.web3_provider import Web3Provider
 
 
 class OceanAuth:

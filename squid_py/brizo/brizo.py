@@ -8,10 +8,10 @@ import logging
 import os
 import re
 
-from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.exceptions import (OceanEncryptAssetUrlsError, OceanInitializeServiceAgreementError)
-from squid_py.http_requests.requests_session import get_requests_session
-from squid_py.keeper import Keeper
+from ocean_commons.agreements.service_agreement import ServiceAgreement
+from ocean_commons.exceptions import (OceanEncryptAssetUrlsError, OceanInitializeServiceAgreementError)
+from ocean_commons.http_requests.requests_session import get_requests_session
+from ocean_commons.keeper import Keeper
 
 logger = logging.getLogger(__name__)
 

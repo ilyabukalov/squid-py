@@ -21,12 +21,11 @@ with open('CHANGELOG.md') as history_file:
 # or pip install -e .
 install_requirements = [
     'coloredlogs',
-    'keeper-contracts',
     'pyopenssl',
     'PyJWT',  # not jwt
     'PyYAML==4.2b4',
     'web3==4.5.0',
-    'ocean-secret-store-client==0.0.1',
+    'ocean-commons==0.0.1',
     'requests==2.21.0',
     'deprecated',
     'pycryptodomex',

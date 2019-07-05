@@ -3,8 +3,8 @@
 
 from eth_utils import add_0x_prefix
 
-from squid_py.did import did_to_id
-from squid_py.keeper.web3_provider import Web3Provider
+from ocean_commons.did import did_to_id
+from ocean_commons.keeper.web3_provider import Web3Provider
 
 
 class OceanConditions:

@@ -3,7 +3,7 @@
 #  SPDX-License-Identifier: Apache-2.0
 import logging
 
-from squid_py.data_store.storage_base import StorageBase
+from ocean_commons.data_store.storage_base import StorageBase
 
 logger = logging.getLogger(__name__)
 

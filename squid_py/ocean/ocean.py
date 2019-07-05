@@ -8,8 +8,8 @@ from deprecated import deprecated
 
 from squid_py.assets.asset_consumer import AssetConsumer
 from squid_py.config_provider import ConfigProvider
-from squid_py.did_resolver.did_resolver import DIDResolver
-from squid_py.keeper import Keeper
+from ocean_commons.did_resolver.did_resolver import DIDResolver
+from ocean_commons.keeper import Keeper
 from squid_py.log import setup_logging
 from squid_py.ocean.ocean_accounts import OceanAccounts
 from squid_py.ocean.ocean_agreements import OceanAgreements
