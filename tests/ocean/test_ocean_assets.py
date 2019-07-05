@@ -6,15 +6,15 @@ import time
 
 import pytest
 
-from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.agreements.service_factory import ServiceDescriptor
-from squid_py.agreements.service_types import ServiceTypes
-from squid_py.assets.asset import Asset
-from squid_py.ddo.ddo import DDO
-from squid_py.ddo.metadata import Metadata
-from squid_py.did import DID
-from squid_py.exceptions import OceanDIDNotFound
-from squid_py.keeper.web3_provider import Web3Provider
+from ocean_commons.agreements.service_agreement import ServiceAgreement
+from ocean_commons.agreements.service_factory import ServiceDescriptor
+from ocean_commons.agreements.service_types import ServiceTypes
+from ocean_commons.assets.asset import Asset
+from ocean_commons.ddo.ddo import DDO
+from ocean_commons.ddo.metadata import Metadata
+from ocean_commons.did import DID
+from ocean_commons.exceptions import OceanDIDNotFound
+from ocean_commons.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import e2e_test
 

@@ -8,13 +8,13 @@ import pytest
 from secret_store_client.client import RPCError
 
 from examples import ExampleConfig
-from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.agreements.service_types import ServiceTypes
+from ocean_commons.agreements.service_agreement import ServiceAgreement
+from ocean_commons.agreements.service_types import ServiceTypes
 from squid_py.config_provider import ConfigProvider
-from squid_py.ddo.ddo import DDO
-from squid_py.keeper import Keeper
-from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.utils.utilities import get_account_from_config
+from ocean_commons.ddo.ddo import DDO
+from ocean_commons.keeper import Keeper
+from ocean_commons.keeper.web3_provider import Web3Provider
+from ocean_commons.utils.utilities import get_account_from_config
 from tests.resources.helper_functions import (get_publisher_account,
                                               get_registered_ddo, log_event)
 

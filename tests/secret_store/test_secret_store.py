@@ -6,7 +6,9 @@ import json
 import secrets
 from unittest.mock import MagicMock, Mock
 
-from squid_py import Account, ConfigProvider
+from ocean_commons.keeper.account import Account
+
+from squid_py import ConfigProvider
 from squid_py.secret_store.secret_store import SecretStore
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import e2e_test
