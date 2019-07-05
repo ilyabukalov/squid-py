@@ -10,7 +10,7 @@ from secret_store_client.client import RPCError
 from examples import ExampleConfig
 from ocean_commons.agreements.service_agreement import ServiceAgreement
 from ocean_commons.agreements.service_types import ServiceTypes
-from squid_py.config_provider import ConfigProvider
+from ocean_commons.config_provider import ConfigProvider
 from ocean_commons.ddo.ddo import DDO
 from ocean_commons.keeper import Keeper
 from ocean_commons.keeper.web3_provider import Web3Provider

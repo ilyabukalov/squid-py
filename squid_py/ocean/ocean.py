@@ -7,7 +7,7 @@ import logging
 from deprecated import deprecated
 
 from squid_py.assets.asset_consumer import AssetConsumer
-from squid_py.config_provider import ConfigProvider
+from ocean_commons.config_provider import ConfigProvider
 from ocean_commons.did_resolver.did_resolver import DIDResolver
 from ocean_commons.keeper import Keeper
 from squid_py.log import setup_logging

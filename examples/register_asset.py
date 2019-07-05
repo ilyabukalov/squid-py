@@ -5,9 +5,12 @@ import logging
 import os
 from time import sleep
 
+from ocean_commons.ddo.metadata import Metadata
+
 from examples import ExampleConfig
-from squid_py import Metadata, Ocean
-from squid_py.config_provider import ConfigProvider
+from squid_py import Ocean
+from ocean_commons.config_provider import ConfigProvider
+
 
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
     ASYNC_DELAY = 5  # seconds
