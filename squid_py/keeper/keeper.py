@@ -64,8 +64,7 @@ class Keeper(object):
         self.escrow_reward_condition = EscrowRewardCondition.get_instance()
         self.access_secret_store_condition = AccessSecretStoreCondition.get_instance()
         self.hash_lock_condition = HashLockCondition.get_instance()
-        contracts = (
-            self.dispenser,
+        contracts = [
             self.token,
             self.did_registry,
             self.template_manager,
@@ -77,8 +76,11 @@ class Keeper(object):
             self.escrow_reward_condition,
             self.access_secret_store_condition,
             self.hash_lock_condition
-        )
-        self._contract_name_to_instance = {contract.name: contract for contract in contracts}
+        ]
+        if self.dispenser:
+            contracts.append(self.dispenser)
+        self._contract_name_to_instance = {contract.name: contract
+                                           for contract in contracts if contract}
 
     @staticmethod
     def get_instance(artifacts_path=None):
