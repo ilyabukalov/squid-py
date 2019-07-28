@@ -4,7 +4,7 @@
 from contextlib import contextmanager
 from inspect import signature
 
-from squid_py.keeper.web3_provider import Web3Provider
+from keeper.web3_provider import Web3Provider
 
 
 @contextmanager

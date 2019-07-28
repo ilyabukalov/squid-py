@@ -8,10 +8,10 @@ import logging
 import os
 import re
 
-from ocean_commons.agreements.service_agreement import ServiceAgreement
-from ocean_commons.exceptions import (OceanEncryptAssetUrlsError, OceanInitializeServiceAgreementError)
-from ocean_commons.http_requests.requests_session import get_requests_session
-from ocean_commons.keeper import Keeper
+from ocean_utils.agreements.service_agreement import ServiceAgreement
+from ocean_utils.exceptions import (OceanEncryptAssetUrlsError, OceanInitializeServiceAgreementError)
+from ocean_utils.http_requests.requests_session import get_requests_session
+from ocean_utils.keeper import Keeper
 
 logger = logging.getLogger(__name__)
 

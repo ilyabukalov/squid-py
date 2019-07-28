@@ -4,9 +4,9 @@
 import pytest
 
 from squid_py import ConfigProvider
-from ocean_commons.aquarius.aquarius import Aquarius
-from ocean_commons.ddo.ddo import DDO
-from ocean_commons.did import DID
+from ocean_utils.aquarius.aquarius import Aquarius
+from ocean_utils.ddo.ddo import DDO
+from ocean_utils.did import DID
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import e2e_test, should_run_test
 

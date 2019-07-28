@@ -4,16 +4,19 @@
 
 import logging
 
-from ocean_commons.agreements.events import lock_reward_condition, escrow_reward_condition
-from ocean_commons.agreements.service_agreement import ServiceAgreement
+from squid_py.agreement_events import lock_reward_condition, escrow_reward_condition
+from ocean_utils.agreements.service_agreement import ServiceAgreement
+
+from squid_py.agreement_events.accessSecretStore import refund_reward
+from squid_py.agreement_events.escrowAccessSecretStoreTemplate import fulfillLockRewardCondition
 from squid_py.brizo.brizo_provider import BrizoProvider
-from ocean_commons.did import did_to_id
-from ocean_commons.exceptions import (OceanInvalidAgreementTemplate,
+from ocean_utils.did import did_to_id
+from ocean_utils.exceptions import (OceanInvalidAgreementTemplate,
                                  OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists)
-from ocean_commons.keeper.web3_provider import Web3Provider
-from ocean_commons.keeper.events_manager import EventsManager
+from ocean_utils.keeper.web3_provider import Web3Provider
+from ocean_utils.keeper.events_manager import EventsManager
 from squid_py.ocean.ocean_conditions import OceanConditions
-from ocean_commons.utils.utilities import prepare_prefixed_hash
+from ocean_utils.utils.utilities import prepare_prefixed_hash
 
 logger = logging.getLogger('ocean')
 
@@ -237,7 +240,7 @@ class OceanAgreements:
         self._keeper.escrow_access_secretstore_template.subscribe_agreement_created(
             agreement_id,
             300,
-            lock_reward_condition.fulfillLockRewardCondition,
+            fulfillLockRewardCondition,
             (agreement_id, service_agreement.get_price(), account, condition_ids[1]),
             from_block=from_block
         )
@@ -245,7 +248,7 @@ class OceanAgreements:
         if auto_consume:
             def _refund_callback(_price, _publisher_address, _condition_ids):
                 def do_refund(_event, _agreement_id, _did, _service_agreement, _consumer_account, *_):
-                    escrow_reward_condition.refund_reward(
+                    refund_reward(
                         _event, _agreement_id, _did, _service_agreement, _price,
                         _consumer_account, _publisher_address, _condition_ids, _condition_ids[2]
                     )

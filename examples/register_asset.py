@@ -5,11 +5,11 @@ import logging
 import os
 from time import sleep
 
-from ocean_commons.ddo.metadata import Metadata
+from ocean_utils.ddo.metadata import Metadata
 
 from examples import ExampleConfig
 from squid_py import Ocean
-from ocean_commons.config_provider import ConfigProvider
+from ocean_utils.config_provider import ConfigProvider
 
 
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':

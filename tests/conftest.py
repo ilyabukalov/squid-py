@@ -4,11 +4,11 @@
 import pytest
 
 from examples import ExampleConfig
-from ocean_commons.agreements.service_agreement import ServiceAgreement
-from ocean_commons.config_provider import ConfigProvider
-from ocean_commons.did import DID
-from ocean_commons.keeper import Keeper
-from ocean_commons.keeper.web3_provider import Web3Provider
+from ocean_utils.agreements.service_agreement import ServiceAgreement
+from ocean_utils.config_provider import ConfigProvider
+from ocean_utils.did import DID
+from ocean_utils.keeper import Keeper
+from ocean_utils.keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import (get_consumer_account, get_consumer_ocean_instance,
                                               get_ddo_sample, get_metadata, get_publisher_account,
                                               get_publisher_ocean_instance, get_registered_ddo)

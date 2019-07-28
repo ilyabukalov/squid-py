@@ -1,5 +1,5 @@
 from squid_py import ConfigProvider
-from ocean_commons.keeper import Keeper
+from ocean_utils.keeper import Keeper
 from squid_py.ocean.ocean_auth import OceanAuth
 from tests.resources.helper_functions import get_publisher_account
 

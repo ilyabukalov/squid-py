@@ -8,13 +8,13 @@ import pytest
 from secret_store_client.client import RPCError
 
 from examples import ExampleConfig
-from ocean_commons.agreements.service_agreement import ServiceAgreement
-from ocean_commons.agreements.service_types import ServiceTypes
-from ocean_commons.config_provider import ConfigProvider
-from ocean_commons.ddo.ddo import DDO
-from ocean_commons.keeper import Keeper
-from ocean_commons.keeper.web3_provider import Web3Provider
-from ocean_commons.utils.utilities import get_account_from_config
+from ocean_utils.agreements.service_agreement import ServiceAgreement
+from ocean_utils.agreements.service_types import ServiceTypes
+from ocean_utils.config_provider import ConfigProvider
+from ocean_utils.ddo.ddo import DDO
+from ocean_utils.keeper import Keeper
+from ocean_utils.keeper.web3_provider import Web3Provider
+from ocean_utils.utils.utilities import get_account_from_config
 from tests.resources.helper_functions import (get_publisher_account,
                                               get_registered_ddo, log_event)
 

@@ -7,7 +7,7 @@ from time import sleep
 
 from examples import ExampleConfig
 from squid_py import ConfigProvider, Metadata, Ocean
-from squid_py.agreements.service_types import ServiceTypes
+from ocean_utils.agreements.service_types import ServiceTypes
 from squid_py.utils.utilities import get_account_from_config
 
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':

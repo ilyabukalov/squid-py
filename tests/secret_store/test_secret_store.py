@@ -6,7 +6,7 @@ import json
 import secrets
 from unittest.mock import MagicMock, Mock
 
-from ocean_commons.keeper.account import Account
+from ocean_utils.keeper.account import Account
 
 from squid_py import ConfigProvider
 from squid_py.secret_store.secret_store import SecretStore

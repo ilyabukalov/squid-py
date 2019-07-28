@@ -11,8 +11,8 @@ from squid_py.accounts.account import Account
 from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.ddo.ddo import DDO
 from squid_py.ddo.metadata import Metadata
-from squid_py.keeper import Keeper
-from squid_py.keeper.web3_provider import Web3Provider
+from keeper import Keeper
+from keeper.web3_provider import Web3Provider
 from squid_py.ocean.ocean import Ocean
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from tests.resources.mocks.brizo_mock import BrizoMock

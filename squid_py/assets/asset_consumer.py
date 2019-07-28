@@ -5,9 +5,9 @@ import json
 import logging
 import os
 
-from ocean_commons.agreements.service_agreement import ServiceAgreement
-from ocean_commons.agreements.service_types import ServiceTypes
-from ocean_commons.did import did_to_id
+from ocean_utils.agreements.service_agreement import ServiceAgreement
+from ocean_utils.agreements.service_types import ServiceTypes
+from ocean_utils.did import did_to_id
 
 logger = logging.getLogger(__name__)
 

@@ -7,7 +7,7 @@ from datetime import datetime
 
 from squid_py import ConfigProvider
 from squid_py.data_store.auth_tokens import AuthTokensStorage
-from ocean_commons.keeper.web3_provider import Web3Provider
+from ocean_utils.keeper.web3_provider import Web3Provider
 
 
 class OceanAuth:
