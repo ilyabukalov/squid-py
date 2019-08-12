@@ -5,9 +5,9 @@
 import logging
 
 from eth_utils import add_0x_prefix
-from keeper.utils import process_tx_receipt
-from keeper import Keeper
-from keeper.web3_provider import Web3Provider
+from ocean_keeper.utils import process_tx_receipt
+from squid_py.ocean.keeper import SquidKeeper as Keeper
+from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.did import did_to_id
 from ocean_utils.did_resolver.did_resolver import DIDResolver
 
@@ -101,12 +101,3 @@ def consume_asset(event, agreement_id, did, service_agreement, consumer_account,
             brizo,
             secret_store
         )
-
-    #     logger.info('Done consuming asset.')
-    #
-    # else:
-    #     logger.info('Handling consume asset but the consume callback is not set. The user '
-    #                 'can trigger consume asset directly using the agreementId and assetId.')
-
-
-fulfillEscrowRewardCondition = fulfill_escrow_reward_condition

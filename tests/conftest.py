@@ -2,13 +2,15 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 import pytest
+from ocean_keeper.contract_handler import ContractHandler
 
 from examples import ExampleConfig
 from ocean_utils.agreements.service_agreement import ServiceAgreement
-from ocean_utils.config_provider import ConfigProvider
 from ocean_utils.did import DID
-from ocean_utils.keeper import Keeper
-from ocean_utils.keeper.web3_provider import Web3Provider
+from squid_py.ocean.keeper import SquidKeeper as Keeper
+from ocean_keeper.web3_provider import Web3Provider
+
+from squid_py import ConfigProvider
 from tests.resources.helper_functions import (get_consumer_account, get_consumer_ocean_instance,
                                               get_ddo_sample, get_metadata, get_publisher_account,
                                               get_publisher_ocean_instance, get_registered_ddo)
@@ -17,6 +19,14 @@ from tests.resources.tiers import should_run_test
 
 if should_run_test('e2e'):
     ConfigProvider.set_config(ExampleConfig.get_config())
+
+
+@pytest.fixture(autouse=True)
+def setup_all():
+    config = ExampleConfig.get_config()
+    Web3Provider.get_web3(config.keeper_url)
+    ContractHandler.artifacts_path = config.keeper_path
+    Keeper.get_instance(artifacts_path=config.keeper_path)
 
 
 @pytest.fixture
@@ -53,7 +63,7 @@ def registered_ddo():
 @pytest.fixture
 def web3_instance():
     config = ExampleConfig.get_config()
-    return Web3Provider.get_web3(config)
+    return Web3Provider.get_web3(config.keeper_url)
 
 
 @pytest.fixture
@@ -75,7 +85,7 @@ def setup_agreements_enviroment():
     # Remove '0x' from the start of ddo.metadata['base']['checksum']
     text_for_sha3 = ddo.metadata['base']['checksum'][2:]
     keeper.did_registry.register(
-        ddo.did,
+        ddo.asset_id,
         checksum=Web3Provider.get_web3().sha3(text=text_for_sha3),
         url='aquarius:5000',
         account=publisher_acc,

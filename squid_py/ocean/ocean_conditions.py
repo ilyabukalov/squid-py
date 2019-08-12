@@ -4,7 +4,7 @@
 from eth_utils import add_0x_prefix
 
 from ocean_utils.did import did_to_id
-from ocean_utils.keeper.web3_provider import Web3Provider
+from ocean_keeper.web3_provider import Web3Provider
 
 
 class OceanConditions:

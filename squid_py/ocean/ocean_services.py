@@ -21,7 +21,8 @@ class OceanServices:
         """
         timeout = timeout or 3600  # default to one hour timeout
         service = ServiceDescriptor.access_service_descriptor(
-            price, service_endpoint, purchase_endpoint, timeout, ''
+            price, service_endpoint, purchase_endpoint,
+            timeout, '', ''
         )
 
         return service

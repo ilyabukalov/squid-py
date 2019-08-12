@@ -9,9 +9,9 @@ from examples import ExampleConfig
 from squid_py import ConfigProvider, Metadata, Ocean
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.agreements.service_types import ServiceTypes
-from keeper import Keeper
-from keeper.diagnostics import Diagnostics
-from keeper.web3_provider import Web3Provider
+from squid_py.ocean.keeper import SquidKeeper as Keeper
+from ocean_keeper.diagnostics import Diagnostics
+from ocean_keeper.web3_provider import Web3Provider
 from tests.resources.helper_functions import get_publisher_account, get_consumer_account
 
 

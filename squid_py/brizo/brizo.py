@@ -11,7 +11,7 @@ import re
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.exceptions import (OceanEncryptAssetUrlsError, OceanInitializeServiceAgreementError)
 from ocean_utils.http_requests.requests_session import get_requests_session
-from ocean_utils.keeper import Keeper
+from squid_py.ocean.keeper import SquidKeeper as Keeper
 
 logger = logging.getLogger(__name__)
 

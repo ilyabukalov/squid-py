@@ -20,7 +20,7 @@ from ocean_utils.exceptions import (
     OceanDIDAlreadyExist,
     OceanInvalidMetadata,
 )
-from ocean_utils.keeper.web3_provider import Web3Provider
+from ocean_keeper.web3_provider import Web3Provider
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 
 logger = logging.getLogger('ocean')
@@ -118,7 +118,8 @@ class OceanAssets:
             )
 
         metadata_copy['base']['checksum'] = ddo.generate_checksum(did, metadata)
-        ddo.add_proof(metadata_copy['base']['checksum'], publisher_account, self._keeper)
+        checksum = metadata_copy['base']['checksum']
+        ddo.add_proof(checksum, publisher_account, self._keeper.sign_hash(checksum, publisher_account))
 
         # only assign if the encryption worked
         if files_encrypted:
@@ -144,7 +145,8 @@ class OceanAssets:
                 brizo.get_purchase_endpoint(self._config),
                 brizo.get_service_endpoint(self._config),
                 3600,
-                self._keeper.escrow_access_secretstore_template.address
+                self._keeper.escrow_access_secretstore_template.address,
+                self._keeper.escrow_reward_condition.address
             )]
         else:
             service_types = set(map(lambda x: x[0], service_descriptors))
@@ -157,7 +159,8 @@ class OceanAssets:
                     brizo.get_purchase_endpoint(self._config),
                     brizo.get_service_endpoint(self._config),
                     3600,
-                    self._keeper.escrow_access_secretstore_template.address
+                    self._keeper.escrow_access_secretstore_template.address,
+                    self._keeper.escrow_reward_condition.address
                 )]
 
         # Add all services to ddo
@@ -174,7 +177,7 @@ class OceanAssets:
         # Remove '0x' from the start of metadata_copy['base']['checksum']
         text_for_sha3 = metadata_copy['base']['checksum'][2:]
         registered_on_chain = self._keeper.did_registry.register(
-            did,
+            ddo.asset_id,
             checksum=Web3Provider.get_web3().sha3(text=text_for_sha3),
             url=ddo_service_endpoint,
             account=publisher_account,

@@ -1,5 +1,5 @@
 from squid_py import ConfigProvider
-from ocean_utils.keeper import Keeper
+from squid_py.ocean.keeper import SquidKeeper as Keeper
 from squid_py.ocean.ocean_auth import OceanAuth
 from tests.resources.helper_functions import get_publisher_account
 
@@ -17,7 +17,7 @@ def test_get_token():
     assert address != '0x0', 'Verifying token failed.'
 
 
-def test_check_token():
+def test_check_token(web3_instance):
     ocn_auth = OceanAuth(Keeper.get_instance(), ':memory:')
     acc = get_publisher_account(ConfigProvider.get_config())
 

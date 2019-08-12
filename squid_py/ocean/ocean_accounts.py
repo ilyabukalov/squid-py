@@ -4,7 +4,7 @@
 
 from collections import namedtuple
 
-from ocean_utils.keeper.account import Account
+from ocean_keeper.account import Account
 
 Balance = namedtuple('Balance', ('eth', 'ocn'))
 

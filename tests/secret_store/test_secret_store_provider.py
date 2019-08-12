@@ -1,7 +1,7 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
-from ocean_utils.keeper.account import Account
+from ocean_keeper.account import Account
 from squid_py.secret_store import SecretStoreProvider
 
 

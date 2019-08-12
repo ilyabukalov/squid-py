@@ -5,19 +5,17 @@ import json
 import os
 import pathlib
 
-from examples import ExampleConfig
-from squid_py import ConfigProvider, Config
-from squid_py.accounts.account import Account
+from ocean_keeper.utils import get_account
+
+from squid_py import ConfigProvider
 from squid_py.brizo.brizo_provider import BrizoProvider
-from squid_py.ddo.ddo import DDO
-from squid_py.ddo.metadata import Metadata
-from keeper import Keeper
-from keeper.web3_provider import Web3Provider
+from ocean_utils.ddo.ddo import DDO
+from ocean_utils.ddo.metadata import Metadata
+from squid_py.ocean.keeper import SquidKeeper as Keeper
 from squid_py.ocean.ocean import Ocean
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from tests.resources.mocks.brizo_mock import BrizoMock
 from tests.resources.mocks.secret_store_mock import SecretStoreMock
-from squid_py.utils.utilities import get_account
 
 PUBLISHER_INDEX = 1
 CONSUMER_INDEX = 0

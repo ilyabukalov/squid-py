@@ -4,19 +4,20 @@
 import os
 import time
 import pytest
+from ocean_keeper.utils import get_account_from_config
 
 from secret_store_client.client import RPCError
 
 from examples import ExampleConfig
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.agreements.service_types import ServiceTypes
-from ocean_utils.config_provider import ConfigProvider
 from ocean_utils.ddo.ddo import DDO
-from ocean_utils.keeper import Keeper
-from ocean_utils.keeper.web3_provider import Web3Provider
-from ocean_utils.utils.utilities import get_account_from_config
+from squid_py.ocean.keeper import SquidKeeper as Keeper
+from ocean_keeper.web3_provider import Web3Provider
+
+from squid_py import ConfigProvider
 from tests.resources.helper_functions import (get_publisher_account,
-                                              get_registered_ddo, log_event)
+                                              get_registered_ddo, log_event, get_consumer_account)
 
 
 def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
@@ -38,8 +39,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     # restore the http client because we want the actual Brizo server to do the work
     # not the BrizoMock.
     # Brizo.set_http_client(requests)
-    consumer_account = get_account_from_config(cons_ocn._config, 'parity.address1',
-                                               'parity.password1')
+    consumer_account = get_consumer_account(config)
 
     downloads_path_elements = len(
         os.listdir(consumer_ocean_instance._config.downloads_path)) if os.path.exists(
@@ -53,9 +53,10 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     agreement_id = cons_ocn.assets.order(
         ddo.did, sa.service_definition_id, consumer_account, auto_consume=False)
 
+    event_wait_time = 10
     event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
         agreement_id,
-        15,
+        event_wait_time,
         log_event(keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
         (),
         wait=True
@@ -64,20 +65,28 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
 
     event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
-        15,
+        event_wait_time,
         log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
         (),
         wait=True
     )
     assert event, 'no event for LockRewardCondition.Fulfilled'
 
-    i = 0
-    while cons_ocn.agreements.is_access_granted(
-            agreement_id, ddo.did, consumer_account.address) is not True and i < 15:
-        time.sleep(1)
-        i += 1
-
+    # give access
+    publisher_ocean_instance.agreements.conditions.grant_access(
+        agreement_id, ddo.did, consumer_account.address, pub_acc)
+    event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        event_wait_time,
+        log_event(keeper.access_secret_store_condition.FULFILLED_EVENT),
+        (),
+        wait=True
+    )
+    assert event, 'no event for AccessSecretStoreCondition.Fulfilled'
     assert cons_ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address)
+
+    publisher_ocean_instance.agreements.conditions.release_reward(
+        agreement_id, sa.get_price(), pub_acc)
 
     assert cons_ocn.assets.consume(
         agreement_id,
@@ -135,7 +144,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
 
     event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
-        30,
+        event_wait_time,
         log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
         (),
         wait=True

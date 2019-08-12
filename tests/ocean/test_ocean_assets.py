@@ -2,20 +2,19 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 import logging
-import time
 
 import pytest
 
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.agreements.service_factory import ServiceDescriptor
 from ocean_utils.agreements.service_types import ServiceTypes
-from ocean_utils.assets.asset import Asset
 from ocean_utils.ddo.ddo import DDO
 from ocean_utils.ddo.metadata import Metadata
 from ocean_utils.did import DID
-from ocean_utils.exceptions import OceanDIDNotFound
-from ocean_utils.keeper.web3_provider import Web3Provider
-from tests.resources.helper_functions import get_resource_path
+from ocean_keeper.exceptions import OceanDIDNotFound
+from ocean_keeper.web3_provider import Web3Provider
+
+from tests.resources.helper_functions import get_resource_path, log_event
 from tests.resources.tiers import e2e_test
 
 
@@ -26,7 +25,7 @@ def create_asset(publisher_ocean_instance):
 
     acct = ocn.main_account
 
-    asset = Asset(json_filename=sample_ddo_path)
+    asset = DDO(json_filename=sample_ddo_path)
     my_secret_store = 'http://myownsecretstore.com'
     auth_service = ServiceDescriptor.authorization_service_descriptor(my_secret_store)
     return ocn.assets.create(asset.metadata, acct, [auth_service])
@@ -66,9 +65,8 @@ def test_resolve_did(publisher_ocean_instance):
     # prep ddo
     metadata = Metadata.get_example()
     publisher = publisher_ocean_instance.main_account
-    original_ddo = publisher_ocean_instance.assets.create(metadata, publisher)
-
     # happy path
+    original_ddo = publisher_ocean_instance.assets.create(metadata, publisher)
     did = original_ddo.did
     ddo = publisher_ocean_instance.assets.resolve(did).as_dictionary()
     original = original_ddo.as_dictionary()
@@ -76,8 +74,7 @@ def test_resolve_did(publisher_ocean_instance):
     assert ddo['authentication'] == original['authentication']
     assert ddo['service']
     assert original['service']
-    # assert ddo['service'][:-1] == original['service'][:-1]
-    # assert ddo == original_ddo.as_dictionary(), 'Resolved ddo does not match original.'
+    assert ddo['service'][:-1] == original['service'][:-1]
 
     # Can't resolve unregistered asset
     unregistered_did = DID.did()
@@ -123,7 +120,7 @@ def test_create_data_asset(publisher_ocean_instance, consumer_ocean_instance):
     ##########################################################
     # Create an Asset with valid metadata
     ##########################################################
-    asset = Asset(json_filename=sample_ddo_path)
+    asset = DDO(json_filename=sample_ddo_path)
 
     ##########################################################
     # List currently published assets
@@ -156,7 +153,7 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
 
     acct = ocn.main_account
 
-    asset = Asset(json_filename=sample_ddo_path)
+    asset = DDO(json_filename=sample_ddo_path)
     my_secret_store = 'http://myownsecretstore.com'
     auth_service = ServiceDescriptor.authorization_service_descriptor(my_secret_store)
     new_asset = ocn.assets.create(asset.metadata, acct, [auth_service])
@@ -170,7 +167,7 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
     assert new_asset.get_service(ServiceTypes.METADATA)
 
     access_service = ServiceDescriptor.access_service_descriptor(
-        2, 'consume', 'consume', 35, ''
+        2, 'consume', 'consume', 35, '', ''
     )
     new_asset = ocn.assets.create(asset.metadata, acct, [access_service])
     assert new_asset.get_service(ServiceTypes.AUTHORIZATION)
@@ -186,7 +183,7 @@ def test_asset_owner(publisher_ocean_instance):
 
     acct = ocn.main_account
 
-    asset = Asset(json_filename=sample_ddo_path)
+    asset = DDO(json_filename=sample_ddo_path)
     my_secret_store = 'http://myownsecretstore.com'
     auth_service = ServiceDescriptor.authorization_service_descriptor(my_secret_store)
     new_asset = ocn.assets.create(asset.metadata, acct, [auth_service])
@@ -209,16 +206,30 @@ def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
     asset = create_asset(publisher_ocean_instance)
     service = asset.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
+    keeper = ocn.keeper
+
+    def grant_access(event, ocn_instance, agr_id, did, cons_address, account):
+        ocn_instance.agreements.conditions.grant_access(
+            agr_id, did, cons_address, account)
 
     agreement_id = consumer_ocean_instance.assets.order(
         asset.did, sa.service_definition_id, acct)
+    keeper.lock_reward_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        15,
+        grant_access,
+        (publisher_ocean_instance, agreement_id, asset.did,
+         acct.address, publisher_ocean_instance.main_account),
+        wait=True
+    )
 
-    i = 0
-    while ocn.agreements.is_access_granted(
-            agreement_id, asset.did, acct.address) is not True and i < 60:
-        time.sleep(1)
-        i += 1
-
+    keeper.access_secret_store_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        15,
+        log_event(keeper.access_secret_store_condition.FULFILLED_EVENT),
+        (),
+        wait=True
+    )
     assert ocn.agreements.is_access_granted(agreement_id, asset.did, acct.address)
 
     assert len(ocn.assets.consumer_assets(acct.address)) == consumed_assets + 1

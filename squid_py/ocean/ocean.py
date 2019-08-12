@@ -5,11 +5,14 @@
 import logging
 
 from deprecated import deprecated
+from ocean_keeper.contract_handler import ContractHandler
+from ocean_keeper.web3_provider import Web3Provider
 
 from squid_py.assets.asset_consumer import AssetConsumer
-from ocean_utils.config_provider import ConfigProvider
+from squid_py.config_provider import ConfigProvider
+
 from ocean_utils.did_resolver.did_resolver import DIDResolver
-from ocean_utils.keeper import Keeper
+from squid_py.ocean.keeper import SquidKeeper as Keeper
 from squid_py.log import setup_logging
 from squid_py.ocean.ocean_accounts import OceanAccounts
 from squid_py.ocean.ocean_agreements import OceanAgreements
@@ -67,7 +70,24 @@ class Ocean:
             config = ConfigProvider.get_config()
 
         self._config = config
-        self._keeper = Keeper.get_instance()
+        self._web3 = Web3Provider.get_web3(self._config.keeper_url)
+        ContractHandler.artifacts_path = self._config.keeper_path
+        contracts = [
+            'DIDRegistry',
+            'Dispenser',
+            'TemplateStoreManager',
+            'OceanToken',
+            'ConditionStoreManager',
+            'EscrowAccessSecretStoreTemplate',
+            'AgreementStoreManager',
+            'AgreementStoreManager',
+            'AccessSecretStoreCondition',
+            'LockRewardCondition',
+            'HashLockCondition',
+            'SignCondition',
+            'EscrowReward'
+        ]
+        self._keeper = Keeper.get_instance(self._config.keeper_path, contracts)
         self._did_resolver = DIDResolver(self._keeper.did_registry)
 
         # Initialize the public sub-modules

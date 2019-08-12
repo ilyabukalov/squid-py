@@ -7,7 +7,7 @@ from datetime import datetime
 
 from squid_py import ConfigProvider
 from squid_py.data_store.auth_tokens import AuthTokensStorage
-from ocean_utils.keeper.web3_provider import Web3Provider
+from ocean_keeper.web3_provider import Web3Provider
 
 
 class OceanAuth:
@@ -59,8 +59,9 @@ class OceanAuth:
         :return: hex str the token generated/signed by account
         """
         _message, _time = self._get_message_and_time()
+        msg_hash = Web3Provider.get_web3().sha3(text=_message)
         try:
-            return f'{self._keeper.sign_hash(_message, account)}-{_time}'
+            return f'{self._keeper.sign_hash(msg_hash, account)}-{_time}'
         except Exception as e:
             logging.error(f'Error signing token: {str(e)}')
 
@@ -78,7 +79,7 @@ class OceanAuth:
             return '0x0'
 
         message = self._get_message(timestamp)
-        address = self._keeper.ec_recover(message, sig)
+        address = self._keeper.ec_recover(Web3Provider.get_web3().sha3(text=message), sig)
         return Web3Provider.get_web3().toChecksumAddress(address)
 
     def store(self, account):
