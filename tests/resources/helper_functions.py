@@ -7,7 +7,6 @@ import pathlib
 
 from ocean_keeper.utils import get_account
 
-from squid_py import ConfigProvider
 from squid_py.brizo.brizo_provider import BrizoProvider
 from ocean_utils.ddo.ddo import DDO
 from ocean_utils.ddo.metadata import Metadata
