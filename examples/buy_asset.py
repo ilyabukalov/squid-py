@@ -42,7 +42,7 @@ def buy_asset():
     # make ocean instance
     ocn = Ocean()
     Diagnostics.verify_contracts()
-    acc = get_publisher_account(config)
+    acc = get_publisher_account()
     if not acc:
         acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
 
@@ -86,7 +86,7 @@ def buy_asset():
                      f'{keeper.did_registry.is_did_provider(ddo.asset_id, provider)}')
 
     cons_ocn = Ocean()
-    consumer_account = get_consumer_account(config)
+    consumer_account = get_consumer_account()
 
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)

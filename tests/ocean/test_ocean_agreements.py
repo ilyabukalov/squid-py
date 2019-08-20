@@ -42,7 +42,7 @@ def ocean_agreements():
 
 
 def test_prepare_agreement(ocean_agreements):
-    # consumer_account = get_consumer_account(ConfigProvider.get_config())
+    # consumer_account = get_consumer_account()
     # ddo = get_ddo_sample()
     # ocean_agreements.prepare(ddo.did, ServiceTypes.ASSET_ACCESS, consumer_account.address)
     # :TODO:

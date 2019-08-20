@@ -25,7 +25,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     # :TODO: enable the actual SecretStore
     # SecretStoreProvider.set_secret_store_class(SecretStore)
     w3 = Web3Provider.get_web3()
-    pub_acc = get_publisher_account(config)
+    pub_acc = get_publisher_account()
 
     # Register ddo
     ddo = get_registered_ddo(publisher_ocean_instance, pub_acc)
@@ -37,7 +37,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     # restore the http client because we want the actual Brizo server to do the work
     # not the BrizoMock.
     # Brizo.set_http_client(requests)
-    consumer_account = get_consumer_account(config)
+    consumer_account = get_consumer_account()
 
     downloads_path_elements = len(
         os.listdir(consumer_ocean_instance._config.downloads_path)) if os.path.exists(

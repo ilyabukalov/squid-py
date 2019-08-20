@@ -18,7 +18,7 @@ class BrizoMock(object):
         self.account = account
         if not account:
             from tests.resources.helper_functions import get_publisher_account
-            self.account = get_publisher_account(self.ocean_instance.config)
+            self.account = get_publisher_account()
 
         # ocean_instance.agreements.watch_provider_events(self.account)
 

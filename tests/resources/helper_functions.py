@@ -38,17 +38,17 @@ def init_ocn_tokens(ocn, account, amount=100):
     )
 
 
-def get_publisher_account(config):
+def get_publisher_account():
     return get_account(0)
 
 
-def get_consumer_account(config):
+def get_consumer_account():
     return get_account(1)
 
 
 def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
     ocn = Ocean()
-    account = get_publisher_account(ConfigProvider.get_config())
+    account = get_publisher_account()
     ocn.main_account = account
     if init_tokens:
         init_ocn_tokens(ocn, ocn.main_account)
@@ -62,7 +62,7 @@ def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_m
 
 def get_consumer_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
     ocn = Ocean()
-    account = get_consumer_account(ConfigProvider.get_config())
+    account = get_consumer_account()
     ocn.main_account = account
     if init_tokens:
         init_ocn_tokens(ocn, ocn.main_account)
