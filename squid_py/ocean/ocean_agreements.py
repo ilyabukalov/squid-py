@@ -10,8 +10,11 @@ from squid_py.agreement_events.accessSecretStore import refund_reward, consume_a
 from squid_py.agreement_events.escrowAccessSecretStoreTemplate import fulfillLockRewardCondition
 from squid_py.brizo.brizo_provider import BrizoProvider
 from ocean_utils.did import did_to_id
-from ocean_utils.exceptions import (OceanInvalidAgreementTemplate,
-                                 OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists)
+from ocean_utils.exceptions import (
+    OceanInvalidAgreementTemplate,
+    OceanInvalidServiceAgreementSignature,
+    OceanServiceAgreementExists,
+)
 from ocean_keeper.web3_provider import Web3Provider
 from squid_py.ocean.ocean_conditions import OceanConditions
 from ocean_keeper.utils import prepare_prefixed_hash

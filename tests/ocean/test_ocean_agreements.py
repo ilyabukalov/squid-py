@@ -177,7 +177,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     pub_ocn = publisher_ocean_instance
     publisher_acc = pub_ocn.main_account
 
-    service_definition_id = '1'
+    service_definition_id = registered_ddo.get_service('Access').service_definition_id
     did = registered_ddo.did
     asset_id = registered_ddo.asset_id
     ddo = consumer_ocn.assets.resolve(did)

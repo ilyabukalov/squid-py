@@ -1,10 +1,6 @@
 import logging
 
-from ocean_keeper import Keeper, DIDRegistry, Dispenser, Token
-from ocean_keeper.agreements import AgreementStoreManager
-from ocean_keeper.conditions import SignCondition, LockRewardCondition, EscrowRewardCondition, AccessSecretStoreCondition, HashLockCondition
-from ocean_keeper.conditions.condition_manager import ConditionStoreManager
-from ocean_keeper.templates import TemplateStoreManager, EscrowAccessSecretStoreTemplate
+from ocean_keeper import Keeper
 
 
 class SquidKeeper(Keeper):

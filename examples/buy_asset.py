@@ -5,8 +5,10 @@ import logging
 import os
 import time
 
+from ocean_utils.ddo.metadata import Metadata
+
 from examples import ExampleConfig
-from squid_py import ConfigProvider, Metadata, Ocean
+from squid_py import ConfigProvider, Ocean
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.agreements.service_types import ServiceTypes
 from squid_py.ocean.keeper import SquidKeeper as Keeper
