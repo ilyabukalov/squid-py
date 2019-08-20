@@ -164,7 +164,7 @@ class OceanAssets:
                 )]
 
         # Add all services to ddo
-        service_descriptors = service_descriptors + [metadata_service_desc]
+        service_descriptors = [metadata_service_desc] + service_descriptors
         for service in ServiceFactory.build_services(did, service_descriptors):
             ddo.add_service(service)
 

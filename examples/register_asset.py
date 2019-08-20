@@ -9,7 +9,7 @@ from ocean_utils.ddo.metadata import Metadata
 
 from examples import ExampleConfig
 from squid_py import Ocean
-from ocean_utils.config_provider import ConfigProvider
+from squid_py.config_provider import ConfigProvider
 
 
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':

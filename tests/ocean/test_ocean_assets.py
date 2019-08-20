@@ -74,7 +74,11 @@ def test_resolve_did(publisher_ocean_instance):
     assert ddo['authentication'] == original['authentication']
     assert ddo['service']
     assert original['service']
-    assert ddo['service'][:-1] == original['service'][:-1]
+    metadata = ddo['service'][0]['metadata']
+    if 'datePublished' in metadata['base']:
+        metadata['base'].pop('datePublished')
+    assert ddo['service'][0]['metadata']['base'] == original['service'][0]['metadata']['base']
+    assert ddo['service'][1] == original['service'][1]
 
     # Can't resolve unregistered asset
     unregistered_did = DID.did()
