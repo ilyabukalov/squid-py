@@ -39,15 +39,11 @@ def init_ocn_tokens(ocn, account, amount=100):
 
 
 def get_publisher_account(config):
-    # address = "0x00bd138abd70e2f00903268f3db08f2d25677c9e"\
-    # os.putenv('PARITY_ADDRESS', address)
-    return get_account(config, 0, Keeper.get_instance())
+    return get_account(0)
 
 
 def get_consumer_account(config):
-    # address = "0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0"
-    # os.putenv('PARITY_ADDRESS1', address)
-    return get_account(config, 1, Keeper.get_instance())
+    return get_account(1)
 
 
 def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):

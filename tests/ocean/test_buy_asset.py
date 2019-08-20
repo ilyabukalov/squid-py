@@ -2,9 +2,7 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 import os
-import time
 import pytest
-from ocean_keeper.utils import get_account_from_config
 
 from secret_store_client.client import RPCError
 
