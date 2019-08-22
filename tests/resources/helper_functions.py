@@ -5,14 +5,12 @@ import json
 import os
 import pathlib
 
-from examples import ExampleConfig
-from squid_py import ConfigProvider, Config
-from squid_py.accounts.account import Account
+from ocean_keeper.utils import get_account
+
 from squid_py.brizo.brizo_provider import BrizoProvider
-from squid_py.ddo.ddo import DDO
-from squid_py.ddo.metadata import Metadata
-from squid_py.keeper import Keeper
-from squid_py.keeper.web3_provider import Web3Provider
+from ocean_utils.ddo.ddo import DDO
+from ocean_utils.ddo.metadata import Metadata
+from squid_py.ocean.keeper import SquidKeeper as Keeper
 from squid_py.ocean.ocean import Ocean
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 from tests.resources.mocks.brizo_mock import BrizoMock
@@ -39,52 +37,18 @@ def init_ocn_tokens(ocn, account, amount=100):
     )
 
 
-def make_ocean_instance(account_index):
-    config_dict = ExampleConfig.get_config_dict()
-    config_dict['resources']['storage.path'] = f'squid_py.{account_index}.db'
-    ocn = Ocean(Config(options_dict=config_dict))
-    account = ocn.accounts.list()[account_index]
-    if account_index == 0:
-        account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password')
-    else:
-        account.password = ExampleConfig.get_config().get('keeper-contracts', 'parity.password1')
-
-    return ocn
+def get_publisher_account():
+    return get_account(0)
 
 
-def get_publisher_account(config):
-    address = os.getenv('PARITY_ADDRESS')
-    if address:
-        pswrd = os.getenv('PARITY_PASSWORD')
-        return Account(Web3Provider.get_web3().toChecksumAddress(address), pswrd)
-
-    acc = get_account_from_config(config, 'parity.address', 'parity.password')
-    if acc is None:
-        acc = Account(Keeper.get_instance().accounts[0])
-    return acc
-
-
-def get_consumer_account(config):
-    address = os.getenv('PARITY_ADDRESS1')
-    if address:
-        pswrd = os.getenv('PARITY_PASSWORD1')
-        return Account(Web3Provider.get_web3().toChecksumAddress(address), pswrd)
-
-    acc = get_account_from_config(config, 'parity.address1', 'parity.password1')
-    if acc is None:
-        acc = Account(Keeper.get_instance().accounts[1])
-    return acc
+def get_consumer_account():
+    return get_account(1)
 
 
 def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
-    ocn = make_ocean_instance(PUBLISHER_INDEX)
-    ConfigProvider.set_config(ocn.config)
-    account = get_publisher_account(ocn.config)
-    if account.address in ocn.accounts.accounts_addresses:
-        ocn.main_account = account
-    else:
-        ocn.main_account = ocn.accounts.list()[0]
-
+    ocn = Ocean()
+    account = get_publisher_account()
+    ocn.main_account = account
     if init_tokens:
         init_ocn_tokens(ocn, ocn.main_account)
     if use_ss_mock:
@@ -96,13 +60,9 @@ def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_m
 
 
 def get_consumer_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
-    ocn = make_ocean_instance(CONSUMER_INDEX)
-    account = get_consumer_account(ocn.config)
-    if account.address in ocn.accounts.accounts_addresses:
-        ocn.main_account = account
-    else:
-        ocn.main_account = ocn.accounts.list()[1]
-
+    ocn = Ocean()
+    account = get_consumer_account()
+    ocn.main_account = account
     if init_tokens:
         init_ocn_tokens(ocn, ocn.main_account)
     if use_ss_mock:
@@ -111,22 +71,6 @@ def get_consumer_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mo
         BrizoProvider.set_brizo_class(BrizoMock)
 
     return ocn
-
-
-def get_account_from_config(config, config_account_key, config_account_password_key):
-    address = None
-    if config.has_option('keeper-contracts', config_account_key):
-        address = config.get('keeper-contracts', config_account_key)
-        address = Web3Provider.get_web3().toChecksumAddress(address) if address else None
-
-    if not (address and address in Keeper.get_instance().accounts):
-        return None
-
-    password = None
-    if address and config.has_option('keeper-contracts', config_account_password_key):
-        password = config.get('keeper-contracts', config_account_password_key)
-
-    return Account(address, password)
 
 
 def get_ddo_sample():

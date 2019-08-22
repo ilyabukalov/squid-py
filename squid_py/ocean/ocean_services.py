@@ -2,7 +2,7 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
-from squid_py.agreements.service_factory import ServiceDescriptor
+from ocean_utils.agreements.service_factory import ServiceDescriptor
 
 
 class OceanServices:
@@ -21,7 +21,8 @@ class OceanServices:
         """
         timeout = timeout or 3600  # default to one hour timeout
         service = ServiceDescriptor.access_service_descriptor(
-            price, service_endpoint, purchase_endpoint, timeout, ''
+            price, service_endpoint, purchase_endpoint,
+            timeout, '', ''
         )
 
         return service

@@ -8,10 +8,10 @@ import logging
 import os
 import re
 
-from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.exceptions import (OceanEncryptAssetUrlsError, OceanInitializeServiceAgreementError)
-from squid_py.http_requests.requests_session import get_requests_session
-from squid_py.keeper import Keeper
+from ocean_utils.agreements.service_agreement import ServiceAgreement
+from ocean_utils.exceptions import (OceanEncryptAssetUrlsError, OceanInitializeServiceAgreementError)
+from ocean_utils.http_requests.requests_session import get_requests_session
+from squid_py.ocean.keeper import SquidKeeper as Keeper
 
 logger = logging.getLogger(__name__)
 
@@ -129,11 +129,11 @@ class Brizo:
                 logger.info(f'invoke consume endpoint with this url: {consume_url}')
                 response = Brizo._http_client.get(consume_url, stream=True)
                 file_name = Brizo._get_file_name(response)
-                Brizo.write_file(response, destination_folder, file_name)
+                Brizo.write_file(response, destination_folder, file_name or f'file-{i}')
 
     @staticmethod
     def _prepare_consume_payload(did, service_agreement_id, service_definition_id, signature,
-                                  consumer_address):
+                                 consumer_address):
         """Prepare a payload to send to `Brizo`.
 
         :param did: DID, str

@@ -6,15 +6,15 @@ from unittest.mock import MagicMock, Mock
 import pytest
 
 from squid_py import ConfigProvider
-from squid_py.agreements.service_agreement_template import ServiceAgreementTemplate
-from squid_py.agreements.service_types import ServiceTypes
+from ocean_utils.agreements.service_agreement_template import ServiceAgreementTemplate
+from ocean_utils.agreements.service_types import ServiceTypes
 from squid_py.assets.asset_consumer import AssetConsumer
-from squid_py.keeper import Keeper
-from squid_py.keeper.web3_provider import Web3Provider
+from squid_py.ocean.keeper import SquidKeeper as Keeper
+from ocean_keeper.web3_provider import Web3Provider
 from squid_py.ocean.ocean_agreements import OceanAgreements
 from tests.resources.helper_functions import (get_ddo_sample, log_event)
 from tests.resources.tiers import e2e_test
-from squid_py.agreements.service_agreement import ServiceAgreement
+from ocean_utils.agreements.service_agreement import ServiceAgreement
 from squid_py.brizo.brizo import Brizo
 from tests.resources.mocks.brizo_mock import BrizoMock
 
@@ -42,7 +42,7 @@ def ocean_agreements():
 
 
 def test_prepare_agreement(ocean_agreements):
-    # consumer_account = get_consumer_account(ConfigProvider.get_config())
+    # consumer_account = get_consumer_account()
     # ddo = get_ddo_sample()
     # ocean_agreements.prepare(ddo.did, ServiceTypes.ASSET_ACCESS, consumer_account.address)
     # :TODO:
@@ -177,7 +177,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     pub_ocn = publisher_ocean_instance
     publisher_acc = pub_ocn.main_account
 
-    service_definition_id = '1'
+    service_definition_id = registered_ddo.get_service('Access').service_definition_id
     did = registered_ddo.did
     asset_id = registered_ddo.asset_id
     ddo = consumer_ocn.assets.resolve(did)
