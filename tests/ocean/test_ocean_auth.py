@@ -1,12 +1,12 @@
 from squid_py import ConfigProvider
-from squid_py.keeper import Keeper
+from squid_py.ocean.keeper import SquidKeeper as Keeper
 from squid_py.ocean.ocean_auth import OceanAuth
 from tests.resources.helper_functions import get_publisher_account
 
 
 def test_get_token():
     ocn_auth = OceanAuth(Keeper.get_instance(), ':memory:')
-    acc = get_publisher_account(ConfigProvider.get_config())
+    acc = get_publisher_account()
     token = ocn_auth.get(acc)
     assert isinstance(token, str), 'Invalid auth token type.'
     assert token.startswith('0x'), 'Invalid auth token.'
@@ -17,9 +17,9 @@ def test_get_token():
     assert address != '0x0', 'Verifying token failed.'
 
 
-def test_check_token():
+def test_check_token(web3_instance):
     ocn_auth = OceanAuth(Keeper.get_instance(), ':memory:')
-    acc = get_publisher_account(ConfigProvider.get_config())
+    acc = get_publisher_account()
 
     token = ocn_auth.get(acc)
     address = ocn_auth.check(token)
@@ -33,7 +33,7 @@ def test_check_token():
 
 def test_store_token():
     ocn_auth = OceanAuth(Keeper.get_instance(), ':memory:')
-    acc = get_publisher_account(ConfigProvider.get_config())
+    acc = get_publisher_account()
     token = ocn_auth.store(acc)
     assert ocn_auth.check(token) == acc.address, 'invalid token, check failed.'
     # verify it is saved
@@ -42,7 +42,7 @@ def test_store_token():
 
 def test_restore_token(publisher_ocean_instance):
     ocn_auth = OceanAuth(Keeper.get_instance(), ':memory:')
-    acc = get_publisher_account(ConfigProvider.get_config())
+    acc = get_publisher_account()
     assert ocn_auth.restore(acc) is None, 'Expecting None when restoring non-existing token.'
 
     token = ocn_auth.store(acc)

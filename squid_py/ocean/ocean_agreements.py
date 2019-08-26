@@ -4,16 +4,20 @@
 
 import logging
 
-from squid_py.agreements.events import lock_reward_condition, escrow_reward_condition
-from squid_py.agreements.service_agreement import ServiceAgreement
+from ocean_utils.agreements.service_agreement import ServiceAgreement
+
+from squid_py.agreement_events.accessSecretStore import refund_reward, consume_asset
+from squid_py.agreement_events.escrowAccessSecretStoreTemplate import fulfillLockRewardCondition
 from squid_py.brizo.brizo_provider import BrizoProvider
-from squid_py.did import did_to_id
-from squid_py.exceptions import (OceanInvalidAgreementTemplate,
-                                 OceanInvalidServiceAgreementSignature, OceanServiceAgreementExists)
-from squid_py.keeper.web3_provider import Web3Provider
-from squid_py.keeper.events_manager import EventsManager
+from ocean_utils.did import did_to_id
+from ocean_utils.exceptions import (
+    OceanInvalidAgreementTemplate,
+    OceanInvalidServiceAgreementSignature,
+    OceanServiceAgreementExists,
+)
+from ocean_keeper.web3_provider import Web3Provider
 from squid_py.ocean.ocean_conditions import OceanConditions
-from squid_py.utils.utilities import prepare_prefixed_hash
+from ocean_keeper.utils import prepare_prefixed_hash
 
 logger = logging.getLogger('ocean')
 
@@ -57,7 +61,12 @@ class OceanAgreements:
         agreement_hash = service_agreement.get_service_agreement_hash(
             agreement_id, asset.asset_id, consumer_account.address, publisher_address, self._keeper
         )
-        return self._keeper.sign_hash(agreement_hash, consumer_account)
+        agreement_hash = prepare_prefixed_hash(agreement_hash)
+        signature = self._keeper.sign_hash(agreement_hash, consumer_account)
+        address = self._keeper.ec_recover(agreement_hash, signature)
+        assert address == consumer_account.address
+        logger.debug(f'agreement-signature={signature}, agreement-hash={agreement_hash}')
+        return signature
 
     def prepare(self, did, service_definition_id, consumer_account):
         """
@@ -143,8 +152,8 @@ class OceanAgreements:
         """
         assert consumer_address and Web3Provider.get_web3().isChecksumAddress(
             consumer_address), f'Invalid consumer address {consumer_address}'
-        assert account.address in self._keeper.accounts, \
-            f'Unrecognized account address {account.address}'
+        # assert account.address in self._keeper.accounts, \
+        #     f'Unrecognized account address {account.address}'
 
         agreement_template_approved = self._keeper.template_manager.is_template_approved(
             self._keeper.escrow_access_secretstore_template.address)
@@ -201,7 +210,7 @@ class OceanAgreements:
                 success = True
             else:
                 event_log = self._keeper.escrow_access_secretstore_template.subscribe_agreement_created(
-                    agreement_id, 30, None, (), wait=True
+                    agreement_id, 15, None, (), wait=True
                 )
                 success = event_log is not None
 
@@ -233,7 +242,7 @@ class OceanAgreements:
         self._keeper.escrow_access_secretstore_template.subscribe_agreement_created(
             agreement_id,
             300,
-            lock_reward_condition.fulfillLockRewardCondition,
+            fulfillLockRewardCondition,
             (agreement_id, service_agreement.get_price(), account, condition_ids[1]),
             from_block=from_block
         )
@@ -241,7 +250,7 @@ class OceanAgreements:
         if auto_consume:
             def _refund_callback(_price, _publisher_address, _condition_ids):
                 def do_refund(_event, _agreement_id, _did, _service_agreement, _consumer_account, *_):
-                    escrow_reward_condition.refund_reward(
+                    refund_reward(
                         _event, _agreement_id, _did, _service_agreement, _price,
                         _consumer_account, _publisher_address, _condition_ids, _condition_ids[2]
                     )
@@ -252,7 +261,7 @@ class OceanAgreements:
             self._keeper.access_secret_store_condition.subscribe_condition_fulfilled(
                 agreement_id,
                 max(conditions_dict['accessSecretStore'].timeout, 300),
-                escrow_reward_condition.consume_asset,
+                consume_asset,
                 (agreement_id, did, service_agreement, account, self._asset_consumer.download,
                  self._config.secret_store_url, self._config.parity_url,
                  self._config.downloads_path),
@@ -337,9 +346,7 @@ class OceanAgreements:
             Web3Provider.get_web3().toChecksumAddress(ddo.proof['creator']), self._keeper)
 
         prefixed_hash = prepare_prefixed_hash(agreement_hash)
-        recovered_address = Web3Provider.get_web3().eth.account.recoverHash(
-            prefixed_hash, signature=signature
-        )
+        recovered_address = self._keeper.ec_recover(prefixed_hash, signature)
         is_valid = (recovered_address == consumer_address)
         if not is_valid:
             logger.warning(f'Agreement signature failed: agreement hash is {agreement_hash.hex()}')
@@ -372,16 +379,3 @@ class OceanAgreements:
                     i).type_ref)] = self._keeper.condition_manager.get_condition_state(i)
         result["conditions"] = conditions
         return result
-
-    def watch_provider_events(self, provider_account):
-        """Starts listening to events that an agreement provider needs to act on to fulfill
-        it's part of the Service Agreement flow.
-
-        This function provides default behaviour and assumes service agreement of type 'Access'.
-
-        :param provider_account: Account instance
-        :return: None
-        """
-        events_manager = EventsManager.get_instance(
-            self._keeper, self._config.storage_path, provider_account)
-        events_manager.start_agreement_events_monitor()

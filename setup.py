@@ -21,11 +21,11 @@ with open('CHANGELOG.md') as history_file:
 # or pip install -e .
 install_requirements = [
     'coloredlogs',
-    'keeper-contracts',
     'pyopenssl',
     'PyJWT',  # not jwt
     'PyYAML==4.2b4',
-    'web3==4.5.0',
+    'ocean-utils==0.1.0',
+    'ocean-keeper==0.1.0',
     'ocean-secret-store-client==0.0.1',
     'requests==2.21.0',
     'deprecated',
@@ -97,6 +97,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/oceanprotocol/squid-py',
-    version='0.6.16',
+    version='0.7.0',
     zip_safe=False,
 )

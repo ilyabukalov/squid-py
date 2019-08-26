@@ -4,7 +4,7 @@
 
 from collections import namedtuple
 
-from squid_py.accounts.account import Account
+from ocean_keeper.account import Account
 
 Balance = namedtuple('Balance', ('eth', 'ocn'))
 

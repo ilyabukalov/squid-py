@@ -84,21 +84,7 @@ class ExampleConfig:
         return ExampleConfig._net_to_env_name.get(net)
 
     @staticmethod
-    def get_accounts_config(local_node=True):
-        if local_node:
-            a, p = "0x00bd138abd70e2f00903268f3db08f2d25677c9e", "node0"
-            a1, p1 = "0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0", "secret"
-        else:
-            a, p = get_variable_value('PARITY_ADDRESS'), get_variable_value('PARITY_PASSWORD')
-            a1, p1 = get_variable_value('PARITY_ADDRESS1'), get_variable_value('PARITY_PASSWORD1')
-
-        return {
-           "parity.address": a, "parity.password": p,
-           "parity.address1": a1, "parity.password1": p1
-        }
-
-    @staticmethod
-    def get_base_config(local_node=True):
+    def get_base_config():
         config = {
             "keeper-contracts": {
                 "keeper.url": "http://localhost:8545",
@@ -107,18 +93,18 @@ class ExampleConfig:
                 "parity.url": "http://localhost:8545",
             },
             "resources": {
+                # "aquarius.url": "http://172.15.0.15:5000",
                 "aquarius.url": "http://localhost:5000",
                 "brizo.url": "http://localhost:8030",
                 "storage.path": "squid_py.db",
                 "downloads.path": "consume-downloads"
             }
         }
-        config['keeper-contracts'].update(ExampleConfig.get_accounts_config(local_node))
         return config
 
     @staticmethod
     def _get_config(local_node=True, net_key=''):
-        config = ExampleConfig.get_base_config(local_node=local_node)
+        config = ExampleConfig.get_base_config()
         net_name = ExampleConfig._net_name_map.get(net_key)
         if net_name == 'kovan':
             config['keeper-contracts']['keeper.url'] = ExampleConfig._kovan_keeper_url

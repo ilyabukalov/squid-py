@@ -2,14 +2,15 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 import pytest
-from web3 import HTTPProvider, Web3
+from ocean_keeper.contract_handler import ContractHandler
 
 from examples import ExampleConfig
-from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.config_provider import ConfigProvider
-from squid_py.did import DID
-from squid_py.keeper import Keeper
-from squid_py.keeper.web3_provider import Web3Provider
+from ocean_utils.agreements.service_agreement import ServiceAgreement
+from ocean_utils.did import DID
+from squid_py.ocean.keeper import SquidKeeper as Keeper
+from ocean_keeper.web3_provider import Web3Provider
+
+from squid_py import ConfigProvider
 from tests.resources.helper_functions import (get_consumer_account, get_consumer_ocean_instance,
                                               get_ddo_sample, get_metadata, get_publisher_account,
                                               get_publisher_ocean_instance, get_registered_ddo)
@@ -18,6 +19,14 @@ from tests.resources.tiers import should_run_test
 
 if should_run_test('e2e'):
     ConfigProvider.set_config(ExampleConfig.get_config())
+
+
+@pytest.fixture(autouse=True)
+def setup_all():
+    config = ExampleConfig.get_config()
+    Web3Provider.get_web3(config.keeper_url)
+    ContractHandler.artifacts_path = config.keeper_path
+    Keeper.get_instance(artifacts_path=config.keeper_path)
 
 
 @pytest.fixture
@@ -48,13 +57,13 @@ def consumer_ocean_instance_brizo():
 @pytest.fixture
 def registered_ddo():
     config = ExampleConfig.get_config()
-    return get_registered_ddo(get_publisher_ocean_instance(), get_publisher_account(config))
+    return get_registered_ddo(get_publisher_ocean_instance(), get_publisher_account())
 
 
 @pytest.fixture
 def web3_instance():
     config = ExampleConfig.get_config()
-    return Web3(HTTPProvider(config.keeper_url))
+    return Web3Provider.get_web3(config.keeper_url)
 
 
 @pytest.fixture
@@ -65,8 +74,8 @@ def metadata():
 @pytest.fixture
 def setup_agreements_enviroment():
     config = ConfigProvider.get_config()
-    consumer_acc = get_consumer_account(config)
-    publisher_acc = get_publisher_account(config)
+    consumer_acc = get_consumer_account()
+    publisher_acc = get_publisher_account()
     keeper = Keeper.get_instance()
 
     service_definition_id = 'Access'
@@ -76,7 +85,7 @@ def setup_agreements_enviroment():
     # Remove '0x' from the start of ddo.metadata['base']['checksum']
     text_for_sha3 = ddo.metadata['base']['checksum'][2:]
     keeper.did_registry.register(
-        ddo.did,
+        ddo.asset_id,
         checksum=Web3Provider.get_web3().sha3(text=text_for_sha3),
         url='aquarius:5000',
         account=publisher_acc,

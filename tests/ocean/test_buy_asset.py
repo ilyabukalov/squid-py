@@ -2,20 +2,20 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 import os
-import time
 import pytest
 
 from secret_store_client.client import RPCError
 
 from examples import ExampleConfig
-from squid_py.agreements.service_agreement import ServiceAgreement
-from squid_py.agreements.service_types import ServiceTypes
-from squid_py.config_provider import ConfigProvider
-from squid_py.ddo.ddo import DDO
-from squid_py.keeper import Keeper
-from squid_py.keeper.web3_provider import Web3Provider
-from tests.resources.helper_functions import (get_account_from_config, get_publisher_account,
-                                              get_registered_ddo, log_event)
+from ocean_utils.agreements.service_agreement import ServiceAgreement
+from ocean_utils.agreements.service_types import ServiceTypes
+from ocean_utils.ddo.ddo import DDO
+from squid_py.ocean.keeper import SquidKeeper as Keeper
+from ocean_keeper.web3_provider import Web3Provider
+
+from squid_py import ConfigProvider
+from tests.resources.helper_functions import (get_publisher_account,
+                                              get_registered_ddo, log_event, get_consumer_account)
 
 
 def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
@@ -25,7 +25,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     # :TODO: enable the actual SecretStore
     # SecretStoreProvider.set_secret_store_class(SecretStore)
     w3 = Web3Provider.get_web3()
-    pub_acc = get_publisher_account(config)
+    pub_acc = get_publisher_account()
 
     # Register ddo
     ddo = get_registered_ddo(publisher_ocean_instance, pub_acc)
@@ -37,8 +37,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     # restore the http client because we want the actual Brizo server to do the work
     # not the BrizoMock.
     # Brizo.set_http_client(requests)
-    consumer_account = get_account_from_config(cons_ocn._config, 'parity.address1',
-                                               'parity.password1')
+    consumer_account = get_consumer_account()
 
     downloads_path_elements = len(
         os.listdir(consumer_ocean_instance._config.downloads_path)) if os.path.exists(
@@ -52,9 +51,10 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     agreement_id = cons_ocn.assets.order(
         ddo.did, sa.service_definition_id, consumer_account, auto_consume=False)
 
+    event_wait_time = 10
     event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
         agreement_id,
-        15,
+        event_wait_time,
         log_event(keeper.escrow_access_secretstore_template.AGREEMENT_CREATED_EVENT),
         (),
         wait=True
@@ -63,20 +63,28 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
 
     event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
-        15,
+        event_wait_time,
         log_event(keeper.lock_reward_condition.FULFILLED_EVENT),
         (),
         wait=True
     )
     assert event, 'no event for LockRewardCondition.Fulfilled'
 
-    i = 0
-    while cons_ocn.agreements.is_access_granted(
-            agreement_id, ddo.did, consumer_account.address) is not True and i < 15:
-        time.sleep(1)
-        i += 1
-
+    # give access
+    publisher_ocean_instance.agreements.conditions.grant_access(
+        agreement_id, ddo.did, consumer_account.address, pub_acc)
+    event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
+        agreement_id,
+        event_wait_time,
+        log_event(keeper.access_secret_store_condition.FULFILLED_EVENT),
+        (),
+        wait=True
+    )
+    assert event, 'no event for AccessSecretStoreCondition.Fulfilled'
     assert cons_ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address)
+
+    publisher_ocean_instance.agreements.conditions.release_reward(
+        agreement_id, sa.get_price(), pub_acc)
 
     assert cons_ocn.assets.consume(
         agreement_id,
@@ -134,7 +142,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
 
     event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
-        30,
+        event_wait_time,
         log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
         (),
         wait=True
