@@ -2,11 +2,11 @@
   "@context": "https://w3id.org/did/v1",
   "authentication": [{
     "type": "RsaSignatureAuthentication2018",
-    "publicKey": "did:op:0c184915b07b44c888d468be85a9b28253e80070e5294b1aaed81c2f0264e429"
+    "publicKey": "did:op:0c184915b07b44c888d468be85a9b28253e80070e5294b1aaed81c2f0264e430"
   }],
   "created": "2019-02-08T08:13:49Z",
   "updated": "2019-03-08T08:13:49Z",
-  "id": "did:op:0c184915b07b44c888d468be85a9b28253e80070e5294b1aaed81c2f0264e429",
+  "id": "did:op:0c184915b07b44c888d468be85a9b28253e80070e5294b1aaed81c2f0264e430",
   "proof": {
     "created": "2019-02-08T08:13:41Z",
     "creator": "0x37BB53e3d293494DE59fBe1FF78500423dcFd43B",
@@ -14,7 +14,7 @@
     "type": "DDOIntegritySignature",
     "checksum": {
       "0": "0x52b5c93b82dd9e7ecc3d9fdf4755f7f69a54484941897dc517b4adfe3bbc3377",
-      "1": "0x999999952b5c93b82dd9e7ecc3d9fdf4755f7f69a54484941897dc517b4adfe3"
+      "1": "0x999999952b5c93b82dd9e7ecc3d9fdf4755f7f69a54484941897dc517b4adfe4"
     }
   },
   "publicKey": [{
@@ -59,10 +59,10 @@
       "type": "metadata",
       "attributes": {
         "main": {
-
           "author": "Met Office",
           "checksum": "0x52b5c93b82dd9e7ecc3d9fdf4755f7f69a54484941897dc517b4adfe3bbc3377",
           "dateCreated": "2019-02-08T08:13:49Z",
+          "datePublished": "2019-02-08T08:13:49Z",
           "files": [
             {
               "index": 0,
@@ -75,7 +75,7 @@
           ],
           "encryptedFiles": "0x2e48ceefcca7abb024f90c87c676fce8f7913f889605a349c08c0c4a822c69ad651e122cc81db4fbb52938ac627786491514f37a2ebfd04fd98ec726f1d9061ed52f13fde132222af34d9af8ec358429cf45fc669f81a607185cb9a8150df3cbb2b4e3e382fb16429be228ddd920f061b78dd54701025fac8aab976239fb31a5b60a57393e96a338324c5ac8a5600a1247339c4835533cecdb5b53caf6b6f9d6478b579b7426f650a4154a20d18a9d49f509770af62647a57fc174741b47af3c8beeaaa76bee276cce8fba1f3fec0e1c",
           "license": "CC-BY",
-          "name": "UK Weather information 2011",
+          "name": "UK Weather information 2012",
           "price": "1",
           "type": "dataset"
         },

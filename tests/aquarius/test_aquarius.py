@@ -2,11 +2,11 @@
 #  SPDX-License-Identifier: Apache-2.0
 
 import pytest
-
-from squid_py import ConfigProvider
 from ocean_utils.aquarius.aquarius import Aquarius
 from ocean_utils.ddo.ddo import DDO
 from ocean_utils.did import DID
+
+from squid_py import ConfigProvider
 from tests.resources.helper_functions import get_resource_path
 from tests.resources.tiers import e2e_test, should_run_test
 
@@ -23,7 +23,7 @@ def _get_asset(file_name):
 @pytest.fixture
 def asset1():
     asset = _get_asset('ddo_sample1.json')
-    asset._did = DID.did()
+    asset._did = DID.did(asset.proof['checksum'])
     yield asset
     aquarius.retire_all_assets()
 
@@ -31,13 +31,20 @@ def asset1():
 @pytest.fixture
 def asset2():
     asset = _get_asset('ddo_sample2.json')
-    asset._did = DID.did()
+    asset._did = DID.did(asset.proof['checksum'])
+    return asset
+
+
+@pytest.fixture
+def asset3():
+    asset = _get_asset('ddo_sample3.json')
+    asset._did = DID.did(asset.proof['checksum'])
     return asset
 
 
 @e2e_test
 def test_get_service_endpoint():
-    assert aquarius.get_service_endpoint('did:op:test') == f'{aquarius.url}/did:op:test'
+    assert aquarius.get_service_endpoint() == f'{aquarius.url}/' + '{did}'
 
 
 @e2e_test
@@ -73,7 +80,7 @@ def test_get_asset_metadata(asset1):
     aquarius.publish_asset_ddo(asset1)
     metadata_dict = aquarius.get_asset_metadata(asset1.did)
     assert isinstance(metadata_dict, dict)
-    assert 'base' in metadata_dict
+    assert 'main' in metadata_dict
     assert 'curation' in metadata_dict
     assert 'additionalInformation' in metadata_dict
     aquarius.retire_asset_ddo(asset1.did)
@@ -110,7 +117,7 @@ def test_update_ddo(asset1, asset2):
     aquarius.publish_asset_ddo(asset1)
     aquarius.update_asset_ddo(asset1.did, asset2)
     assert aquarius.get_asset_ddo(asset1.did).did == asset2.did
-    assert aquarius.get_asset_ddo(asset1.did).metadata['base']['name'] != asset1.metadata['base'][
+    assert aquarius.get_asset_ddo(asset1.did).metadata['main']['name'] != asset1.metadata['main'][
         'name'], 'The name has not been updated correctly.'
     aquarius.retire_asset_ddo(asset1.did)
 
@@ -122,21 +129,21 @@ def test_update_with_not_valid_ddo(asset1):
 
 
 @e2e_test
-def test_text_search(asset1, asset2):
+def test_text_search(asset1, asset3):
     office_matches = 0
     aquarius.publish_asset_ddo(asset1)
-    assert len(aquarius.text_search(text='white paper', offset=10000)['results']) == (
-                office_matches + 1)
+    assert len(aquarius.text_search(text='Weather information', offset=10000)['results']) == (
+            office_matches + 1)
 
     text = '0c184915b07b44c888d468be85a9b28253e80070e5294b1aaed81c2f0264e430'
     id_matches2 = len(aquarius.text_search(text=text, offset=10000)['results'])
-    aquarius.publish_asset_ddo(asset2)
+    aquarius.publish_asset_ddo(asset3)
     assert len(aquarius.text_search(text=text, offset=10000)['results']) == (id_matches2 + 1)
 
-    assert len(aquarius.text_search(text='white paper', offset=10000)['results']) == (
-                office_matches + 2)
+    assert len(aquarius.text_search(text='Weather information', offset=10000)['results']) == (
+            office_matches + 2)
     aquarius.retire_asset_ddo(asset1.did)
-    aquarius.retire_asset_ddo(asset2.did)
+    aquarius.retire_asset_ddo(asset3.did)
 
 
 @e2e_test
@@ -146,21 +153,21 @@ def test_text_search_invalid_query():
 
 
 @e2e_test
-def test_query_search(asset1, asset2):
+def test_query_search(asset1, asset3):
     num_matches = 0
     aquarius.publish_asset_ddo(asset1)
 
-    assert len(aquarius.query_search(search_query={"query": {"type": ["Authorization"]}},
+    assert len(aquarius.query_search(search_query={"query": {"type": ["dataset"]}},
                                      offset=10000)['results']) == (
                    num_matches + 1)
 
-    aquarius.publish_asset_ddo(asset2)
+    aquarius.publish_asset_ddo(asset3)
 
-    assert len(aquarius.query_search(search_query={"query": {"type": ["Access"]}},
+    assert len(aquarius.query_search(search_query={"query": {"type": ["dataset"]}},
                                      offset=10000)['results']) == (
                    num_matches + 2)
     aquarius.retire_asset_ddo(asset1.did)
-    aquarius.retire_asset_ddo(asset2.did)
+    aquarius.retire_asset_ddo(asset3.did)
 
 
 @e2e_test

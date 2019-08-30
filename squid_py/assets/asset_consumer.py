@@ -31,7 +31,7 @@ class AssetConsumer:
         :return: Asset folder path, str
         """
         did = ddo.did
-        encrypted_files = ddo.metadata['base']['encryptedFiles']
+        encrypted_files = ddo.metadata['main']['encryptedFiles']
         encrypted_files = (
             encrypted_files if isinstance(encrypted_files, str)
             else encrypted_files[0]
@@ -44,7 +44,7 @@ class AssetConsumer:
             raise AssertionError(
                 'Consume asset failed, service definition is missing the "serviceEndpoint".')
 
-        if ddo.get_service('Authorization'):
+        if ddo.get_service('authorization'):
             secret_store_service = ddo.get_service(service_type=ServiceTypes.AUTHORIZATION)
             secret_store_url = secret_store_service.endpoints.service
             secret_store.set_secret_store_url(secret_store_url)

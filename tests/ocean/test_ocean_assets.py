@@ -4,15 +4,13 @@
 import logging
 
 import pytest
-
+from ocean_keeper.exceptions import OceanDIDNotFound
+from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.agreements.service_factory import ServiceDescriptor
 from ocean_utils.agreements.service_types import ServiceTypes
 from ocean_utils.ddo.ddo import DDO
-from ocean_utils.ddo.metadata import Metadata
 from ocean_utils.did import DID
-from ocean_keeper.exceptions import OceanDIDNotFound
-from ocean_keeper.web3_provider import Web3Provider
 
 from tests.resources.helper_functions import get_resource_path, log_event
 from tests.resources.tiers import e2e_test
@@ -57,13 +55,14 @@ def test_register_asset(publisher_ocean_instance):
     ##########################################################
     # Register using high-level interface
     ##########################################################
-    publisher_ocean_instance.assets.create(asset.metadata, publisher)
+    ddo = publisher_ocean_instance.assets.create(asset.metadata, publisher)
+    publisher_ocean_instance.assets.retire(ddo.did)
 
 
 @e2e_test
-def test_resolve_did(publisher_ocean_instance):
+def test_resolve_did(publisher_ocean_instance, metadata):
     # prep ddo
-    metadata = Metadata.get_example()
+    # metadata = Metadata.get_example()
     publisher = publisher_ocean_instance.main_account
     # happy path
     original_ddo = publisher_ocean_instance.assets.create(metadata, publisher)
@@ -74,14 +73,15 @@ def test_resolve_did(publisher_ocean_instance):
     assert ddo['authentication'] == original['authentication']
     assert ddo['service']
     assert original['service']
-    metadata = ddo['service'][0]['metadata']
-    if 'datePublished' in metadata['base']:
-        metadata['base'].pop('datePublished')
-    assert ddo['service'][0]['metadata']['base'] == original['service'][0]['metadata']['base']
+    metadata = ddo['service'][0]['attributes']
+    if 'datePublished' in metadata['main']:
+        metadata['main'].pop('datePublished')
+    assert ddo['service'][0]['attributes']['main']['name'] == \
+           original['service'][0]['attributes']['main']['name']
     assert ddo['service'][1] == original['service'][1]
 
     # Can't resolve unregistered asset
-    unregistered_did = DID.did()
+    unregistered_did = DID.did({"0": "0x00112233445566"})
     with pytest.raises(OceanDIDNotFound):
         publisher_ocean_instance.assets.resolve(unregistered_did)
 
@@ -89,6 +89,7 @@ def test_resolve_did(publisher_ocean_instance):
     invalid_did = "did:op:0123456789"
     with pytest.raises(OceanDIDNotFound):
         publisher_ocean_instance.assets.resolve(invalid_did)
+    publisher_ocean_instance.assets.retire(did)
 
 
 @e2e_test
@@ -140,13 +141,14 @@ def test_create_data_asset(publisher_ocean_instance, consumer_ocean_instance):
     # Publish the metadata
     new_asset = pub_ocn.assets.create(asset.metadata, aquarius_acct)
 
-    # get_asset_metadata only returns 'base' key, is this correct?
+    # get_asset_metadata only returns 'main' key, is this correct?
     published_metadata = cons_ocn.assets.resolve(new_asset.did)
 
     assert published_metadata
     # only compare top level keys
-    assert sorted(list(asset.metadata['base'].keys())).remove('files') == sorted(
-        list(published_metadata.metadata['base'].keys())).remove('encryptedFiles')
+    assert sorted(list(asset.metadata['main'].keys())).remove('files') == sorted(
+        list(published_metadata.metadata['main'].keys())).remove('encryptedFiles')
+    publisher_ocean_instance.assets.retire(new_asset.did)
 
 
 def test_create_asset_with_different_secret_store(publisher_ocean_instance):
@@ -161,22 +163,31 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
     my_secret_store = 'http://myownsecretstore.com'
     auth_service = ServiceDescriptor.authorization_service_descriptor(my_secret_store)
     new_asset = ocn.assets.create(asset.metadata, acct, [auth_service])
-    assert new_asset.get_service(ServiceTypes.AUTHORIZATION).endpoints.service == my_secret_store
+    assert new_asset.get_service(ServiceTypes.AUTHORIZATION).service_endpoint == my_secret_store
     assert new_asset.get_service(ServiceTypes.ASSET_ACCESS)
     assert new_asset.get_service(ServiceTypes.METADATA)
-
-    new_asset = ocn.assets.create(asset.metadata, acct)
-    assert new_asset.get_service(ServiceTypes.AUTHORIZATION)
-    assert new_asset.get_service(ServiceTypes.ASSET_ACCESS)
-    assert new_asset.get_service(ServiceTypes.METADATA)
+    publisher_ocean_instance.assets.retire(new_asset.did)
 
     access_service = ServiceDescriptor.access_service_descriptor(
-        2, 'consume', 'consume', 35, '', ''
+        {"main": {
+            "name": "dataAssetAccessServiceAgreement",
+            "creator": '0x1234',
+            "price": '1',
+            "timeout": 3600,
+            "datePublished": '2019-08-30T12:19:54Z'
+        }}, ''
     )
     new_asset = ocn.assets.create(asset.metadata, acct, [access_service])
     assert new_asset.get_service(ServiceTypes.AUTHORIZATION)
     assert new_asset.get_service(ServiceTypes.ASSET_ACCESS)
     assert new_asset.get_service(ServiceTypes.METADATA)
+    publisher_ocean_instance.assets.retire(new_asset.did)
+
+    new_asset = ocn.assets.create(asset.metadata, acct)
+    assert new_asset.get_service(ServiceTypes.AUTHORIZATION)
+    assert new_asset.get_service(ServiceTypes.ASSET_ACCESS)
+    assert new_asset.get_service(ServiceTypes.METADATA)
+    publisher_ocean_instance.assets.retire(new_asset.did)
 
 
 def test_asset_owner(publisher_ocean_instance):
@@ -193,14 +204,16 @@ def test_asset_owner(publisher_ocean_instance):
     new_asset = ocn.assets.create(asset.metadata, acct, [auth_service])
 
     assert ocn.assets.owner(new_asset.did) == acct.address
+    publisher_ocean_instance.assets.retire(new_asset.did)
 
 
 def test_owner_assets(publisher_ocean_instance):
     ocn = publisher_ocean_instance
     acct = ocn.main_account
     assets_owned = len(ocn.assets.owner_assets(acct.address))
-    create_asset(publisher_ocean_instance)
+    asset = create_asset(publisher_ocean_instance)
     assert len(ocn.assets.owner_assets(acct.address)) == assets_owned + 1
+    publisher_ocean_instance.assets.retire(asset.did)
 
 
 def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
@@ -217,7 +230,7 @@ def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
             agr_id, did, cons_address, account)
 
     agreement_id = consumer_ocean_instance.assets.order(
-        asset.did, sa.service_definition_id, acct)
+        asset.did, 'access', acct)
     keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         15,
@@ -244,6 +257,7 @@ def test_ocean_assets_resolve(publisher_ocean_instance, metadata):
     ddo = publisher_ocean_instance.assets.create(metadata, publisher)
     ddo_resolved = publisher_ocean_instance.assets.resolve(ddo.did)
     assert ddo.did == ddo_resolved.did
+    publisher_ocean_instance.assets.retire(ddo.did)
 
 
 def test_ocean_assets_search(publisher_ocean_instance, metadata):

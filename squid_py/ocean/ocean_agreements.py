@@ -5,6 +5,7 @@
 import logging
 
 from ocean_utils.agreements.service_agreement import ServiceAgreement
+from ocean_utils.agreements.service_factory import  ServiceFactory
 
 from squid_py.agreement_events.accessSecretStore import refund_reward, consume_asset
 from squid_py.agreement_events.escrowAccessSecretStoreTemplate import fulfillLockRewardCondition
@@ -125,7 +126,7 @@ class OceanAgreements:
             service_agreement.endpoints.purchase
         )
 
-    def create(self, did, service_definition_id, agreement_id,
+    def create(self, did, index, agreement_id,
                service_agreement_signature, consumer_address,
                account, auto_consume=False):
         """
@@ -138,7 +139,7 @@ class OceanAgreements:
         is usedon-chain to verify that the values actually match the signed hashes.
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: str identifies the specific service in
+        :param index: str identifies the specific service in
          the ddo to use in this agreement.
         :param agreement_id: 32 bytes identifier created by the consumer and will be used
          on-chain for the executed agreement.
@@ -166,7 +167,7 @@ class OceanAgreements:
 
         asset = self._asset_resolver.resolve(did)
         asset_id = asset.asset_id
-        service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
+        service_agreement = ServiceAgreement.from_ddo(index, asset)
         agreement_template = self._keeper.escrow_access_secretstore_template
 
         if agreement_template.get_agreement_consumer(agreement_id) is not None:
@@ -176,7 +177,7 @@ class OceanAgreements:
 
         if consumer_address != account.address:
             if not self._verify_service_agreement_signature(
-                    did, agreement_id, service_definition_id,
+                    did, agreement_id, index,
                     consumer_address, service_agreement_signature,
                     ddo=asset
             ):

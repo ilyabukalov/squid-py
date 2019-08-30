@@ -3,14 +3,13 @@
 
 import pytest
 from ocean_keeper.contract_handler import ContractHandler
-
-from examples import ExampleConfig
+from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.did import DID
-from squid_py.ocean.keeper import SquidKeeper as Keeper
-from ocean_keeper.web3_provider import Web3Provider
 
+from examples import ExampleConfig
 from squid_py import ConfigProvider
+from squid_py.ocean.keeper import SquidKeeper as Keeper
 from tests.resources.helper_functions import (get_consumer_account, get_consumer_ocean_instance,
                                               get_ddo_sample, get_metadata, get_publisher_account,
                                               get_publisher_ocean_instance, get_registered_ddo)
@@ -81,9 +80,9 @@ def setup_agreements_enviroment():
     service_definition_id = 'Access'
 
     ddo = get_ddo_sample()
-    ddo._did = DID.did()
-    # Remove '0x' from the start of ddo.metadata['base']['checksum']
-    text_for_sha3 = ddo.metadata['base']['checksum'][2:]
+    ddo._did = DID.did({'0': '0x987654321'})
+    # Remove '0x' from the start of ddo.metadata['main']['checksum']
+    text_for_sha3 = ddo.metadata['main']['checksum'][2:]
     keeper.did_registry.register(
         ddo.asset_id,
         checksum=Web3Provider.get_web3().sha3(text=text_for_sha3),

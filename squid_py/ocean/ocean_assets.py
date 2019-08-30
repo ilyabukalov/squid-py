@@ -7,20 +7,22 @@ import json
 import logging
 import os
 
+from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_factory import ServiceDescriptor, ServiceFactory
 from ocean_utils.agreements.service_types import ServiceTypes
 from ocean_utils.aquarius.aquarius_provider import AquariusProvider
 from ocean_utils.aquarius.exceptions import AquariusGenericError
-from squid_py.brizo.brizo_provider import BrizoProvider
 from ocean_utils.ddo.ddo import DDO
-from ocean_utils.ddo.metadata import Metadata, MetadataBase
+from ocean_utils.ddo.metadata import Metadata, MetadataMain
 from ocean_utils.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
-from ocean_utils.did import DID, did_to_id
+from ocean_utils.did import DID, did_to_id, did_to_id_bytes
 from ocean_utils.exceptions import (
     OceanDIDAlreadyExist,
     OceanInvalidMetadata,
 )
-from ocean_keeper.web3_provider import Web3Provider
+from ocean_utils.utils.utilities import checksum
+
+from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 
 logger = logging.getLogger('ocean')
@@ -80,31 +82,88 @@ class OceanAssets:
         metadata_copy = copy.deepcopy(metadata)
 
         # Create a DDO object
-        did = DID.did()
+        ddo = DDO()
+        brizo = BrizoProvider.get_brizo()
+        ddo_service_endpoint = self._get_aquarius().get_service_endpoint()
+
+        metadata_service_desc = ServiceDescriptor.metadata_service_descriptor(metadata_copy,
+                                                                              ddo_service_endpoint)
+        access_service_attributes = {"main": {
+            "name": "dataAssetAccessServiceAgreement",
+            "creator": publisher_account.address,
+            "price": metadata[MetadataMain.KEY]['price'],
+            "timeout": 3600,
+            "datePublished": metadata[MetadataMain.KEY]['dateCreated']
+        }}
+
+        if not service_descriptors:
+            service_descriptors = [ServiceDescriptor.authorization_service_descriptor(
+                self._config.secret_store_url)]
+            service_descriptors += [ServiceDescriptor.access_service_descriptor(
+                access_service_attributes,
+                brizo.get_service_endpoint(self._config)
+            )]
+        else:
+            service_types = set(map(lambda x: x[0], service_descriptors))
+            if ServiceTypes.AUTHORIZATION not in service_types:
+                service_descriptors += [ServiceDescriptor.authorization_service_descriptor(
+                    self._config.secret_store_url)]
+            else:
+                service_descriptors += [ServiceDescriptor.access_service_descriptor(
+                    access_service_attributes,
+                    brizo.get_service_endpoint(self._config)
+
+                )]
+
+        # Add all services to ddo
+        service_descriptors = [metadata_service_desc] + service_descriptors
+
+        services = ServiceFactory.build_services(service_descriptors)
+        checksums = dict()
+        for service in services:
+            checksums[str(service.index)] = checksum(service.main)
+
+        # Adding proof to the ddo.
+        ddo.add_proof(checksums, publisher_account)
+
+        # Generating the did and adding to the ddo.
+        did = ddo.assign_did(DID.did(ddo.proof['checksum']))
         logger.debug(f'Generating new did: {did}')
+
+        access_service = ServiceFactory.complete_access_service(did,
+                                                                brizo.get_service_endpoint(
+                                                                    self._config),
+                                                                access_service_attributes,
+                                                                self._keeper.escrow_access_secretstore_template.address,
+                                                                self._keeper.escrow_reward_condition.address)
+        for service in services:
+            if service.type == 'access':
+                ddo.add_service(access_service)
+            else:
+                ddo.add_service(service)
+
+        ddo.proof['signatureValue'] = self._keeper.sign_hash(did_to_id_bytes(did),
+                                                             publisher_account)
+
         # Check if it's already registered first!
         if did in self._get_aquarius().list_assets():
             raise OceanDIDAlreadyExist(
                 f'Asset id {did} is already registered to another asset.')
 
-        ddo = DDO(did)
-
         # Add public key and authentication
         ddo.add_public_key(did, publisher_account.address)
 
-        # :AUDIT: ssallam -- How does PUBLIC_KEY_TYPE_RSA authentication type apply to the did?
         ddo.add_authentication(did, PUBLIC_KEY_TYPE_RSA)
 
         # Setup metadata service
         # First compute files_encrypted
-        assert metadata_copy['base'][
+        assert metadata_copy['main'][
             'files'], 'files is required in the metadata base attributes.'
         logger.debug('Encrypting content urls in the metadata.')
-        brizo = BrizoProvider.get_brizo()
         if not use_secret_store:
             encrypt_endpoint = brizo.get_encrypt_endpoint(self._config)
             files_encrypted = brizo.encrypt_files_dict(
-                metadata_copy['base']['files'],
+                metadata_copy['main']['files'],
                 encrypt_endpoint,
                 ddo.asset_id,
                 publisher_account.address,
@@ -114,71 +173,33 @@ class OceanAssets:
             files_encrypted = self._get_secret_store(publisher_account) \
                 .encrypt_document(
                 did_to_id(did),
-                json.dumps(metadata_copy['base']['files']),
+                json.dumps(metadata_copy['main']['files']),
             )
-
-        metadata_copy['base']['checksum'] = ddo.generate_checksum(did, metadata)
-        checksum = metadata_copy['base']['checksum']
-        ddo.add_proof(checksum, publisher_account, self._keeper.sign_hash(checksum, publisher_account))
 
         # only assign if the encryption worked
         if files_encrypted:
             logger.debug(f'Content urls encrypted successfully {files_encrypted}')
             index = 0
-            for file in metadata_copy['base']['files']:
+            for file in metadata_copy['main']['files']:
                 file['index'] = index
                 index = index + 1
                 del file['url']
-            metadata_copy['base']['encryptedFiles'] = files_encrypted
+            metadata_copy['main']['encryptedFiles'] = files_encrypted
         else:
             raise AssertionError('Encrypting the files failed.')
 
         # DDO url and `Metadata` service
-        ddo_service_endpoint = self._get_aquarius().get_service_endpoint(did)
-        metadata_service_desc = ServiceDescriptor.metadata_service_descriptor(metadata_copy,
-                                                                              ddo_service_endpoint)
-        if not service_descriptors:
-            service_descriptors = [ServiceDescriptor.authorization_service_descriptor(
-                self._config.secret_store_url)]
-            service_descriptors += [ServiceDescriptor.access_service_descriptor(
-                metadata[MetadataBase.KEY]['price'],
-                brizo.get_purchase_endpoint(self._config),
-                brizo.get_service_endpoint(self._config),
-                3600,
-                self._keeper.escrow_access_secretstore_template.address,
-                self._keeper.escrow_reward_condition.address
-            )]
-        else:
-            service_types = set(map(lambda x: x[0], service_descriptors))
-            if ServiceTypes.AUTHORIZATION not in service_types:
-                service_descriptors += [ServiceDescriptor.authorization_service_descriptor(
-                    self._config.secret_store_url)]
-            else:
-                service_descriptors += [ServiceDescriptor.access_service_descriptor(
-                    metadata[MetadataBase.KEY]['price'],
-                    brizo.get_purchase_endpoint(self._config),
-                    brizo.get_service_endpoint(self._config),
-                    3600,
-                    self._keeper.escrow_access_secretstore_template.address,
-                    self._keeper.escrow_reward_condition.address
-                )]
-
-        # Add all services to ddo
-        service_descriptors = [metadata_service_desc] + service_descriptors
-        for service in ServiceFactory.build_services(did, service_descriptors):
-            ddo.add_service(service)
 
         logger.debug(
             f'Generated ddo and services, DID is {ddo.did},'
             f' metadata service @{ddo_service_endpoint}, '
-            f'`Access` service initialize @{ddo.services[0].endpoints.service}.')
+            f'`Access` service initialize @{ddo.get_service("access").service_endpoint}.')
         response = None
         # register on-chain
-        # Remove '0x' from the start of metadata_copy['base']['checksum']
-        text_for_sha3 = metadata_copy['base']['checksum'][2:]
+        # Remove '0x' from the start of metadata_copy['main']['checksum']
         registered_on_chain = self._keeper.did_registry.register(
             ddo.asset_id,
-            checksum=Web3Provider.get_web3().sha3(text=text_for_sha3),
+            checksum=Web3Provider.get_web3().toBytes(hexstr=ddo.asset_id),
             url=ddo_service_endpoint,
             account=publisher_account,
             providers=providers
@@ -208,8 +229,8 @@ class OceanAssets:
         """
         try:
             ddo = self.resolve(did)
-            metadata_service = ddo.find_service_by_type(ServiceTypes.METADATA)
-            self._get_aquarius(metadata_service.endpoints.service).retire_asset_ddo(did)
+            metadata_service = ddo.get_service(ServiceTypes.METADATA)
+            self._get_aquarius(metadata_service.service_endpoint).retire_asset_ddo(did)
             return True
         except AquariusGenericError as err:
             logger.error(err)
@@ -259,13 +280,13 @@ class OceanAssets:
         return [DDO(dictionary=ddo_dict) for ddo_dict in
                 aquarius.query_search(query, sort, offset, page)['results']]
 
-    def order(self, did, service_definition_id, consumer_account, auto_consume=False):
+    def order(self, did, index, consumer_account, auto_consume=False):
         """
         Place order by directly creating an SEA (agreement) on-chain.
 
         :param did: str starting with the prefix `did:op:` and followed by the asset id which is
         a hex str
-        :param service_definition_id: str the service definition id identifying a specific
+        :param index: str the service definition id identifying a specific
         service in the DDO (DID document)
         :param consumer_account: Account instance of the consumer
         :param auto_consume: boolean
@@ -276,7 +297,7 @@ class OceanAssets:
         logger.debug(f'about to request create agreement: {agreement_id}')
         self._agreements.create(
             did,
-            service_definition_id,
+            index,
             agreement_id,
             None,
             consumer_account.address,
