@@ -95,11 +95,13 @@ def register_asset(ocn, publisher_acc, metadata, providers):
     return ddo
 
 
-def load_accounts(file_name):
+def load_accounts(accounts_path):
     """Return Account instances for the accounts listed in file generated in `create_accounts`."""
+    file_name = 'accounts_data.txt'
+    accounts_data_file = os.path.join(accounts_path, file_name)
     accounts = []
     address, password, key_file = None, None, None
-    with open(file_name, 'r') as f:
+    with open(accounts_data_file, 'r') as f:
         state = 0
         for l in f.readlines():
             if state == 0:
@@ -118,6 +120,8 @@ def load_accounts(file_name):
             elif state == 2:
                 if l.startswith('account.parity.file'):
                     key_file = l.split('=')[-1].strip()
+                    key_file = os.path.join(accounts_path, key_file)
+                    assert os.path.exists(key_file), f'keyfile {key_file} is not found in the accounts folder {accounts_path}'
                     accounts.append(Account(address, password, key_file))
                 state = 0
                 address, password, key_file = None, None, None
@@ -192,10 +196,27 @@ def buy_asset(consumer_account, did):
 
 
 def run_performance_test():
+    """
+    Make sure to export the envvar TEST_ACCOUNTS_FOLDER which must contain all of the accounts keyfiles
+    to use in the test. This folder must also have the accounts data file which has the address, password
+    and keyfile name for each account.
+
+    `Note`: The keyfiles for the accounts that will be used in this test must all be available to the
+    local parity node (copy the keyfiles to the network's `keys`
+    folder (e.g. barge/networks/duero/keys).
+
+    To run this test on duero, it is sufficient to start ocean services in barge using this command:
+      >> ./start_ocean.sh --local-duero-node --no-aquarius --no-brizo --no-events-handler --no-pleuston
+    So, the following services are not needed (remote services will be used):
+      Brizo, Aquarius, Events-listener and Pleuston (don't need a marketplace here)
+
+    :return:
+    """
+    accounts_path = os.path.expanduser(os.environ["TEST_ACCOUNTS_FOLDER"])
     os.environ['TEST_NET'] = 'duero'
     os.environ["PARITY_ADDRESS"] = "0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0"
     os.environ["PARITY_PASSWORD"] = "secret"
-    os.environ["PARITY_KEYFILE"] = "~/pycharm_projects/squid-py/tests/resources/data/key_file_1.json"
+    os.environ["PARITY_KEYFILE"] = os.path.join(accounts_path, "key_file_1.json")
 
     ConfigProvider.set_config(ExampleConfig.get_config())
 
@@ -203,21 +224,23 @@ def run_performance_test():
     w3 = Web3Provider.get_web3(config.keeper_url)
     ContractHandler.artifacts_path = config.keeper_path
 
+    # This is the provider address used in Brizo and the Events-handler on the Duero network
+    # make sure to change this address if testing on other network such as Nile/Pacific
     providers = [w3.toChecksumAddress('0x9D4eD58293F71122aD6a733C1603927a150735D0')]
     # make ocean instance
     ocn = Ocean()
     Diagnostics.verify_contracts()
-    acc = get_publisher_account()
 
     did = 'did:op:58b3c1bf538a4900a0818e8c0439c84fcc1bf3b1b57640a381fa25dbeb53e5b6'
     if not did:
+        acc = get_publisher_account()
         # Register asset once for consume requests
         ddo = register_asset(ocn, acc, Metadata.get_example(), providers)
         assert ddo is not None, f'Registering asset on-chain failed.'
         logging.info(f'registered ddo: {ddo.did}')
         did = ddo.did
 
-    accounts = load_accounts(os.path.expanduser('~/test_accounts/accounts_data.txt'))
+    accounts = load_accounts(accounts_path)
     index = int(sys.argv[1])
     a = accounts[index]
     print(f'run for index: {index}, {a.address}, {a.password}########################### {[index]*25}')
