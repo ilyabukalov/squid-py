@@ -56,7 +56,7 @@ class AssetConsumer:
 
         if isinstance(decrypted_content_urls, str):
             decrypted_content_urls = [decrypted_content_urls]
-        logger.debug(f'got decrypted contentUrls: {decrypted_content_urls}')
+        print(f'got decrypted contentUrls: {decrypted_content_urls}')
 
         if not os.path.isabs(destination):
             destination = os.path.abspath(destination)
@@ -64,7 +64,8 @@ class AssetConsumer:
             os.mkdir(destination)
 
         asset_folder = os.path.join(destination,
-                                    f'datafile.{did_to_id(did)}.{sa.service_definition_id}')
+                                    f'datafile.{did_to_id(did)}.{service_agreement_id[-6:]}')
+        print(f'creating asset folder: agrId={service_agreement_id}, folder={asset_folder}')
         if not os.path.exists(asset_folder):
             os.mkdir(asset_folder)
         if index is not None:

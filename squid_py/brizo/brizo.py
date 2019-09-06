@@ -127,9 +127,13 @@ class Brizo:
                                                         account, _file,
                                                         signature, i)
                 logger.info(f'invoke consume endpoint with this url: {consume_url}')
+                print(f'invoke consume endpoint with this url: {consume_url}')
+
                 response = Brizo._http_client.get(consume_url, stream=True)
                 file_name = Brizo._get_file_name(response)
                 Brizo.write_file(response, destination_folder, file_name or f'file-{i}')
+
+            print(f'################ DOWNLOAD files completed: agrId={service_agreement_id}, numFiles={len(files)}')
 
     @staticmethod
     def _prepare_consume_payload(did, service_agreement_id, service_definition_id, signature,
@@ -213,9 +217,9 @@ class Brizo:
             with open(os.path.join(destination_folder, file_name), 'wb') as f:
                 for chunk in response.iter_content(chunk_size=None):
                     f.write(chunk)
-            logger.info(f'Saved downloaded file in {f.name}')
+            logger.info(f'Saved downloaded file {file_name} in {f.name}')
         else:
-            logger.warning(f'consume failed: {response.reason}')
+            print(f'WARNING::::: consume failed: {response.reason}')
 
     @staticmethod
     def _create_consume_url(service_endpoint, service_agreement_id, account, _file=None,

@@ -20,10 +20,10 @@ def get_variable_value(variable):
 class ExampleConfig:
     _local_aqua_url = "http://172.15.0.15:5000"
     _local_brizo_url = "http://localhost:8030"
-    # _duero_aqua_url = "https://aquarius.duero.dev-ocean.com"
-    # _duero_brizo_url = "https://brizo.duero.dev-ocean.com"
-    _duero_aqua_url = "http://localhost:5000"
-    _duero_brizo_url = "http://localhost:8030"
+    _duero_aqua_url = "https://aquarius.duero.dev-ocean.com"
+    _duero_brizo_url = "https://brizo.duero.dev-ocean.com"
+    # _duero_aqua_url = "http://localhost:5000"
+    # _duero_brizo_url = "http://localhost:8030"
 
     _pacific_aqua_url = "https://aquarius.pacific.dev-ocean.com"
     _pacific_brizo_url = "https://brizo.pacific.dev-ocean.com"

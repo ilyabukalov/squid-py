@@ -38,7 +38,9 @@ def buy_asset():
     ConfigProvider.set_config(ExampleConfig.get_config())
     config = ConfigProvider.get_config()
     providers = {
-        'duero': '0x9d4ed58293f71122ad6a733c1603927a150735d0',
+        # 'duero': '0x9d4ed58293f71122ad6a733c1603927a150735d0',
+        'duero': '0x9D4eD58293F71122aD6a733C1603927a150735D0', # when running remote events-handler on duero
+        # 'duero': '0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0', # when running local events-handler/brizo
         'nile': '0x4aaab179035dc57b35e2ce066919048686f82972'
     }
     # make ocean instance
