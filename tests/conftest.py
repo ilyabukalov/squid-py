@@ -77,7 +77,7 @@ def setup_agreements_enviroment():
     publisher_acc = get_publisher_account()
     keeper = Keeper.get_instance()
 
-    service_definition_id = 'Access'
+    service_definition_id = 'access'
 
     ddo = get_ddo_sample()
     ddo._did = DID.did({'0': '0x987654321'})

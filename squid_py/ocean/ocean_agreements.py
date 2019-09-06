@@ -167,7 +167,7 @@ class OceanAgreements:
 
         asset = self._asset_resolver.resolve(did)
         asset_id = asset.asset_id
-        service_agreement = ServiceAgreement.from_ddo(index, asset)
+        service_agreement = ServiceAgreement.from_ddo('access', asset)
         agreement_template = self._keeper.escrow_access_secretstore_template
 
         if agreement_template.get_agreement_consumer(agreement_id) is not None:

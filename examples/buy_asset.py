@@ -133,7 +133,7 @@ def buy_asset():
     ocn.assets.consume(
         agreement_id,
         did,
-        sa.service_definition_id,
+        sa.index,
         consumer_account,
         config.downloads_path)
     logging.info('Success buying asset.')

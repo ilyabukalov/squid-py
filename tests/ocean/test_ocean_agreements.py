@@ -177,22 +177,22 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     pub_ocn = publisher_ocean_instance
     publisher_acc = pub_ocn.main_account
 
-    service_definition_id = registered_ddo.get_service('Access').service_definition_id
     did = registered_ddo.did
     asset_id = registered_ddo.asset_id
     ddo = consumer_ocn.assets.resolve(did)
-    service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
+    service_agreement = ServiceAgreement.from_ddo('access', ddo)
+
     price = service_agreement.get_price()
 
     # Give consumer some tokens
     keeper.dispenser.request_vodkas(price * 2, consumer_acc)
 
     agreement_id, signature = consumer_ocean_instance.agreements.prepare(
-        did, service_agreement.service_definition_id, consumer_acc)
+        did, 'access', consumer_acc)
 
     success = publisher_ocean_instance.agreements.create(
         did,
-        service_agreement.service_definition_id,
+        'access',
         agreement_id,
         signature,
         consumer_acc.address,
@@ -269,6 +269,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
         wait=True
     )
     assert event, 'no event for EscrowReward.Fulfilled'
+    publisher_ocean_instance.assets.retire(did)
 
     # path = consumer_ocean_instance.assets.consume(
     #     agreement_id, did, service_definition_id,

@@ -13,12 +13,11 @@ from ocean_utils.agreements.service_types import ServiceTypes
 from ocean_utils.aquarius.aquarius_provider import AquariusProvider
 from ocean_utils.aquarius.exceptions import AquariusGenericError
 from ocean_utils.ddo.ddo import DDO
-from ocean_utils.ddo.metadata import Metadata, MetadataMain
+from ocean_utils.ddo.metadata import MetadataMain
 from ocean_utils.ddo.public_key_rsa import PUBLIC_KEY_TYPE_RSA
 from ocean_utils.did import DID, did_to_id, did_to_id_bytes
 from ocean_utils.exceptions import (
     OceanDIDAlreadyExist,
-    OceanInvalidMetadata,
 )
 from ocean_utils.utils.utilities import checksum
 
@@ -52,9 +51,6 @@ class OceanAssets:
             self._config.secret_store_url, self._config.parity_url, account
         )
 
-    def get_my_assets(self, publisher_address):
-        self._keeper.did_registry.get_owner_asset_ids(publisher_address)
-
     def create(self, metadata, publisher_account,
                service_descriptors=None, providers=None,
                use_secret_store=True):
@@ -74,9 +70,9 @@ class OceanAssets:
         :return: DDO instance
         """
         assert isinstance(metadata, dict), f'Expected metadata of type dict, got {type(metadata)}'
-        if not metadata or not Metadata.validate(metadata):
-            raise OceanInvalidMetadata('Metadata seems invalid. Please make sure'
-                                       ' the required metadata values are filled in.')
+        # if not metadata or not Metadata.validate(metadata):
+        #     raise OceanInvalidMetadata('Metadata seems invalid. Please make sure'
+        #                                ' the required metadata values are filled in.')
 
         # copy metadata so we don't change the original
         metadata_copy = copy.deepcopy(metadata)
@@ -88,6 +84,7 @@ class OceanAssets:
 
         metadata_service_desc = ServiceDescriptor.metadata_service_descriptor(metadata_copy,
                                                                               ddo_service_endpoint)
+
         access_service_attributes = {"main": {
             "name": "dataAssetAccessServiceAgreement",
             "creator": publisher_account.address,
@@ -157,36 +154,37 @@ class OceanAssets:
 
         # Setup metadata service
         # First compute files_encrypted
-        assert metadata_copy['main'][
-            'files'], 'files is required in the metadata base attributes.'
-        logger.debug('Encrypting content urls in the metadata.')
-        if not use_secret_store:
-            encrypt_endpoint = brizo.get_encrypt_endpoint(self._config)
-            files_encrypted = brizo.encrypt_files_dict(
-                metadata_copy['main']['files'],
-                encrypt_endpoint,
-                ddo.asset_id,
-                publisher_account.address,
-                self._keeper.sign_hash(ddo.asset_id, publisher_account)
-            )
-        else:
-            files_encrypted = self._get_secret_store(publisher_account) \
-                .encrypt_document(
-                did_to_id(did),
-                json.dumps(metadata_copy['main']['files']),
-            )
+        if metadata_copy['main']['type'] == 'dataset':
+            assert metadata_copy['main'][
+                'files'], 'files is required in the metadata base attributes.'
+            logger.debug('Encrypting content urls in the metadata.')
+            if not use_secret_store:
+                encrypt_endpoint = brizo.get_encrypt_endpoint(self._config)
+                files_encrypted = brizo.encrypt_files_dict(
+                    metadata_copy['main']['files'],
+                    encrypt_endpoint,
+                    ddo.asset_id,
+                    publisher_account.address,
+                    self._keeper.sign_hash(ddo.asset_id, publisher_account)
+                )
+            else:
+                files_encrypted = self._get_secret_store(publisher_account) \
+                    .encrypt_document(
+                    did_to_id(did),
+                    json.dumps(metadata_copy['main']['files']),
+                )
 
-        # only assign if the encryption worked
-        if files_encrypted:
-            logger.debug(f'Content urls encrypted successfully {files_encrypted}')
-            index = 0
-            for file in metadata_copy['main']['files']:
-                file['index'] = index
-                index = index + 1
-                del file['url']
-            metadata_copy['main']['encryptedFiles'] = files_encrypted
-        else:
-            raise AssertionError('Encrypting the files failed.')
+            # only assign if the encryption worked
+            if files_encrypted:
+                logger.debug(f'Content urls encrypted successfully {files_encrypted}')
+                index = 0
+                for file in metadata_copy['main']['files']:
+                    file['index'] = index
+                    index = index + 1
+                    del file['url']
+                metadata_copy['encryptedFiles'] = files_encrypted
+            else:
+                raise AssertionError('Encrypting the files failed.')
 
         # DDO url and `Metadata` service
 
@@ -195,8 +193,8 @@ class OceanAssets:
             f' metadata service @{ddo_service_endpoint}, '
             f'`Access` service initialize @{ddo.get_service("access").service_endpoint}.')
         response = None
+
         # register on-chain
-        # Remove '0x' from the start of metadata_copy['main']['checksum']
         registered_on_chain = self._keeper.did_registry.register(
             ddo.asset_id,
             checksum=Web3Provider.get_web3().toBytes(hexstr=ddo.asset_id),

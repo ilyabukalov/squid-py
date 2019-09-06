@@ -44,12 +44,11 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
         consumer_ocean_instance._config.downloads_path) else 0
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
-    assert ServiceAgreement.SERVICE_INDEX in service.as_dictionary()
     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
     # This will send the consume request to Brizo which in turn will execute the agreement on-chain
     cons_ocn.accounts.request_tokens(consumer_account, 100)
     agreement_id = cons_ocn.assets.order(
-        ddo.did, sa.service_definition_id, consumer_account, auto_consume=False)
+        ddo.did, sa.index, consumer_account, auto_consume=False)
 
     event_wait_time = 10
     event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
@@ -89,7 +88,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     assert cons_ocn.assets.consume(
         agreement_id,
         ddo.did,
-        sa.service_definition_id,
+        sa.index,
         consumer_account,
         config.downloads_path)
 
@@ -99,7 +98,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     assert cons_ocn.assets.consume(
         agreement_id,
         ddo.did,
-        sa.service_definition_id,
+        sa.index,
         consumer_account,
         config.downloads_path,
         2
@@ -110,7 +109,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
         cons_ocn.assets.consume(
             agreement_id,
             ddo.did,
-            sa.service_definition_id,
+            sa.index,
             consumer_account,
             config.downloads_path,
             -2
@@ -120,7 +119,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
         cons_ocn.assets.consume(
             agreement_id,
             ddo.did,
-            sa.service_definition_id,
+            sa.index,
             consumer_account,
             config.downloads_path,
             3
@@ -133,7 +132,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
         cons_ocn.assets.consume(
             agreement_id,
             ddo.did,
-            service.service_definition_id,
+            sa.index,
             pub_acc,
             config.downloads_path
         )

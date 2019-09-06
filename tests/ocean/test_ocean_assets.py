@@ -12,7 +12,9 @@ from ocean_utils.agreements.service_types import ServiceTypes
 from ocean_utils.ddo.ddo import DDO
 from ocean_utils.did import DID
 
-from tests.resources.helper_functions import get_resource_path, log_event
+from tests.resources.helper_functions import (get_algorithm_ddo, get_resource_path,
+                                              get_workflow_ddo,
+                                              log_event)
 from tests.resources.tiers import e2e_test
 
 
@@ -147,7 +149,7 @@ def test_create_data_asset(publisher_ocean_instance, consumer_ocean_instance):
     assert published_metadata
     # only compare top level keys
     assert sorted(list(asset.metadata['main'].keys())).remove('files') == sorted(
-        list(published_metadata.metadata['main'].keys())).remove('encryptedFiles')
+        list(published_metadata.metadata.keys())).remove('encryptedFiles')
     publisher_ocean_instance.assets.retire(new_asset.did)
 
 
@@ -222,7 +224,8 @@ def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
     consumed_assets = len(ocn.assets.consumer_assets(acct.address))
     asset = create_asset(publisher_ocean_instance)
     service = asset.get_service(service_type=ServiceTypes.ASSET_ACCESS)
-    sa = ServiceAgreement.from_service_dict(service.as_dictionary())
+    service_dict = service.as_dictionary()
+    sa = ServiceAgreement.from_service_dict(service_dict)
     keeper = ocn.keeper
 
     def grant_access(event, ocn_instance, agr_id, did, cons_address, account):
@@ -230,7 +233,7 @@ def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
             agr_id, did, cons_address, account)
 
     agreement_id = consumer_ocean_instance.assets.order(
-        asset.did, 'access', acct)
+        asset.did, sa.index, acct)
     keeper.lock_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         15,
@@ -250,6 +253,7 @@ def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
     assert ocn.agreements.is_access_granted(agreement_id, asset.did, acct.address)
 
     assert len(ocn.assets.consumer_assets(acct.address)) == consumed_assets + 1
+    publisher_ocean_instance.assets.retire(asset.did)
 
 
 def test_ocean_assets_resolve(publisher_ocean_instance, metadata):
@@ -262,9 +266,28 @@ def test_ocean_assets_resolve(publisher_ocean_instance, metadata):
 
 def test_ocean_assets_search(publisher_ocean_instance, metadata):
     publisher = publisher_ocean_instance.main_account
-    publisher_ocean_instance.assets.create(metadata, publisher)
+    ddo = publisher_ocean_instance.assets.create(metadata, publisher)
     assert len(publisher_ocean_instance.assets.search('Monkey')) > 0
+    publisher_ocean_instance.assets.retire(ddo.did)
 
 
 def test_ocean_assets_validate(publisher_ocean_instance, metadata):
     assert publisher_ocean_instance.assets.validate(metadata)
+
+
+def test_ocean_assets_algorithm(publisher_ocean_instance):
+    # Allow publish an algorithm
+    publisher = publisher_ocean_instance.main_account
+    metadata = get_algorithm_ddo()['service'][0]
+    ddo = publisher_ocean_instance.assets.create(metadata['attributes'], publisher)
+    assert ddo
+    publisher_ocean_instance.assets.retire(ddo.did)
+
+
+def test_ocean_assets_workflow(publisher_ocean_instance):
+    # Allow publish an workflow
+    publisher = publisher_ocean_instance.main_account
+    metadata = get_workflow_ddo()['service'][0]
+    ddo = publisher_ocean_instance.assets.create(metadata['attributes'], publisher)
+    assert ddo
+    publisher_ocean_instance.assets.retire(ddo.did)

@@ -31,12 +31,12 @@ class AssetConsumer:
         :return: Asset folder path, str
         """
         did = ddo.did
-        encrypted_files = ddo.metadata['main']['encryptedFiles']
+        encrypted_files = ddo.metadata['encryptedFiles']
         encrypted_files = (
             encrypted_files if isinstance(encrypted_files, str)
             else encrypted_files[0]
         )
-        sa = ServiceAgreement.from_ddo(service_definition_id, ddo)
+        sa = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, ddo)
         consume_url = sa.service_endpoint
         if not consume_url:
             logger.error(
@@ -46,7 +46,7 @@ class AssetConsumer:
 
         if ddo.get_service('authorization'):
             secret_store_service = ddo.get_service(service_type=ServiceTypes.AUTHORIZATION)
-            secret_store_url = secret_store_service.endpoints.service
+            secret_store_url = secret_store_service.service_endpoint
             secret_store.set_secret_store_url(secret_store_url)
 
         # decrypt the contentUrls
@@ -64,7 +64,7 @@ class AssetConsumer:
             os.mkdir(destination)
 
         asset_folder = os.path.join(destination,
-                                    f'datafile.{did_to_id(did)}.{sa.service_definition_id}')
+                                    f'datafile.{did_to_id(did)}.{service_definition_id}')
         if not os.path.exists(asset_folder):
             os.mkdir(asset_folder)
         if index is not None:
