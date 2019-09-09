@@ -5,9 +5,10 @@
 import logging
 import os
 from time import sleep
+from ocean_keeper.utils import get_account
 
-from examples import ExampleConfig
-from squid_py import ConfigProvider, Metadata, Ocean
+from examples import ExampleConfig, example_metadata
+from squid_py import ConfigProvider, Ocean
 
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
     ASYNC_DELAY = 5  # seconds
@@ -18,9 +19,9 @@ else:
 def search_assets():
     ConfigProvider.set_config(ExampleConfig.get_config())
     ocn = Ocean()
-    account = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
+    account = get_account(0)
     ddo = ocn.assets.create(
-        Metadata.get_example(), account,
+        example_metadata.metadata, account,
     )
 
     sleep(ASYNC_DELAY)

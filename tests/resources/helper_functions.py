@@ -45,7 +45,7 @@ def get_consumer_account():
     return get_account(1)
 
 
-def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
+def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=False, use_brizo_mock=False):
     ocn = Ocean()
     account = get_publisher_account()
     ocn.main_account = account
@@ -59,7 +59,7 @@ def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_m
     return ocn
 
 
-def get_consumer_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
+def get_consumer_ocean_instance(init_tokens=True, use_ss_mock=False, use_brizo_mock=False):
     ocn = Ocean()
     account = get_consumer_account()
     ocn.main_account = account

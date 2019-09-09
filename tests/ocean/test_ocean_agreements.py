@@ -188,7 +188,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     keeper.dispenser.request_vodkas(price * 2, consumer_acc)
 
     agreement_id, signature = consumer_ocean_instance.agreements.prepare(
-        did, 'access', consumer_acc)
+        did, consumer_acc)
 
     success = publisher_ocean_instance.agreements.create(
         did,

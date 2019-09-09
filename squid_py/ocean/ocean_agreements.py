@@ -4,21 +4,21 @@
 
 import logging
 
+from ocean_keeper.utils import prepare_prefixed_hash
+from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_agreement import ServiceAgreement
-from ocean_utils.agreements.service_factory import  ServiceFactory
-
-from squid_py.agreement_events.accessSecretStore import refund_reward, consume_asset
-from squid_py.agreement_events.escrowAccessSecretStoreTemplate import fulfillLockRewardCondition
-from squid_py.brizo.brizo_provider import BrizoProvider
+from ocean_utils.agreements.service_types import ServiceTypes
 from ocean_utils.did import did_to_id
 from ocean_utils.exceptions import (
     OceanInvalidAgreementTemplate,
     OceanInvalidServiceAgreementSignature,
     OceanServiceAgreementExists,
 )
-from ocean_keeper.web3_provider import Web3Provider
+
+from squid_py.agreement_events.accessSecretStore import consume_asset, refund_reward
+from squid_py.agreement_events.escrowAccessSecretStoreTemplate import fulfillLockRewardCondition
+from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.ocean.ocean_conditions import OceanConditions
-from ocean_keeper.utils import prepare_prefixed_hash
 
 logger = logging.getLogger('ocean')
 
@@ -54,9 +54,9 @@ class OceanAgreements:
     def new():
         return ServiceAgreement.create_new_agreement_id()
 
-    def sign(self, agreement_id, did, service_definition_id, consumer_account):
+    def sign(self, agreement_id, did, consumer_account):
         asset = self._asset_resolver.resolve(did)
-        service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
+        service_agreement = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, asset)
 
         publisher_address = self._keeper.did_registry.get_did_owner(asset.asset_id)
         agreement_hash = service_agreement.get_service_agreement_hash(
@@ -69,17 +69,15 @@ class OceanAgreements:
         logger.debug(f'agreement-signature={signature}, agreement-hash={agreement_hash}')
         return signature
 
-    def prepare(self, did, service_definition_id, consumer_account):
+    def prepare(self, did, consumer_account):
         """
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: identifier of the service inside the asset DDO, str
-         the ddo to use in this agreement.
         :param consumer_account: Account instance of the consumer
         :return: tuple (agreement_id: str, signature: hex str)
         """
         agreement_id = self.new()
-        signature = self.sign(agreement_id, did, service_definition_id, consumer_account)
+        signature = self.sign(agreement_id, did, consumer_account)
         return agreement_id, signature
 
     def send(self, did, agreement_id, service_definition_id, signature,
@@ -102,9 +100,10 @@ class OceanAgreements:
         :return: bool
         """
         asset = self._asset_resolver.resolve(did)
-        service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
+        service_agreement = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, asset)
         # subscribe to events related to this agreement_id before sending the request.
-        logger.debug(f'Registering service agreement with id: {agreement_id}, auto-consume {auto_consume}')
+        logger.debug(
+            f'Registering service agreement with id: {agreement_id}, auto-consume {auto_consume}')
         # TODO: refactor this to use same code in `create`
 
         publisher_address = self._keeper.did_registry.get_did_owner(asset.asset_id)
@@ -206,11 +205,13 @@ class OceanAgreements:
         if not success:
             # success is based on tx receipt which is not reliable.
             # So we check on-chain directly to see if agreement_id is there
-            consumer = self._keeper.escrow_access_secretstore_template.get_agreement_consumer(agreement_id)
+            consumer = self._keeper.escrow_access_secretstore_template.get_agreement_consumer(
+                agreement_id)
             if consumer:
                 success = True
             else:
-                event_log = self._keeper.escrow_access_secretstore_template.subscribe_agreement_created(
+                event_log = self._keeper.escrow_access_secretstore_template \
+                    .subscribe_agreement_created(
                     agreement_id, 15, None, (), wait=True
                 )
                 success = event_log is not None
@@ -239,7 +240,8 @@ class OceanAgreements:
     def _process_consumer_agreement_events(
             self, agreement_id, did, service_agreement, account,
             condition_ids, publisher_address, from_block, auto_consume):
-        logger.debug(f'process consumer events for agreement {agreement_id}, blockNumber {from_block+10}')
+        logger.debug(
+            f'process consumer events for agreement {agreement_id}, blockNumber {from_block + 10}')
         self._keeper.escrow_access_secretstore_template.subscribe_agreement_created(
             agreement_id,
             300,
@@ -250,7 +252,8 @@ class OceanAgreements:
 
         if auto_consume:
             def _refund_callback(_price, _publisher_address, _condition_ids):
-                def do_refund(_event, _agreement_id, _did, _service_agreement, _consumer_account, *_):
+                def do_refund(_event, _agreement_id, _did, _service_agreement, _consumer_account,
+                              *_):
                     refund_reward(
                         _event, _agreement_id, _did, _service_agreement, _price,
                         _consumer_account, _publisher_address, _condition_ids, _condition_ids[2]

@@ -5,16 +5,15 @@ import logging
 import os
 import time
 
-from ocean_utils.ddo.metadata import Metadata
-
-from examples import ExampleConfig
-from squid_py import ConfigProvider, Ocean
-from ocean_utils.agreements.service_agreement import ServiceAgreement
-from ocean_utils.agreements.service_types import ServiceTypes
-from squid_py.ocean.keeper import SquidKeeper as Keeper
 from ocean_keeper.diagnostics import Diagnostics
 from ocean_keeper.web3_provider import Web3Provider
-from tests.resources.helper_functions import get_publisher_account, get_consumer_account
+from ocean_utils.agreements.service_agreement import ServiceAgreement
+from ocean_utils.agreements.service_types import ServiceTypes
+
+from examples import ExampleConfig, example_metadata
+from squid_py import ConfigProvider, Ocean
+from squid_py.ocean.keeper import SquidKeeper as Keeper
+from tests.resources.helper_functions import get_consumer_account, get_publisher_account
 
 
 def _log_event(event_name):
@@ -55,13 +54,13 @@ def buy_asset():
         ddo = ocn.assets.resolve(did)
         logging.info(f'using ddo: {did}')
     else:
-        ddo = ocn.assets.create(Metadata.get_example(), acc, providers=[], use_secret_store=True)
+        ddo = ocn.assets.create(example_metadata.metadata, acc, providers=[], use_secret_store=True)
         assert ddo is not None, f'Registering asset on-chain failed.'
         did = ddo.did
         logging.info(f'registered ddo: {did}')
         # ocn here will be used only to publish the asset. Handling the asset by the publisher
         # will be performed by the Brizo server running locally
-        test_net = os.environ.get('TEST_NET')
+        test_net = os.environ.get('TEST_NET', '')
         if test_net.startswith('nile'):
             provider = keeper.did_registry.to_checksum_address(providers['nile'])
         elif test_net.startswith('duero'):
@@ -98,12 +97,14 @@ def buy_asset():
     agreement_id = ''
     if not agreement_id:
         # Use these 2 lines to request new agreement from Brizo
-        # agreement_id, signature = cons_ocn.agreements.prepare(did, sa.service_definition_id, consumer_account)
-        # cons_ocn.agreements.send(did, agreement_id, sa.service_definition_id, signature, consumer_account)
+        # agreement_id, signature = cons_ocn.agreements.prepare(did, sa.service_definition_id,
+        # consumer_account)
+        # cons_ocn.agreements.send(did, agreement_id, sa.service_definition_id, signature,
+        # consumer_account)
 
         # assets.order now creates agreement directly using consumer account.
         agreement_id = cons_ocn.assets.order(
-            did, sa.service_definition_id, consumer_account)
+            did, sa.index, consumer_account)
 
     logging.info('placed order: %s, %s', did, agreement_id)
     event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(

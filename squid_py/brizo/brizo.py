@@ -9,8 +9,10 @@ import os
 import re
 
 from ocean_utils.agreements.service_agreement import ServiceAgreement
-from ocean_utils.exceptions import (OceanEncryptAssetUrlsError, OceanInitializeServiceAgreementError)
+from ocean_utils.exceptions import (OceanEncryptAssetUrlsError,
+                                    OceanInitializeServiceAgreementError)
 from ocean_utils.http_requests.requests_session import get_requests_session
+
 from squid_py.ocean.keeper import SquidKeeper as Keeper
 
 logger = logging.getLogger(__name__)
@@ -148,7 +150,7 @@ class Brizo:
         return json.dumps({
             'did': did,
             'serviceAgreementId': service_agreement_id,
-            ServiceAgreement.SERVICE_DEFINITION_ID: service_definition_id,
+            ServiceAgreement.SERVICE_INDEX: service_definition_id,
             'signature': signature,
             'consumerAddress': consumer_address
         })
