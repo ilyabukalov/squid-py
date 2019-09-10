@@ -6,7 +6,6 @@ import os
 from time import sleep
 
 from ocean_keeper.utils import get_account
-from ocean_utils.agreements.service_types import ServiceTypes
 
 from examples import example_metadata, ExampleConfig
 from squid_py import ConfigProvider, Ocean
@@ -19,7 +18,6 @@ else:
 
 def sign_service_agreement():
     ConfigProvider.set_config(ExampleConfig.get_config())
-    config = ConfigProvider.get_config()
     # make ocean instance and register an asset
     ocn = Ocean()
     acc = get_account(0)
