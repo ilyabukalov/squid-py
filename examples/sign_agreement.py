@@ -26,7 +26,6 @@ def sign_service_agreement():
     ddo = ocn.assets.create(example_metadata.metadata, acc)
 
     consumer_account = get_account(1)
-    service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     agreement_id, signature = ocn.agreements.prepare(
         ddo.did,
         consumer_account

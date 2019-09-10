@@ -56,7 +56,6 @@ def consumer_ocean_instance_brizo():
 
 @pytest.fixture
 def registered_ddo():
-    config = ExampleConfig.get_config()
     return get_registered_ddo(get_publisher_ocean_instance(), get_publisher_account())
 
 
@@ -73,7 +72,6 @@ def metadata():
 
 @pytest.fixture
 def setup_agreements_enviroment():
-    config = ConfigProvider.get_config()
     consumer_acc = get_consumer_account()
     publisher_acc = get_publisher_account()
     keeper = Keeper.get_instance()
