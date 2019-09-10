@@ -5,6 +5,7 @@
 import logging
 
 from ocean_keeper.account import Account
+
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
 
 logger = logging.getLogger(__name__)

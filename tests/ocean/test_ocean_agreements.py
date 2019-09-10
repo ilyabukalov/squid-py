@@ -4,19 +4,19 @@
 from unittest.mock import MagicMock, Mock
 
 import pytest
-
-from squid_py import ConfigProvider
+from ocean_keeper.web3_provider import Web3Provider
+from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.agreements.service_agreement_template import ServiceAgreementTemplate
 from ocean_utils.agreements.service_types import ServiceTypes
+
+from squid_py import ConfigProvider
 from squid_py.assets.asset_consumer import AssetConsumer
+from squid_py.brizo.brizo import Brizo
 from squid_py.ocean.keeper import SquidKeeper as Keeper
-from ocean_keeper.web3_provider import Web3Provider
 from squid_py.ocean.ocean_agreements import OceanAgreements
 from tests.resources.helper_functions import (get_ddo_sample, log_event)
-from tests.resources.tiers import e2e_test
-from ocean_utils.agreements.service_agreement import ServiceAgreement
-from squid_py.brizo.brizo import Brizo
 from tests.resources.mocks.brizo_mock import BrizoMock
+from tests.resources.tiers import e2e_test
 
 
 @pytest.fixture

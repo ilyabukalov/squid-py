@@ -5,9 +5,10 @@
 import logging
 from datetime import datetime
 
+from ocean_keeper.web3_provider import Web3Provider
+
 from squid_py import ConfigProvider
 from squid_py.data_store.auth_tokens import AuthTokensStorage
-from ocean_keeper.web3_provider import Web3Provider
 
 
 class OceanAuth:

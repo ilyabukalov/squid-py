@@ -1,10 +1,10 @@
-
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
 import logging
 
 from ocean_keeper.utils import process_fulfill_condition
+
 from squid_py.ocean.keeper import SquidKeeper as Keeper
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,8 @@ def fulfill_lock_reward_condition(event, agreement_id, price, consumer_account, 
     :param lock_condition_id: hex str the id of the lock reward condition for this `agreement_id`
     """
     if not event:
-        logger.warning(f'`fulfill_lock_reward_condition` got empty event: event listener timed out.')
+        logger.warning(
+            f'`fulfill_lock_reward_condition` got empty event: event listener timed out.')
         return
 
     keeper = Keeper.get_instance()
@@ -41,7 +42,8 @@ def fulfill_lock_reward_condition(event, agreement_id, price, consumer_account, 
         price,
         consumer_account
     )
-    process_fulfill_condition(args, keeper.lock_reward_condition, lock_condition_id, logger, keeper, 10)
+    process_fulfill_condition(args, keeper.lock_reward_condition, lock_condition_id, logger, keeper,
+                              10)
 
 
 fulfillLockRewardCondition = fulfill_lock_reward_condition

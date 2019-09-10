@@ -124,8 +124,8 @@ class ExampleConfig:
             config['resources']['aquarius.url'] = service_url['aquarius']
             config['resources']['brizo.url'] = service_url['brizo']
 
-        # parity_url maybe different than the keeper_url
-        config['keeper-contracts']['parity.url'] = ExampleConfig._parity_url
+            # parity_url maybe different than the keeper_url
+            # config['keeper-contracts']['parity.url'] = ExampleConfig._parity_url
         return config
 
     @staticmethod

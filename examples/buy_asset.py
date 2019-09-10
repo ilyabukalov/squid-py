@@ -13,7 +13,7 @@ from ocean_utils.agreements.service_types import ServiceTypes
 from examples import ExampleConfig, example_metadata
 from squid_py import ConfigProvider, Ocean
 from squid_py.ocean.keeper import SquidKeeper as Keeper
-from tests.resources.helper_functions import get_consumer_account, get_publisher_account
+from tests.resources.helper_functions import get_account
 
 
 def _log_event(event_name):
@@ -37,13 +37,13 @@ def buy_asset():
     ConfigProvider.set_config(ExampleConfig.get_config())
     config = ConfigProvider.get_config()
     providers = {
-        'duero': '0x9d4ed58293f71122ad6a733c1603927a150735d0',
+        'duero': '0xfEF2d5e1670342b9EF22eeeDcb287EC526B48095',
         'nile': '0x4aaab179035dc57b35e2ce066919048686f82972'
     }
     # make ocean instance
     ocn = Ocean()
     Diagnostics.verify_contracts()
-    acc = get_publisher_account()
+    acc = get_account(0)
     if not acc:
         acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
 
@@ -87,7 +87,7 @@ def buy_asset():
                      f'{keeper.did_registry.is_did_provider(ddo.asset_id, provider)}')
 
     cons_ocn = Ocean()
-    consumer_account = get_consumer_account()
+    consumer_account = get_account(1)
 
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)

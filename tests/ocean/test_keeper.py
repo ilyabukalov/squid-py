@@ -1,4 +1,3 @@
-
 from squid_py.ocean.keeper import SquidKeeper as Keeper
 from tests.resources.tiers import e2e_test
 

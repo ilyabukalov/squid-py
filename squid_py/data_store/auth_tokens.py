@@ -1,4 +1,3 @@
-
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 import logging
@@ -62,7 +61,7 @@ class AuthTokensStorage(StorageBase):
                     FROM {self.AUTH_TOKENS_TABLE}
                     WHERE address=?;''',
                 (address,))
-            ]
+                    ]
             token, timestamp = rows[0] if rows else (None, None)
             logger.debug(f'Read auth token from `auth_tokens` storage: '
                          f'account={address}, token={token}')
