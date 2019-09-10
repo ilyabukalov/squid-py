@@ -5,6 +5,7 @@ import pytest
 from ocean_keeper.contract_handler import ContractHandler
 from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_agreement import ServiceAgreement
+from ocean_utils.agreements.service_types import ServiceTypes
 from ocean_utils.did import DID
 
 from examples import ExampleConfig
@@ -77,8 +78,6 @@ def setup_agreements_enviroment():
     publisher_acc = get_publisher_account()
     keeper = Keeper.get_instance()
 
-    service_definition_id = 'access'
-
     ddo = get_ddo_sample()
     ddo._did = DID.did({'0': '0x987654321'})
     # Remove '0x' from the start of ddo.metadata['main']['checksum']
@@ -93,7 +92,7 @@ def setup_agreements_enviroment():
 
     registered_ddo = ddo
     asset_id = registered_ddo.asset_id
-    service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
+    service_agreement = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, ddo)
     agreement_id = ServiceAgreement.create_new_agreement_id()
     price = service_agreement.get_price()
     access_cond_id, lock_cond_id, escrow_cond_id = \

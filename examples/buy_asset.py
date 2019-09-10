@@ -66,7 +66,7 @@ def buy_asset():
         elif test_net.startswith('duero'):
             provider = keeper.did_registry.to_checksum_address(providers['duero'])
         else:
-            provider = acc.address
+            provider = '0x068Ed00cF0441e4829D9784fCBe7b9e26D4BD8d0'
 
         # Wait for did registry event
         event = keeper.did_registry.subscribe_to_event(
