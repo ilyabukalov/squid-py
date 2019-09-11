@@ -139,7 +139,7 @@ class OceanAssets:
                                                                 self._keeper.escrow_access_secretstore_template.address,
                                                                 self._keeper.escrow_reward_condition.address)
         for service in services:
-            if service.type == 'access':
+            if service.type == ServiceTypes.ASSET_ACCESS:
                 ddo.add_service(access_service)
             else:
                 ddo.add_service(service)
