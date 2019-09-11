@@ -15,13 +15,13 @@ logger = logging.getLogger(__name__)
 class AssetConsumer:
 
     @staticmethod
-    def download(service_agreement_id, service_definition_id, ddo, consumer_account, destination,
+    def download(service_agreement_id, service_index, ddo, consumer_account, destination,
                  brizo, secret_store, index=None):
         """
         Download asset data files or result files from a compute job.
 
         :param service_agreement_id: Service agreement id, str
-        :param service_definition_id: identifier of the service inside the asset DDO, str
+        :param service_index: identifier of the service inside the asset DDO, str
         :param ddo: DDO
         :param consumer_account: Account instance of the consumer
         :param destination: Path, str
@@ -31,12 +31,12 @@ class AssetConsumer:
         :return: Asset folder path, str
         """
         did = ddo.did
-        encrypted_files = ddo.metadata['base']['encryptedFiles']
+        encrypted_files = ddo.metadata['encryptedFiles']
         encrypted_files = (
             encrypted_files if isinstance(encrypted_files, str)
             else encrypted_files[0]
         )
-        sa = ServiceAgreement.from_ddo(service_definition_id, ddo)
+        sa = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, ddo)
         consume_url = sa.service_endpoint
         if not consume_url:
             logger.error(
@@ -44,9 +44,9 @@ class AssetConsumer:
             raise AssertionError(
                 'Consume asset failed, service definition is missing the "serviceEndpoint".')
 
-        if ddo.get_service('Authorization'):
+        if ddo.get_service('authorization'):
             secret_store_service = ddo.get_service(service_type=ServiceTypes.AUTHORIZATION)
-            secret_store_url = secret_store_service.endpoints.service
+            secret_store_url = secret_store_service.service_endpoint
             secret_store.set_secret_store_url(secret_store_url)
 
         # decrypt the contentUrls
@@ -64,7 +64,7 @@ class AssetConsumer:
             os.mkdir(destination)
 
         asset_folder = os.path.join(destination,
-                                    f'datafile.{did_to_id(did)}.{sa.service_definition_id}')
+                                    f'datafile.{did_to_id(did)}.{service_index}')
         if not os.path.exists(asset_folder):
             os.mkdir(asset_folder)
         if index is not None:

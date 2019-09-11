@@ -3,7 +3,6 @@
 
 import logging
 import os
-
 import sys
 
 from squid_py import Config
@@ -20,10 +19,10 @@ def get_variable_value(variable):
 class ExampleConfig:
     _local_aqua_url = "http://172.15.0.15:5000"
     _local_brizo_url = "http://localhost:8030"
-    # _duero_aqua_url = "https://aquarius.duero.dev-ocean.com"
-    # _duero_brizo_url = "https://brizo.duero.dev-ocean.com"
-    _duero_aqua_url = "http://localhost:5000"
-    _duero_brizo_url = "http://localhost:8030"
+    _duero_aqua_url = "https://aquarius.compute.duero.dev-ocean.com"
+    _duero_brizo_url = "https://brizo.compute.duero.dev-ocean.com"
+    # _duero_aqua_url = "http://localhost:5000"
+    # _duero_brizo_url = "http://localhost:8030"
 
     _pacific_aqua_url = "https://aquarius.pacific.dev-ocean.com"
     _pacific_brizo_url = "https://brizo.pacific.dev-ocean.com"
@@ -111,31 +110,33 @@ class ExampleConfig:
             config['keeper-contracts']['keeper.url'] = ExampleConfig._kovan_keeper_url
         elif net_name == 'pacific':
             config['keeper-contracts']['keeper.url'] = 'https://pacific.oceanprotocol.com'
+            config['keeper-contracts']['parity.url'] = 'https://pacific.oceanprotocol.com'
         elif not local_node:
             config['keeper-contracts']['keeper.url'] = ExampleConfig._remote_keeper_url % net_name
-
+            config['keeper-contracts']['parity.url'] = ExampleConfig._remote_keeper_url % net_name
         if net_name:
             config['keeper-contracts']['secret_store.url'] = \
                 ExampleConfig._duero_secret_store_url if net_name == 'duero' \
-                else ExampleConfig._nile_secret_store_url
+                    else ExampleConfig._nile_secret_store_url
 
             service_url = ExampleConfig._net_to_services_url[net_name]
             config['resources']['aquarius.url'] = service_url['aquarius']
             config['resources']['brizo.url'] = service_url['brizo']
 
-        # parity_url maybe different than the keeper_url
-        config['keeper-contracts']['parity.url'] = ExampleConfig._parity_url
+            # parity_url maybe different than the keeper_url
+            # config['keeper-contracts']['parity.url'] = ExampleConfig._parity_url
         return config
 
     @staticmethod
     def get_config_dict():
         test_net = ExampleConfig.get_config_net()
-        local_node = not test_net or test_net in ('nile_local', 'duero_local', 'spree', 'kovan_local')
+        local_node = not test_net or test_net in (
+        'nile_local', 'duero_local', 'spree', 'kovan_local')
         config_dict = ExampleConfig._get_config(local_node, test_net)
         return config_dict
 
     @staticmethod
     def get_config():
         logging.debug("Configuration loaded for environment '{}'"
-                     .format(ExampleConfig.get_config_net()))
+                      .format(ExampleConfig.get_config_net()))
         return Config(options_dict=ExampleConfig.get_config_dict())

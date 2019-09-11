@@ -6,11 +6,9 @@ import os
 from time import sleep
 
 from ocean_keeper.utils import get_account
-from ocean_utils.ddo.metadata import Metadata
 
-from examples import ExampleConfig
+from examples import example_metadata, ExampleConfig
 from squid_py import ConfigProvider, Ocean
-from ocean_utils.agreements.service_types import ServiceTypes
 
 if 'TEST_NILE' in os.environ and os.environ['TEST_NILE'] == '1':
     ASYNC_DELAY = 5  # seconds
@@ -20,17 +18,14 @@ else:
 
 def sign_service_agreement():
     ConfigProvider.set_config(ExampleConfig.get_config())
-    config = ConfigProvider.get_config()
     # make ocean instance and register an asset
     ocn = Ocean()
-    acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
-    ddo = ocn.assets.create(Metadata.get_example(), acc)
+    acc = get_account(0)
+    ddo = ocn.assets.create(example_metadata.metadata, acc)
 
     consumer_account = get_account(1)
-    service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     agreement_id, signature = ocn.agreements.prepare(
         ddo.did,
-        service.service_definition_id,
         consumer_account
     )
 

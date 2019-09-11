@@ -4,12 +4,12 @@
 import json
 import os
 import pathlib
+import uuid
 
 from ocean_keeper.utils import get_account
+from ocean_utils.ddo.ddo import DDO
 
 from squid_py.brizo.brizo_provider import BrizoProvider
-from ocean_utils.ddo.ddo import DDO
-from ocean_utils.ddo.metadata import Metadata
 from squid_py.ocean.keeper import SquidKeeper as Keeper
 from squid_py.ocean.ocean import Ocean
 from squid_py.secret_store.secret_store_provider import SecretStoreProvider
@@ -77,8 +77,30 @@ def get_ddo_sample():
     return DDO(json_filename=get_resource_path('ddo', 'ddo_sa_sample.json'))
 
 
+def get_algorithm_ddo():
+    path = get_resource_path('ddo', 'ddo_algorithm.json')
+    assert path.exists(), f"{path} does not exist!"
+    with open(path, 'r') as file_handle:
+        metadata = file_handle.read()
+    return json.loads(metadata)
+
+
+def get_workflow_ddo():
+    path = get_resource_path('ddo', 'ddo_workflow.json')
+    assert path.exists(), f"{path} does not exist!"
+    with open(path, 'r') as file_handle:
+        metadata = file_handle.read()
+    return json.loads(metadata)
+
+
+def get_computing_ddo():
+    return DDO(json_filename=get_resource_path('ddo', 'ddo_computing.json'))
+
+
 def get_registered_ddo(ocean_instance, account):
-    ddo = ocean_instance.assets.create(Metadata.get_example(), account)
+    metadata = get_metadata()
+    metadata['main']['files'][0]['checksum'] = str(uuid.uuid4())
+    ddo = ocean_instance.assets.create(metadata, account)
     return ddo
 
 

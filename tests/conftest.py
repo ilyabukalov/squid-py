@@ -3,14 +3,14 @@
 
 import pytest
 from ocean_keeper.contract_handler import ContractHandler
+from ocean_keeper.web3_provider import Web3Provider
+from ocean_utils.agreements.service_agreement import ServiceAgreement
+from ocean_utils.agreements.service_types import ServiceTypes
+from ocean_utils.did import DID
 
 from examples import ExampleConfig
-from ocean_utils.agreements.service_agreement import ServiceAgreement
-from ocean_utils.did import DID
-from squid_py.ocean.keeper import SquidKeeper as Keeper
-from ocean_keeper.web3_provider import Web3Provider
-
 from squid_py import ConfigProvider
+from squid_py.ocean.keeper import SquidKeeper as Keeper
 from tests.resources.helper_functions import (get_consumer_account, get_consumer_ocean_instance,
                                               get_ddo_sample, get_metadata, get_publisher_account,
                                               get_publisher_ocean_instance, get_registered_ddo)
@@ -56,7 +56,6 @@ def consumer_ocean_instance_brizo():
 
 @pytest.fixture
 def registered_ddo():
-    config = ExampleConfig.get_config()
     return get_registered_ddo(get_publisher_ocean_instance(), get_publisher_account())
 
 
@@ -73,17 +72,14 @@ def metadata():
 
 @pytest.fixture
 def setup_agreements_enviroment():
-    config = ConfigProvider.get_config()
     consumer_acc = get_consumer_account()
     publisher_acc = get_publisher_account()
     keeper = Keeper.get_instance()
 
-    service_definition_id = 'Access'
-
     ddo = get_ddo_sample()
-    ddo._did = DID.did()
-    # Remove '0x' from the start of ddo.metadata['base']['checksum']
-    text_for_sha3 = ddo.metadata['base']['checksum'][2:]
+    ddo._did = DID.did({'0': '0x987654321'})
+    # Remove '0x' from the start of ddo.metadata['main']['checksum']
+    text_for_sha3 = ddo.metadata['main']['checksum'][2:]
     keeper.did_registry.register(
         ddo.asset_id,
         checksum=Web3Provider.get_web3().sha3(text=text_for_sha3),
@@ -94,7 +90,7 @@ def setup_agreements_enviroment():
 
     registered_ddo = ddo
     asset_id = registered_ddo.asset_id
-    service_agreement = ServiceAgreement.from_ddo(service_definition_id, ddo)
+    service_agreement = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, ddo)
     agreement_id = ServiceAgreement.create_new_agreement_id()
     price = service_agreement.get_price()
     access_cond_id, lock_cond_id, escrow_cond_id = \

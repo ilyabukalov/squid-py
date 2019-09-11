@@ -4,20 +4,21 @@
 
 import logging
 
+from ocean_keeper.utils import add_ethereum_prefix_and_hash_msg
+from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_agreement import ServiceAgreement
-
-from squid_py.agreement_events.accessSecretStore import refund_reward, consume_asset
-from squid_py.agreement_events.escrowAccessSecretStoreTemplate import fulfillLockRewardCondition
-from squid_py.brizo.brizo_provider import BrizoProvider
+from ocean_utils.agreements.service_types import ServiceTypes
 from ocean_utils.did import did_to_id
 from ocean_utils.exceptions import (
     OceanInvalidAgreementTemplate,
     OceanInvalidServiceAgreementSignature,
     OceanServiceAgreementExists,
 )
-from ocean_keeper.web3_provider import Web3Provider
+
+from squid_py.agreement_events.accessSecretStore import consume_asset, refund_reward
+from squid_py.agreement_events.escrowAccessSecretStoreTemplate import fulfillLockRewardCondition
+from squid_py.brizo.brizo_provider import BrizoProvider
 from squid_py.ocean.ocean_conditions import OceanConditions
-from ocean_keeper.utils import prepare_prefixed_hash
 
 logger = logging.getLogger('ocean')
 
@@ -53,32 +54,29 @@ class OceanAgreements:
     def new():
         return ServiceAgreement.create_new_agreement_id()
 
-    def sign(self, agreement_id, did, service_definition_id, consumer_account):
+    def sign(self, agreement_id, did, consumer_account):
         asset = self._asset_resolver.resolve(did)
-        service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
+        service_agreement = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, asset)
 
         publisher_address = self._keeper.did_registry.get_did_owner(asset.asset_id)
         agreement_hash = service_agreement.get_service_agreement_hash(
             agreement_id, asset.asset_id, consumer_account.address, publisher_address, self._keeper
         )
-        agreement_hash = prepare_prefixed_hash(agreement_hash)
-        signature = self._keeper.sign_hash(agreement_hash, consumer_account)
-        address = self._keeper.ec_recover(agreement_hash, signature)
+        signature = self._keeper.sign_hash(add_ethereum_prefix_and_hash_msg(agreement_hash), consumer_account)
+        address = self._keeper.personal_ec_recover(agreement_hash, signature)
         assert address == consumer_account.address
         logger.debug(f'agreement-signature={signature}, agreement-hash={agreement_hash}')
         return signature
 
-    def prepare(self, did, service_definition_id, consumer_account):
+    def prepare(self, did, consumer_account):
         """
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: identifier of the service inside the asset DDO, str
-         the ddo to use in this agreement.
         :param consumer_account: Account instance of the consumer
         :return: tuple (agreement_id: str, signature: hex str)
         """
         agreement_id = self.new()
-        signature = self.sign(agreement_id, did, service_definition_id, consumer_account)
+        signature = self.sign(agreement_id, did, consumer_account)
         return agreement_id, signature
 
     def send(self, did, agreement_id, service_definition_id, signature,
@@ -101,9 +99,10 @@ class OceanAgreements:
         :return: bool
         """
         asset = self._asset_resolver.resolve(did)
-        service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
+        service_agreement = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, asset)
         # subscribe to events related to this agreement_id before sending the request.
-        logger.debug(f'Registering service agreement with id: {agreement_id}, auto-consume {auto_consume}')
+        logger.debug(
+            f'Registering service agreement with id: {agreement_id}, auto-consume {auto_consume}')
         # TODO: refactor this to use same code in `create`
 
         publisher_address = self._keeper.did_registry.get_did_owner(asset.asset_id)
@@ -125,7 +124,7 @@ class OceanAgreements:
             service_agreement.endpoints.purchase
         )
 
-    def create(self, did, service_definition_id, agreement_id,
+    def create(self, did, index, agreement_id,
                service_agreement_signature, consumer_address,
                account, auto_consume=False):
         """
@@ -138,7 +137,7 @@ class OceanAgreements:
         is usedon-chain to verify that the values actually match the signed hashes.
 
         :param did: str representation fo the asset DID. Use this to retrieve the asset DDO.
-        :param service_definition_id: str identifies the specific service in
+        :param index: str identifies the specific service in
          the ddo to use in this agreement.
         :param agreement_id: 32 bytes identifier created by the consumer and will be used
          on-chain for the executed agreement.
@@ -166,7 +165,7 @@ class OceanAgreements:
 
         asset = self._asset_resolver.resolve(did)
         asset_id = asset.asset_id
-        service_agreement = ServiceAgreement.from_ddo(service_definition_id, asset)
+        service_agreement = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, asset)
         agreement_template = self._keeper.escrow_access_secretstore_template
 
         if agreement_template.get_agreement_consumer(agreement_id) is not None:
@@ -176,7 +175,7 @@ class OceanAgreements:
 
         if consumer_address != account.address:
             if not self._verify_service_agreement_signature(
-                    did, agreement_id, service_definition_id,
+                    did, agreement_id, index,
                     consumer_address, service_agreement_signature,
                     ddo=asset
             ):
@@ -205,11 +204,13 @@ class OceanAgreements:
         if not success:
             # success is based on tx receipt which is not reliable.
             # So we check on-chain directly to see if agreement_id is there
-            consumer = self._keeper.escrow_access_secretstore_template.get_agreement_consumer(agreement_id)
+            consumer = self._keeper.escrow_access_secretstore_template.get_agreement_consumer(
+                agreement_id)
             if consumer:
                 success = True
             else:
-                event_log = self._keeper.escrow_access_secretstore_template.subscribe_agreement_created(
+                event_log = self._keeper.escrow_access_secretstore_template \
+                    .subscribe_agreement_created(
                     agreement_id, 15, None, (), wait=True
                 )
                 success = event_log is not None
@@ -238,7 +239,8 @@ class OceanAgreements:
     def _process_consumer_agreement_events(
             self, agreement_id, did, service_agreement, account,
             condition_ids, publisher_address, from_block, auto_consume):
-        logger.debug(f'process consumer events for agreement {agreement_id}, blockNumber {from_block+10}')
+        logger.debug(
+            f'process consumer events for agreement {agreement_id}, blockNumber {from_block + 10}')
         self._keeper.escrow_access_secretstore_template.subscribe_agreement_created(
             agreement_id,
             300,
@@ -249,7 +251,8 @@ class OceanAgreements:
 
         if auto_consume:
             def _refund_callback(_price, _publisher_address, _condition_ids):
-                def do_refund(_event, _agreement_id, _did, _service_agreement, _consumer_account, *_):
+                def do_refund(_event, _agreement_id, _did, _service_agreement, _consumer_account,
+                              *_):
                     refund_reward(
                         _event, _agreement_id, _did, _service_agreement, _price,
                         _consumer_account, _publisher_address, _condition_ids, _condition_ids[2]
@@ -345,8 +348,7 @@ class OceanAgreements:
             agreement_id, ddo.asset_id, consumer_address,
             Web3Provider.get_web3().toChecksumAddress(ddo.proof['creator']), self._keeper)
 
-        prefixed_hash = prepare_prefixed_hash(agreement_hash)
-        recovered_address = self._keeper.ec_recover(prefixed_hash, signature)
+        recovered_address = self._keeper.personal_ec_recover(agreement_hash, signature)
         is_valid = (recovered_address == consumer_address)
         if not is_valid:
             logger.warning(f'Agreement signature failed: agreement hash is {agreement_hash.hex()}')

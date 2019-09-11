@@ -1,4 +1,3 @@
-
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
@@ -6,12 +5,12 @@ import logging
 
 from eth_utils import add_0x_prefix
 from ocean_keeper.utils import process_tx_receipt
-from squid_py.ocean.keeper import SquidKeeper as Keeper
 from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.did import did_to_id
 from ocean_utils.did_resolver.did_resolver import DIDResolver
 
 from squid_py.brizo import BrizoProvider
+from squid_py.ocean.keeper import SquidKeeper as Keeper
 from squid_py.secret_store import SecretStoreProvider
 
 logger = logging.getLogger(__name__)
@@ -66,7 +65,9 @@ def refund_reward(event, agreement_id, did, service_agreement, price, consumer_a
             'EscrowReward.Fulfilled'
         )
     except Exception as e:
-        logger.error(f'Error when doing escrow_reward_condition.fulfills (agreementId {agreement_id}): {e}',  exc_info=1)
+        logger.error(
+            f'Error when doing escrow_reward_condition.fulfills (agreementId {agreement_id}): {e}',
+            exc_info=1)
         raise e
 
 

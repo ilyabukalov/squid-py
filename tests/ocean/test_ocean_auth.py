@@ -1,4 +1,3 @@
-from squid_py import ConfigProvider
 from squid_py.ocean.keeper import SquidKeeper as Keeper
 from squid_py.ocean.ocean_auth import OceanAuth
 from tests.resources.helper_functions import get_publisher_account

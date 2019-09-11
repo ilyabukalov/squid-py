@@ -5,16 +5,15 @@ import logging
 import os
 import time
 
-from ocean_utils.ddo.metadata import Metadata
-
-from examples import ExampleConfig
-from squid_py import ConfigProvider, Ocean
-from ocean_utils.agreements.service_agreement import ServiceAgreement
-from ocean_utils.agreements.service_types import ServiceTypes
-from squid_py.ocean.keeper import SquidKeeper as Keeper
 from ocean_keeper.diagnostics import Diagnostics
 from ocean_keeper.web3_provider import Web3Provider
-from tests.resources.helper_functions import get_publisher_account, get_consumer_account
+from ocean_utils.agreements.service_agreement import ServiceAgreement
+from ocean_utils.agreements.service_types import ServiceTypes
+
+from examples import ExampleConfig, example_metadata
+from squid_py import ConfigProvider, Ocean
+from squid_py.ocean.keeper import SquidKeeper as Keeper
+from tests.resources.helper_functions import get_account
 
 
 def _log_event(event_name):
@@ -38,13 +37,13 @@ def buy_asset():
     ConfigProvider.set_config(ExampleConfig.get_config())
     config = ConfigProvider.get_config()
     providers = {
-        'duero': '0x9d4ed58293f71122ad6a733c1603927a150735d0',
+        'duero': '0xfEF2d5e1670342b9EF22eeeDcb287EC526B48095',
         'nile': '0x4aaab179035dc57b35e2ce066919048686f82972'
     }
     # make ocean instance
     ocn = Ocean()
     Diagnostics.verify_contracts()
-    acc = get_publisher_account()
+    acc = get_account(0)
     if not acc:
         acc = ([acc for acc in ocn.accounts.list() if acc.password] or ocn.accounts.list())[0]
 
@@ -55,19 +54,19 @@ def buy_asset():
         ddo = ocn.assets.resolve(did)
         logging.info(f'using ddo: {did}')
     else:
-        ddo = ocn.assets.create(Metadata.get_example(), acc, providers=[], use_secret_store=True)
+        ddo = ocn.assets.create(example_metadata.metadata, acc, providers=[], use_secret_store=True)
         assert ddo is not None, f'Registering asset on-chain failed.'
         did = ddo.did
         logging.info(f'registered ddo: {did}')
         # ocn here will be used only to publish the asset. Handling the asset by the publisher
         # will be performed by the Brizo server running locally
-        test_net = os.environ.get('TEST_NET')
+        test_net = os.environ.get('TEST_NET', '')
         if test_net.startswith('nile'):
             provider = keeper.did_registry.to_checksum_address(providers['nile'])
         elif test_net.startswith('duero'):
             provider = keeper.did_registry.to_checksum_address(providers['duero'])
         else:
-            provider = acc.address
+            provider = '0x068Ed00cF0441e4829D9784fCBe7b9e26D4BD8d0'
 
         # Wait for did registry event
         event = keeper.did_registry.subscribe_to_event(
@@ -88,7 +87,7 @@ def buy_asset():
                      f'{keeper.did_registry.is_did_provider(ddo.asset_id, provider)}')
 
     cons_ocn = Ocean()
-    consumer_account = get_consumer_account()
+    consumer_account = get_account(1)
 
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
@@ -98,12 +97,14 @@ def buy_asset():
     agreement_id = ''
     if not agreement_id:
         # Use these 2 lines to request new agreement from Brizo
-        # agreement_id, signature = cons_ocn.agreements.prepare(did, sa.service_definition_id, consumer_account)
-        # cons_ocn.agreements.send(did, agreement_id, sa.service_definition_id, signature, consumer_account)
+        # agreement_id, signature = cons_ocn.agreements.prepare(did, sa.service_definition_id,
+        # consumer_account)
+        # cons_ocn.agreements.send(did, agreement_id, sa.service_definition_id, signature,
+        # consumer_account)
 
         # assets.order now creates agreement directly using consumer account.
         agreement_id = cons_ocn.assets.order(
-            did, sa.service_definition_id, consumer_account)
+            did, sa.index, consumer_account)
 
     logging.info('placed order: %s, %s', did, agreement_id)
     event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
@@ -133,7 +134,7 @@ def buy_asset():
     ocn.assets.consume(
         agreement_id,
         did,
-        sa.service_definition_id,
+        sa.index,
         consumer_account,
         config.downloads_path)
     logging.info('Success buying asset.')
