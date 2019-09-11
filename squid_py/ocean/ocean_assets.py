@@ -7,8 +7,8 @@ import json
 import logging
 import os
 
-from ocean_keeper.web3_provider import Web3Provider
 from ocean_keeper.utils import add_ethereum_prefix_and_hash_msg
+from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_factory import ServiceDescriptor, ServiceFactory
 from ocean_utils.agreements.service_types import ServiceTypes
 from ocean_utils.aquarius.aquarius_provider import AquariusProvider
@@ -127,6 +127,10 @@ class OceanAssets:
         # Generating the did and adding to the ddo.
         did = ddo.assign_did(DID.did(ddo.proof['checksum']))
         logger.debug(f'Generating new did: {did}')
+        # Check if it's already registered first!
+        if did in self._get_aquarius().list_assets():
+            raise OceanDIDAlreadyExist(
+                f'Asset id {did} is already registered to another asset.')
 
         access_service = ServiceFactory.complete_access_service(did,
                                                                 brizo.get_service_endpoint(
@@ -144,11 +148,6 @@ class OceanAssets:
             add_ethereum_prefix_and_hash_msg(did_to_id_bytes(did)),
             publisher_account)
 
-        # Check if it's already registered first!
-        if did in self._get_aquarius().list_assets():
-            raise OceanDIDAlreadyExist(
-                f'Asset id {did} is already registered to another asset.')
-
         # Add public key and authentication
         ddo.add_public_key(did, publisher_account.address)
 
@@ -158,7 +157,7 @@ class OceanAssets:
         # First compute files_encrypted
         if metadata_copy['main']['type'] == 'dataset':
             assert metadata_copy['main'][
-                'files'], 'files is required in the metadata base attributes.'
+                'files'], 'files is required in the metadata main attributes.'
             logger.debug('Encrypting content urls in the metadata.')
             if not use_secret_store:
                 encrypt_endpoint = brizo.get_encrypt_endpoint(self._config)
@@ -251,7 +250,7 @@ class OceanAssets:
         Search an asset in oceanDB using aquarius.
 
         :param text: String with the value that you are searching
-        :param sort: Dictionary to choose order base in some value
+        :param sort: Dictionary to choose order main in some value
         :param offset: Number of elements shows by page
         :param page: Page number
         :param aquarius_url: Url of the aquarius where you want to search. If there is not
@@ -269,7 +268,7 @@ class OceanAssets:
 
         :param query: dict with query parameters
             (e.g.) https://github.com/oceanprotocol/aquarius/blob/develop/docs/for_api_users/API.md
-        :param sort: Dictionary to choose order base in some value
+        :param sort: Dictionary to choose order main in some value
         :param offset: Number of elements shows by page
         :param page: Page number
         :param aquarius_url: Url of the aquarius where you want to search. If there is not
