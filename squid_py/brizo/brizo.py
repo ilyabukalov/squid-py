@@ -8,6 +8,7 @@ import logging
 import os
 import re
 
+from ocean_keeper.utils import add_ethereum_prefix_and_hash_msg
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.exceptions import (OceanEncryptAssetUrlsError,
                                     OceanInitializeServiceAgreementError)
@@ -111,7 +112,10 @@ class Brizo:
         :param destination_folder: Path, str
         :return: True if was downloaded, bool
         """
-        signature = Keeper.get_instance().sign_hash(service_agreement_id, account)
+        signature = Keeper.get_instance().sign_hash(
+            add_ethereum_prefix_and_hash_msg(service_agreement_id),
+            account)
+
         if index is not None:
             assert isinstance(index, int), logger.error('index has to be an integer.')
             assert index >= 0, logger.error('index has to be 0 or a positive integer.')

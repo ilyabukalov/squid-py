@@ -8,6 +8,7 @@ import logging
 import os
 
 from ocean_keeper.web3_provider import Web3Provider
+from ocean_keeper.utils import add_ethereum_prefix_and_hash_msg
 from ocean_utils.agreements.service_factory import ServiceDescriptor, ServiceFactory
 from ocean_utils.agreements.service_types import ServiceTypes
 from ocean_utils.aquarius.aquarius_provider import AquariusProvider
@@ -139,8 +140,9 @@ class OceanAssets:
             else:
                 ddo.add_service(service)
 
-        ddo.proof['signatureValue'] = self._keeper.sign_hash(did_to_id_bytes(did),
-                                                             publisher_account)
+        ddo.proof['signatureValue'] = self._keeper.sign_hash(
+            add_ethereum_prefix_and_hash_msg(did_to_id_bytes(did)),
+            publisher_account)
 
         # Check if it's already registered first!
         if did in self._get_aquarius().list_assets():
@@ -165,7 +167,8 @@ class OceanAssets:
                     encrypt_endpoint,
                     ddo.asset_id,
                     publisher_account.address,
-                    self._keeper.sign_hash(ddo.asset_id, publisher_account)
+                    self._keeper.sign_hash(add_ethereum_prefix_and_hash_msg(ddo.asset_id),
+                                           publisher_account)
                 )
             else:
                 files_encrypted = self._get_secret_store(publisher_account) \
