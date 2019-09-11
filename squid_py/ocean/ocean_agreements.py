@@ -4,7 +4,7 @@
 
 import logging
 
-from ocean_keeper.utils import prepare_prefixed_hash, add_ethereum_prefix_and_hash_msg
+from ocean_keeper.utils import add_ethereum_prefix_and_hash_msg
 from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.agreements.service_types import ServiceTypes
@@ -62,7 +62,6 @@ class OceanAgreements:
         agreement_hash = service_agreement.get_service_agreement_hash(
             agreement_id, asset.asset_id, consumer_account.address, publisher_address, self._keeper
         )
-        agreement_hash = prepare_prefixed_hash(agreement_hash)
         signature = self._keeper.sign_hash(add_ethereum_prefix_and_hash_msg(agreement_hash), consumer_account)
         address = self._keeper.personal_ec_recover(agreement_hash, signature)
         assert address == consumer_account.address
