@@ -62,7 +62,7 @@ class Brizo:
             return response.text
 
     @staticmethod
-    def initialize_service_agreement(did, agreement_id, service_definition_id, signature,
+    def initialize_service_agreement(did, agreement_id, service_index, signature,
                                      account_address,
                                      purchase_endpoint):
         """
@@ -71,14 +71,14 @@ class Brizo:
 
         :param did: id of the asset includes the `did:op:` prefix, str
         :param agreement_id: id of the agreement, hex str
-        :param service_definition_id: identifier of the service inside the asset DDO, str
+        :param service_index: identifier of the service inside the asset DDO, str
         :param signature: signed agreement hash, hex str
         :param account_address: ethereum address of the consumer signing this agreement, hex str
         :param purchase_endpoint: url of the service provider, str
         :return: bool
         """
         payload = Brizo._prepare_consume_payload(
-            did, agreement_id, service_definition_id, signature, account_address
+            did, agreement_id, service_index, signature, account_address
         )
         response = Brizo._http_client.post(
             purchase_endpoint, data=payload,
@@ -134,13 +134,13 @@ class Brizo:
                 Brizo.write_file(response, destination_folder, file_name or f'file-{i}')
 
     @staticmethod
-    def _prepare_consume_payload(did, service_agreement_id, service_definition_id, signature,
+    def _prepare_consume_payload(did, service_agreement_id, service_index, signature,
                                  consumer_address):
         """Prepare a payload to send to `Brizo`.
 
         :param did: DID, str
         :param service_agreement_id: Service Agreement Id, str
-        :param service_definition_id: identifier of the service inside the asset DDO, str
+        :param service_index: identifier of the service inside the asset DDO, str
         service in the DDO (DID document)
         :param signature: the signed agreement message hash which includes
          conditions and their parameters values and other details of the agreement, str
@@ -150,7 +150,7 @@ class Brizo:
         return json.dumps({
             'did': did,
             'serviceAgreementId': service_agreement_id,
-            ServiceAgreement.SERVICE_INDEX: service_definition_id,
+            ServiceAgreement.SERVICE_INDEX: service_index,
             'signature': signature,
             'consumerAddress': consumer_address
         })

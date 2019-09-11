@@ -15,13 +15,13 @@ logger = logging.getLogger(__name__)
 class AssetConsumer:
 
     @staticmethod
-    def download(service_agreement_id, service_definition_id, ddo, consumer_account, destination,
+    def download(service_agreement_id, service_index, ddo, consumer_account, destination,
                  brizo, secret_store, index=None):
         """
         Download asset data files or result files from a compute job.
 
         :param service_agreement_id: Service agreement id, str
-        :param service_definition_id: identifier of the service inside the asset DDO, str
+        :param service_index: identifier of the service inside the asset DDO, str
         :param ddo: DDO
         :param consumer_account: Account instance of the consumer
         :param destination: Path, str
@@ -64,7 +64,7 @@ class AssetConsumer:
             os.mkdir(destination)
 
         asset_folder = os.path.join(destination,
-                                    f'datafile.{did_to_id(did)}.{service_definition_id}')
+                                    f'datafile.{did_to_id(did)}.{service_index}')
         if not os.path.exists(asset_folder):
             os.mkdir(asset_folder)
         if index is not None:

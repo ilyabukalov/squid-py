@@ -108,7 +108,6 @@ class ExampleConfig:
         net_name = ExampleConfig._net_name_map.get(net_key)
         if net_name == 'kovan':
             config['keeper-contracts']['keeper.url'] = ExampleConfig._kovan_keeper_url
-            config['keeper-contracts']['parity.url'] = ExampleConfig._kovan_keeper_url
         elif net_name == 'pacific':
             config['keeper-contracts']['keeper.url'] = 'https://pacific.oceanprotocol.com'
             config['keeper-contracts']['parity.url'] = 'https://pacific.oceanprotocol.com'
