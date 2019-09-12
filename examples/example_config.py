@@ -39,7 +39,7 @@ class ExampleConfig:
     # _nile_brizo_url = "http://localhost:8030"
 
     _duero_secret_store_url = "https://secret-store.duero.dev-ocean.com"
-    _nile_secret_store_url = "https://secret-store.dev-ocean.com"
+    _nile_secret_store_url = "https://secret-store.nile.dev-ocean.com"
     _pacific_secret_store_url = "https://secret-store.pacific.oceanprotocol.com"
     # _nile_secret_store_url = "https://secret-store.marketplace.dev-ocean.com"
     _kovan_keeper_url = "http://localhost:8545"

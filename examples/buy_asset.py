@@ -109,19 +109,19 @@ def buy_asset():
 
     logging.info('placed order: %s, %s', did, agreement_id)
     event = keeper.escrow_access_secretstore_template.subscribe_agreement_created(
-        agreement_id, 60, None, (), wait=True
+        agreement_id, 60, None, (), wait=True, from_block=0
     )
     assert event, "Agreement event is not found, check the keeper node's logs"
     logging.info(f'Got agreement event, next: lock reward condition')
 
     event = keeper.lock_reward_condition.subscribe_condition_fulfilled(
-        agreement_id, 60, None, (), wait=True
+        agreement_id, 60, None, (), wait=True, from_block=0
     )
     assert event, "Lock reward condition fulfilled event is not found, check the keeper node's logs"
     logging.info('Got lock reward event, next: wait for the access condition..')
 
     event = keeper.access_secret_store_condition.subscribe_condition_fulfilled(
-        agreement_id, 15, None, (), wait=True
+        agreement_id, 15, None, (), wait=True, from_block=0
     )
     logging.info(f'Got access event {event}')
     i = 0
@@ -145,7 +145,8 @@ def buy_asset():
         30,
         None,
         (),
-        wait=True
+        wait=True,
+        from_block=0
     )
     assert event, 'no event for EscrowReward.Fulfilled'
     logging.info(f'got EscrowReward.FULFILLED event: {event}')

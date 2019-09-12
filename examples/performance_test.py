@@ -134,21 +134,44 @@ def transfer_ether_to_accounts(keeper, from_account, receivers, amount):
         keeper.send_ether(from_account, receiver.address if isinstance(receiver, Account) else receiver, amount)
 
 
-def buy_asset(consumer_account, did):
-    os.environ['TEST_NET'] = 'duero'
-    os.environ["PARITY_ADDRESS1"] = "0x00bd138abd70e2f00903268f3db08f2d25677c9e"
-    os.environ["PARITY_PASSWORD1"] = "node0"
-    os.environ["PARITY_KEYFILE1"] = "~/pycharm_projects/squid-py/tests/resources/data/key_file_2.json"
-    os.environ["PARITY_ADDRESS"] = "0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0"
-    os.environ["PARITY_PASSWORD"] = "secret"
-    os.environ["PARITY_KEYFILE"] = "~/pycharm_projects/squid-py/tests/resources/data/key_file_1.json"
+def transfer_ether_to():
+    init_env_vars(os.path.expanduser(os.environ["TEST_ACCOUNTS_FOLDER"]))
+    receiver = '0x00Bd138aBD70e2F00903268F3Db08f2D25677C9e'
+    account = get_publisher_account()
+    ocn, keeper = get_ocn_and_keeper()
 
+    transfer_ether_to_accounts(keeper, account, [receiver], 100000000000000000)
+
+
+def init_env_vars(accounts_path):
+    if not os.environ.get("TEST_NET"):
+        # os.environ['TEST_NET'] = 'duero'
+        os.environ['TEST_NET'] = 'nile'
+
+    if not os.environ.get("PARITY_ADDRESS1"):
+        os.environ["PARITY_ADDRESS1"] = "0x00bd138abd70e2f00903268f3db08f2d25677c9e"
+        os.environ["PARITY_PASSWORD1"] = "node0"
+        os.environ["PARITY_KEYFILE1"] = os.path.join(accounts_path, "key_file_2.json")
+    if not os.environ.get("PARITY_ADDRESS"):
+        os.environ["PARITY_ADDRESS"] = "0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0"
+        os.environ["PARITY_PASSWORD"] = "secret"
+        os.environ["PARITY_KEYFILE"] = os.path.join(accounts_path, "key_file_1.json")
+
+
+def get_ocn_and_keeper():
     ConfigProvider.set_config(ExampleConfig.get_config())
     config = ConfigProvider.get_config()
     Web3Provider.get_web3(config.keeper_url)
     ContractHandler.artifacts_path = config.keeper_path
     ocn = Ocean()
     keeper = ocn.keeper
+    return ocn, keeper
+
+
+def buy_asset(consumer_account, did):
+
+    ocn, keeper = get_ocn_and_keeper()
+    config = ConfigProvider.get_config()
 
     ocn.accounts.request_tokens(consumer_account, 10)
     ddo = ocn.assets.resolve(did)
@@ -195,6 +218,21 @@ def buy_asset(consumer_account, did):
     return agreement_id, consumer_account.address
 
 
+def send_ether_to_all_accounts():
+    accounts_path = os.path.expanduser(os.environ["TEST_ACCOUNTS_FOLDER"])
+    init_env_vars(accounts_path)
+
+    ConfigProvider.set_config(ExampleConfig.get_config())
+
+    config = ConfigProvider.get_config()
+    Web3Provider.get_web3(config.keeper_url)
+    ContractHandler.artifacts_path = config.keeper_path
+    ocn, keeper = get_ocn_and_keeper()
+    acc = get_publisher_account()
+    receivers = [a.address for a in load_accounts(accounts_path)]
+    transfer_ether_to_accounts(keeper, acc, receivers, 100000000000000000)
+
+
 def run_performance_test():
     """
     Make sure to export the envvar TEST_ACCOUNTS_FOLDER which must contain all of the accounts keyfiles
@@ -213,26 +251,30 @@ def run_performance_test():
     :return:
     """
     accounts_path = os.path.expanduser(os.environ["TEST_ACCOUNTS_FOLDER"])
-    os.environ['TEST_NET'] = 'duero'
-    os.environ["PARITY_ADDRESS"] = "0x068ed00cf0441e4829d9784fcbe7b9e26d4bd8d0"
-    os.environ["PARITY_PASSWORD"] = "secret"
-    os.environ["PARITY_KEYFILE"] = os.path.join(accounts_path, "key_file_1.json")
+    init_env_vars(accounts_path)
 
-    ConfigProvider.set_config(ExampleConfig.get_config())
+    ocn, keeper = get_ocn_and_keeper()
+    w3 = Web3Provider.get_web3()
 
-    config = ConfigProvider.get_config()
-    w3 = Web3Provider.get_web3(config.keeper_url)
-    ContractHandler.artifacts_path = config.keeper_path
+    supported_networks = ('duero', 'nile')  # , 'pacific', 'spree')
+    network = os.environ.get("TEST_NET")
+    assert network in supported_networks, \
+        f'Bad network name {network}, set `TEST_NET` to one ' \
+        f'of {supported_networks} and try again.'
 
-    # This is the provider address used in Brizo and the Events-handler on the Duero network
-    # make sure to change this address if testing on other network such as Nile/Pacific
-    providers = [w3.toChecksumAddress('0x9D4eD58293F71122aD6a733C1603927a150735D0')]
     # make ocean instance
-    ocn = Ocean()
     Diagnostics.verify_contracts()
 
-    did = 'did:op:58b3c1bf538a4900a0818e8c0439c84fcc1bf3b1b57640a381fa25dbeb53e5b6'
+    did = 'did:op:c678e7e5963d4fdc99afea49ac221d4d4177790f30204417823319d4d35f851f'
     if not did:
+        # This is the provider address used in Brizo and the Events-handler on the Duero/Nile network
+        # make sure to change this address to match the current network
+        providers = []
+        if network == 'duero':
+            providers = [w3.toChecksumAddress('0x9D4eD58293F71122aD6a733C1603927a150735D0')]
+        elif network == 'nile':
+            providers = [w3.toChecksumAddress('0x4aaab179035dc57b35e2ce066919048686f82972')]
+
         acc = get_publisher_account()
         # Register asset once for consume requests
         ddo = register_asset(ocn, acc, Metadata.get_example(), providers)
