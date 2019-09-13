@@ -61,10 +61,9 @@ class OceanAuth:
         :return: hex str the token generated/signed by account
         """
         _message, _time = self._get_message_and_time()
-        msg_hash = Web3Provider.get_web3().sha3(text=_message)
         try:
             prefixed_msg_hash = self._keeper.sign_hash(
-                add_ethereum_prefix_and_hash_msg(msg_hash), account)
+                add_ethereum_prefix_and_hash_msg(_message), account)
             return f'{prefixed_msg_hash}-{_time}'
         except Exception as e:
             logging.error(f'Error signing token: {str(e)}')
@@ -83,7 +82,7 @@ class OceanAuth:
             return '0x0'
 
         message = self._get_message(timestamp)
-        address = self._keeper.personal_ec_recover(Web3Provider.get_web3().sha3(text=message), sig)
+        address = self._keeper.personal_ec_recover(message, sig)
         return Web3Provider.get_web3().toChecksumAddress(address)
 
     def store(self, account):
