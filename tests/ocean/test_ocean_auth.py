@@ -48,3 +48,18 @@ def test_restore_token(publisher_ocean_instance):
     assert ocn_auth.check(token) == acc.address, 'invalid token, check failed.'
     # verify it is saved
     assert ocn_auth.restore(acc) == token, 'Restoring token failed.'
+
+
+def test_known_token():
+    token = "0x1d2741dee30e64989ef0203957c01b14f250f5d2f6ccb0c" \
+            "88c9518816e4fcec16f84e545094eb3f377b7e214ded22676" \
+            "fbde8ca2e41b4eb1b3565047ecd9acf300-1568372035"
+    pub_address = "0xe2DD09d719Da89e5a3D0F2549c7E24566e947260"
+
+    ocn_auth = OceanAuth(Keeper.get_instance(), ':memory:')
+    assert ocn_auth.is_token_valid(token), f'Invalid token!! has the token specs changed?'
+    address = ocn_auth.check(token)
+    assert address.lower() == pub_address.lower(), f'Recovered address {address} does not match ' \
+                                                   f'known signer address {pub_address}, if the ' \
+                                                   f'token generation method is changed please update ' \
+                                                   f'the token in this test with the new format.'
