@@ -78,11 +78,9 @@ def setup_agreements_enviroment():
 
     ddo = get_ddo_sample()
     ddo._did = DID.did({'0': '0x987654321'})
-    # Remove '0x' from the start of ddo.metadata['main']['checksum']
-    text_for_sha3 = ddo.metadata['main']['checksum'][2:]
     keeper.did_registry.register(
         ddo.asset_id,
-        checksum=Web3Provider.get_web3().sha3(text=text_for_sha3),
+        checksum=Web3Provider.get_web3().toBytes(hexstr=ddo.asset_id),
         url='aquarius:5000',
         account=publisher_acc,
         providers=None

@@ -7,6 +7,7 @@ import json
 import logging
 import os
 
+from eth_utils import add_0x_prefix
 from ocean_keeper.utils import add_ethereum_prefix_and_hash_msg
 from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_factory import ServiceDescriptor, ServiceFactory
@@ -132,15 +133,21 @@ class OceanAssets:
             raise OceanDIDAlreadyExist(
                 f'Asset id {did} is already registered to another asset.')
 
-        access_service = ServiceFactory.complete_access_service(did,
-                                                                brizo.get_service_endpoint(
-                                                                    self._config),
-                                                                access_service_attributes,
-                                                                self._keeper.escrow_access_secretstore_template.address,
-                                                                self._keeper.escrow_reward_condition.address)
+        access_service = ServiceFactory.complete_access_service(
+            did,
+            brizo.get_service_endpoint(
+                self._config),
+            access_service_attributes,
+            self._keeper.escrow_access_secretstore_template.address,
+            self._keeper.escrow_reward_condition.address)
+
         for service in services:
             if service.type == ServiceTypes.ASSET_ACCESS:
                 ddo.add_service(access_service)
+            elif service.type == ServiceTypes.METADATA:
+                ddo_service_endpoint = service.service_endpoint.replace('{did}', did)
+                service.set_service_endpoint(ddo_service_endpoint)
+                ddo.add_service(service)
             else:
                 ddo.add_service(service)
 
@@ -380,3 +387,55 @@ class OceanAssets:
         """
         return self._keeper.access_secret_store_condition.get_purchased_assets_by_address(
             consumer_address)
+
+    def revoke_permissions(self, did, address_to_revoke, account):
+        """
+        Revoke access permission to an address.
+
+        :param did: the id of an asset on-chain, hex str
+        :param address_to_revoke: ethereum account address, hex str
+        :param account: Account executing the action
+        :return: bool
+        """
+        return self._keeper.did_registry.revoke_permission(self, did, address_to_revoke, account)
+
+    def get_permissions(self, did, address):
+        """
+        Gets access permission of a grantee
+
+        :param did: the id of an asset on-chain, hex str
+        :param address: ethereum account address, hex str
+        :return: true if the address has access permission to a DID
+        """
+        return self._keeper.did_registry.get_permission(did, address)
+
+    def delegate_persmission(self, did, address_to_grant, account):
+        """
+        Grant access permission to an address.
+
+        :param did: the id of an asset on-chain, hex str
+        :param address_to_grant: ethereum account address, hex str
+        :param account: Account executing the action
+        :return: bool
+        """
+        return self._keeper.did_registry.grant_permission(self, did, address_to_grant, account)
+
+    def transfer_ownership(self, did, new_owner_address, account):
+        """
+        Transfer did ownership to an address.
+
+        :param did: the id of an asset on-chain, hex str
+        :param new_owner_address: ethereum account address, hex str
+        :param account: Account executing the action
+        :return: bool
+        """
+        asset_id = add_0x_prefix(did_to_id(did))
+        return self._keeper.did_registry.transfer_did_ownership(asset_id, new_owner_address,
+                                                                account)
+
+    def execute(self):
+        """
+
+        :return:
+        """
+        pass
