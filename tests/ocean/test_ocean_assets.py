@@ -309,3 +309,14 @@ def test_ocean_transfer_ownership(publisher_ocean_instance, metadata, consumer_o
     publisher_ocean_instance.assets.transfer_ownership(ddo.did, consumer.address, publisher)
     assert publisher_ocean_instance.assets.owner(ddo.did) == consumer.address
     publisher_ocean_instance.assets.retire(ddo.did)
+
+
+def test_ocean_grant_permissions(publisher_ocean_instance, metadata, consumer_ocean_instance):
+    publisher = publisher_ocean_instance.main_account
+    consumer = consumer_ocean_instance.main_account
+    ddo = publisher_ocean_instance.assets.create(metadata, publisher)
+    assert not publisher_ocean_instance.assets.get_permissions(ddo.did, consumer.address)
+    publisher_ocean_instance.assets.delegate_persmission(ddo.did, consumer.address, publisher)
+    assert publisher_ocean_instance.assets.get_permissions(ddo.did, consumer.address)
+    publisher_ocean_instance.assets.revoke_permissions(ddo.did, consumer.address, publisher)
+    assert not publisher_ocean_instance.assets.get_permissions(ddo.did, consumer.address)

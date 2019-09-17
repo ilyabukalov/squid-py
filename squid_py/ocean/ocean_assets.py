@@ -397,7 +397,8 @@ class OceanAssets:
         :param account: Account executing the action
         :return: bool
         """
-        return self._keeper.did_registry.revoke_permission(self, did, address_to_revoke, account)
+        asset_id = add_0x_prefix(did_to_id(did))
+        return self._keeper.did_registry.revoke_permission(asset_id, address_to_revoke, account)
 
     def get_permissions(self, did, address):
         """
@@ -407,7 +408,8 @@ class OceanAssets:
         :param address: ethereum account address, hex str
         :return: true if the address has access permission to a DID
         """
-        return self._keeper.did_registry.get_permission(did, address)
+        asset_id = add_0x_prefix(did_to_id(did))
+        return self._keeper.did_registry.get_permission(asset_id, address)
 
     def delegate_persmission(self, did, address_to_grant, account):
         """
@@ -418,7 +420,8 @@ class OceanAssets:
         :param account: Account executing the action
         :return: bool
         """
-        return self._keeper.did_registry.grant_permission(self, did, address_to_grant, account)
+        asset_id = add_0x_prefix(did_to_id(did))
+        return self._keeper.did_registry.grant_permission(asset_id, address_to_grant, account)
 
     def transfer_ownership(self, did, new_owner_address, account):
         """

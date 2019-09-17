@@ -1,6 +1,8 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
+import uuid
+
 import pytest
 from ocean_keeper.contract_handler import ContractHandler
 from ocean_keeper.web3_provider import Web3Provider
@@ -67,7 +69,9 @@ def web3_instance():
 
 @pytest.fixture
 def metadata():
-    return get_metadata()
+    metadata = get_metadata()
+    metadata['main']['files'][0]['checksum'] = str(uuid.uuid4())
+    return metadata
 
 
 @pytest.fixture
