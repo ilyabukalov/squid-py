@@ -62,7 +62,8 @@ class OceanAgreements:
         agreement_hash = service_agreement.get_service_agreement_hash(
             agreement_id, asset.asset_id, consumer_account.address, publisher_address, self._keeper
         )
-        signature = self._keeper.sign_hash(add_ethereum_prefix_and_hash_msg(agreement_hash), consumer_account)
+        signature = self._keeper.sign_hash(add_ethereum_prefix_and_hash_msg(agreement_hash),
+                                           consumer_account)
         address = self._keeper.personal_ec_recover(agreement_hash, signature)
         assert address == consumer_account.address
         logger.debug(f'agreement-signature={signature}, agreement-hash={agreement_hash}')
@@ -165,8 +166,15 @@ class OceanAgreements:
 
         asset = self._asset_resolver.resolve(did)
         asset_id = asset.asset_id
-        service_agreement = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, asset)
-        agreement_template = self._keeper.escrow_access_secretstore_template
+        if asset.metadata['main']['type'] == 'dataset' or asset.metadata['main'][
+            'type'] == 'algorithm':
+            service_agreement = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, asset)
+            agreement_template = self._keeper.escrow_access_secretstore_template
+        elif asset.metadata['main']['type'] == 'computing':
+            service_agreement = ServiceAgreement.from_ddo(ServiceTypes.CLOUD_COMPUTE, asset)
+            agreement_template = self._keeper.escrow_compute_execution_template
+        else:
+            raise Exception('The agreement could not be created. Review the index of your service.')
 
         if agreement_template.get_agreement_consumer(agreement_id) is not None:
             raise OceanServiceAgreementExists(

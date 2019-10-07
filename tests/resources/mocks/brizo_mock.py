@@ -51,5 +51,9 @@ class BrizoMock(object):
         return f'{Brizo.get_brizo_url(config)}/services/access/initialize'
 
     @staticmethod
-    def get_service_endpoint(config):
+    def get_consume_endpoint(config):
         return f'{Brizo.get_brizo_url(config)}/services/consume'
+
+    @staticmethod
+    def get_execute_endpoint(config):
+        return f'{Brizo.get_brizo_url(config)}/services/exec'
