@@ -26,7 +26,6 @@ CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
 logger = logging.getLogger('ocean')
 
-
 class Ocean:
     """The Ocean class is the entry point into Ocean Protocol."""
 
