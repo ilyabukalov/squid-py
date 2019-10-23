@@ -10,7 +10,6 @@ import logging.config
 import coloredlogs
 import yaml
 
-
 from ocean_keeper.utils import get_account
 from ocean_utils.ddo.ddo import DDO
 
