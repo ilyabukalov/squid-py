@@ -36,3 +36,14 @@ class OceanTokens:
         :return: bool
         """
         self._keeper.token.transfer(receiver_address, amount, sender_account)
+
+    def approve(self, receiver_address, amount, sender_account):
+        """
+        Transfer a number of tokens from `sender_account` to `receiver_address`
+
+        :param receiver_address: hex str ethereum address to assign allowance
+        :param amount: int number of tokens to approve
+        :param sender_account: Account instance to take the tokens from
+        :return: bool
+        """
+        self._keeper.token.token_approve(receiver_address, amount, sender_account)
