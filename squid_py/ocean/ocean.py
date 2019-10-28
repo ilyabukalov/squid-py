@@ -129,6 +129,7 @@ class Ocean:
             self._keeper,
             self._did_resolver,
             AssetConsumer,
+            AssetExecutor,
             self._config
         )
 

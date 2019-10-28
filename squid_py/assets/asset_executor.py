@@ -5,8 +5,6 @@ import logging
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.agreements.service_types import ServiceTypes
 
-from squid_py.brizo.brizo import Brizo
-
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +12,7 @@ class AssetExecutor:
     """Class representing the call to the brizo executre endpoint."""
 
     @staticmethod
-    def execute(agreement_id, compute_ddo, workflow_ddo, consumer_account, index):
+    def execute(agreement_id, compute_ddo, workflow_ddo, consumer_account, brizo, index):
         """
 
         :param agreement_id:
@@ -26,4 +24,4 @@ class AssetExecutor:
         service_endpoint = ServiceAgreement.from_ddo(ServiceTypes.CLOUD_COMPUTE,
                                                      compute_ddo).service_endpoint
 
-        Brizo.execute_service(agreement_id, service_endpoint, consumer_account, workflow_ddo)
+        brizo.execute_service(agreement_id, service_endpoint, consumer_account, workflow_ddo)

@@ -35,7 +35,7 @@
       }
     },
     {
-      "type": "computing",
+      "type": "compute",
       "index": 2,
       "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/computing/exec?consumerAddress=${consumerAddress}&serviceAgreementId=${serviceAgreementId}",
       "templateId": "804932804923850985093485039850349850439583409583404534231321131a",

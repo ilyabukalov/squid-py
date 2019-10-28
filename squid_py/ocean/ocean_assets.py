@@ -108,7 +108,7 @@ class OceanAssets:
                         brizo.get_consume_endpoint(self._config)
 
                     )]
-        elif metadata_copy['main']['type'] == 'computing':
+        elif metadata_copy['main']['type'] == 'compute':
             compute_service_attributes = self._build_compute_service(metadata_copy,
                                                                      publisher_account)
             if not service_descriptors:
@@ -476,6 +476,7 @@ class OceanAssets:
             compute_ddo,
             workflow_ddo,
             consumer_account,
+            BrizoProvider.get_brizo(),
             index
         )
 
