@@ -15,9 +15,12 @@ from squid_py import ConfigProvider
 from squid_py.ocean.keeper import SquidKeeper as Keeper
 from tests.resources.helper_functions import (get_consumer_account, get_consumer_ocean_instance,
                                               get_ddo_sample, get_metadata, get_publisher_account,
-                                              get_publisher_ocean_instance, get_registered_ddo)
+                                              get_publisher_ocean_instance, get_registered_ddo,
+                                              setup_logging)
 from tests.resources.mocks.secret_store_mock import SecretStoreMock
 from tests.resources.tiers import should_run_test
+
+setup_logging()
 
 if should_run_test('e2e'):
     ConfigProvider.set_config(ExampleConfig.get_config())

@@ -12,7 +12,6 @@ from ocean_utils.did_resolver.did_resolver import DIDResolver
 from squid_py.assets.asset_consumer import AssetConsumer
 from squid_py.assets.asset_executor import AssetExecutor
 from squid_py.config_provider import ConfigProvider
-from squid_py.log import setup_logging
 from squid_py.ocean.keeper import SquidKeeper as Keeper
 from squid_py.ocean.ocean_accounts import OceanAccounts
 from squid_py.ocean.ocean_agreements import OceanAgreements
@@ -26,9 +25,7 @@ from squid_py.ocean.ocean_tokens import OceanTokens
 
 CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
-setup_logging()
 logger = logging.getLogger('ocean')
-
 
 class Ocean:
     """The Ocean class is the entry point into Ocean Protocol."""
