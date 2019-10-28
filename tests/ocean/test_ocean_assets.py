@@ -12,9 +12,8 @@ from ocean_utils.agreements.service_types import ServiceTypes
 from ocean_utils.ddo.ddo import DDO
 from ocean_utils.did import DID
 
-from tests.resources.helper_functions import (get_algorithm_ddo, get_resource_path,
-                                              get_workflow_ddo,
-                                              log_event)
+from tests.resources.helper_functions import (get_algorithm_ddo, get_computing_metadata,
+                                              get_resource_path, get_workflow_ddo, log_event)
 from tests.resources.tiers import e2e_test
 
 
@@ -291,3 +290,51 @@ def test_ocean_assets_workflow(publisher_ocean_instance):
     ddo = publisher_ocean_instance.assets.create(metadata['attributes'], publisher)
     assert ddo
     publisher_ocean_instance.assets.retire(ddo.did)
+
+
+def test_ocean_assets_compute(publisher_ocean_instance):
+    publisher = publisher_ocean_instance.main_account
+    metadata = get_computing_metadata()
+    ddo = publisher_ocean_instance.assets.create(metadata, publisher)
+    assert ddo
+    publisher_ocean_instance.assets.retire(ddo.did)
+
+
+def test_ocean_transfer_ownership(publisher_ocean_instance, metadata, consumer_ocean_instance):
+    publisher = publisher_ocean_instance.main_account
+    consumer = consumer_ocean_instance.main_account
+    ddo = publisher_ocean_instance.assets.create(metadata, publisher)
+    owner = publisher_ocean_instance.assets.owner(ddo.did)
+    assert owner == publisher.address
+    publisher_ocean_instance.assets.transfer_ownership(ddo.did, consumer.address, publisher)
+    assert publisher_ocean_instance.assets.owner(ddo.did) == consumer.address
+    publisher_ocean_instance.assets.retire(ddo.did)
+
+
+def test_ocean_grant_permissions(publisher_ocean_instance, metadata, consumer_ocean_instance):
+    publisher = publisher_ocean_instance.main_account
+    consumer = consumer_ocean_instance.main_account
+    ddo = publisher_ocean_instance.assets.create(metadata, publisher)
+    assert not publisher_ocean_instance.assets.get_permissions(ddo.did, consumer.address)
+    publisher_ocean_instance.assets.delegate_persmission(ddo.did, consumer.address, publisher)
+    assert publisher_ocean_instance.assets.get_permissions(ddo.did, consumer.address)
+    publisher_ocean_instance.assets.revoke_permissions(ddo.did, consumer.address, publisher)
+    assert not publisher_ocean_instance.assets.get_permissions(ddo.did, consumer.address)
+
+
+def test_ocean_execute_workflow(publisher_ocean_instance, consumer_ocean_instance):
+    publisher = publisher_ocean_instance.main_account
+    consumer = consumer_ocean_instance.main_account
+    metadata = get_workflow_ddo()['service'][0]
+    workflow_ddo = publisher_ocean_instance.assets.create(metadata['attributes'], publisher)
+    assert workflow_ddo
+    metadata = get_computing_metadata()
+    ddo_computing = publisher_ocean_instance.assets.create(metadata, publisher)
+    assert ddo_computing
+    service = ddo_computing.get_service(service_type=ServiceTypes.CLOUD_COMPUTE)
+    sa = ServiceAgreement.from_service_dict(service.as_dictionary())
+    agreement_id = consumer_ocean_instance.assets.order(ddo_computing.did, sa.index, consumer)
+    consumer_ocean_instance.assets.execute(agreement_id, ddo_computing.did, sa.index, consumer,
+                                           workflow_ddo.did)
+    publisher_ocean_instance.assets.retire(ddo_computing.did)
+    publisher_ocean_instance.assets.retire(workflow_ddo.did)

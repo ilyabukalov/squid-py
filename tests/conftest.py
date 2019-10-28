@@ -1,6 +1,8 @@
 #  Copyright 2018 Ocean Protocol Foundation
 #  SPDX-License-Identifier: Apache-2.0
 
+import uuid
+
 import pytest
 from ocean_keeper.contract_handler import ContractHandler
 from ocean_keeper.web3_provider import Web3Provider
@@ -70,7 +72,9 @@ def web3_instance():
 
 @pytest.fixture
 def metadata():
-    return get_metadata()
+    metadata = get_metadata()
+    metadata['main']['files'][0]['checksum'] = str(uuid.uuid4())
+    return metadata
 
 
 @pytest.fixture
@@ -81,11 +85,9 @@ def setup_agreements_enviroment():
 
     ddo = get_ddo_sample()
     ddo._did = DID.did({'0': '0x987654321'})
-    # Remove '0x' from the start of ddo.metadata['main']['checksum']
-    text_for_sha3 = ddo.metadata['main']['checksum'][2:]
     keeper.did_registry.register(
         ddo.asset_id,
-        checksum=Web3Provider.get_web3().sha3(text=text_for_sha3),
+        checksum=Web3Provider.get_web3().toBytes(hexstr=ddo.asset_id),
         url='aquarius:5000',
         account=publisher_acc,
         providers=None

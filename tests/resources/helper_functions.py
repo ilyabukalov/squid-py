@@ -97,6 +97,14 @@ def get_workflow_ddo():
     return json.loads(metadata)
 
 
+def get_computing_metadata():
+    path = get_resource_path('ddo', 'computing_metadata.json')
+    assert path.exists(), f"{path} does not exist!"
+    with open(path, 'r') as file_handle:
+        metadata = file_handle.read()
+    return json.loads(metadata)
+
+
 def get_computing_ddo():
     return DDO(json_filename=get_resource_path('ddo', 'ddo_computing.json'))
 

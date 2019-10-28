@@ -43,6 +43,10 @@ class BrizoMock(object):
                 of.write(f'mock data {service_agreement_id}.{service_endpoint}.{account_address}')
 
     @staticmethod
+    def execute_service(agreement_id, service_endpoint, consumer_account, workflow_ddo):
+        return True
+
+    @staticmethod
     def get_brizo_url(config):
         return Brizo.get_brizo_url(config)
 
@@ -51,5 +55,9 @@ class BrizoMock(object):
         return f'{Brizo.get_brizo_url(config)}/services/access/initialize'
 
     @staticmethod
-    def get_service_endpoint(config):
+    def get_consume_endpoint(config):
         return f'{Brizo.get_brizo_url(config)}/services/consume'
+
+    @staticmethod
+    def get_execute_endpoint(config):
+        return f'{Brizo.get_brizo_url(config)}/services/exec'

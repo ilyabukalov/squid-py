@@ -7,10 +7,11 @@ import pytest
 from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.agreements.service_agreement_template import ServiceAgreementTemplate
-from ocean_utils.agreements.service_types import ServiceTypes
+from ocean_utils.agreements.service_types import ServiceTypes, ServiceTypesIndices
 
 from squid_py import ConfigProvider
 from squid_py.assets.asset_consumer import AssetConsumer
+from squid_py.assets.asset_executor import AssetExecutor
 from squid_py.brizo.brizo import Brizo
 from squid_py.ocean.keeper import SquidKeeper as Keeper
 from squid_py.ocean.ocean_agreements import OceanAgreements
@@ -37,6 +38,7 @@ def ocean_agreements():
         keeper,
         did_resolver,
         AssetConsumer,
+        AssetExecutor,
         ConfigProvider.get_config()
     )
 
@@ -180,7 +182,7 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     did = registered_ddo.did
     asset_id = registered_ddo.asset_id
     ddo = consumer_ocn.assets.resolve(did)
-    service_agreement = ServiceAgreement.from_ddo('access', ddo)
+    service_agreement = ServiceAgreement.from_ddo(ServiceTypes.ASSET_ACCESS, ddo)
 
     price = service_agreement.get_price()
 
@@ -188,11 +190,11 @@ def test_sign_agreement(publisher_ocean_instance, consumer_ocean_instance, regis
     keeper.dispenser.request_vodkas(price * 2, consumer_acc)
 
     agreement_id, signature = consumer_ocean_instance.agreements.prepare(
-        did, consumer_acc)
+        did, consumer_acc, ServiceTypesIndices.DEFAULT_ACCESS_INDEX)
 
     success = publisher_ocean_instance.agreements.create(
         did,
-        'access',
+        ServiceTypesIndices.DEFAULT_ACCESS_INDEX,
         agreement_id,
         signature,
         consumer_acc.address,

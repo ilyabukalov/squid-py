@@ -10,6 +10,7 @@ from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.did_resolver.did_resolver import DIDResolver
 
 from squid_py.assets.asset_consumer import AssetConsumer
+from squid_py.assets.asset_executor import AssetExecutor
 from squid_py.config_provider import ConfigProvider
 from squid_py.ocean.keeper import SquidKeeper as Keeper
 from squid_py.ocean.ocean_accounts import OceanAccounts
@@ -100,6 +101,7 @@ class Ocean:
             self._did_resolver,
             self.agreements,
             AssetConsumer,
+            AssetExecutor,
             self._config
         )
         self.services = OceanServices()
@@ -124,6 +126,7 @@ class Ocean:
             self._keeper,
             self._did_resolver,
             AssetConsumer,
+            AssetExecutor,
             self._config
         )
 

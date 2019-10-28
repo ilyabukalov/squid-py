@@ -22,17 +22,26 @@
       "index": 0,
       "serviceEndpoint": "http://myaquarius.org/api/v1/provider/assets/metadata/{did}",
       "attributes": {
-        "main": {},
+        "main": {
+          "author": "Met Office",
+          "dateCreated": "2019-02-08T08:13:49Z",
+          "files": [],
+          "license": "CC-BY",
+          "name": "UK Weather information 2011",
+          "price": "1",
+          "type": "compute"
+        },
         "additionalInformation": {}
       }
     },
     {
-      "type": "computing",
+      "type": "compute",
       "index": 2,
       "serviceEndpoint": "http://mybrizo.org/api/v1/brizo/services/computing/exec?consumerAddress=${consumerAddress}&serviceAgreementId=${serviceAgreementId}",
       "templateId": "804932804923850985093485039850349850439583409583404534231321131a",
       "attributes": {
         "main": {
+          "name" : "dataAssetComputingServiceAgreement",
           "creator": "0x00Bd138aBD70e2F00903268F3Db08f2D25677C9e",
           "datePublished": "2019-04-09T19:02:11Z",
           "price": "10",
