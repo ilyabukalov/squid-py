@@ -153,6 +153,11 @@ class Brizo:
                                                 workflow_ddo.did, signature)
         logger.info(f'invoke execute endpoint with this url: {execute_url}')
         response = Brizo._http_client.post(execute_url)
+        print(f'got brizo execute response: {response.content} with status-code {response.status_code} ')
+        if response.status_code != 201:
+            raise Exception(response.content.decode('utf-8'))
+
+        return json.loads(response.content)['workflowId']
 
     @staticmethod
     def _prepare_consume_payload(did, service_agreement_id, service_index, signature,

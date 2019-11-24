@@ -73,13 +73,15 @@ class OceanAssets:
         :return: DDO instance
         """
         assert isinstance(metadata, dict), f'Expected metadata of type dict, got {type(metadata)}'
+        assert service_descriptors is None or isinstance(service_descriptors, list), \
+            f'bad type of `service_descriptors` {type(service_descriptors)}'
         # if not metadata or not Metadata.validate(metadata):
         #     raise OceanInvalidMetadata('Metadata seems invalid. Please make sure'
         #                                ' the required metadata values are filled in.')
 
         # copy metadata so we don't change the original
         metadata_copy = copy.deepcopy(metadata)
-
+        service_descriptors = service_descriptors if service_descriptors is not None else []
         # Create a DDO object
         ddo = DDO()
         brizo = BrizoProvider.get_brizo()
@@ -87,8 +89,7 @@ class OceanAssets:
 
         metadata_service_desc = ServiceDescriptor.metadata_service_descriptor(metadata_copy,
                                                                               ddo_service_endpoint)
-        if metadata_copy['main']['type'] == 'dataset' or metadata_copy['main'][
-            'type'] == 'algorithm':
+        if metadata_copy['main']['type'] == 'dataset' or metadata_copy['main']['type'] == 'algorithm':
             access_service_attributes = self._build_access_service(metadata_copy, publisher_account)
             if not service_descriptors:
                 service_descriptors = [ServiceDescriptor.authorization_service_descriptor(
@@ -108,6 +109,9 @@ class OceanAssets:
                         brizo.get_consume_endpoint(self._config)
 
                     )]
+
+        # :FIXME: ssallam -- `compute` is not an asset metadata type, it is a service on a dataset.
+        # This logic needs to change to reflect this.
         elif metadata_copy['main']['type'] == 'compute':
             compute_service_attributes = self._build_compute_service(metadata_copy,
                                                                      publisher_account)
@@ -124,9 +128,7 @@ class OceanAssets:
         else:
             if not service_descriptors:
                 service_descriptors = []
-            else:
-                service_descriptors += []
-            logger.info('registering a workflow.')
+
         # Add all services to ddo
         service_descriptors = [metadata_service_desc] + service_descriptors
 
@@ -183,8 +185,8 @@ class OceanAssets:
         # Setup metadata service
         # First compute files_encrypted
         if metadata_copy['main']['type'] == 'dataset':
-            assert metadata_copy['main'][
-                'files'], 'files is required in the metadata main attributes.'
+            assert metadata_copy['main']['files'], \
+                'files is required in the metadata main attributes.'
             logger.debug('Encrypting content urls in the metadata.')
             if not use_secret_store:
                 encrypt_endpoint = brizo.get_encrypt_endpoint(self._config)
