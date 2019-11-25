@@ -140,7 +140,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
 
     event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
-        event_wait_time,
+        event_wait_time+20,
         log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
         (),
         wait=True
