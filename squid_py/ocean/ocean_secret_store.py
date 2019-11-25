@@ -23,7 +23,7 @@ class OceanSecretStore:
 
         self._secret_store_url = config.secret_store_url
         self._parity_url = config.parity_url
-        self._account = Account(config.parity_address, config.parity_password)
+        self._account = Account(config.parity_address, config.parity_password, encrypted_key='None')
 
     def _secret_store(self, account):
         return SecretStoreProvider.get_secret_store(

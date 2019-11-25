@@ -130,6 +130,7 @@ def get_metadata():
         metadata = file_handle.read()
     return json.loads(metadata)
 
+
 def setup_logging(default_path='logging.yaml', default_level=logging.INFO, env_key='LOG_CFG'):
     """Logging setup."""
     path = default_path

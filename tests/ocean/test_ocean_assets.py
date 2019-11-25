@@ -224,7 +224,7 @@ def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
     asset = create_asset(publisher_ocean_instance)
     service = asset.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     service_dict = service.as_dictionary()
-    sa = ServiceAgreement.from_service_dict(service_dict)
+    sa = ServiceAgreement.from_json(service_dict)
     keeper = ocn.keeper
 
     def grant_access(event, ocn_instance, agr_id, did, cons_address, account):
@@ -337,7 +337,7 @@ def test_ocean_grant_permissions(publisher_ocean_instance, metadata, consumer_oc
 #     ddo_computing = publisher_ocean_instance.assets.create(metadata, publisher)
 #     assert ddo_computing
 #     service = ddo_computing.get_service(service_type=ServiceTypes.CLOUD_COMPUTE)
-#     sa = ServiceAgreement.from_service_dict(service.as_dictionary())
+#     sa = ServiceAgreement.from_json(service.as_dictionary())
 #     agreement_id = consumer_ocean_instance.assets.order(ddo_computing.did, sa.index, consumer)
 #     keeper = publisher_ocean_instance.keeper
 #     event = keeper.compute_execution_condition.subscribe_condition_fulfilled(

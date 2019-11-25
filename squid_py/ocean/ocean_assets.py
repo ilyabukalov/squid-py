@@ -92,23 +92,26 @@ class OceanAssets:
         if metadata_copy['main']['type'] == 'dataset' or metadata_copy['main']['type'] == 'algorithm':
             access_service_attributes = self._build_access_service(metadata_copy, publisher_account)
             if not service_descriptors:
-                service_descriptors = [ServiceDescriptor.authorization_service_descriptor(
-                    self._config.secret_store_url)]
-                service_descriptors += [ServiceDescriptor.access_service_descriptor(
-                    access_service_attributes,
-                    brizo.get_consume_endpoint(self._config)
-                )]
+                service_descriptors = list([
+                    ServiceDescriptor.authorization_service_descriptor(self._config.secret_store_url),
+                    ServiceDescriptor.access_service_descriptor(
+                        access_service_attributes,
+                        brizo.get_consume_endpoint(self._config))
+                ])
             else:
                 service_types = set(map(lambda x: x[0], service_descriptors))
                 if ServiceTypes.AUTHORIZATION not in service_types:
-                    service_descriptors += [ServiceDescriptor.authorization_service_descriptor(
-                        self._config.secret_store_url)]
+                    service_descriptors.append(
+                        ServiceDescriptor.authorization_service_descriptor(
+                            self._config.secret_store_url)
+                    )
                 else:
-                    service_descriptors += [ServiceDescriptor.access_service_descriptor(
-                        access_service_attributes,
-                        brizo.get_consume_endpoint(self._config)
+                    service_descriptors.append(
+                        ServiceDescriptor.access_service_descriptor(
+                            access_service_attributes,
+                            brizo.get_consume_endpoint(self._config))
 
-                    )]
+                    )
 
         # :FIXME: ssallam -- `compute` is not an asset metadata type, it is a service on a dataset.
         # This logic needs to change to reflect this.
@@ -484,13 +487,15 @@ class OceanAssets:
 
     @staticmethod
     def _build_access_service(metadata, publisher_account):
-        return {"main": {
-            "name": "dataAssetAccessServiceAgreement",
-            "creator": publisher_account.address,
-            "price": metadata[MetadataMain.KEY]['price'],
-            "timeout": 3600,
-            "datePublished": metadata[MetadataMain.KEY]['dateCreated']
-        }}
+        return {
+            "main": {
+                "name": "dataAssetAccessServiceAgreement",
+                "creator": publisher_account.address,
+                "price": metadata[MetadataMain.KEY]['price'],
+                "timeout": 3600,
+                "datePublished": metadata[MetadataMain.KEY]['dateCreated']
+            }
+        }
 
     def _build_compute_service(self, metadata, publisher_account):
         return {"main": {

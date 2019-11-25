@@ -43,7 +43,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
         consumer_ocean_instance._config.downloads_path) else 0
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
-    sa = ServiceAgreement.from_service_dict(service.as_dictionary())
+    sa = ServiceAgreement.from_json(service.as_dictionary())
     # This will send the consume request to Brizo which in turn will execute the agreement on-chain
     cons_ocn.accounts.request_tokens(consumer_account, 100)
     agreement_id = cons_ocn.assets.order(
