@@ -54,6 +54,49 @@ class OceanAssets:
             self._config.secret_store_url, self._config.parity_url, account
         )
 
+    def _process_service_descriptors(self, service_descriptors, metadata, account):
+        brizo = BrizoProvider.get_brizo()
+        ddo_service_endpoint = self._get_aquarius().get_service_endpoint()
+
+        service_type_to_descriptor = {sd[0]: sd for sd in service_descriptors}
+        _service_descriptors = []
+        metadata_service_desc = service_type_to_descriptor.pop(
+            ServiceTypes.METADATA,
+            ServiceDescriptor.metadata_service_descriptor(
+                    metadata, ddo_service_endpoint
+            )
+        )
+        auth_service_desc = service_type_to_descriptor.pop(
+            ServiceTypes.AUTHORIZATION,
+            service_descriptors.append(
+                ServiceDescriptor.authorization_service_descriptor(self._config.secret_store_url)
+            )
+        )
+        _service_descriptors = [metadata_service_desc, auth_service_desc]
+
+        # Always dafault to creating a ServiceTypes.ASSET_ACCESS service if no services are specified
+        access_service_descriptor = service_type_to_descriptor.pop(
+            ServiceTypes.ASSET_ACCESS,
+            ServiceDescriptor.access_service_descriptor(
+                self._build_access_service(metadata, account),
+                brizo.get_consume_endpoint(self._config),
+                self._keeper.escrow_access_secretstore_template.address
+            )
+
+        )
+        compute_service_descriptor = service_type_to_descriptor.pop(
+            ServiceTypes.CLOUD_COMPUTE,
+            None
+        )
+
+        if access_service_descriptor:
+            _service_descriptors.append(access_service_descriptor)
+        if compute_service_descriptor:
+            _service_descriptors.append(compute_service_descriptor)
+
+        _service_descriptors.extend(service_type_to_descriptor.values())
+        return ServiceFactory.build_services(_service_descriptors)
+
     def create(self, metadata, publisher_account,
                service_descriptors=None, providers=None,
                use_secret_store=True):
@@ -81,67 +124,22 @@ class OceanAssets:
 
         # copy metadata so we don't change the original
         metadata_copy = copy.deepcopy(metadata)
-        service_descriptors = service_descriptors if service_descriptors is not None else []
+        asset_type = metadata_copy['main']['type']
+        assert asset_type in ('dataset', 'algorithm'), f'Invalid/unsupported asset type {asset_type}'
+
+        service_descriptors = service_descriptors or []
+        brizo = BrizoProvider.get_brizo()
+
+        services = self._process_service_descriptors(service_descriptors, metadata_copy, publisher_account)
+        stype_to_service = {s.type: s for s in services}
+        checksum_dict = dict()
+        for service in services:
+            checksum_dict[str(service.index)] = checksum(service.main)
+
         # Create a DDO object
         ddo = DDO()
-        brizo = BrizoProvider.get_brizo()
-        ddo_service_endpoint = self._get_aquarius().get_service_endpoint()
-
-        metadata_service_desc = ServiceDescriptor.metadata_service_descriptor(metadata_copy,
-                                                                              ddo_service_endpoint)
-        if metadata_copy['main']['type'] == 'dataset' or metadata_copy['main']['type'] == 'algorithm':
-            access_service_attributes = self._build_access_service(metadata_copy, publisher_account)
-            if not service_descriptors:
-                service_descriptors = list([
-                    ServiceDescriptor.authorization_service_descriptor(self._config.secret_store_url),
-                    ServiceDescriptor.access_service_descriptor(
-                        access_service_attributes,
-                        brizo.get_consume_endpoint(self._config))
-                ])
-            else:
-                service_types = set(map(lambda x: x[0], service_descriptors))
-                if ServiceTypes.AUTHORIZATION not in service_types:
-                    service_descriptors.append(
-                        ServiceDescriptor.authorization_service_descriptor(
-                            self._config.secret_store_url)
-                    )
-                else:
-                    service_descriptors.append(
-                        ServiceDescriptor.access_service_descriptor(
-                            access_service_attributes,
-                            brizo.get_consume_endpoint(self._config))
-
-                    )
-
-        # :FIXME: ssallam -- `compute` is not an asset metadata type, it is a service on a dataset.
-        # This logic needs to change to reflect this.
-        elif metadata_copy['main']['type'] == 'compute':
-            compute_service_attributes = self._build_compute_service(metadata_copy,
-                                                                     publisher_account)
-            if not service_descriptors:
-                service_descriptors = [ServiceDescriptor.compute_service_descriptor(
-                    compute_service_attributes, brizo.get_execute_endpoint(self._config))
-                ]
-            else:
-                service_descriptors += [ServiceDescriptor.compute_service_descriptor(
-                    compute_service_attributes,
-                    brizo.get_execute_endpoint(self._config)
-
-                )]
-        else:
-            if not service_descriptors:
-                service_descriptors = []
-
-        # Add all services to ddo
-        service_descriptors = [metadata_service_desc] + service_descriptors
-
-        services = ServiceFactory.build_services(service_descriptors)
-        checksums = dict()
-        for service in services:
-            checksums[str(service.index)] = checksum(service.main)
-
         # Adding proof to the ddo.
-        ddo.add_proof(checksums, publisher_account)
+        ddo.add_proof(checksum_dict, publisher_account)
 
         # Generating the did and adding to the ddo.
         did = ddo.assign_did(DID.did(ddo.proof['checksum']))
@@ -151,30 +149,32 @@ class OceanAssets:
             raise OceanDIDAlreadyExist(
                 f'Asset id {did} is already registered to another asset.')
 
-        for service in services:
-            if service.type == ServiceTypes.ASSET_ACCESS:
-                access_service = ServiceFactory.complete_access_service(
-                    did,
-                    brizo.get_consume_endpoint(self._config),
-                    access_service_attributes,
-                    self._keeper.escrow_access_secretstore_template.address,
-                    self._keeper.escrow_reward_condition.address)
-                ddo.add_service(access_service)
-            elif service.type == ServiceTypes.METADATA:
-                ddo_service_endpoint = service.service_endpoint.replace('{did}', did)
-                service.set_service_endpoint(ddo_service_endpoint)
-                ddo.add_service(service)
-            elif service.type == ServiceTypes.CLOUD_COMPUTE:
-                compute_service = ServiceFactory.complete_compute_service(
-                    did,
-                    brizo.get_execute_endpoint(self._config),
-                    compute_service_attributes,
-                    self._keeper.compute_execution_condition.address,
-                    self._keeper.escrow_reward_condition.address
-                )
-                ddo.add_service(compute_service)
-            else:
-                ddo.add_service(service)
+        md_service = stype_to_service[ServiceTypes.METADATA]
+        ddo_service_endpoint = md_service.service_endpoint
+        if '{did}' in ddo_service_endpoint:
+            ddo_service_endpoint = ddo_service_endpoint.replace('{did}', did)
+            md_service.set_service_endpoint(ddo_service_endpoint)
+
+        # Populate the ddo services
+        ddo.add_service(md_service)
+        ddo.add_service(stype_to_service[ServiceTypes.AUTHORIZATION])
+        access_service = stype_to_service.get(ServiceTypes.ASSET_ACCESS, None)
+        compute_service = stype_to_service.get(ServiceTypes.CLOUD_COMPUTE, None)
+
+        if access_service:
+            access_service.init_conditions_values(
+                self._keeper,
+                did,
+                {cname: c.address for cname, c in self._keeper.contract_name_to_instance.items()}
+            )
+            ddo.add_service(access_service)
+        if compute_service:
+            compute_service.init_conditions_values(
+                self._keeper,
+                did,
+                {cname: c.address for cname, c in self._keeper.contract_name_to_instance.items()}
+            )
+            ddo.add_service(compute_service)
 
         ddo.proof['signatureValue'] = self._keeper.sign_hash(
             add_ethereum_prefix_and_hash_msg(did_to_id_bytes(did)),
