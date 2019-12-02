@@ -161,14 +161,12 @@ class OceanAssets:
 
         if access_service:
             access_service.init_conditions_values(
-                self._keeper,
                 did,
                 {cname: c.address for cname, c in self._keeper.contract_name_to_instance.items()}
             )
             ddo.add_service(access_service)
         if compute_service:
             compute_service.init_conditions_values(
-                self._keeper,
                 did,
                 {cname: c.address for cname, c in self._keeper.contract_name_to_instance.items()}
             )

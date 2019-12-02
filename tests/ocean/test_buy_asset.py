@@ -81,9 +81,6 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     assert event, 'no event for AccessSecretStoreCondition.Fulfilled'
     assert cons_ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address)
 
-    publisher_ocean_instance.agreements.conditions.release_reward(
-        agreement_id, sa.get_price(), pub_acc)
-
     assert cons_ocn.assets.consume(
         agreement_id,
         ddo.did,
