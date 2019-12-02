@@ -20,7 +20,7 @@ before_install:
   - export AQUARIUS_VERSION=v1.0.3
   - export EVENTS_HANDLER_VERSION=v0.3.0
   - rm -rf "${HOME}/.ocean/keeper-contracts/artifacts"
-  - bash -x start_ocean.sh --no-brizo --no-commons --no-faucet --no-events-handler --local-spree-node 2>&1 > start_ocean.log &
+  - bash -x start_ocean.sh --no-commons --no-faucet --no-events-handler --local-spree-node 2>&1 > start_ocean.log &
   - cd ..
   - |
       for i in $(seq 1 50); do
