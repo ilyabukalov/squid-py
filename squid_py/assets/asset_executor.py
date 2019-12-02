@@ -23,5 +23,4 @@ class AssetExecutor:
         """
         service_endpoint = ServiceAgreement.from_ddo(ServiceTypes.CLOUD_COMPUTE,
                                                      compute_ddo).service_endpoint
-
-        brizo.execute_service(agreement_id, service_endpoint, consumer_account, workflow_ddo)
+        return brizo.execute_service(agreement_id, service_endpoint, consumer_account, workflow_ddo)

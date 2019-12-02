@@ -14,7 +14,7 @@ class SSMock:
 
 
 def test_secret_store_provider():
-    account = Account('0x00000000000000000', 'psw')
+    account = Account('0x00000000000000000', 'psw', encrypted_key='0x01010101101')
     SecretStoreProvider.set_secret_store_class(SSMock)
     ss = SecretStoreProvider.get_secret_store('ss/url', 'keeper/url', account)
     sss = SecretStoreProvider.get_secret_store('ss/url', 'keeper/url', account)

@@ -8,6 +8,7 @@ from ocean_keeper.contract_handler import ContractHandler
 from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.agreements.service_types import ServiceTypes
+from ocean_utils.aquarius import AquariusProvider
 from ocean_utils.did import DID
 
 from examples import ExampleConfig
@@ -29,9 +30,9 @@ if should_run_test('e2e'):
 @pytest.fixture(autouse=True)
 def setup_all():
     config = ExampleConfig.get_config()
-    Web3Provider.get_web3(config.keeper_url)
-    ContractHandler.artifacts_path = config.keeper_path
-    Keeper.get_instance(artifacts_path=config.keeper_path)
+    Web3Provider.init_web3(config.keeper_url)
+    ContractHandler.set_artifacts_path(config.keeper_path)
+    Keeper.get_instance()
 
 
 @pytest.fixture
@@ -51,17 +52,22 @@ def consumer_ocean_instance():
 
 @pytest.fixture
 def publisher_ocean_instance_brizo():
-    return get_publisher_ocean_instance(use_brizo_mock=False)
+    return get_publisher_ocean_instance(use_brizo_mock=True)
 
 
 @pytest.fixture
 def consumer_ocean_instance_brizo():
-    return get_consumer_ocean_instance(use_brizo_mock=False)
+    return get_consumer_ocean_instance(use_brizo_mock=True)
 
 
 @pytest.fixture
 def registered_ddo():
-    return get_registered_ddo(get_publisher_ocean_instance(), get_publisher_account())
+    ocn = get_publisher_ocean_instance()
+    aqua = AquariusProvider.get_aquarius(ocn.config.aquarius_url)
+    for did in aqua.list_assets():
+        aqua.retire_asset_ddo(did)
+
+    return get_registered_ddo(ocn, get_publisher_account())
 
 
 @pytest.fixture

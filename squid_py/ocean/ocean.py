@@ -27,6 +27,7 @@ CONFIG_FILE_ENVIRONMENT_NAME = 'CONFIG_FILE'
 
 logger = logging.getLogger('ocean')
 
+
 class Ocean:
     """The Ocean class is the entry point into Ocean Protocol."""
 
@@ -68,7 +69,7 @@ class Ocean:
 
         self._config = config
         self._web3 = Web3Provider.get_web3(self._config.keeper_url)
-        ContractHandler.artifacts_path = self._config.keeper_path
+        ContractHandler.set_artifacts_path(self._config.keeper_path)
         contracts = [
             'DIDRegistry',
             'Dispenser',
@@ -84,7 +85,7 @@ class Ocean:
             'SignCondition',
             'EscrowReward'
         ]
-        self._keeper = Keeper.get_instance(self._config.keeper_path, contracts)
+        self._keeper = Keeper.get_instance(contracts)
         self._did_resolver = DIDResolver(self._keeper.did_registry)
 
         # Initialize the public sub-modules
