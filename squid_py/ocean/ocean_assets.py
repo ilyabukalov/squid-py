@@ -68,9 +68,7 @@ class OceanAssets:
         )
         auth_service_desc = service_type_to_descriptor.pop(
             ServiceTypes.AUTHORIZATION,
-            service_descriptors.append(
-                ServiceDescriptor.authorization_service_descriptor(self._config.secret_store_url)
-            )
+            ServiceDescriptor.authorization_service_descriptor(self._config.secret_store_url)
         )
         _service_descriptors = [metadata_service_desc, auth_service_desc]
 

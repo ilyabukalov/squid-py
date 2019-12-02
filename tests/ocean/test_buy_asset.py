@@ -138,6 +138,9 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     except RPCError:
         print('hooray, secret store is working as expected.')
 
+    publisher_ocean_instance.agreements.conditions.release_reward(
+        agreement_id, sa.get_price(), pub_acc)
+
     event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
         event_wait_time+20,

@@ -9,6 +9,7 @@ from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.agreements.service_factory import ServiceDescriptor
 from ocean_utils.agreements.service_types import ServiceTypes
+from ocean_utils.aquarius import AquariusProvider
 from ocean_utils.ddo.ddo import DDO
 from ocean_utils.did import DID
 
@@ -160,6 +161,9 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
 
     acct = ocn.main_account
 
+    aqua = AquariusProvider.get_aquarius(ocn.config.aquarius_url)
+    aqua.retire_all_assets()
+
     asset = DDO(json_filename=sample_ddo_path)
     my_secret_store = 'http://myownsecretstore.com'
     auth_service = ServiceDescriptor.authorization_service_descriptor(my_secret_store)
@@ -176,7 +180,9 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
             "price": '1',
             "timeout": 3600,
             "datePublished": '2019-08-30T12:19:54Z'
-        }}, ''
+        }},
+        'service/endpoint',
+        '0x0011001100110011'
     )
     new_asset = ocn.assets.create(asset.metadata, acct, [access_service])
     assert new_asset.get_service(ServiceTypes.AUTHORIZATION)
