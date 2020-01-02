@@ -49,7 +49,7 @@ def get_consumer_account():
     return get_account(1)
 
 
-def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
+def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=False):
     ocn = Ocean()
     account = get_publisher_account()
     ocn.main_account = account
@@ -63,7 +63,7 @@ def get_publisher_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_m
     return ocn
 
 
-def get_consumer_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=True):
+def get_consumer_ocean_instance(init_tokens=True, use_ss_mock=True, use_brizo_mock=False):
     ocn = Ocean()
     account = get_consumer_account()
     ocn.main_account = account
@@ -97,6 +97,14 @@ def get_workflow_ddo():
     return json.loads(metadata)
 
 
+def get_computing_metadata():
+    path = get_resource_path('ddo', 'computing_metadata.json')
+    assert path.exists(), f"{path} does not exist!"
+    with open(path, 'r') as file_handle:
+        metadata = file_handle.read()
+    return json.loads(metadata)
+
+
 def get_computing_ddo():
     return DDO(json_filename=get_resource_path('ddo', 'ddo_computing.json'))
 
@@ -121,6 +129,7 @@ def get_metadata():
     with open(path, 'r') as file_handle:
         metadata = file_handle.read()
     return json.loads(metadata)
+
 
 def setup_logging(default_path='logging.yaml', default_level=logging.INFO, env_key='LOG_CFG'):
     """Logging setup."""

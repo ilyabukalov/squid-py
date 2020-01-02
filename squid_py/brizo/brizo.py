@@ -138,6 +138,28 @@ class Brizo:
                 Brizo.write_file(response, destination_folder, file_name or f'file-{i}')
 
     @staticmethod
+    def execute_service(service_agreement_id, service_endpoint, account, workflow_ddo):
+        """
+
+        :param service_agreement_id:
+        :param service_endpoint:
+        :param account:
+        :return:
+        """
+        signature = Keeper.get_instance().sign_hash(
+            add_ethereum_prefix_and_hash_msg(service_agreement_id),
+            account)
+        execute_url = Brizo._create_execute_url(service_endpoint, service_agreement_id, account,
+                                                workflow_ddo.did, signature)
+        logger.info(f'invoke execute endpoint with this url: {execute_url}')
+        response = Brizo._http_client.post(execute_url)
+        print(f'got brizo execute response: {response.content} with status-code {response.status_code} ')
+        if response.status_code != 201:
+            raise Exception(response.content.decode('utf-8'))
+
+        return json.loads(response.content)['workflowId']
+
+    @staticmethod
     def _prepare_consume_payload(did, service_agreement_id, service_index, signature,
                                  consumer_address):
         """Prepare a payload to send to `Brizo`.
@@ -185,7 +207,7 @@ class Brizo:
         return f'{Brizo.get_brizo_url(config)}/services/access/initialize'
 
     @staticmethod
-    def get_service_endpoint(config):
+    def get_consume_endpoint(config):
         """
         Return the url to consume the asset.
 
@@ -195,7 +217,23 @@ class Brizo:
         return f'{Brizo.get_brizo_url(config)}/services/consume'
 
     @staticmethod
+    def get_execute_endpoint(config):
+        """
+        Return the url to execute the asset.
+
+        :param config: Config
+        :return: Url, str
+        """
+        return f'{Brizo.get_brizo_url(config)}/services/exec'
+
+    @staticmethod
     def get_encrypt_endpoint(config):
+        """
+        Return the url to encrypt the asset.
+
+        :param config: Config
+        :return: Url, str
+        """
         return f'{Brizo.get_brizo_url(config)}/services/publish'
 
     @staticmethod
@@ -242,3 +280,12 @@ class Brizo:
                     f'&consumerAddress={account.address}'
                     f'&index={index}'
                     )
+
+    @staticmethod
+    def _create_execute_url(service_endpoint, service_agreement_id, account, workflow_did,
+                            signature=None):
+        return (f'{service_endpoint}'
+                f'?signature={signature}'
+                f'&serviceAgreementId={service_agreement_id}'
+                f'&consumerAddress={account.address}'
+                f'&workflowDID={workflow_did}')

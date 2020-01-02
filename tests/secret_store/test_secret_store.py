@@ -28,7 +28,7 @@ def test_secret_store_encrypt_decrypt():
     ss_client.decrypt_document = MagicMock(return_value=metadata_json)
     SecretStore.set_client(ss_client)
 
-    ss_args = (config.secret_store_url, config.parity_url, Account('0x0000', 'aaa'))
+    ss_args = (config.secret_store_url, config.parity_url, Account('0x0000', 'aaa', encrypted_key='0x0101010101101'))
     result = SecretStore(*ss_args).encrypt_document(document_id, metadata_json)
     print(result)
     assert SecretStore(*ss_args).decrypt_document(document_id, result) == metadata_json

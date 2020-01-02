@@ -5,6 +5,7 @@
 from collections import namedtuple
 
 from ocean_keeper.account import Account
+from ocean_keeper.utils import get_account
 
 Balance = namedtuple('Balance', ('eth', 'ocn'))
 
@@ -16,12 +17,12 @@ class OceanAccounts:
         self._keeper = keeper
         self._config = config
         self._ocean_tokens = ocean_tokens
-        self._accounts = [Account(account_address) for account_address in self._keeper.accounts]
-        if config.parity_address and config.parity_password:
-            address = config.parity_address.lower()
-            for account in self._accounts:
-                if account.address.lower() == address:
-                    account.password = config.parity_password
+        self._accounts = []
+        addresses = [account_address for account_address in self._keeper.accounts]
+        for address in addresses:
+            for account in [get_account(0), get_account(1)]:
+                if account and account.address.lower() == address.lower():
+                    self._accounts.append(account)
                     break
 
     @property

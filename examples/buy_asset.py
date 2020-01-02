@@ -93,7 +93,7 @@ def buy_asset():
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     # This will send the order request to Brizo which in turn will execute the agreement on-chain
     cons_ocn.accounts.request_tokens(consumer_account, 10)
-    sa = ServiceAgreement.from_service_dict(service.as_dictionary())
+    sa = ServiceAgreement.from_json(service.as_dictionary())
     agreement_id = ''
     if not agreement_id:
         # Use these 2 lines to request new agreement from Brizo

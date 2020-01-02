@@ -43,7 +43,7 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
         consumer_ocean_instance._config.downloads_path) else 0
     # sign agreement using the registered asset did above
     service = ddo.get_service(service_type=ServiceTypes.ASSET_ACCESS)
-    sa = ServiceAgreement.from_service_dict(service.as_dictionary())
+    sa = ServiceAgreement.from_json(service.as_dictionary())
     # This will send the consume request to Brizo which in turn will execute the agreement on-chain
     cons_ocn.accounts.request_tokens(consumer_account, 100)
     agreement_id = cons_ocn.assets.order(
@@ -80,9 +80,6 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     )
     assert event, 'no event for AccessSecretStoreCondition.Fulfilled'
     assert cons_ocn.agreements.is_access_granted(agreement_id, ddo.did, consumer_account.address)
-
-    publisher_ocean_instance.agreements.conditions.release_reward(
-        agreement_id, sa.get_price(), pub_acc)
 
     assert cons_ocn.assets.consume(
         agreement_id,
@@ -138,9 +135,12 @@ def test_buy_asset(consumer_ocean_instance, publisher_ocean_instance):
     except RPCError:
         print('hooray, secret store is working as expected.')
 
+    publisher_ocean_instance.agreements.conditions.release_reward(
+        agreement_id, sa.get_price(), pub_acc)
+
     event = keeper.escrow_reward_condition.subscribe_condition_fulfilled(
         agreement_id,
-        event_wait_time,
+        event_wait_time+20,
         log_event(keeper.escrow_reward_condition.FULFILLED_EVENT),
         (),
         wait=True

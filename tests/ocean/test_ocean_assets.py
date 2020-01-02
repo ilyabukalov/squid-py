@@ -9,12 +9,12 @@ from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_agreement import ServiceAgreement
 from ocean_utils.agreements.service_factory import ServiceDescriptor
 from ocean_utils.agreements.service_types import ServiceTypes
+from ocean_utils.aquarius import AquariusProvider
 from ocean_utils.ddo.ddo import DDO
 from ocean_utils.did import DID
 
-from tests.resources.helper_functions import (get_algorithm_ddo, get_resource_path,
-                                              get_workflow_ddo,
-                                              log_event)
+from tests.resources.helper_functions import (get_algorithm_ddo, get_computing_metadata,
+                                              get_resource_path, log_event)
 from tests.resources.tiers import e2e_test
 
 
@@ -161,6 +161,9 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
 
     acct = ocn.main_account
 
+    aqua = AquariusProvider.get_aquarius(ocn.config.aquarius_url)
+    aqua.retire_all_assets()
+
     asset = DDO(json_filename=sample_ddo_path)
     my_secret_store = 'http://myownsecretstore.com'
     auth_service = ServiceDescriptor.authorization_service_descriptor(my_secret_store)
@@ -177,7 +180,9 @@ def test_create_asset_with_different_secret_store(publisher_ocean_instance):
             "price": '1',
             "timeout": 3600,
             "datePublished": '2019-08-30T12:19:54Z'
-        }}, ''
+        }},
+        'service/endpoint',
+        '0x0011001100110011'
     )
     new_asset = ocn.assets.create(asset.metadata, acct, [access_service])
     assert new_asset.get_service(ServiceTypes.AUTHORIZATION)
@@ -225,7 +230,7 @@ def test_assets_consumed(publisher_ocean_instance, consumer_ocean_instance):
     asset = create_asset(publisher_ocean_instance)
     service = asset.get_service(service_type=ServiceTypes.ASSET_ACCESS)
     service_dict = service.as_dictionary()
-    sa = ServiceAgreement.from_service_dict(service_dict)
+    sa = ServiceAgreement.from_json(service_dict)
     keeper = ocn.keeper
 
     def grant_access(event, ocn_instance, agr_id, did, cons_address, account):
@@ -285,9 +290,74 @@ def test_ocean_assets_algorithm(publisher_ocean_instance):
 
 
 def test_ocean_assets_workflow(publisher_ocean_instance):
-    # Allow publish an workflow
+    # :FIXME: re-enable this test once plecos v1.0.1 is released in a new Aquarius version.
+    return
+    # # Allow publish an workflow
+    # publisher = publisher_ocean_instance.main_account
+    # metadata = get_workflow_ddo()['service'][0]
+    # valid_results = plecos.validate_dict_local(metadata['attributes'])
+    # print(f'validation result: {valid_results}')
+    # ddo = publisher_ocean_instance.assets.create(metadata['attributes'], publisher)
+    # assert ddo
+    # publisher_ocean_instance.assets.retire(ddo.did)
+
+
+def test_ocean_assets_compute(publisher_ocean_instance):
     publisher = publisher_ocean_instance.main_account
-    metadata = get_workflow_ddo()['service'][0]
-    ddo = publisher_ocean_instance.assets.create(metadata['attributes'], publisher)
+    metadata = get_computing_metadata()
+    ddo = publisher_ocean_instance.assets.create(metadata, publisher)
     assert ddo
     publisher_ocean_instance.assets.retire(ddo.did)
+
+
+def test_ocean_transfer_ownership(publisher_ocean_instance, metadata, consumer_ocean_instance):
+    publisher = publisher_ocean_instance.main_account
+    consumer = consumer_ocean_instance.main_account
+    ddo = publisher_ocean_instance.assets.create(metadata, publisher)
+    owner = publisher_ocean_instance.assets.owner(ddo.did)
+    assert owner == publisher.address
+    publisher_ocean_instance.assets.transfer_ownership(ddo.did, consumer.address, publisher)
+    assert publisher_ocean_instance.assets.owner(ddo.did) == consumer.address
+    publisher_ocean_instance.assets.retire(ddo.did)
+
+
+def test_ocean_grant_permissions(publisher_ocean_instance, metadata, consumer_ocean_instance):
+    publisher = publisher_ocean_instance.main_account
+    consumer = consumer_ocean_instance.main_account
+    ddo = publisher_ocean_instance.assets.create(metadata, publisher)
+    assert not publisher_ocean_instance.assets.get_permissions(ddo.did, consumer.address)
+    publisher_ocean_instance.assets.delegate_persmission(ddo.did, consumer.address, publisher)
+    assert publisher_ocean_instance.assets.get_permissions(ddo.did, consumer.address)
+    publisher_ocean_instance.assets.revoke_permissions(ddo.did, consumer.address, publisher)
+    assert not publisher_ocean_instance.assets.get_permissions(ddo.did, consumer.address)
+
+
+# def test_ocean_execute_workflow(publisher_ocean_instance, consumer_ocean_instance):
+#     publisher = publisher_ocean_instance.main_account
+#     consumer = consumer_ocean_instance.main_account
+#     publisher_ocean_instance.assets._get_aquarius().retire_all_assets()
+#     metadata = get_workflow_ddo()['service'][0]
+#     workflow_ddo = publisher_ocean_instance.assets.create(metadata['attributes'], publisher)
+#     assert workflow_ddo
+#     metadata = get_computing_metadata()
+#     ddo_computing = publisher_ocean_instance.assets.create(metadata, publisher)
+#     assert ddo_computing
+#     service = ddo_computing.get_service(service_type=ServiceTypes.CLOUD_COMPUTE)
+#     sa = ServiceAgreement.from_json(service.as_dictionary())
+#     agreement_id = consumer_ocean_instance.assets.order(ddo_computing.did, sa.index, consumer)
+#     keeper = publisher_ocean_instance.keeper
+#     event = keeper.compute_execution_condition.subscribe_condition_fulfilled(
+#         agreement_id,
+#         90,
+#         log_event(keeper.compute_execution_condition.FULFILLED_EVENT),
+#         (),
+#         wait=True
+#     )
+#     assert event, 'no event for compute_execution_condition.Fulfilled'
+#
+#     try:
+#         job_id = consumer_ocean_instance.assets.execute(
+#             agreement_id, ddo_computing.did, sa.index, consumer, workflow_ddo.did)
+#         print(f'Compute job started successfully, job id is {job_id}')
+#     except Exception as e:
+#         print(f'Executing the compute job for agreementId {agreement_id} failed: {e}')

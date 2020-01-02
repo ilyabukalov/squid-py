@@ -24,9 +24,9 @@ install_requirements = [
     'pyopenssl',
     'PyJWT',  # not jwt
     'PyYAML==4.2b4',
-    'ocean-utils==0.2.0',
-    'ocean-keeper==0.1.3',
-    'ocean-secret-store-client==0.0.1',
+    'ocean-utils==0.3.2',
+    'ocean-keeper==0.3.0',
+    'ocean-secret-store-client==0.0.2',
     'requests==2.21.0',
     'deprecated',
     'pycryptodomex',
@@ -97,6 +97,6 @@ setup(
     test_suite='tests',
     tests_require=test_requirements,
     url='https://github.com/oceanprotocol/squid-py',
-    version='0.7.1',
+    version='0.7.2',
     zip_safe=False,
 )

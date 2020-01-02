@@ -7,6 +7,7 @@ import json
 import logging
 import os
 
+from eth_utils import add_0x_prefix
 from ocean_keeper.utils import add_ethereum_prefix_and_hash_msg
 from ocean_keeper.web3_provider import Web3Provider
 from ocean_utils.agreements.service_factory import ServiceDescriptor, ServiceFactory
@@ -31,11 +32,12 @@ logger = logging.getLogger('ocean')
 class OceanAssets:
     """Ocean assets class."""
 
-    def __init__(self, keeper, did_resolver, agreements, asset_consumer, config):
+    def __init__(self, keeper, did_resolver, agreements, asset_consumer, asset_executor, config):
         self._keeper = keeper
         self._did_resolver = did_resolver
         self._agreements = agreements
         self._asset_consumer = asset_consumer
+        self._asset_executor = asset_executor
         self._config = config
         self._aquarius_url = config.aquarius_url
 
@@ -51,6 +53,47 @@ class OceanAssets:
         return SecretStoreProvider.get_secret_store(
             self._config.secret_store_url, self._config.parity_url, account
         )
+
+    def _process_service_descriptors(self, service_descriptors, metadata, account):
+        brizo = BrizoProvider.get_brizo()
+        ddo_service_endpoint = self._get_aquarius().get_service_endpoint()
+
+        service_type_to_descriptor = {sd[0]: sd for sd in service_descriptors}
+        _service_descriptors = []
+        metadata_service_desc = service_type_to_descriptor.pop(
+            ServiceTypes.METADATA,
+            ServiceDescriptor.metadata_service_descriptor(
+                    metadata, ddo_service_endpoint
+            )
+        )
+        auth_service_desc = service_type_to_descriptor.pop(
+            ServiceTypes.AUTHORIZATION,
+            ServiceDescriptor.authorization_service_descriptor(self._config.secret_store_url)
+        )
+        _service_descriptors = [metadata_service_desc, auth_service_desc]
+
+        # Always dafault to creating a ServiceTypes.ASSET_ACCESS service if no services are specified
+        access_service_descriptor = service_type_to_descriptor.pop(
+            ServiceTypes.ASSET_ACCESS,
+            ServiceDescriptor.access_service_descriptor(
+                self._build_access_service(metadata, account),
+                brizo.get_consume_endpoint(self._config),
+                self._keeper.escrow_access_secretstore_template.address
+            )
+
+        )
+        compute_service_descriptor = service_type_to_descriptor.pop(
+            ServiceTypes.CLOUD_COMPUTE,
+            None
+        )
+
+        if access_service_descriptor:
+            _service_descriptors.append(access_service_descriptor)
+        if compute_service_descriptor:
+            _service_descriptors.append(compute_service_descriptor)
+
+        _service_descriptors.extend(service_type_to_descriptor.values())
+        return ServiceFactory.build_services(_service_descriptors)
 
     def create(self, metadata, publisher_account,
                service_descriptors=None, providers=None,
@@ -71,58 +114,30 @@ class OceanAssets:
         :return: DDO instance
         """
         assert isinstance(metadata, dict), f'Expected metadata of type dict, got {type(metadata)}'
+        assert service_descriptors is None or isinstance(service_descriptors, list), \
+            f'bad type of `service_descriptors` {type(service_descriptors)}'
         # if not metadata or not Metadata.validate(metadata):
         #     raise OceanInvalidMetadata('Metadata seems invalid. Please make sure'
         #                                ' the required metadata values are filled in.')
 
         # copy metadata so we don't change the original
         metadata_copy = copy.deepcopy(metadata)
+        asset_type = metadata_copy['main']['type']
+        assert asset_type in ('dataset', 'algorithm'), f'Invalid/unsupported asset type {asset_type}'
+
+        service_descriptors = service_descriptors or []
+        brizo = BrizoProvider.get_brizo()
+
+        services = self._process_service_descriptors(service_descriptors, metadata_copy, publisher_account)
+        stype_to_service = {s.type: s for s in services}
+        checksum_dict = dict()
+        for service in services:
+            checksum_dict[str(service.index)] = checksum(service.main)
 
         # Create a DDO object
         ddo = DDO()
-        brizo = BrizoProvider.get_brizo()
-        ddo_service_endpoint = self._get_aquarius().get_service_endpoint()
-
-        metadata_service_desc = ServiceDescriptor.metadata_service_descriptor(metadata_copy,
-                                                                              ddo_service_endpoint)
-
-        access_service_attributes = {"main": {
-            "name": "dataAssetAccessServiceAgreement",
-            "creator": publisher_account.address,
-            "price": metadata[MetadataMain.KEY]['price'],
-            "timeout": 3600,
-            "datePublished": metadata[MetadataMain.KEY]['dateCreated']
-        }}
-
-        if not service_descriptors:
-            service_descriptors = [ServiceDescriptor.authorization_service_descriptor(
-                self._config.secret_store_url)]
-            service_descriptors += [ServiceDescriptor.access_service_descriptor(
-                access_service_attributes,
-                brizo.get_service_endpoint(self._config)
-            )]
-        else:
-            service_types = set(map(lambda x: x[0], service_descriptors))
-            if ServiceTypes.AUTHORIZATION not in service_types:
-                service_descriptors += [ServiceDescriptor.authorization_service_descriptor(
-                    self._config.secret_store_url)]
-            else:
-                service_descriptors += [ServiceDescriptor.access_service_descriptor(
-                    access_service_attributes,
-                    brizo.get_service_endpoint(self._config)
-
-                )]
-
-        # Add all services to ddo
-        service_descriptors = [metadata_service_desc] + service_descriptors
-
-        services = ServiceFactory.build_services(service_descriptors)
-        checksums = dict()
-        for service in services:
-            checksums[str(service.index)] = checksum(service.main)
-
         # Adding proof to the ddo.
-        ddo.add_proof(checksums, publisher_account)
+        ddo.add_proof(checksum_dict, publisher_account)
 
         # Generating the did and adding to the ddo.
         did = ddo.assign_did(DID.did(ddo.proof['checksum']))
@@ -132,17 +147,30 @@ class OceanAssets:
             raise OceanDIDAlreadyExist(
                 f'Asset id {did} is already registered to another asset.')
 
-        access_service = ServiceFactory.complete_access_service(did,
-                                                                brizo.get_service_endpoint(
-                                                                    self._config),
-                                                                access_service_attributes,
-                                                                self._keeper.escrow_access_secretstore_template.address,
-                                                                self._keeper.escrow_reward_condition.address)
-        for service in services:
-            if service.type == ServiceTypes.ASSET_ACCESS:
-                ddo.add_service(access_service)
-            else:
-                ddo.add_service(service)
+        md_service = stype_to_service[ServiceTypes.METADATA]
+        ddo_service_endpoint = md_service.service_endpoint
+        if '{did}' in ddo_service_endpoint:
+            ddo_service_endpoint = ddo_service_endpoint.replace('{did}', did)
+            md_service.set_service_endpoint(ddo_service_endpoint)
+
+        # Populate the ddo services
+        ddo.add_service(md_service)
+        ddo.add_service(stype_to_service[ServiceTypes.AUTHORIZATION])
+        access_service = stype_to_service.get(ServiceTypes.ASSET_ACCESS, None)
+        compute_service = stype_to_service.get(ServiceTypes.CLOUD_COMPUTE, None)
+
+        if access_service:
+            access_service.init_conditions_values(
+                did,
+                {cname: c.address for cname, c in self._keeper.contract_name_to_instance.items()}
+            )
+            ddo.add_service(access_service)
+        if compute_service:
+            compute_service.init_conditions_values(
+                did,
+                {cname: c.address for cname, c in self._keeper.contract_name_to_instance.items()}
+            )
+            ddo.add_service(compute_service)
 
         ddo.proof['signatureValue'] = self._keeper.sign_hash(
             add_ethereum_prefix_and_hash_msg(did_to_id_bytes(did)),
@@ -156,8 +184,8 @@ class OceanAssets:
         # Setup metadata service
         # First compute files_encrypted
         if metadata_copy['main']['type'] == 'dataset':
-            assert metadata_copy['main'][
-                'files'], 'files is required in the metadata main attributes.'
+            assert metadata_copy['main']['files'], \
+                'files is required in the metadata main attributes.'
             logger.debug('Encrypting content urls in the metadata.')
             if not use_secret_store:
                 encrypt_endpoint = brizo.get_encrypt_endpoint(self._config)
@@ -192,8 +220,7 @@ class OceanAssets:
 
         logger.debug(
             f'Generated ddo and services, DID is {ddo.did},'
-            f' metadata service @{ddo_service_endpoint}, '
-            f'`Access` service initialize @{ddo.get_service("access").service_endpoint}.')
+            f' metadata service @{ddo_service_endpoint}.')
         response = None
 
         # register on-chain
@@ -306,7 +333,7 @@ class OceanAssets:
         )
         return agreement_id
 
-    def consume(self, service_agreement_id, did, service_definition_id, consumer_account,
+    def consume(self, service_agreement_id, did, service_index, consumer_account,
                 destination, index=None):
         """
         Consume the asset data.
@@ -320,7 +347,7 @@ class OceanAssets:
 
         :param service_agreement_id: str
         :param did: DID, str
-        :param service_definition_id: identifier of the service inside the asset DDO, str
+        :param service_index: identifier of the service inside the asset DDO, str
         :param consumer_account: Account instance of the consumer
         :param destination: str path
         :param index: Index of the document that is going to be downloaded, int
@@ -332,7 +359,7 @@ class OceanAssets:
             assert index >= 0, logger.error('index has to be 0 or a positive integer.')
         return self._asset_consumer.download(
             service_agreement_id,
-            service_definition_id,
+            service_index,
             ddo,
             consumer_account,
             destination,
@@ -380,3 +407,149 @@ class OceanAssets:
         """
         return self._keeper.access_secret_store_condition.get_purchased_assets_by_address(
             consumer_address)
+
+    def revoke_permissions(self, did, address_to_revoke, account):
+        """
+        Revoke access permission to an address.
+
+        :param did: the id of an asset on-chain, hex str
+        :param address_to_revoke: ethereum account address, hex str
+        :param account: Account executing the action
+        :return: bool
+        """
+        asset_id = add_0x_prefix(did_to_id(did))
+        return self._keeper.did_registry.revoke_permission(asset_id, address_to_revoke, account)
+
+    def get_permissions(self, did, address):
+        """
+        Gets access permission of a grantee
+
+        :param did: the id of an asset on-chain, hex str
+        :param address: ethereum account address, hex str
+        :return: true if the address has access permission to a DID
+        """
+        asset_id = add_0x_prefix(did_to_id(did))
+        return self._keeper.did_registry.get_permission(asset_id, address)
+
+    def delegate_persmission(self, did, address_to_grant, account):
+        """
+        Grant access permission to an address.
+
+        :param did: the id of an asset on-chain, hex str
+        :param address_to_grant: ethereum account address, hex str
+        :param account: Account executing the action
+        :return: bool
+        """
+        asset_id = add_0x_prefix(did_to_id(did))
+        return self._keeper.did_registry.grant_permission(asset_id, address_to_grant, account)
+
+    def transfer_ownership(self, did, new_owner_address, account):
+        """
+        Transfer did ownership to an address.
+
+        :param did: the id of an asset on-chain, hex str
+        :param new_owner_address: ethereum account address, hex str
+        :param account: Account executing the action
+        :return: bool
+        """
+        asset_id = add_0x_prefix(did_to_id(did))
+        return self._keeper.did_registry.transfer_did_ownership(asset_id, new_owner_address,
+                                                                account)
+
+    def execute(self, agreement_id, did, index, consumer_account, workflow_did):
+        """
+
+        :param agreement_id:representation of `bytes32` id, hexstr
+        :param did: computing service did, str
+        :param index: id of the service within the asset DDO, str
+        :param consumer_account: Account instance of the consumer ordering the service
+        :param workflow_did: the asset did (of `workflow` type) which consist of `did:op:` and
+        the assetId hex str (without `0x` prefix), str
+        :return: local path on the file system where the asset data files are downloaded, str
+        """
+        workflow_ddo = self.resolve(workflow_did)
+        compute_ddo = self.resolve(did)
+        if index is not None:
+            assert isinstance(index, int), logger.error('index has to be an integer.')
+            assert index >= 0, logger.error('index has to be 0 or a positive integer.')
+        return self._asset_executor.execute(
+            agreement_id,
+            compute_ddo,
+            workflow_ddo,
+            consumer_account,
+            BrizoProvider.get_brizo(),
+            index
+        )
+
+    @staticmethod
+    def _build_access_service(metadata, publisher_account):
+        return {
+            "main": {
+                "name": "dataAssetAccessServiceAgreement",
+                "creator": publisher_account.address,
+                "price": metadata[MetadataMain.KEY]['price'],
+                "timeout": 3600,
+                "datePublished": metadata[MetadataMain.KEY]['dateCreated']
+            }
+        }
+
+    def _build_compute_service(self, metadata, publisher_account):
+        return {"main": {
+            "name": "dataAssetComputeServiceAgreement",
+            "creator": publisher_account.address,
+            "datePublished": metadata[MetadataMain.KEY]['dateCreated'],
+            "price": metadata[MetadataMain.KEY]['price'],
+            "timeout": 86400,
+            "provider": self._build_provider_config()
+        }
+        }
+
+    @staticmethod
+    def _build_provider_config():
+        # TODO manage this as different class and get all the info for different services
+        return {
+            "type": "Azure",
+            "description": "",
+            "environment": {
+                "cluster": {
+                    "type": "Kubernetes",
+                    "url": "http://10.0.0.17/xxx"
+                },
+                "supportedContainers": [
+                    {
+                        "image": "tensorflow/tensorflow",
+                        "tag": "latest",
+                        "checksum":
+                            "sha256:cb57ecfa6ebbefd8ffc7f75c0f00e57a7fa739578a429b6f72a0df19315deadc"
+                    },
+                    {
+                        "image": "tensorflow/tensorflow",
+                        "tag": "latest",
+                        "checksum":
+                            "sha256:cb57ecfa6ebbefd8ffc7f75c0f00e57a7fa739578a429b6f72a0df19315deadc"
+                    }
+                ],
+                "supportedServers": [
+                    {
+                        "serverId": "1",
+                        "serverType": "xlsize",
+                        "price": "50",
+                        "cpu": "16",
+                        "gpu": "0",
+                        "memory": "128gb",
+                        "disk": "160gb",
+                        "maxExecutionTime": 86400
+                    },
+                    {
+                        "serverId": "2",
+                        "serverType": "medium",
+                        "price": "10",
+                        "cpu": "2",
+                        "gpu": "0",
+                        "memory": "8gb",
+                        "disk": "80gb",
+                        "maxExecutionTime": 86400
+                    }
+                ]
+            }
+        }
